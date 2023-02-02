@@ -1,0 +1,20 @@
+*readModelInput:
+    fileName: examples/compositePlate/compositePlateModel.yaml
+
+*solve:
+    elastic: yes
+	thermal: no
+    nonLinearGeom: no
+	dynamic: no
+	solverMethod: direct
+
+*writeNodeResults: 
+    fileName: examples/compositePlate/out/nodeRes.yaml
+	fields:
+	    - displacement
+		
+*writeElementResults:
+    fileName: examples/compositePlate/out/elRes.yaml 
+	fields:
+		- shellDeformation
+		- shellForceMoment

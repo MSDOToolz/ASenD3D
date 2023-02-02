@@ -1,0 +1,21 @@
+*readModelInput:
+    fileName: examples/tetBeam/tetBeamModelInput.yaml
+	
+*modalAnalysis:
+    type: frequency
+	numModes: 10
+	solverMethod: direct
+	
+*setSolnToMode:
+    solnField: velocity
+	mode: 1
+	maxAmplitude: 1.0157274408256
+	
+*writeNodeResults:
+    fileName: examples/tetBeam/out/test8Vel.yaml
+	fields:
+	    - velocity
+
+*writeModalResults:
+    fileName: examples/tetBeam/out/test8Modal.yaml
+	writeModes: yes
