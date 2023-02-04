@@ -12,7 +12,7 @@ Presently, ASenD3D is set up to be run in a Linux environment, though support fo
 
 The core solver and sensitivity tool of ASenD3D is written in Fortran, and users should be able to run from the pre-compiled binary included in the 'bin' directory.  But if the user has a preferred compiler, or wishes to modify the main source code, they will need to compile themselves from source.  Either way, the user must first clone the repository to their local machine, my navigating from the command line to a directory of their choice and running
 
-        $ git clone https://github.com/MSDOToolz/ASenD3D
+        $ git clone https://github.com/MSDOToolz/ASenD3D.git
 
 ## Building From Source
 
