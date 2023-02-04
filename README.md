@@ -7,5 +7,6 @@ Originally created at the University of Wyoming under government-funded research
 Basic examples of usage are provided for starters as the public repository undergoes construction.  Users are encouraged to try these out and familiarize themselves, and seek to make contributions as they feel inclined.
 
 # Setup
+## Building From Scratch
 
 # Documentation
