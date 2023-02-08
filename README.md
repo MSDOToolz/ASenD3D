@@ -8,7 +8,7 @@ Basic examples of usage are provided for starters as the public repository under
 
 # Setup
 
-Presently, ASenD3D is set up to be run in a Linux environment, though support for Windows and MacOS is intended to be added in the near future.  That said, it's use of external libraries/packages is relatively minimal so setup is rather straight-forward, and should need only minor modifications for other operating systems.
+Presently, ASenD3D is set up to be run in a Linux (specifically Ubuntu) environment, though support for Windows and MacOS is intended to be added in the near future.  That said, it's use of external libraries/packages is relatively minimal so setup is rather straight-forward, and should need only minor modifications for other operating systems.
 
 The core solver and sensitivity tool of ASenD3D is written in Fortran, and users should be able to run from the pre-compiled binaries included in the 'bin' directory.  But if the user has a preferred compiler, or wishes to modify the main source code, they will need to compile it themselves from source.  Either way, the user must first clone the repository to their local machine as a first step.
 
@@ -41,13 +41,20 @@ The included script is set up for gfortran as the compiler, if another is being 
 
 A library of utilities are provided to assist with pre and post-processing, and other useful functions periferral to the main solver.  These are Python-based, so the user must have Python installed in some form as a pre-requisite.  A popular avenue is the Anaconda environment (https://www.anaconda.com), but standard installation as guided from https://www.python.org is more than adequate.  The needed packages can be installed with pip:
 
+        $ pip install numpy
         $ pip install plotly==5.13.0
         $ pip install ruamel.yaml
         
 or conda:
 
+        $ conda install numpy
         $ conda install -c plotly plotly
         $ conda install -c conda-forge ruamel.yaml
+        
+If using conda, one may of course want to first create and operate through an environment with
+
+        $ conda create -n my-asend3d-env   (or any envirnonment hame of your choice)
+        $ conda activate my-asend3d-env
         
 # Running ASenD3D
 
