@@ -2,13 +2,8 @@ from ruamel.yaml import YAML
 import plotly.graph_objects as go
 
 class ResultsProcessor:
-    modelData = dict()
-    nodeData = dict()
-    elementData = dict()
-    modalData = dict()
-    yamlReader = []
 
-    def __init__(self,modelFile,nodeResFile='none',elementResFile='none'):
+    def __init__(self,modelFile,nodeResFile='none',elementResFile='none',modalResFile='none',objResFile='none'):
         self.yamlReader = YAML()
 
         inFile = open(modelFile,'r')
@@ -24,6 +19,16 @@ class ResultsProcessor:
             self.loadElementResults(elementResFile)
         else:
             self.elementData = dict()
+            
+        if(not modalResFile == 'none'):
+            self.loadModalResults(modalResFile)
+        else:
+            self.modalData = dict()
+            
+        if(not objResFile == 'none'):
+            self.loadObjectiveResults(objResFile)
+        else:
+            self.objectiveData = dict()
 
     def loadNodeResults(self,nodeResFile):
         inFile = open(nodeResFile,'r')
@@ -33,6 +38,16 @@ class ResultsProcessor:
     def loadElementResults(self,elementResFile):
         inFile = open(elementResFile,'r')
         self.elementData = self.yamlReader.load(inFile)
+        inFile.close()
+        
+    def loadModalResults(self,modalResFile):
+        inFile = open(modalResFile,'r')
+        self.modalData = self.yamlReader.load(inFile)
+        inFile.close()
+        
+    def loadObjectiveResults(self,objResFile):
+        inFile = open(objResFile,'r')
+        self.objectiveData = self.yamlReader.load(inFile)
         inFile.close()
 
     def plotNodeResults(self,field,component=1):
