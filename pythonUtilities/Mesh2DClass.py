@@ -34,7 +34,7 @@ class Mesh2D():
         self.quadElements = np.array([])
         
     ## !! check changes to createSweptMesh calls
-    def createSweptMesh(self, sweepMethod, sweepDistance, sweepElements, point=[], axis=[], followNormal=0, destNodes=[], interpMethod='linear'):
+    def createSweptMesh(self, sweepMethod, sweepElements, sweepDistance=1.0, point=[], axis=[], followNormal=0, destNodes=[], interpMethod='linear'):
         ## sweepMethod = inDirection, toPoint, fromPoint, toDestNodes, revolve
         """Object data modified: self.quadElements, self.nodes, self.quadElements
         Parameters
@@ -673,10 +673,6 @@ class Mesh2D():
                         j = srtedNds[i]
                         if(j != ndi and j not in nds12):
                             nds34.append(j)
-                    print('nds12')
-                    print(nds12)
-                    print('nds34')
-                    print(nds34)
                     n1 = nds12[0]
                     n2 = nds12[1]
                     n3 = nds34[0]
@@ -774,17 +770,6 @@ class Mesh2D():
         
         elsCreated = True
         while(elsCreated):
-            # print('nodes')
-            # print(self.nodes[0:self.numNodes])
-            # print('edges')
-            # print(self.edgeNodes[0:self.numEdges])
-            # print('elements')
-            # print(self.triElements[0:self.numTriEls])
-            # if(self.numTriEls > 0):
-                # self.plot2DMesh()
-            # cnt = input('continue?\n')
-            # if(cnt == 'n'):
-                # break
             elsCreated = False
             nEd = self.numEdges
             for edi in range(0,nEd):
