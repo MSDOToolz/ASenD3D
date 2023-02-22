@@ -1,0 +1,23 @@
+*readModelInput:
+    fileName: examples/tetBeam/tetBeamModelInput.yaml
+
+*solve:
+    elastic: yes
+	thermal: no
+    nonLinearGeom: no
+	dynamic: no
+	solverMethod: direct
+	staticLoadTime: 6.5
+	
+*modalAnalysis:
+    type: buckling
+	numModes: 10
+
+*writeNodeResults:
+    fileName: examples/tetBeam/out/test7Disp.yaml
+	fields:
+	    - displacement
+
+*writeModalResults:
+    fileName: examples/tetBeam/out/test7Modal.yaml
+	writeModes: yes

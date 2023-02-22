@@ -1,0 +1,23 @@
+*readModelInput:
+    fileName: examples/hexBeam/hexBeamModelInput.yaml
+
+*solve:
+    elastic: yes
+	thermal: no
+    nonLinearGeom: no
+	dynamic: no
+	solverMethod: direct
+	staticLoadTime: 6.5
+	
+*modalAnalysis:
+    type: buckling
+	numModes: 10
+
+*writeNodeResults:
+    fileName: examples/hexBeam/out/test7Disp.yaml
+	fields:
+	    - displacement
+
+*writeModalResults:
+    fileName: examples/hexBeam/out/test7Modal.yaml
+	writeModes: yes

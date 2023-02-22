@@ -1,0 +1,30 @@
+*readModelInput:
+    fileName: examples/hexBeam/hexBeamModelInput.yaml
+	
+*readDesignVarInput:
+    fileName: examples/hexBeam/hexBeamDVarInput.yaml
+	
+*readObjectiveInput: 
+    fileName: examples/hexBeam/hexBeamZTipDefObj.yaml
+
+*solve:
+    elastic: yes
+	thermal: no
+    nonLinearGeom: no
+	staticLoadTime: 0.5
+	loadRampSteps: 1
+	dynamic: no
+	solverMethod: direct
+
+*writeNodeResults:
+    fileName: examples/hexBeam/out/test1Disp.yaml
+	fields:
+	    - displacement
+
+*calcObjective:
+
+*calcObjGradient:
+		
+*writeObjective:
+    fileName: examples/hexBeam/out/test1Sens.yaml
+	writeGradient: yes

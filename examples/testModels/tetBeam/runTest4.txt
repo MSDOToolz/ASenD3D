@@ -1,0 +1,30 @@
+*readModelInput:
+    fileName: examples/tetBeam/tetBeamModelInput.yaml
+	
+*readDesignVarInput:
+    fileName: examples/tetBeam/tetBeamDVarInput.yaml
+	
+*readObjectiveInput: 
+    fileName: examples/tetBeam/tetBeamXTipDefObj.yaml
+
+*solve:
+    elastic: yes
+	thermal: no
+    nonLinearGeom: no
+	staticLoadTime: 3.5
+	loadRampSteps: 1
+	dynamic: no
+	solverMethod: direct
+	
+*calcObjective:
+
+*calcObjGradient:
+
+*writeNodeResults:
+    fileName: examples/tetBeam/out/test4Disp.yaml
+	fields:
+	    - displacement
+		
+*writeObjective:
+    fileName: examples/tetBeam/out/test4Sens.yaml
+	writeGradient: yes

@@ -1,0 +1,30 @@
+*readModelInput:
+    fileName: examples/shellBeam/shellBeamModelInput.yaml
+	
+*readDesignVarInput:
+    fileName: examples/shellBeam/shellBeamDVarInput.yaml
+	
+*readObjectiveInput: 
+    fileName: examples/shellBeam/shellBeamXTipDefObj.yaml
+
+*solve:
+    elastic: yes
+	thermal: no
+    nonLinearGeom: no
+	staticLoadTime: 3.5
+	loadRampSteps: 1
+	dynamic: no
+	solverMethod: direct
+	
+*calcObjective:
+
+*calcObjGradient:
+
+*writeNodeResults:
+    fileName: examples/shellBeam/out/test4Disp.yaml
+	fields:
+	    - displacement
+		
+*writeObjective:
+    fileName: examples/shellBeam/out/test4Sens.yaml
+	writeGradient: yes
