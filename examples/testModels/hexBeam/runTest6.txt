@@ -1,5 +1,5 @@
 *readModelInput:
-    fileName: examples/hexBeam/hexBeamModelInput.yaml
+    fileName: examples/testModels/hexBeam/hexBeamModelInput.yaml
 
 *solve:
     elastic: yes
@@ -11,6 +11,6 @@
 	solverMethod: direct
 
 *writeNodeResults:
-    fileName: examples/hexBeam/out/test6Disp.yaml
+    fileName: examples/testModels/hexBeam/out/test6Disp.yaml
 	fields:
 	    - displacement

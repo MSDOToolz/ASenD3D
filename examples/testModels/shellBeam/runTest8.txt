@@ -1,5 +1,5 @@
 *readModelInput:
-    fileName: examples/shellBeam/shellBeamModelInput.yaml
+    fileName: examples/testModels/shellBeam/shellBeamModelInput.yaml
 	
 *modalAnalysis:
     type: frequency
@@ -12,10 +12,10 @@
 	maxAmplitude: 1.0157274408256
 	
 *writeNodeResults:
-    fileName: examples/shellBeam/out/test8Vel.yaml
+    fileName: examples/testModels/shellBeam/out/test8Vel.yaml
 	fields:
 	    - velocity
 
 *writeModalResults:
-    fileName: examples/shellBeam/out/test8Modal.yaml
+    fileName: examples/testModels/shellBeam/out/test8Modal.yaml
 	writeModes: yes

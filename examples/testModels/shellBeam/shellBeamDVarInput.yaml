@@ -1,10 +1,10 @@
 designVariables:
     - category: thickness
-      layer: 1
+      layer: 0
       elementSet: allEls
       coefficients: 1.0
     - category: modulus
-      layer: 1
+      layer: 0
       component: 1
       elementSet: allEls
       coefficients: 1.0
@@ -13,6 +13,6 @@ designVariables:
       nodeSet: tip
       coefficients: 1.0
     - category: density
-      layer: 1
+      layer: 0
       elementSet: allEls
       coefficients: 1.0

@@ -320,6 +320,7 @@ module ASenD_input
 						    i3 = index(fileLine,'[')
 							i4 = index(fileLine,']')
 							read(fileLine(i3+1:i4-1),*) readInt(1), readReal(1:3)
+							readInt(1) = readInt(1) + 1
 							if(readInt(1) .le. numNodes) then
 							    nodeList(:,readInt(1)) = readReal(1:3)
 							endif
@@ -367,6 +368,9 @@ module ASenD_input
 									if(i2 .gt. 0) then
 									    i3 = index(fileLine,']')
 										read(fileLine(i2+1:i3-1),*) readInt(1:numNds+1)
+										do i4 = 1, numNds+1
+										    readInt(i4)= readInt(i4) + 1
+										enddo
 										if(readInt(1) .le. numEls) then
 										    elementList(1:numNds,readInt(1)) = readInt(2:numNds+1)
 											elementType(readInt(1)) = elType
@@ -429,7 +433,7 @@ module ASenD_input
 												if(i3 .gt. 0) then
 													readInt(1:3) = (/1,0,1/)
 													read(fileLine(i2+1:i3-1),*,end=516) readInt(1:3)
-516                                                 do i4 = readInt(1), readInt(2), readInt(3)
+516                                                 do i4 = readInt(1)+1, readInt(2), readInt(3)
 														elSi = elSi + 1
 														elementSets(elSi) = i4
 													enddo
@@ -438,7 +442,8 @@ module ASenD_input
 												i2 = index(fileLine,'-')
 												if(i2 .gt. 0) then
 													elSi = elSi + 1
-													read(fileLine(i2+1:i2+64),*) elementSets(elSi)
+													read(fileLine(i2+1:i2+64),*) readInt(1)
+													elementSets(elSi) = readInt(1) + 1
 												endif
 											endif
 											read(1,'(A)',iostat=iosVal) fileLine(16:256)
@@ -466,7 +471,7 @@ module ASenD_input
 												if(i3 .gt. 0) then
 													readInt(1:3) = (/1,0,1/)
 													read(fileLine(i2+1:i3-1),*,end=553) readInt(1:3)
-553                                                 do i4 = readInt(1), readInt(2), readInt(3)
+553                                                 do i4 = readInt(1)+1, readInt(2), readInt(3)
 														ndSi = ndSi + 1
 														nodeSets(ndSi) = i4
 													enddo
@@ -475,7 +480,8 @@ module ASenD_input
 												i2 = index(fileLine,'-')
 												if(i2 .gt. 0) then
 													ndSi = ndSi + 1
-													read(fileLine(i2+1:i2+64),*) nodeSets(ndSi)
+													read(fileLine(i2+1:i2+64),*) readInt(1)
+													nodeSets(ndSi) = readInt(1) + 1
 												endif
 											endif
 											read(1,'(A)',iostat=iosVal) fileLine(16:256)
@@ -1177,7 +1183,7 @@ module ASenD_input
 									    i3 = index(fileLine,']')
 										read(fileLine(i2+1:i3-1),*) readChar, readReal(1:6)
 										read(readChar,*,err=1459) readInt(1)
-										initialDisp(:,readInt(1)) = readReal(1:6)
+										initialDisp(:,readInt(1)+1) = readReal(1:6)
 										goto 1467
 1459							        do i4 = 1, numNdSets
                                             if(ndSetName(i4) .eq. readChar) then
@@ -1201,7 +1207,7 @@ module ASenD_input
 									    i3 = index(fileLine,']')
 										read(fileLine(i2+1:i3-1),*) readChar, readReal(1:6)
 										read(readChar,*,err=1483) readInt(1)
-										initialVel(:,readInt(1)) = readReal(1:6)
+										initialVel(:,readInt(1)+1) = readReal(1:6)
 										goto 1491
 1483							        do i4 = 1, numNdSets
                                             if(ndSetName(i4) .eq. readChar) then
@@ -1225,7 +1231,7 @@ module ASenD_input
 									    i3 = index(fileLine,']')
 										read(fileLine(i2+1:i3-1),*) readChar, readReal(1:6)
 										read(readChar,*,err=1507) readInt(1)
-										initialAcc(:,readInt(1)) = readReal(1:6)
+										initialAcc(:,readInt(1)+1) = readReal(1:6)
 										goto 1515
 1507							        do i4 = 1, numNdSets
                                             if(ndSetName(i4) .eq. readChar) then
@@ -1249,7 +1255,7 @@ module ASenD_input
 									    i3 = index(fileLine,']')
 										read(fileLine(i2+1:i3-1),*) readChar, readReal(1)
 										read(readChar,*,err=1531) readInt(1)
-										initialTemp(readInt(1)) = readReal(1)
+										initialTemp(readInt(1)+1) = readReal(1)
 										goto 1539
 1531							        do i4 = 1, numNdSets
                                             if(ndSetName(i4) .eq. readChar) then
@@ -1273,7 +1279,7 @@ module ASenD_input
 									    i3 = index(fileLine,']')
 										read(fileLine(i2+1:i3-1),*) readChar, readReal(1:6)
 										read(readChar,*,err=1555) readInt(1)
-										initialTdot(readInt(1)) = readReal(1)
+										initialTdot(readInt(1)+1) = readReal(1)
 										goto 1563
 1555							        do i4 = 1, numNdSets
                                             if(ndSetName(i4) .eq. readChar) then
@@ -1412,7 +1418,8 @@ module ASenD_input
 					read(1,'(A)',iostat=iosVal) fileLine(16:256)
                     i1 = index(fileLine,':')
 				elseif(fileLine(i1-5:i1) .eq. 'layer:') then
-				    read(fileLine(i1+1:i1+64),*) dLayer(dVarNum)
+				    read(fileLine(i1+1:i1+64),*) i4
+					dLayer(dVarNum) = i4 + 1
 					read(1,'(A)',iostat=iosVal) fileLine(16:256)
                     i1 = index(fileLine,':')
 				elseif(fileLine(i1-10:i1) .eq. 'activeTime:') then
@@ -1587,7 +1594,8 @@ module ASenD_input
 				    read(fileLine(i1+1:i1+64),*) objComponent(termNum)
 					read(1,'(A)',iostat=iosVal) fileLine(16:256)
 				elseif(fileLine(i1-5:i1) .eq. 'layer:') then
-				    read(fileLine(i1+1:i1+64),*) objLayer(termNum)
+				    read(fileLine(i1+1:i1+64),*) i2
+					objLayer(termNum) = i2 + 1
 					read(1,'(A)',iostat=iosVal) fileLine(16:256)
 				elseif(fileLine(i1-11:i1) .eq. 'coefficient:') then
 				    read(fileLine(i1+1:i1+64),*) objCoef(termNum)
@@ -1662,10 +1670,11 @@ module ASenD_input
 				if(i3 .gt. 0) then
 				    i4 = index(fileLine,']')
 					read(fileLine(i3+1:i4-1),*) readInt, readReal
+					readInt = readInt + 1
 					if(readInt .le. numDVar) then
 					    r_dVec(readInt) = readReal
 					else
-					    write(lfUnit,*) 'Error: Design variable label ', readInt, ' in value input file'
+					    write(lfUnit,*) 'Error: Design variable label ', (readInt-1), ' in value input file'
 						write(lfUnit,*) 'exceeds the size of the design variable vector.'
 					endif
 				endif
@@ -1702,6 +1711,7 @@ module ASenD_input
 						    i3 = index(fileLine,'[')
 							i4 = index(fileLine,']')
 							read(fileLine(i3+1:i4-1),*) readInt, readReal(1)
+							readInt = readInt + 1
 							if(readInt .le. numNodes) then
 							    i5 = currentRank(readInt)
 								nodeTemp(i5) = readReal(1)
@@ -1719,6 +1729,7 @@ module ASenD_input
 						    i3 = index(fileLine,'[')
 							i4 = index(fileLine,']')
 							read(fileLine(i3+1:i4-1),*) readInt, readReal(1)
+							readInt = readInt + 1
 							if(readInt .le. numNodes) then
 							    i5 = currentRank(readInt)
 								nodeTdot(i5) = readReal(1)
@@ -1736,6 +1747,7 @@ module ASenD_input
 						    i3 = index(fileLine,'[')
 							i4 = index(fileLine,']')
 							read(fileLine(i3+1:i4-1),*) readInt, readReal(1:6)
+							readInt = readInt + 1
 							if(readInt .le. numNodes) then
 							    do i5 = 1, 6
 								    i6 = nDofIndex(i5,readInt)
@@ -1757,6 +1769,7 @@ module ASenD_input
 						    i3 = index(fileLine,'[')
 							i4 = index(fileLine,']')
 							read(fileLine(i3+1:i4-1),*) readInt, readReal(1:6)
+							readInt = readInt + 1
 							if(readInt .le. numNodes) then
 							    do i5 = 1, 6
 								    i6 = nDofIndex(i5,readInt)
@@ -1778,6 +1791,7 @@ module ASenD_input
 						    i3 = index(fileLine,'[')
 							i4 = index(fileLine,']')
 							read(fileLine(i3+1:i4-1),*) readInt, readReal(1:6)
+							readInt = readInt + 1
 							if(readInt .le. numNodes) then
 							    do i5 = 1, 6
 								    i6 = nDofIndex(i5,readInt)

@@ -1,11 +1,11 @@
 *readModelInput:
-    fileName: examples/hexBeam/hexBeamModelInput.yaml
+    fileName: examples/testModels/hexBeam/hexBeamModelInput.yaml
 	
 *readDesignVarInput:
-    fileName: examples/hexBeam/hexBeamDVarInput.yaml
+    fileName: examples/testModels/hexBeam/hexBeamDVarInput.yaml
 	
 *readObjectiveInput: 
-    fileName: examples/hexBeam/hexBeamXTipDefObj.yaml
+    fileName: examples/testModels/hexBeam/hexBeamXTipDefObj.yaml
 
 *solve:
     elastic: yes
@@ -21,10 +21,10 @@
 *calcObjGradient:
 
 *writeNodeResults:
-    fileName: examples/hexBeam/out/test4Disp.yaml
+    fileName: examples/testModels/hexBeam/out/test4Disp.yaml
 	fields:
 	    - displacement
 		
 *writeObjective:
-    fileName: examples/hexBeam/out/test4Sens.yaml
+    fileName: examples/testModels/hexBeam/out/test4Sens.yaml
 	writeGradient: yes

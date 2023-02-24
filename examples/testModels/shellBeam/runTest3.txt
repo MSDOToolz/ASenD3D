@@ -1,11 +1,11 @@
 *readModelInput:
-    fileName: examples/shellBeam/shellBeamModelInput.yaml
+    fileName: examples/testModels/shellBeam/shellBeamModelInput.yaml
 	
 *readDesignVarInput:
-    fileName: examples/shellBeam/shellBeamDVarInput.yaml
+    fileName: examples/testModels/shellBeam/shellBeamDVarInput.yaml
 	
 *readObjectiveInput: 
-    fileName: examples/shellBeam/shellBeamZTipDefObj.yaml
+    fileName: examples/testModels/shellBeam/shellBeamZTipDefObj.yaml
 
 *solve:
     elastic: yes
@@ -21,10 +21,10 @@
 *calcObjGradient:
 
 *writeNodeResults:
-    fileName: examples/shellBeam/out/test3Disp.yaml
+    fileName: examples/testModels/shellBeam/out/test3Disp.yaml
 	fields:
 	    - displacement
 		
 *writeObjective:
-    fileName: examples/shellBeam/out/test3Sens.yaml
+    fileName: examples/testModels/shellBeam/out/test3Sens.yaml
 	writeGradient: yes

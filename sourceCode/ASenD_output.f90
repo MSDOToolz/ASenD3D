@@ -33,7 +33,7 @@ module ASenD_output
 			    do i2 = 1, nSLen
 				    i3 = ndSet(i2)
 					i4 = currentRank(i3)
-					write(intStr,'(I0)') i3
+					write(intStr,'(I0)') i3 - 1
 					write(fltStr,'(G18.12)') nodeTemp(i4)
 					write(15,*) '    - [', trim(intStr), ', ', trim(fltStr), ']'
 				enddo
@@ -42,7 +42,7 @@ module ASenD_output
 			    do i2 = 1, nSLen
 				    i3 = ndSet(i2)
 					i4 = currentRank(i3)
-					write(intStr,'(I0)') i3
+					write(intStr,'(I0)') i3 - 1
 					write(fltStr,'(G18.12)') nodeTdot(i4)
 					write(15,*) '    - [', trim(intStr), ', ', trim(fltStr), ']'
 				enddo
@@ -51,7 +51,7 @@ module ASenD_output
 			    do i2 = 1, nSLen
 				    i3 = ndSet(i2)
 					i4 = currentRank(i3)
-					write(intStr,'(I0)') i3
+					write(intStr,'(I0)') i3 - 1
 					write(fltStr,'(G18.12)') -thermalLoad(i4)
 					write(15,*) '    - [', trim(intStr), ', ', trim(fltStr), ']'
 				enddo
@@ -59,7 +59,7 @@ module ASenD_output
 			    write(15,*) 'displacement:'
 			    do i2 = 1, nSLen
 				    i3 = ndSet(i2)
-					write(intStr,'(I0)') i3
+					write(intStr,'(I0)') i3 - 1
 					i6 = 1
 					do i4 = 1, 6
 					    i5 = nDofIndex(i4,i3)
@@ -81,7 +81,7 @@ module ASenD_output
 			    write(15,*) 'velocity:'
 			    do i2 = 1, nSLen
 				    i3 = ndSet(i2)
-					write(intStr,'(I0)') i3
+					write(intStr,'(I0)') i3 - 1
 					i6 = 1
 					do i4 = 1, 6
 					    i5 = nDofIndex(i4,i3)
@@ -103,7 +103,7 @@ module ASenD_output
 			    write(15,*) 'acceleration:'
 			    do i2 = 1, nSLen
 				    i3 = ndSet(i2)
-					write(intStr,'(I0)') i3
+					write(intStr,'(I0)') i3 - 1
 					i6 = 1
 					do i4 = 1, 6
 					    i5 = nDofIndex(i4,i3)
@@ -125,7 +125,7 @@ module ASenD_output
 			    write(15,*) 'reactionForce:'
 			    do i2 = 1, nSLen
 				    i3 = ndSet(i2)
-					write(intStr,'(I0)') i3
+					write(intStr,'(I0)') i3 - 1
 					i6 = 1
 					do i4 = 1, 6
 					    i5 = nDofIndex(i4,i3)
@@ -192,10 +192,10 @@ module ASenD_output
 					    do i4 = 1, numIntPts
 						    do i5 = 1, numLayers
 							    call r_getElStress(stress,strain,i3,i5,intPts(:,i4))
-								write(elNumStr,'(I0)') i3
-								write(secNumStr,'(I0)') secNum
-								write(ipStr,'(I0)') i4
-								write(layNumStr,'(I0)') i5
+								write(elNumStr,'(I0)') i3 - 1
+								write(secNumStr,'(I0)') secNum - 1
+								write(ipStr,'(I0)') i4 - 1
+								write(layNumStr,'(I0)') i5 - 1
 								intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr) // ', ' // trim(layNumStr)
                                 i6 = 1
                                 do i7 = 1, 6
@@ -246,9 +246,9 @@ module ASenD_output
 					else
 					    do i4 = 1, numIntPts
 							call r_getElStress(stress,strain,i3,0,intPts(:,i4))
-							write(elNumStr,'(I0)') i3
-							write(secNumStr,'(I0)') secNum
-							write(ipStr,'(I0)') i4
+							write(elNumStr,'(I0)') i3 - 1
+							write(secNumStr,'(I0)') secNum - 1
+							write(ipStr,'(I0)') i4 - 1
 							layNumStr = ' NA'
 							intStr = trim(elNumStr) // ', ' // secNumStr// ', ' // trim(ipStr) // ', ' // trim(layNumStr)
 							i6 = 1
@@ -309,10 +309,10 @@ module ASenD_output
 					    do i4 = 1, numIntPts
 						    do i5 = 1, numLayers
 							    call r_getElStress(stress,strain,i3,i5,intPts(:,i4))
-								write(elNumStr,'(I0)') i3
-								write(secNumStr,'(I0)') secNum
-								write(ipStr,'(I0)') i4
-								write(layNumStr,'(I0)') i5
+								write(elNumStr,'(I0)') i3 - 1
+								write(secNumStr,'(I0)') secNum - 1
+								write(ipStr,'(I0)') i4 - 1
+								write(layNumStr,'(I0)') i5 - 1
 								intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr) // ', ' // trim(layNumStr)
                                 i6 = 1
                                 do i7 = 1, 6
@@ -363,9 +363,9 @@ module ASenD_output
 					else
 					    do i4 = 1, numIntPts
 							call r_getElStress(stress,strain,i3,0,intPts(:,i4))
-							write(elNumStr,'(I0)') i3
-							write(secNumStr,'(I0)') secNum
-							write(ipStr,'(I0)') i4
+							write(elNumStr,'(I0)') i3 - 1
+							write(secNumStr,'(I0)') secNum - 1
+							write(ipStr,'(I0)') i4 - 1
 							layNumStr = ' NA'
 							intStr = trim(elNumStr) // ', ' // secNumStr// ', ' // trim(ipStr) // ', ' // trim(layNumStr)
 							i6 = 1
@@ -426,10 +426,10 @@ module ASenD_output
 					    do i4 = 1, numIntPts
 						    do i5 = 1, numLayers
 							    call r_getElStress(stress,strain,i3,i5,intPts(:,i4))
-								write(elNumStr,'(I0)') i3
-								write(secNumStr,'(I0)') secNum
-								write(ipStr,'(I0)') i4
-								write(layNumStr,'(I0)') i5
+								write(elNumStr,'(I0)') i3 - 1
+								write(secNumStr,'(I0)') secNum - 1
+								write(ipStr,'(I0)') i4 - 1
+								write(layNumStr,'(I0)') i5 - 1
 								intStr = trim(elNumStr)//', '//trim(secNumStr)//', '//trim(ipStr)//', '//trim(layNumStr)
                                 sEDen = r_0
                                 do i7 = 1, 6
@@ -453,9 +453,9 @@ module ASenD_output
 					else
 					    do i4 = 1, numIntPts
 							call r_getElStress(stress,strain,i3,0,intPts(:,i4))
-							write(elNumStr,'(I0)') i3
-							write(secNumStr,'(I0)') secNum
-							write(ipStr,'(I0)') i4
+							write(elNumStr,'(I0)') i3 - 1
+							write(secNumStr,'(I0)') secNum - 1
+							write(ipStr,'(I0)') i4 - 1
 							layNumStr = ' NA'
 							intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr) // ', ' // trim(layNumStr)
 							sEDen = r_0
@@ -486,9 +486,9 @@ module ASenD_output
 					call r_getElementProfile(numNds,dofPerNd,numIntDof,numIntPts,dofTable,intPts,ipWt,i3)
 					do i4 = 1, numIntPts
 						call r_getElFlux(flux,dfluxdT,Tx,dTxdT,i3,intPts(:,i4))
-						write(elNumStr,'(I0)') i3
-						write(secNumStr,'(I0)') secNum
-						write(ipStr,'(I0)') i4
+						write(elNumStr,'(I0)') i3 - 1
+						write(secNumStr,'(I0)') secNum - 1
+						write(ipStr,'(I0)') i4 - 1
 						intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr)
 						i6 = 1
 						do i7 = 1, 3
@@ -510,9 +510,9 @@ module ASenD_output
 					call r_getElementProfile(numNds,dofPerNd,numIntDof,numIntPts,dofTable,intPts,ipWt,i3)
 					do i4 = 1, numIntPts
 						call r_getElFlux(flux,dfluxdT,Tx,dTxdT,i3,intPts(:,i4))
-						write(elNumStr,'(I0)') i3
-						write(secNumStr,'(I0)') secNum
-						write(ipStr,'(I0)') i4
+						write(elNumStr,'(I0)') i3 - 1
+						write(secNumStr,'(I0)') secNum - 1
+						write(ipStr,'(I0)') i4 - 1
 						intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr)
 						i6 = 1
 						do i7 = 1, 3
@@ -535,9 +535,9 @@ module ASenD_output
 						call r_getElementProfile(numNds,dofPerNd,numIntDof,numIntPts,dofTable,intPts,ipWt,i3)
 						do i4 = 1, numIntPts
 							call r_getShellFrcMom(frcMom,shDef,ptT,i3,intPts(:,i4))
-							write(elNumStr,'(I0)') i3
-							write(secNumStr,'(I0)') secNum
-							write(ipStr,'(I0)') i4
+							write(elNumStr,'(I0)') i3 - 1
+							write(secNumStr,'(I0)') secNum - 1
+							write(ipStr,'(I0)') i4 - 1
 							intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr)
 							i6 = 1
 							do i7 = 1, 6
@@ -561,9 +561,9 @@ module ASenD_output
 						call r_getElementProfile(numNds,dofPerNd,numIntDof,numIntPts,dofTable,intPts,ipWt,i3)
 						do i4 = 1, numIntPts
 							call r_getShellFrcMom(frcMom,shDef,ptT,i3,intPts(:,i4))
-							write(elNumStr,'(I0)') i3
-							write(secNumStr,'(I0)') secNum
-							write(ipStr,'(I0)') i4
+							write(elNumStr,'(I0)') i3 - 1
+							write(secNumStr,'(I0)') secNum - 1
+							write(ipStr,'(I0)') i4 - 1
 							intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr)
 							i6 = 1
 							do i7 = 1, 6
@@ -587,9 +587,9 @@ module ASenD_output
 						call r_getElementProfile(numNds,dofPerNd,numIntDof,numIntPts,dofTable,intPts,ipWt,i3)
 						do i4 = 1, numIntPts
 							call r_getBeamFrcMom(frcMom,shDef,i3,intPts(:,i4))
-							write(elNumStr,'(I0)') i3
-							write(secNumStr,'(I0)') secNum
-							write(ipStr,'(I0)') i4
+							write(elNumStr,'(I0)') i3 - 1
+							write(secNumStr,'(I0)') secNum - 1
+							write(ipStr,'(I0)') i4 - 1
 							intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr)
 							i6 = 1
 							do i7 = 1, 6
@@ -613,9 +613,9 @@ module ASenD_output
 						call r_getElementProfile(numNds,dofPerNd,numIntDof,numIntPts,dofTable,intPts,ipWt,i3)
 						do i4 = 1, numIntPts
 							call r_getBeamFrcMom(frcMom,shDef,i3,intPts(:,i4))
-							write(elNumStr,'(I0)') i3
-							write(secNumStr,'(I0)') secNum
-							write(ipStr,'(I0)') i4
+							write(elNumStr,'(I0)') i3 - 1
+							write(secNumStr,'(I0)') secNum - 1
+							write(ipStr,'(I0)') i4 - 1
 							intStr = trim(elNumStr) // ', ' // trim(secNumStr) // ', ' // trim(ipStr)
 							i6 = 1
 							do i7 = 1, 6
@@ -664,7 +664,7 @@ module ASenD_output
 		    write(900,*) '# mode number, eigenvalue, natural frequency'
 		endif
 		do i1 = 1, numEigModes
-		    write(intStr,'(I0)') i1
+		    write(intStr,'(I0)') i1 - 1
 			intStr = adjustl(intStr)
 			write(fltStr(1:18),'(G18.12)') eigenVals(i1)
 			fltStr(19:20) = ', '
@@ -676,10 +676,10 @@ module ASenD_output
 		if(writeModes .eq. 1) then
 		    write(900,*) 'eigenModes:'
 			do i1 = 1, numEigModes
-			    write(900,*) '    - mode:', i1
+			    write(900,*) '    - mode:', i1 - 1
 				write(900,*) '      displacement:'
 				do i2 = 1, numNodes
-				    write(intStr,'(I0)') i2
+				    write(intStr,'(I0)') i2 - 1
 					i5 = 1
 					do i3 = 1, 6
 					    i4 = nDofIndex(i3,i2)
@@ -732,7 +732,7 @@ module ASenD_output
 					ndCrd(i4) = ndCrd(i4) + ndToCoef(i2)*r_dVec(i3)
 				endif
 			enddo
-			write(intStr,'(I0)') i1
+			write(intStr,'(I0)') i1 - 1
 			i3 = 1
 			do i2 = 1, 3
 			    write(fltStr(i3:i3+17),'(G18.12)') ndCrd(i2)
@@ -767,7 +767,7 @@ module ASenD_output
 		
 		do i1 = 1, eSLen
 		    i2 = elSet(i1)
-			write(1010,*) '    - element: ', i2
+			write(1010,*) '    - element: ', (i2-1)
 			eType = elementType(i2)
 			eSec = elementSection(i2)
 			do i3 = 1, numProps
@@ -786,7 +786,7 @@ module ASenD_output
 									elProps(1) = elProps(1) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(1010,*) '          - [', layerNum, ',', elProps(1), ']'
+							write(1010,*) '          - [', (layerNum-1), ',', elProps(1), ']'
 						enddo
 					else
 					    matID = sectionMatId(eSec)
@@ -819,7 +819,7 @@ module ASenD_output
 									elProps(1) = elProps(1) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(1010,*) '          - [', layerNum, ',', elProps(1), ']'
+							write(1010,*) '          - [', (layerNum-1), ',', elProps(1), ']'
 						enddo
 					elseif(eType .eq. 2 .and. abs(beamSpecHeat(eSec)) .gt. r_0) then
 						call r_getBeamSpecHeat(elProps(1),i2)
@@ -854,7 +854,7 @@ module ASenD_output
 									elProps(1) = elProps(1) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(1010,*) '          - [', layerNum, ',', elProps(1), ']'
+							write(1010,*) '          - [', (layerNum-1), ',', elProps(1), ']'
 						enddo
 					endif
 				elseif(propList(i3) .eq. 'angle') then
@@ -871,7 +871,7 @@ module ASenD_output
 									elProps(1) = elProps(1) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(1010,*) '          - [', layerNum, ',', elProps(1), ']'
+							write(1010,*) '          - [', (layerNum-1), ',', elProps(1), ']'
 						enddo
 					endif
 				elseif(propList(i3) .eq. 'zOffset') then
@@ -923,7 +923,7 @@ module ASenD_output
 									elProps(i7) = elProps(i7) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(intStr,'(I0)') layerNum
+							write(intStr,'(I0)') layerNum - 1
 							i8 = 1
 							do i5 = 1, 3
 							    write(fltStr(i8:i8+17),'(G18.12)') elProps(i5)
@@ -975,7 +975,7 @@ module ASenD_output
 									elProps(i7) = elProps(i7) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(intStr,'(I0)') layerNum
+							write(intStr,'(I0)') layerNum - 1
 							i8 = 1
 							do i5 = 1, 3
 							    write(fltStr(i8:i8+17),'(G18.12)') elProps(i5)
@@ -1027,7 +1027,7 @@ module ASenD_output
 									elProps(i7) = elProps(i7) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(intStr,'(I0)') layerNum
+							write(intStr,'(I0)') layerNum - 1
 							i8 = 1
 							do i5 = 1, 3
 							    write(fltStr(i8:i8+17),'(G18.12)') elProps(i5)
@@ -1079,7 +1079,7 @@ module ASenD_output
 									elProps(i7) = elProps(i7) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(intStr,'(I0)') layerNum
+							write(intStr,'(I0)') layerNum - 1
 							i8 = 1
 							do i5 = 1, 6
 							    write(fltStr(i8:i8+17),'(G18.12)') elProps(i5)
@@ -1148,7 +1148,7 @@ module ASenD_output
 									elProps(i7) = elProps(i7) + elToCoef(i5)*r_dVec(i6)
 								endif
 							enddo
-							write(intStr,'(I0)') layerNum
+							write(intStr,'(I0)') layerNum - 1
 							i8 = 1
 							do i5 = 1, 6
 							    write(fltStr(i8:i8+17),'(G18.12)') elProps(i5)
@@ -1291,8 +1291,6 @@ module ASenD_output
 			do i2 = 1, numFields
 			    if(fields(i2) .eq. 'category') then
 					write(610,*) '      category: ', dCategory(i1)
-				elseif(fields(i2) .eq. 'subCategory') then
-					write(610,*) '      subCategory: ', dCategory(i1)
 				elseif(fields(i2) .eq. 'component') then
 					write(610,*) '      component: ', dComponent(i1)
 				elseif(fields(i2) .eq. 'layer') then
@@ -1380,7 +1378,7 @@ module ASenD_output
 			write(653,*) 'objectiveGradient:'
 			
 			do i1 = 1, numDVar
-				write(intStr,'(I0)') i1
+				write(intStr,'(I0)') i1 - 1
 				write(fltStr,'(G18.12)') dLdD(i1)
 				writeLine = '    - [' // trim(intStr) // ', ' // trim(fltStr) // ']'
 				write(653,*) trim(writeLine)

@@ -680,6 +680,7 @@ module ASenD_bookKeeping
 				i2 = mpcEqn(i1)
 				eqnBlockNumTrms(i2) = eqnBlockNumTrms(i2) + 1
 				read(mpcNode(i1),*,err=362) i3
+				i3 = i3 + 1
 				if(eqnBlockNumEqns(i2) .lt. 1) then
 					eqnBlockNumEqns(i2) = 1
 				endif
@@ -735,6 +736,7 @@ module ASenD_bookKeeping
 				i2 = mpcEqn(i1)
 				i3 = eqnBlockNumEqns(i2-1) + 1
 				read(mpcNode(i1),*,err=426) i4
+				i4 = i4 + 1
 				i5 = nDofIndex(mpcDof(i1),i4)
 				do while(i3 .le. eqnBlockNumEqns(i2))
 				    i6 = elMPCMatRange(i3-1) + 1
@@ -821,6 +823,7 @@ module ASenD_bookKeeping
 				i2 = mpcEqn(i1)
 				eqnBlockNumTrms(i2) = eqnBlockNumTrms(i2) + 1
 				read(mpcNode(i1),*,err=499) i3
+				i3 = i3 + 1
 				if(eqnBlockNumEqns(i2) .lt. 1) then
 					eqnBlockNumEqns(i2) = 1
 				endif
@@ -876,6 +879,7 @@ module ASenD_bookKeeping
 				i2 = mpcEqn(i1)
 				i3 = eqnBlockNumEqns(i2-1) + 1
 				read(mpcNode(i1),*,err=564) i4
+				i4 = i4 + 1
 				i5 = currentRank(i4)
 				do while(i3 .le. eqnBlockNumEqns(i2))
 				    i6 = thermMPCMatRange(i3-1) + 1

@@ -1,122 +1,122 @@
 nodes:
-    - [1, 0.000000, -0.500000, 0.000000]
-    - [2, 1.000000, -0.500000, 0.000000]
-    - [3, 2.000000, -0.500000, 0.000000]
-    - [4, 3.000000, -0.500000, 0.000000]
-    - [5, 4.000000, -0.500000, 0.000000]
-    - [6, 5.000000, -0.500000, 0.000000]
-    - [7, 6.000000, -0.500000, 0.000000]
-    - [8, 7.000000, -0.500000, 0.000000]
-    - [9, 8.000000, -0.500000, 0.000000]
-    - [10, 9.000000, -0.500000, 0.000000]
-    - [11, 10.000000, -0.500000, 0.000000]
-    - [12, 0.000000, 0.500000, 0.000000]
-    - [13, 1.000000, 0.500000, 0.000000]
-    - [14, 2.000000, 0.500000, 0.000000]
-    - [15, 3.000000, 0.500000, 0.000000]
-    - [16, 4.000000, 0.500000, 0.000000]
-    - [17, 5.000000, 0.500000, 0.000000]
-    - [18, 6.000000, 0.500000, 0.000000]
-    - [19, 7.000000, 0.500000, 0.000000]
-    - [20, 8.000000, 0.500000, 0.000000]
-    - [21, 9.000000, 0.500000, 0.000000]
-    - [22, 10.000000, 0.500000, 0.000000]
+- [0, 0.0, -0.5, 0.0]
+- [1, 1.0, -0.5, 0.0]
+- [2, 2.0, -0.5, 0.0]
+- [3, 3.0, -0.5, 0.0]
+- [4, 4.0, -0.5, 0.0]
+- [5, 5.0, -0.5, 0.0]
+- [6, 6.0, -0.5, 0.0]
+- [7, 7.0, -0.5, 0.0]
+- [8, 8.0, -0.5, 0.0]
+- [9, 9.0, -0.5, 0.0]
+- [10, 10.0, -0.5, 0.0]
+- [11, 0.0, 0.5, 0.0]
+- [12, 1.0, 0.5, 0.0]
+- [13, 2.0, 0.5, 0.0]
+- [14, 3.0, 0.5, 0.0]
+- [15, 4.0, 0.5, 0.0]
+- [16, 5.0, 0.5, 0.0]
+- [17, 6.0, 0.5, 0.0]
+- [18, 7.0, 0.5, 0.0]
+- [19, 8.0, 0.5, 0.0]
+- [20, 9.0, 0.5, 0.0]
+- [21, 10.0, 0.5, 0.0]
 elements:
-    - type: shell4
-      connectivity:
-          - [1, 1, 2, 13, 12]
-          - [2, 2, 3, 14, 13]
-          - [3, 3, 4, 15, 14]
-          - [4, 4, 5, 16, 15]
-          - [5, 5, 6, 17, 16]
-          - [6, 6, 7, 18, 17]
-          - [7, 7, 8, 19, 18]
-          - [8, 8, 9, 20, 19]
-          - [9, 9, 10, 21, 20]
-          - [10, 10, 11, 22, 21]
+- type: shell4
+  connectivity:
+  - [0, 0, 1, 12, 11]
+  - [1, 1, 2, 13, 12]
+  - [2, 2, 3, 14, 13]
+  - [3, 3, 4, 15, 14]
+  - [4, 4, 5, 16, 15]
+  - [5, 5, 6, 17, 16]
+  - [6, 6, 7, 18, 17]
+  - [7, 7, 8, 19, 18]
+  - [8, 8, 9, 20, 19]
+  - [9, 9, 10, 21, 20]
 sets:
-    node:
-        - name: root
-          labels:
-              - 1
-              - 12
-        - name: tip
-          labels:
-              - 11
-              - 22
-    element:
-        - name: allEls
-          labels: all
+  node:
+  - name: root
+    labels:
+    - 0
+    - 11
+  - name: tip
+    labels:
+    - 10
+    - 21
+  element:
+  - name: allEls
+    labels: all
 sections:
-    - type: shell
-      orientation: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
-      layup:
-          zOffset: 0.0
-          layers:
-              - [myMat, 0.1, 0.0]
-      elementSet: allEls
+- type: shell
+  orientation: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+  layup:
+    zOffset: 0.0
+    layers:
+    - [myMat, 0.1, 0.0]
+  elementSet: allEls
 materials:
-    - name: myMat
-      density: 1.0
-      elastic:
-          E: [1000000, 1000000, 1000000]
-          nu: [0.0, 0.0, 0.0]
-          G: [500000, 500000, 500000]
+- name: myMat
+  density: 1.0
+  elastic:
+    E: [1000000, 1000000, 1000000]
+    nu: [0.0, 0.0, 0.0]
+    G: [500000, 500000, 500000]
 constraints:
-    - terms:
-          - [root, 1, 1.0]
-      rhs: 0.0
-    - terms:
-          - [root, 2, 1.0]
-      rhs: 0.0
-    - terms:
-          - [root, 3, 1.0]
-      rhs: 0.0
-    - terms:
-          - [root, 4, 1.0]
-      rhs: 0.0
-    - terms:
-          - [root, 5, 1.0]
-      rhs: 0.0
-    - terms:
-          - [root, 6, 1.0]
-      rhs: 0.0
+- terms:
+  - [root, 1, 1.0]
+  rhs: 0.0
+- terms:
+  - [root, 2, 1.0]
+  rhs: 0.0
+- terms:
+  - [root, 3, 1.0]
+  rhs: 0.0
+- terms:
+  - [root, 4, 1.0]
+  rhs: 0.0
+- terms:
+  - [root, 5, 1.0]
+  rhs: 0.0
+- terms:
+  - [root, 6, 1.0]
+  rhs: 0.0
 loads:
     # concentrated tip load
-    - type: nodal
-      activeTime: [0.0, 1.0]
-      setLoads:
-          - [tip, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+- type: nodal
+  activeTime: [0.0, 1.0]
+  setLoads:
+  - [tip, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
     # surface pressure
-    - type: surfacePressure
-      activeTime: [1.0, 2.0]
-      setLoads: 
-          - [allEls,0.0,0.0,-1.0,1.0,0.1]
+- type: surfacePressure
+  activeTime: [1.0, 2.0]
+  setLoads:
+  - [allEls, 0.0, 0.0, -1.0, 1.0, 0.1]
     # gravitational
-    - type: gravitational
-      activeTime: [2.0, 3.0]
-      setLoads:
-          - [allEls,0.0,0.0,1.0]
+- type: gravitational
+  activeTime: [2.0, 3.0]
+  setLoads:
+  - [allEls, 0.0, 0.0, 1.0]
     # concentrated longitudinal tip load
-    - type: nodal
-      activeTime: [3.0, 4.0]
-      setLoads:
-          - [tip, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+- type: nodal
+  activeTime: [3.0, 4.0]
+  setLoads:
+  - [tip, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     # centrifugal
-    - type: centrifugal
-      activeTime: [4.0, 5.0]
-      setLoads: 
-          - [allEls,0.0,0.0,0.0,0.0,0.0,1.0,1.0]
+- type: centrifugal
+  activeTime: [4.0, 5.0]
+  setLoads:
+  - [allEls, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0]
    # arc deflection
-    - type: nodal
-      activeTime: [5.0, 6.0]
-      setLoads:
-          - [tip, 0.0, 0.0, 0.0, 0.0, -3.27, 0.0, 0.0]
+- type: nodal
+  activeTime: [5.0, 6.0]
+  setLoads:
+  - [tip, 0.0, 0.0, 0.0, 0.0, -3.27, 0.0, 0.0]
     # compression/buckling
-    - type: nodal
-      activeTime: [6.0, 7.0]
-      setLoads:
-          - [tip, -0.514, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+- type: nodal
+  activeTime: [6.0, 7.0]
+  setLoads:
+  - [tip, -0.514, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 initialState:
-    displacement:
-        - [tip, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  displacement:
+  - [tip, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

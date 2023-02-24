@@ -1,5 +1,5 @@
 *readModelInput:
-    fileName: examples/hexBeam/hexBeamModelInput.yaml
+    fileName: examples/testModels/hexBeam/hexBeamModelInput.yaml
 
 *solve:
     elastic: yes
@@ -14,10 +14,10 @@
 	numModes: 10
 
 *writeNodeResults:
-    fileName: examples/hexBeam/out/test7Disp.yaml
+    fileName: examples/testModels/hexBeam/out/test7Disp.yaml
 	fields:
 	    - displacement
 
 *writeModalResults:
-    fileName: examples/hexBeam/out/test7Modal.yaml
+    fileName: examples/testModels/hexBeam/out/test7Modal.yaml
 	writeModes: yes

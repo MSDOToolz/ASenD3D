@@ -1,5 +1,5 @@
 *readModelInput:
-    fileName: examples/hexBeam/hexBeamModelInput.yaml
+    fileName: examples/testModels/hexBeam/hexBeamModelInput.yaml
 	
 *modalAnalysis:
     type: frequency
@@ -12,10 +12,10 @@
 	maxAmplitude: 1.0157274408256
 	
 *writeNodeResults:
-    fileName: examples/hexBeam/out/test8Vel.yaml
+    fileName: examples/testModels/hexBeam/out/test8Vel.yaml
 	fields:
 	    - velocity
 
 *writeModalResults:
-    fileName: examples/hexBeam/out/test8Modal.yaml
+    fileName: examples/testModels/hexBeam/out/test8Modal.yaml
 	writeModes: yes

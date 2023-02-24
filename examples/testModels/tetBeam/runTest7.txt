@@ -1,5 +1,5 @@
 *readModelInput:
-    fileName: examples/tetBeam/tetBeamModelInput.yaml
+    fileName: examples/testModels/tetBeam/tetBeamModelInput.yaml
 
 *solve:
     elastic: yes
@@ -14,10 +14,10 @@
 	numModes: 10
 
 *writeNodeResults:
-    fileName: examples/tetBeam/out/test7Disp.yaml
+    fileName: examples/testModels/tetBeam/out/test7Disp.yaml
 	fields:
 	    - displacement
 
 *writeModalResults:
-    fileName: examples/tetBeam/out/test7Modal.yaml
+    fileName: examples/testModels/tetBeam/out/test7Modal.yaml
 	writeModes: yes

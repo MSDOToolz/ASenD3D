@@ -1,5 +1,5 @@
 *readModelInput:
-    fileName: examples/tetBeam/tetBeamModelInput.yaml
+    fileName: examples/testModels/tetBeam/tetBeamModelInput.yaml
 
 *solve:
     elastic: yes
@@ -11,6 +11,6 @@
 	solverMethod: direct
 
 *writeNodeResults:
-    fileName: examples/tetBeam/out/test6Disp.yaml
+    fileName: examples/testModels/tetBeam/out/test6Disp.yaml
 	fields:
 	    - displacement

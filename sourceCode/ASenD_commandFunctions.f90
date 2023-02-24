@@ -154,6 +154,7 @@ module ASenD_commandFunctions
 			    if(lt .eq. 'nodal') then
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=55) i3
+						i3 = i3 + 1
 						i5 = currentRank(i3)
 						thermalLoad(i5) = thermalLoad(i5) + inputLoads(7,i2)
 						goto 63
@@ -170,6 +171,7 @@ module ASenD_commandFunctions
 				elseif(lt .eq. 'bodyHeatGen') then
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=117) i3
+						i3 = i3 + 1
 						bdyFrc(1) = inputLoads(1,i2)
 						bdyFrc(2:6) = r_0
 						call r_getElBodyForce(ndFrc,dofTable,ndDof,bdyFrc,0,i3)
@@ -203,6 +205,7 @@ module ASenD_commandFunctions
                 elseif(lt .eq. 'surfaceFlux') then
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=147) i3
+						i3 = i3 + 1
 						trac(1) = inputLoads(5,i2)
 						trac(2:6) = r_0
 						nDir(:) = inputLoads(1:3,i2)
@@ -569,6 +572,7 @@ module ASenD_commandFunctions
 			    if(lt .eq. 'nodal') then
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=67) i3
+						i3 = i3 + 1
 						do i4 = 1, 6
 							i5 = nDofIndex(i4,i3)
 							if(i5 .ne. 0) then
@@ -599,6 +603,7 @@ module ASenD_commandFunctions
 					endif
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=308) i3
+						i3 = i3 + 1
 						if(lt .eq. 'centrifugal') then
 						    center(:) = inputLoads(1:3,i2)
 							axis(:) = inputLoads(4:6,i2)
@@ -652,6 +657,7 @@ module ASenD_commandFunctions
 							trac(4:6) = r_0
 						endif
 						read(loadNodes(i2),*,err=367) i3
+						i3 = i3 + 1
 						nDir(:) = inputLoads(1:3,i2)
 						tTol = inputLoads(4,i2)
 						call r_getElSurfaceTraction(ndFrc,dofTable,ndDof,trac,pressure,i3,nDir,tTol)
@@ -1643,6 +1649,7 @@ module ASenD_commandFunctions
 				if(lt .eq. 'bodyHeatGen') then
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=1082) i3
+						i3 = i3 + 1
 						if(elDepends(i3) .eq. 1) then
 							bdyFrc(1) = c_1*inputLoads(1,i2)
 							bdyFrc(2:6) = c_0
@@ -1680,6 +1687,7 @@ module ASenD_commandFunctions
                 elseif(lt .eq. 'surfaceFlux') then
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=1121) i3
+						i3 = i3 + 1
 						if(elDepends(i3) .eq. 1) then
 							trac(1) = c_1*inputLoads(5,i2)
 							trac(2:6) = c_0
@@ -1841,6 +1849,7 @@ module ASenD_commandFunctions
 					endif
 					do i2 = loadsRange(i1-1) + 1, loadsRange(i1)
 						read(loadNodes(i2),*,err=1087) i3
+						i3 = i3 + 1
 						if(elDepends(i3) .eq. 1) then
 							if(lt .eq. 'centrifugal') then
 								center(:) = c_1*inputLoads(1:3,i2)
@@ -1898,6 +1907,7 @@ module ASenD_commandFunctions
 							trac(4:6) = c_0
 						endif
 						read(loadNodes(i2),*,err=1137) i3
+						i3 = i3 + 1
 						if(elDepends(i3) .eq. 1) then
 						    nDir(:) = c_1*inputLoads(1:3,i2)
 							tTol = c_1*inputLoads(4,i2)

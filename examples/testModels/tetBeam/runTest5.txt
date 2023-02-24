@@ -1,11 +1,11 @@
 *readModelInput:
-    fileName: examples/tetBeam/tetBeamModelInput.yaml
+    fileName: examples/testModels/tetBeam/tetBeamModelInput.yaml
 	
 *readDesignVarInput:
-    fileName: examples/tetBeam/tetBeamDVarInput.yaml
+    fileName: examples/testModels/tetBeam/tetBeamDVarInput.yaml
 	
 *readObjectiveInput: 
-    fileName: examples/tetBeam/tetBeamXTipDefObj.yaml
+    fileName: examples/testModels/tetBeam/tetBeamXTipDefObj.yaml
 
 *solve:
     elastic: yes
@@ -21,10 +21,10 @@
 *calcObjGradient:
 
 *writeNodeResults:
-    fileName: examples/tetBeam/out/test5Disp.yaml
+    fileName: examples/testModels/tetBeam/out/test5Disp.yaml
 	fields:
 	    - displacement
 		
 *writeObjective:
-    fileName: examples/tetBeam/out/test5Sens.yaml
+    fileName: examples/testModels/tetBeam/out/test5Sens.yaml
 	writeGradient: yes
