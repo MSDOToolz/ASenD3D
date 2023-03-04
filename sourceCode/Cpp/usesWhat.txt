@@ -1,0 +1,15 @@
+
+ConstantVals.cpp:            --
+DoubListEntClass.cpp:        --
+IntListEntClass.cpp:         --
+SetClass.cpp:                <string>, IntListEntClass
+DesignVariablesClass.cpp:    <string>, ConstantVals, DoubleListEntClass
+NodeClass.cpp                ConstantVals, DoubListEntClass, IntListEntClass, DesignVariablesClass
+
+Reduced uses list:
+
+ConstantVals.cpp:            --
+DoubListEntClass.cpp:        --
+IntListEntClass.cpp:         --
+DesignVariablesClass.cpp:    <string>, ConstantVals, DoubleListEntClass
+NodeClass.cpp                IntListEntClass, DesignVariablesClass
