@@ -1,46 +1,62 @@
+#include "SetClass.h"
 #include <string>
-#include "IntListEntClass.cpp"
+#include "ListEntClass.h"
 
-class Set {
-	private:
-	    string name;
-		IntListEnt *firstEnt;
-		IntListEnt *lastEnt;
-		Set *nextSet;
-		
-    public:
-	     Set(string newNm) {
-			 name = newNm;
-			 firstEnt = NULL;
-			 lastEnt = NULL;
-			 nextSet = NULL;
-		 }
-		 
-		 void addEntry(int newLabel) {
-			 IntListEnt *newEnt = new IntListEnt();
-			 if(!firstEnt) {
-				 firstEnt = newEnt;
-				 lastEnt = newEnt;
-			 } else {
-				 lastEnt->setNext(newEnt);
-				 lastEnt = newEnt;
-			 }
-		 }
-		 
-		 string getName() {
-			 return name;
-		 }
-		 
-		 IntListEnt* getFirstEntry() {
-			 return firstEnt;
-		 }
-		 
-		 Set* getNext() {
-			 return nextSet;
-		 }
-		 
-		 void setNext(Set* newNext) {
-			 nextSet = newSet;
-			 return;
-		 }
-};
+using namespace std;
+
+Set::Set(string newNm) {
+    name = newNm;
+    nextSet = NULL;
+}
+
+void Set::addEntry(int newLabel) {
+    labels.addEntry(newLabel);
+}
+
+string Set::getName() {
+    return name;
+}
+
+int Set::getLength() {
+	return labels.getLength();
+}
+
+IntListEnt* Set::getFirstEntry() {
+    return labels.getFirst();
+}
+
+Set* Set::getNext() {
+    return nextSet;
+}
+
+void Set::setNext(Set* newNext) {
+    nextSet = newNext;
+    return;
+}
+
+
+SetList::SetList() {
+	firstSet = NULL;
+	lastSet = NULL;
+	length = 0;
+}
+
+void SetList::addSet(string newNm) {
+	Set *newSet = new Set(newNm);
+	if(!firstSet) {
+		firstSet = newSet;
+		lastSet = newSet;
+	} else {
+		lastSet->setNext(newSet);
+		lastSet = newSet;
+	}
+	length++;
+}
+
+int SetList::getLength() {
+	return length;
+}
+
+Node* SetList::getFirst() {
+	return firstSet;
+}

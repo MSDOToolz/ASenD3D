@@ -1,8 +1,0 @@
-    const double r_0 = 0.0;
-	const double r_1 = 1.0;
-	const double r_p5 = 0.5;
-	const double r_1o3 = 0.333333333333333333;
-	const double r_1o6 = 0.166666666666666667;
-	const double r_pi = 3.14159265358979324;
-	const double r_pio180 = 0.0174532925199432958;
-	const double r_1ort3 = 0.577350269189625765;

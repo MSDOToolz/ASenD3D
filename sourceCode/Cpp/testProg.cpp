@@ -1,23 +1,35 @@
 #include <iostream>
-#include "NodeClass.cpp"
+#include "DesignVariableClass.h"
+#include "NodeClass.h"
+#include "DiffDoubClass.h"
 
 using namespace std;
 
 int main() {
 	DVPt *dvAr = new DVPt[2];
-	dvAr[0].ptr = new DesignVariable("nodeCoord",1);
-	dvAr[0].ptr->r_setValue(1.0);
-	dvAr[1].ptr = new DesignVariable("nodeCoord",2);
-	dvAr[1].ptr->r_setValue(2.0);
+	dvAr[0].ptr = new DesignVariable("nodeCoord");
+	dvAr[0].ptr->setValue(1.0);
+	dvAr[0].ptr->setComponent(1);
+	dvAr[1].ptr = new DesignVariable("nodeCoord");
+	dvAr[1].ptr->setValue(2.0);
+	dvAr[1].ptr->setComponent(2);
 	
 	double crd[] = {0.0,0.0,0.0};
 	Node myNd = Node(0,crd);
 	myNd.addDesignVariable(0,1.0);
 	myNd.addDesignVariable(1,2.0);
 	
-	myNd.r_getCrd(crd,dvAr);
+	Doub crdOut[3];
+	myNd.getCrd(crdOut,dvAr);
 	
-	cout << "Coordinates: " << to_string(crd[0]) << "  " << to_string(crd[1]) << "  " << to_string(crd[2]) << endl;
+	cout << "Coordinates: " << to_string(crdOut[0].val) << "  " << to_string(crdOut[1].val) << "  " << to_string(crdOut[2].val) << endl;
+	
+	dvAr[0].ptr->setDiffVal(1.0,1.0);
+	dvAr[1].ptr->setDiffVal(2.0,1.0);
+	DiffDoub dcrdOut[3];
+	myNd.getCrd(dcrdOut,dvAr);
+	
+	cout << "Coordinates: " << to_string(dcrdOut[0].dval) << "  " << to_string(dcrdOut[1].dval) << "  " << to_string(dcrdOut[2].dval) << endl;
 	
 	cout << "check 1" << endl;
 	delete dvAr[0].ptr;

@@ -19,9 +19,9 @@ class Mesh3D():
         self.nodes = np.array(boundaryNodes)
         
         self.numBndFaces = len(boundaryFaces)
+        self.faceNodes = np.array(boundaryFaces)
         self.numFaces = self.numBndFaces
         self.faceSize = self.numBndFaces
-        self.faceNodes = np.array(boundaryFaces)
         self.faceElements = np.array([])
         self.faceUnitNorms = np.array([])
         
@@ -37,7 +37,7 @@ class Mesh3D():
         self.hexElSize = 0
         self.hexElements = np.array([])
         
-    def createSweptMesh(self, sweepMethod, sweepElements, sweepDistance=1.0, point=[], axis=[], followNormal=0, destNodes=[], interpMethod='linear'):
+    def createSweptMesh(self, sweepMethod, sweepElements, sweepDistance=1.0, point=[], axis=[], followNormal=False, destNodes=[], interpMethod='linear'):
         ## sweepMethod = inDirection, toPoint, fromPoint, toDestNodes, revolve
         """Object data modified: self.quadElements, self.nodes, self.quadElements
         Parameters
@@ -193,7 +193,7 @@ class Mesh3D():
                     iFun = interpolate.interp1d(pDest,zDest,'cubic', axis=0,bounds_error=False,fill_value='extrapolate')
                     zAll = iFun(pAll)
                     zMat[ndi,:] = zAll
-                for i in range(0,totSweepElements):
+                for i in range(0,totSweepEls):
                     for ndi in range(0,nbNds):
                         self.nodes[nNds] = np.array([xMat[ndi,i+1],yMat[ndi,i+1],zMat[ndi,i+1]])
                         nNds = nNds + 1

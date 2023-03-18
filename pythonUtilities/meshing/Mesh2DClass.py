@@ -18,10 +18,11 @@ class Mesh2D():
         self.ndSize = self.numBndNodes
         self.nodes = np.array(boundaryNodes)
         
+        
         self.numBndEdges = len(boundaryEdges)
+        self.edgeNodes = np.array(boundaryEdges)
         self.numEdges = self.numBndEdges
         self.edSize = self.numBndEdges
-        self.edgeNodes = np.array(boundaryEdges)
         self.edgeElements = np.array([])
         self.edgeUnitNorms = np.array([])
         
@@ -34,7 +35,7 @@ class Mesh2D():
         self.quadElements = np.array([])
         
     ## !! check changes to createSweptMesh calls
-    def createSweptMesh(self, sweepMethod, sweepElements, sweepDistance=1.0, point=[], axis=[], followNormal=0, destNodes=[], interpMethod='linear'):
+    def createSweptMesh(self, sweepMethod, sweepElements, sweepDistance=1.0, point=[], axis=[], followNormal=False, destNodes=[], interpMethod='linear'):
         ## sweepMethod = inDirection, toPoint, fromPoint, toDestNodes, revolve
         """Object data modified: self.quadElements, self.nodes, self.quadElements
         Parameters
@@ -492,6 +493,12 @@ class Mesh2D():
         self.edgeElements[k,0] = el
         edVec = self.nodes[nds[1]] - self.nodes[nds[0]]
         mag = np.linalg.norm(edVec)
+        ## ---------------
+        if(mag < 1.0e-12):
+            outStr = 'nodes ' + str(nds)
+            print(outStr)
+            outStr = 'coords ' + str(self.nodes[nds[0]]) + '  ' + str(self.nodes[nds[1]])
+            print(outStr)
         unitEV = (1.0/mag)*edVec
         unitNorm = np.array([-unitEV[1],unitEV[0]])
         for eNd in self.triElements[el]:

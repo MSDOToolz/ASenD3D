@@ -28,6 +28,8 @@ class SpatialGridList2D():
             iMax = self.xRows
             iMin = 0
         else:
+            # outStr = 'point[0] ' + str(point[0]) + ' Xmargin ' + str(Xmargin) + ' xMin ' + str(self.xMin) + ' xGSz ' + str(self.xGSz)
+            # print(outStr)
             iMax = int(np.ceil((point[0] + Xmargin - self.xMin)/self.xGSz))
             if(iMax > self.xRows):
                 iMax = self.xRows
