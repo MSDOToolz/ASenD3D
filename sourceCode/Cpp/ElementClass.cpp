@@ -16,9 +16,8 @@ const double r_pio180 = 0.0174532925199432958;
 const double r_1ort3 = 0.577350269189625765;
 
 
-Element::Element(int newType, int newLabel, int newNodes[]) {
+Element::Element(int newType) {
 	type = newType;
-	label = newLabel;
 	int i1;
 	int i2;
 	int i3;
@@ -302,10 +301,6 @@ Element::Element(int newType, int newLabel, int newNodes[]) {
 		dofTable[13][1] = 2;
 	}
 	
-	for (i1 = 0; i1 < numNds; i1++) {
-		nodes[i1] = newNodes[i1];
-	}
-	
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
 		for (i2 = 0; i2 < dofPerNd; i2++) {
@@ -327,8 +322,26 @@ Element::Element(int newType, int newLabel, int newNodes[]) {
 	return;
 }
 
+void Element::setLabel(int newLab) {
+	label = newLab;
+	return;
+}
+
+void Element::setNodes(int newNds[]) {
+	int i1;
+	for (i1 = 0; i1 < numNds; i1++) {
+		nodes[i1] = newNds[i1];
+	}
+	return;
+}
+
 void Element::setNext(Element *newEl) {
 	nextEl = newEl;
+	return;
+}
+
+Element* Element::getNext() {
+	return nextEl;
 }
 
 //dup1
@@ -344,7 +357,7 @@ void Element::getStiffMat(Doub& Cmat, DVPt& dvAr) {
 	Material *matPt;
 	double *stiffMat;
 	double *elastic;
-	Doub stiffMatDV[21];
+	Doub stiffMatDV[36];
 	Doub elasticDV[9];
 	Doub Smat[36];
 	Doub dvVal;
@@ -1522,8 +1535,7 @@ ElementList::ElementList() {
 	return;
 }
 
-void ElementList::addElement(int newType, int newLabel; int newNodes[]) {
-	Element *newEl = new Element(newType,newLabel,newNodes);
+void ElementList::addElement(Element *newEl) {
 	if(!firstEl) {
 		firstEl = newEl;
 		lastEl = newEl;

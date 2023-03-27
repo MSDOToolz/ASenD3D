@@ -131,7 +131,7 @@ void DiffDoub::sqt() {
 	return;
 }
 
-void Doub::sqr() {
+void DiffDoub::sqr() {
 	tmp = val*val;
 	dval = 2.0*val*dval;
 	val = tmp;
@@ -159,7 +159,7 @@ void DiffDoub::atn() {
 	return;
 }
 
-void Doub::neg() {
+void DiffDoub::neg() {
 	val = -val;
 	dval = -dval;
 	return;
@@ -186,6 +186,14 @@ void Diff2Doub::setVal(double inp, double dinp) {
 	val = inp;
 	dv1 = dinp;
 	dv2 = 0.0;
+	dv12 = 0.0;
+	return;
+}
+
+void Diff2Doub::setVal(double inp, double dinp1, double dinp2) {
+	val = inp;
+	dv1 = dinp1;
+	dv2 = dinp2;
 	dv12 = 0.0;
 	return;
 }
@@ -247,7 +255,7 @@ void Diff2Doub::sqt() {
 	return;
 }
 
-void Doub::sqr() {
+void Diff2Doub::sqr() {
 	tmp = val*val;
 	tmp2 = 2.0*val*dv1;
 	tmp3 = 2.0*val*dv2;
@@ -293,7 +301,7 @@ void Diff2Doub::atn() {
 	return;
 }
 
-void Doub::neg() {
+void Diff2Doub::neg() {
 	val = -val;
 	dv1 = -dv1;
 	dv2 = -dv2;

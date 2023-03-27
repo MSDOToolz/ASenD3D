@@ -8,11 +8,8 @@
 using namespace std;
 
 
-Node::Node(int newLab, double& newCrd) {
+Node::Node(int newLab) {
 	label = newLab;
-	coord[0] = newCrd[0];
-	coord[1] = newCrd[1];
-	coord[2] = newCrd[2];
 	int i1;
 	for (i1=0; i1 < 6; i1++) {
 		displacement[i1] = 0.0;
@@ -20,8 +17,54 @@ Node::Node(int newLab, double& newCrd) {
 		acceleration[i1] = 0.0;
 		dofIndex[i1] = 0;
 	}
-	dVars = IntList();
-	coefs = DoubList();
+	nextNd = NULL;
+}
+
+void Node::setCrd(double newCrd[]) {
+	coord[0] = newCrd[0];
+	coord[1] = newCrd[1];
+	coord[2] = newCrd[2];
+	return;
+}
+
+void Node::setInitialDisp(double newDisp[]) {
+	initialDisp[0] = newDisp[0];
+	initialDisp[1] = newDisp[1];
+	initialDisp[2] = newDisp[2];
+	initialDisp[3] = newDisp[3];
+	initialDisp[4] = newDisp[4];
+	initialDisp[5] = newDisp[5];
+	return;
+}
+
+void Node::setInitialVel(double newVel[]) {
+	initialVel[0] = newVel[0];
+	initialVel[1] = newVel[1];
+	initialVel[2] = newVel[2];
+	initialVel[3] = newVel[3];
+	initialVel[4] = newVel[4];
+	initialVel[5] = newVel[5];
+	return;
+}
+
+void Node::setInitialAcc(double newAcc[]) {
+	initialAcc[0] = newAcc[0];
+	initialAcc[1] = newAcc[1];
+	initialAcc[2] = newAcc[2];
+	initialAcc[3] = newAcc[3];
+	initialAcc[4] = newAcc[4];
+	initialAcc[5] = newAcc[5];
+	return;
+}
+
+void Node::setInitialTemp(double newTemp) {
+	initialTemp = newTemp;
+	return;
+}
+
+void Node::setInitialTdot(double newTdot) {
+	initialTdot = newTdot;
+	return;
 }
 
 void Node::addDesignVariable(int dIndex, double coef) {
@@ -29,8 +72,11 @@ void Node::addDesignVariable(int dIndex, double coef) {
 	coefs.addEntry(coef);
 }
 
+int Node::getLabel() {
+	return label;
+}
 //dup1
-void Node::getCrd(Doub& crdOut, DVPt& dvAr) {
+void Node::getCrd(Doub crdOut[], DVPt dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
 	crdOut[2].setVal(coord[2]);
@@ -59,7 +105,7 @@ void Node::getCrd(Doub& crdOut, DVPt& dvAr) {
 	return;
 }
 
-void Node::getDisp(Doub& disp) {
+void Node::getDisp(Doub disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
 	    disp[i1].setVal(displacement[i1]);
@@ -69,39 +115,12 @@ void Node::getDisp(Doub& disp) {
 
 //end dup
 
-//skip
-void Node::getCrd(DiffDoub& crdOut, DVPt& dvAr) {
-	crdOut[0].setVal(coord[0]);
-	crdOut[1].setVal(coord[1]);
-	crdOut[2].setVal(coord[2]);
-	IntListEnt *currD = dVars.getFirst();
-	DoubListEnt *currCoef = coefs.getFirst();
-	int dIndex;
-	DesignVariable *dPtr;
-	DiffDoub dVal;
-	int comp;
-	string cat;
-	DiffDoub coef;
-	while(currD) {
-		dIndex = currD->value;
-		dPtr = dvAr[dIndex].ptr;
-		dPtr->getValue(dVal);
-		cat = dPtr->getCategory();
-		comp = dPtr->getComponent() - 1;
-		if(cat == "nodeCoord") {
-			coef.setVal(currCoef->value);			
-			coef.mult(dVal);
-			crdOut[comp].add(coef);
-		}
-		currD = currD->next;
-		currCoef = currCoef->next;
-	}
-	return;
-}
-//end skip
-
 int Node::getDofIndex(int dof) {
 	return dofIndex[dof-1];
+}
+
+Node* Node::getNext() {
+	return nextNd;
 }
 
 void Node::setNext(Node *newNext) {
@@ -125,8 +144,7 @@ NodeList::NodeList() {
 	length = 0;
 }
 
-void NodeList::addNode(int newLab, double newCrd[]) {
-	Node *newNd = new Node(newLab,newCrd);
+void NodeList::addNode(Node *newNd) {
 	if(!firstNode) {
 		firstNode = newNd;
 		lastNode = newNd;

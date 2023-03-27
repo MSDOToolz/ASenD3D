@@ -1,7 +1,9 @@
 #include "LowerTriMatClass.h"
 #include "ListEntClass.h"
 #include "ConstraintClass.h"
+#include <iostream>
 
+using namespace std;
 
 LowerTriMat::LowerTriMat() {
 	mat = NULL;
@@ -107,8 +109,11 @@ void LowerTriMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList)
 	MatrixEnt *mEnt2;
 	Constraint *thisConst;
 	
+	for (i1 = 0; i1 < size; i1++) {
+		mat[i1] = 0.0;
+	}
+	
 	for (i1 = 0; i1 < dim; i1++) {
-		range[i1] = 1;
 		mEnt1 = spMat.getFirstEnt(i1);
 		while(mEnt1) {
 			i2 = mEnt1->col;
@@ -140,8 +145,8 @@ void LowerTriMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList)
 			}
 		}
 		thisConst = thisConst->getNext();
-	}			
-	
+	}		
+    	
 	return;
 }
 
@@ -157,7 +162,7 @@ void LowerTriMat::ldlFactor() {
 	
 	double *ldVec = new double[dim];
 	
-	for (i1 = 0; i1 < dim; i1++) {
+	for (i1 = 0; i1 < dim; i1++) { // i1 = column in L
 		//form ldVec
 		i3 = range[i1];
 		for (i2 = minCol[i1]; i2 < i1; i2++) {
@@ -165,25 +170,7 @@ void LowerTriMat::ldlFactor() {
 			ldVec[i2] = mat[i3]*mat[i4];
 			i3++;
 		}
-		//get L terms for row i1
-		for (i2 = minCol[i1]; i2 < i1; i2++) {
-			stCol = minCol[i1];
-			if(minCol[i2] > stCol) {
-				stCol = minCol[i2];
-			}
-			i3 = range[i1] + (stCol - minCol[i1]);
-			i4 = range[i2] + (stCol - minCol[i2]);
-			sum = 0.0;
-			for (i5 = stCol; i5 < i2; i5 ++) {
-				sum+= ldVec[i5]*mat[i4];
-				i3++;
-				i4++;
-			}
-			i3 = range[i1] + (i2 - minCol[i1]);
-			i4 = range[i2+1] - 1;
-			mat[i3] = (mat[i3] - sum)/mat[i4];
-		}
-		//get d term for row i1
+		//get d term for column i1
 		stCol = minCol[i1];				
 		i2 = range[i1];
 		sum = 0.0;
@@ -193,13 +180,33 @@ void LowerTriMat::ldlFactor() {
 		}
 		i2 = range[i1+1] - 1;
 		mat[i2] = mat[i2] - sum;
+		//get L terms for column i1
+		i2 = i1 + 1;
+		while(i2 < i1 + maxBandwidth && i2 < dim) { // i2 = row in L
+		    if(minCol[i2] <= i1) {
+				stCol = minCol[i2];
+				if(minCol[i1] > stCol) {
+					stCol = minCol[i1];
+				}
+				i4 = range[i2] + (stCol - minCol[i2]);
+				sum = 0.0;
+				for (i5 = stCol; i5 < i1; i5++) {
+					sum+= ldVec[i5]*mat[i4];
+					i4++;
+				}
+				i3 = range[i2] + (i1 - minCol[i2]);
+				i4 = range[i1+1] - 1;
+				mat[i3] = (mat[i3] - sum)/mat[i4];
+			}
+			i2++;
+		}
 	}
 	
 	delete[] ldVec;
 	return;
 }
 
-void LowerTriMat::ldlSolve(double& solnVec, double& rhs) {
+void LowerTriMat::ldlSolve(double solnVec[], double rhs[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -214,7 +221,7 @@ void LowerTriMat::ldlSolve(double& solnVec, double& rhs) {
 			sum+= mat[i2]*zVec[i3];
 			i2++;
 		}
-		zVec[i1] = bVec[i1] - sum;
+		zVec[i1] = rhs[i1] - sum;
 	}
 	
 	for (i1 = dim-1; i1 >= 0; i1--) {
@@ -223,7 +230,7 @@ void LowerTriMat::ldlSolve(double& solnVec, double& rhs) {
 		if(stopRow > dim) {
 			stopRow = dim;
 		}
-		for (i2 = (i1+1); i2 < stopRow: i2++) {
+		for (i2 = (i1+1); i2 < stopRow; i2++) {
 			i3 = range[i2] + (i1 - minCol[i2]);
 			if(i3 >= range[i2] && i3 < range[i2+1]) {
 				sum+= mat[i3]*solnVec[i2];
@@ -240,4 +247,5 @@ void LowerTriMat::destroy() {
 	delete[] range;
 	delete[] minCol;
 	delete[] zVec;
+	return;
 }

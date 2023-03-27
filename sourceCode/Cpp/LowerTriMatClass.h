@@ -27,7 +27,7 @@ class LowerTriMat {
 		
 		void ldlFactor();
 		
-		void ldlSolve(double& solnVec, double& rhs);
+		void ldlSolve(double solnVec[], double rhs[]);
 		
 		void destroy();
 };

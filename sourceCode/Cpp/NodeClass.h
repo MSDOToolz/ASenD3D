@@ -15,26 +15,42 @@ class Node {
 		double acceleration[6];
 		double temperature;
 		double tempChangeRate;
+		double prevDisp[6];
+		double prevVel[6];
+		double prevAcc[6];
+		double prevTemp;
+		double prevTdot;
+		double initialDisp[6];
+		double initialVel[6];
+		double initialAcc[6];
+		double initialTemp;
+		double initialTdot;
 		IntList dVars;
 		DoubList coefs;
 		Node *nextNd;
 		
     public:
-	    Node(int newLab, double& newCrd);
+	    Node(int newLab);
+		
+		void setCrd(double newCrd[]);
+		
+		void setInitialDisp(double newDisp[]);
+		
+		void setInitialVel(double newVel[]);
+		
+		void setInitialAcc(double newAcc[]);
+		
+		void setInitialTemp(double newTemp);
+		
+		void setInitialTdot(double newTdot);
 		
 		void addDesignVariable(int dIndex, double coef);
 		
 		//dup1
-		void getCrd(Doub& crdOut, DVPt& dvAr);
+		void getCrd(Doub crdOut[], DVPt dvAr[]);
 		
-		void getDisp(Doub& disp);
-		//end dup
-		
-		//skip
-		
-		void getCrd(DiffDoub& crdOut, DVPt& dvAr);
-		
-		//end skip
+		void getDisp(Doub disp[]);
+		//end dup		
 		
 		int getDofIndex(int dof);
 		
@@ -59,7 +75,7 @@ class NodeList {
 	public:
 	    NodeList();
 		
-		void addNode(int newLab, double newCrd[]);
+		void addNode(Node *newNd);
 		
 		int getLength();
 		

@@ -1,6 +1,5 @@
 #include <cstddef>
 #include "ListEntClass.h"
-#include "LowerTriMatClass.h"
 
 IntListEnt::IntListEnt(int newVal) {
 	value = newVal;
@@ -40,7 +39,7 @@ void IntList::addIfAbsent(int newInt) {
 		IntListEnt *newEnt = new IntListEnt(newInt);
 		first = newEnt;
 		last = newEnt;
-		len++
+		len++;
 	} else {
 		IntListEnt *thisEnt = first;
 		bool inserted = false;
@@ -166,8 +165,8 @@ SparseMat::SparseMat() {
 }
 
 void SparseMat::setDim(int newDim) {
-	dim = matDim;
-	matrix = new MEPtr[matDim];
+	dim = newDim;
+	matrix = new MEPtr[newDim];
 	return;
 }
 
@@ -202,7 +201,7 @@ MatrixEnt* SparseMat::getFirstEnt(int row) {
 	return matrix[row].ptr;
 }
 
-void SparseMat::vectorMultipy(double& prod, double& inpVec) {
+void SparseMat::vectorMultipy(double prod[], double inpVec[]) {
 	int i1;
 	int col;
 	MatrixEnt *thisEnt;
@@ -215,5 +214,21 @@ void SparseMat::vectorMultipy(double& prod, double& inpVec) {
 			thisEnt = thisEnt->nextEnt;
 		}
 	}
+	return;
+}
+
+void SparseMat::destroy() {
+	MatrixEnt *thisEnt;
+	MatrixEnt *nextEnt;
+	int i1;
+	for (i1 = 0; i1 < dim; i1++ ){
+		thisEnt = matrix[i1].ptr;
+		while(thisEnt) {
+			nextEnt = thisEnt->nextEnt;
+			delete thisEnt;
+			thisEnt = nextEnt;
+		}
+	}
+	delete[] matrix;
 	return;
 }

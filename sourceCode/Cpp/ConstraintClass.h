@@ -13,13 +13,19 @@ class ConstraintTerm {
 		ConstraintTerm *nextTerm;
 		
 	public:
-	    ConstraintTerm(std::string newNSet, int newDof, double newCoef);
+	    ConstraintTerm(std::string newNSet);
+		
+		void setDof(int newDof);
+		
+		void setCoef(double newCoef);
 		
 		std::string getSetName();
 		
 		int getDof();
 		
 		double getCoef();
+		
+		ConstraintTerm* getNext();
 		
 		void setNext(ConstraintTerm *newNext);
 };
@@ -35,15 +41,21 @@ class Constraint {
 	public:
 	    Constraint();
 		
-		void addTerm(string nodeSet, int dof, double coef);
+		void addTerm(ConstraintTerm *newTerm);
+		
+		void setRhs(double newRhs);
+		
+		void setNext(Constraint *newNext);
 		
 		Constraint* getNext();
 		
-		void buildMat(Set *firstSet, NdPt *ndAr);
+		void buildMat(Set *firstSet, NdPt ndAr[]);
 		
 		int getMatDim();
 		
 		MatrixEnt* getMatFirst(int row);
+		
+		void destroy();
 };
 
 class ConstraintList {
@@ -54,7 +66,11 @@ class ConstraintList {
 	public:
 	    ConstraintList();
 		
+		void addConstraint(Constraint *newConst);
+		
 		Constraint* getFirst();
+		
+		void destroy();
 };
 
 #endif

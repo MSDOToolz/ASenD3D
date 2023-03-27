@@ -1,6 +1,22 @@
 import os
 
-fileNames = ['NodeClass.h']
+##fileNames = ['ElementClass.cpp','ElementClass.h','matrixFunctions.cpp','matrixFunctions.h','NodeClass.cpp','NodeClass.h']
+
+fileNames = ['matrixFunctions.cpp','matrixFunctions.h']
+
+leadingStrings = [' ','(',',','\t']
+trailingStrings = [' ','&','*','[','(']
+
+strings = list()
+repStrings1 = list()
+repStrings2 = list()
+
+for ls in leadingStrings:
+    for ts in trailingStrings:
+        lst = [ls,ts]
+        strings.append('Doub'.join(lst))
+        repStrings1.append('DiffDoub'.join(lst))
+        repStrings2.append('Diff2Doub'.join(lst))
 
 for fn in fileNames:
     inFile = open(fn,'r')
@@ -17,16 +33,24 @@ for fn in fileNames:
             
             for ln in lineList:
                 outFile.write(ln)
-            
-            outFile.write(' \n')            
+                   
             outFile.write('//skip \n')
             outFile.write(' \n')
             outFile.write('//DiffDoub versions: \n')
             
+            preserve = False
             for ln in lineList:
-                if('//' not in ln):
-                    newLn = ln.replace('Doub','DiffDoub')
-                    outFile.write(newLn)
+                if('//preserve' in ln):
+                    preserve = True
+                elif('//end preserve' in ln):
+                    preserve = False
+                elif('//' not in ln):
+                    if(preserve):
+                        outFile.write(ln)
+                    else:
+                        for i in range(0,len(strings)):
+                            ln = ln.replace(strings[i],repStrings1[i])
+                        outFile.write(ln)
                     
             outFile.write(' \n')
             outFile.write('//end skip \n')
@@ -40,24 +64,41 @@ for fn in fileNames:
             
             for ln in lineList:
                 outFile.write(ln)
-            
-            outFile.write(' \n')            
+                        
             outFile.write('//skip \n')
             outFile.write(' \n')
             outFile.write('//DiffDoub versions: \n')
             
+            preserve = False
             for ln in lineList:
-                if('//' not in ln):
-                    newLn = ln.replace('Doub','DiffDoub')
-                    outFile.write(newLn)
+                if('//preserve' in ln):
+                    preserve = True
+                elif('//end preserve' in ln):
+                    preserve = False
+                elif('//' not in ln):
+                    if(preserve):
+                        outFile.write(ln)
+                    else:
+                        for i in range(0,len(strings)):
+                            ln = ln.replace(strings[i],repStrings1[i])
+                        outFile.write(ln)
                     
             outFile.write(' \n')
             outFile.write('//Diff2Doub versions: \n')
                     
+            preserve = False
             for ln in lineList:
-                if('//' not in ln):
-                    newLn = ln.replace('Doub','Diff2Doub')
-                    outFile.write(newLn)
+                if('//preserve' in ln):
+                    preserve = True
+                elif('//end preserve' in ln):
+                    preserve = False
+                elif('//' not in ln):
+                    if(preserve):
+                        outFile.write(ln)
+                    else:
+                        for i in range(0,len(strings)):
+                            ln = ln.replace(strings[i],repStrings2[i])
+                        outFile.write(ln)
             
             outFile.write(' \n')            
             outFile.write('//end skip \n')

@@ -34,7 +34,7 @@ class SetList {
 	public:
 	    SetList();
 		
-		void addSet(std::string newNm);
+		void addSet(Set *newSet);
 		
 		int getLength();
 		

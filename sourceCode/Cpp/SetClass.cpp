@@ -41,8 +41,7 @@ SetList::SetList() {
 	length = 0;
 }
 
-void SetList::addSet(string newNm) {
-	Set *newSet = new Set(newNm);
+void SetList::addSet(Set *newSet) {
 	if(!firstSet) {
 		firstSet = newSet;
 		lastSet = newSet;
@@ -57,6 +56,6 @@ int SetList::getLength() {
 	return length;
 }
 
-Node* SetList::getFirst() {
+Set* SetList::getFirst() {
 	return firstSet;
 }

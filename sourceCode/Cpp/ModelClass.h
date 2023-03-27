@@ -1,5 +1,7 @@
 #ifndef MODEL
 #define MODEL
+#include <fstream>
+#include <iostream>
 #include "NodeClass.h"
 #include "ElementClass.h"
 #include "SetClass.h"
@@ -19,6 +21,7 @@ class Model {
 		SectionList sections;
 		MaterialList materials;
 		ConstraintList constraints;
+		LoadList loads;
 		DesVarList designVars;
 		DVPt *dVarArray;
 		Objective objective;
@@ -26,6 +29,26 @@ class Model {
 	public:
 	    Model();
 		
+		// Input
+		void readInputLine(std::ifstream& inFile,std::string& fileLine,std::string headings[],std::string data[], int& dataLen);
+		
+		void readModelInput(std::string fileName);
+		
+		void readConstraintInput(std::string fileName);
+		
+		void readLoadInput(std::string fileName);
+		
+		void readInitialState(std::string fileName);
+		
+		void readDesVarInput(std::string fileName);
+		
+		void readObjectiveInput(std::stine fileName);
+		
+		// Analysis
+		
+		// Output
+		
+		//
 		NodeList* getNodes();
 		
 		ElementList* getElements();

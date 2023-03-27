@@ -5,6 +5,7 @@
 class Doub {
     public:
 	    double val;
+		double dval;
 	
 	    Doub();
 		
@@ -91,6 +92,8 @@ class Diff2Doub {
 		void setVal(double inp);
 		
 		void setVal(double inp, double dinp);
+		
+		void setVal(double inp, double dinp1, double dinp2);
 		
 		void setVal(Diff2Doub& inp);
 		

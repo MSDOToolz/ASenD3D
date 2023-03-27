@@ -12,37 +12,30 @@ DesignVariable::DesignVariable(string newCat) {
 	elSetName = "";
 	ndSetName = "";
 	activeTime[0] = 0.0;
-	activeTime[1] = 1.0e+10;
+	activeTime[1] = 1.0e+100;
 	value.setVal(0.0);
 	diffVal.setVal(0.0);
 	nextDV = NULL;
 }
 
-void DesignVariable::setActiveTime(double st, double fn) {
-	activeTime[0] = st;
-	activeTime[1] = fn;
+void DesignVariable::setActiveTime(double newAt[]) {
+	activeTime[0] = newAt[0];
+	activeTime[1] = newAt[1];
 }
 
-string DesignVariable::getCategory() {
-	return category;
-}
-
-void DesignVariable::getValue(Doub& inp) {
-	inp.setVal(value);
+void DesignVariable::setLayer(int newLay) {
+	layer = newLay;
 	return;
 }
 
-void DesignVariable::getValue(DiffDoub& inp) {
-	inp.setVal(diffVal);
+void DesignVariable::setElset(string newElset) {
+	elSetName = newElset;
 	return;
 }
 
-int DesignVariable::getComponent() {
-	return component;
-}
-
-DesignVariable* DesignVariable::getNext() {
-	return nextDV;
+void DesignVariable::setNdset(std::string newNdset) {
+	ndSetName = newNdset;
+	return;
 }
 
 void DesignVariable::setValue(double newVal) {
@@ -67,6 +60,28 @@ void DesignVariable::setNext(DesignVariable* newNext) {
 void DesignVariable::addCoefficient(double newCoef) {
 	coefs.addEntry(newCoef);
 	return;
+}
+
+string DesignVariable::getCategory() {
+	return category;
+}
+
+void DesignVariable::getValue(Doub& inp) {
+	inp.setVal(value);
+	return;
+}
+
+void DesignVariable::getValue(DiffDoub& inp) {
+	inp.setVal(diffVal);
+	return;
+}
+
+int DesignVariable::getComponent() {
+	return component;
+}
+
+DesignVariable* DesignVariable::getNext() {
+	return nextDV;
 }
 
 void DesignVariable::destroy() {

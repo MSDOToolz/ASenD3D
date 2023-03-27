@@ -20,7 +20,23 @@ class DesignVariable {
     public:
 	    DesignVariable(std::string newCat);
 		
-		void setActiveTime(double st, double fn);
+		void setActiveTime(double newAt[]);
+		
+		void setLayer(int newLay);
+		
+		void setElset(std::string newElset);
+		
+		void setNdset(std::string newNdset);
+		
+		void setValue(double newVal);
+		
+		void setDiffVal(double newVal, double dNewVal);
+		
+		void setComponent(int newComp);
+		
+		void setNext(DesignVariable* newNext);
+		
+		void addCoefficient(double newCoef);		
 		
 		std::string getCategory();
 		
@@ -31,16 +47,6 @@ class DesignVariable {
 		int getComponent();
 		
 		DesignVariable* getNext();
-		
-		void setValue(double newVal);
-		
-		void setDiffVal(double newVal, double dNewVal);
-		
-		void setComponent(int newComp);
-		
-		void setNext(DesignVariable* newNext);
-		
-		void addCoefficient(double newCoef);
 		
 		void destroy();
 };

@@ -6,18 +6,56 @@ class Material {
 	private:
 	    std::string name;
 		double density;
-		double elastic[9];
-		double stiffness[21];
+		double modulus[3];
+		double poissonRatio[3];
+		double shearMod[3];
+		double stiffness[36];
 		double conductivity[6];
 		double expansion[6];
 		double specHeat;
-		double maxStress[9];
-		double maxStrain[9];
+		double maxTenStress[3];
+		double maxCompStress[3];
+		double maxShearStress[3];
+		double maxTenStrain[3];
+		double maxCompStrain[3];
+		double maxShearStrain[3];
 		double maxStrEng;
 		double maxMises;
 		
 	public:
 	    Material(std::string newName);
+		
+		void setDensity(double newDen);
+		
+		void setModulus(double newMod[]);
+		
+		void setPoissonRatio(double newPR[]);
+		
+		void setShearMod(double newMod[]);
+		
+		void setStiffness(int row, int col, double val);
+		
+		void setConductivity(double newCond[]);
+		
+		void setExpansion(double newExp[]);
+		
+		void setSpecHeat(double newSpecHeat);
+		
+		void setMaxTenStress(double newMaxStr[]);
+		
+		void setMaxCompStress(double newMaxStr[]);
+		
+		void setMaxShearStress(double newMaxStr[]);
+		
+		void setMaxTenStrain(double newMaxStr[]);
+		
+		void setMaxCompStrain(double newMaxStr[]);
+		
+		void setMaxShearStrain(double newMaxStr[]);
+		
+		void setMaxStrEng(double newMax);
+		
+		void setMaxMises(double newMax);
 		
 		double getDensity();
 		
@@ -52,7 +90,11 @@ class Layer {
 		Layer *nextLay;
 		
     public:
-	    Layer(std::string newNm, double newThk, double newAng);
+	    Layer(std::string newNm);
+		
+		void setThickness(double newThk);
+		
+		void setAngle(double newAngle);
 		
 		std::string getMatName();
 		
@@ -76,7 +118,7 @@ class LayerList {
 	public:
 	    LayerList();
 		
-		void addLayer(std::string newNm, double newThk, double newAng);
+		void addLayer(Layer *newLay);
 		
 		int getLength();
 		
@@ -89,14 +131,14 @@ class Section {
 		std::string elSetName;
 		std::string matName;
 		Material *matPtr;
-		double orientation[6];
+		double orientation[9];
 		double zOffset;
 		LayerList layers;
 		double area;
 		double areaMoment[5];
 		double polarMoment;
-		double stiffness[21];
-		double mass[21];
+		double stiffness[36];
+		double mass[36];
 		double expLoadCoef[6];
 		double conductivity;
 		double specHeat;
@@ -104,6 +146,32 @@ class Section {
 		
 	public:
 	    Section(std::string newType);
+		
+		void setElset(std::string newSet);
+		
+		void setMaterial(std::string newMat);
+		
+		void setOrientation(double newOri[]);
+		
+		void setZOffset(double newZOff);
+		
+		void addLayer(Layer *newLay);
+		
+		void setArea(double newArea);
+		
+		void setAreaMoment(double newI[]);
+		
+		void setPolarMoment(double newJ[]);
+		
+		void setStiffness(int row, int col, double val);
+		
+		void setMass(int row, int col, double val);
+		
+		void setExpLd(double newExpLd[]);
+		
+		void setConductivity(double newCond);
+		
+		void setSpecHeat(double specHeat);
 		
 		Material* getMaterial();
 		

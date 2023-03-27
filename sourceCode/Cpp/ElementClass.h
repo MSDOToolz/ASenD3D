@@ -30,9 +30,15 @@ class Element {
 		Element *nextEl;
 		
 	public:
-	    Element(int newType, int newLabel, int newNodes[]);
+	    Element(int newType);
+		
+		void setLabel(int newLab);
+
+        void setNodes(int newNds[]);	
 		
 		void setNext(Element *newEl);
+		
+		Element* getNext();
 //dup1
         void getStiffMat(Doub& Cmat, DVPt& dvAr);
 
@@ -70,7 +76,7 @@ class ElementList {
 	public:
 	    ElementList();
 		
-		void addElement(int newType, int newLabel, int newNodes[]);
+		void addElement(Element *newEl);
 		
 		int getLength();
 		

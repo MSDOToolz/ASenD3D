@@ -7,11 +7,19 @@
 using namespace std;
 
 
-ConstraintTerm::ConstraintTerm(string newNSet, int newDof, double newCoef) {
+ConstraintTerm::ConstraintTerm(string newNSet) {
 	nodeSet = newNSet;
-	dof = newDof;
-	coef = newCoef;
 	nextTerm = NULL;
+	return;
+}
+
+void ConstraintTerm::setDof(int newDof) {
+	dof = newDof;
+	return;
+}
+
+void ConstraintTerm::setCoef(double newCoef) {
+	coef = newCoef;
 	return;
 }
 
@@ -32,6 +40,10 @@ void ConstraintTerm::setNext(ConstraintTerm *newNext) {
 	return;
 }
 
+ConstraintTerm* ConstraintTerm::getNext() {
+	return nextTerm;
+}
+
 
 Constraint::Constraint() {
 	firstTerm = NULL;
@@ -40,8 +52,7 @@ Constraint::Constraint() {
 	return;
 }
 
-void Constraint::addTerm(string nodeSet, int dof, double coef) {
-	ConstraintTerm *newTerm = new ConstraintTerm(nodeSet,dof,coef);
+void Constraint::addTerm(ConstraintTerm *newTerm) {
 	if(!firstTerm) {
 		firstTerm = newTerm;
 		lastTerm = newTerm;
@@ -52,11 +63,21 @@ void Constraint::addTerm(string nodeSet, int dof, double coef) {
 	return;
 }
 
+void Constraint::setRhs(double newRhs) {
+	rhs = newRhs;
+	return;
+}
+
+void Constraint::setNext(Constraint *newNext) {
+	nextConst = newNext;
+	return;
+}
+
 Constraint* Constraint::getNext() {
 	return nextConst;
 }
 
-void Constraint::buildMat(Set *firstSet, NdPt *ndAr) {
+void Constraint::buildMat(Set *firstSet, NdPt ndAr[]) {
 	int setLen = 1;
 	int setiLen;
 	int ndIndex;
@@ -72,7 +93,7 @@ void Constraint::buildMat(Set *firstSet, NdPt *ndAr) {
 	while(thisTerm) {
 		setNm = thisTerm->getSetName();
 		try {
-			ndIndex = stoi(setName);
+			ndIndex = stoi(setNm);
 		} catch(...) {
 			thisSet = firstSet;
 			setFound = false;
@@ -94,7 +115,7 @@ void Constraint::buildMat(Set *firstSet, NdPt *ndAr) {
 	while(thisTerm) {
 		setNm = thisTerm->getSetName();
 		try {
-			ndIndex = stoi(setName);
+			ndIndex = stoi(setNm);
 			coef = thisTerm->getCoef();
 			dof = thisTerm->getDof();
 			col = ndAr[ndIndex].ptr->getDofIndex(dof);
@@ -135,12 +156,47 @@ MatrixEnt* Constraint::getMatFirst(int row) {
 	return mat.getFirstEnt(row);
 }
 
+void Constraint::destroy() {
+	mat.destroy();
+	ConstraintTerm *thisTerm = firstTerm;
+	ConstraintTerm *nextTerm;
+	while(thisTerm) {
+		nextTerm = thisTerm->getNext();
+		delete thisTerm;
+		thisTerm = nextTerm;
+	}
+	return;
+}
+
 ConstraintList::ConstraintList() {
 	firstConst = NULL;
 	lastConst = NULL;
 	return;
 }
 
+void ConstraintList::addConstraint(Constraint *newConst) {
+	if(!firstConst) {
+		firstConst = newConst;
+		lastConst = newConst;
+	} else {
+		lastConst->setNext(newConst);
+		lastConst = newConst;
+	}
+	return;
+}
+
 Constraint* ConstraintList::getFirst() {
 	return firstConst;
+}
+
+void ConstraintList::destroy() {
+	Constraint *thisConst = firstConst;
+	Constraint *nextConst;
+	while(thisConst) {
+		nextConst = thisConst->getNext();
+		thisConst->destroy();
+		delete thisConst;
+		thisConst = nextConst;
+	}
+	return;
 }
