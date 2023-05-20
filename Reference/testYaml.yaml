@@ -1,0 +1,26 @@
+materials:
+    - name:
+      density:
+      elastic:
+          E: [E11,E22,E33]
+          nu: [nu12,nu13,nu23]
+          G: [G12,G13,G23]
+          ## Or
+          stiffness:
+              - [i, j, val]
+              - [i, j, val]
+      thermal:
+          conductivity: [k1,k2,k3,k12,k13,k23]
+          expansion: [e11,e22,e33,e12,e13,e23]
+          specHeat:
+      failure:
+          maxStress:
+              tensile: [s11,s22,s33]
+              compressive: [s11,s22,s33]
+              shear: [s12,s13,s23]
+          maxStrain:
+              tensile:
+              compressive:
+              shear:
+          maxStrainEnergy: (value)
+          maxMises: (value)

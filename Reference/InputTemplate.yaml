@@ -1,0 +1,162 @@
+## AStrO Model Input File Template
+nodes:
+    #- label: 0
+    #  coordinates: []
+    ##- [label, x, y, z]
+elements:
+    - type:
+      connectivity:
+          - [label, n1, n2, n3]
+    #  label:
+    #  nodes: []
+          ##- [label, n1, n2, n3 ..]
+sets:
+    node:
+        - name:
+          labels: all
+          ## Or
+          labels:
+              - e1
+              - e2
+          #or
+          labels:
+              - [1, 10] # one thru 10...
+              - [20, 30] # 20 thru 30...
+    element:
+        - name:
+          labels: all
+          ## Or
+          labels:
+              - e1
+              - e2
+          #or
+          labels:
+              - [1, 10] # one thru 10...
+              - [20, 30] # 20 thru 30...
+sections:
+    - type: # solid, shell, beam
+      material: (material name)
+      orientation: [x1, x2, x3, xy1, xy2, xy3]
+      layup:
+          zOffset:
+          layers:
+              - material:
+                thickness:
+                angle:
+              ##- [material, thickness, angle]
+      beamProps:
+          area:
+          I: [I2,I3,I22,I33,I23]
+          J:
+      ## Or
+          stiffness:
+              #- row:
+              #  col:
+              #  value:
+              - [i, j, val]
+              - [i, j, val]
+          mass:
+             # - [i, j, val]
+             # - [i, j, val]
+          expLoadCoef: [eL1, ... eL6]
+          conductivity: [k1]
+          specHeat: 
+      elementSet: setName
+materials:
+    - name:
+      density:
+      elastic:
+          E: [E11,E22,E33]
+          nu: [nu12,nu13,nu23]
+          G: [G12,G13,G23]
+          ## Or
+          stiffness:
+              - row:
+                col:
+                value:
+             # - [i, j, val]
+             # - [i, j, val]
+      thermal:
+          conductivity: [k1,k2,k3,k12,k13,k23]
+          expansion: [e11,e22,e33,e12,e13,e23]
+          specHeat:
+      failure:
+          maxStress:
+              tensile: [s11,s22,s33]
+              compressive: [s11,s22,s33]
+              shear: [s12,s13,s23]
+          maxStrain:
+              tensile:
+              compressive:
+              shear:
+          maxStrainEnergy: (value)
+          maxMises: (value)
+constraints:
+    matrix:
+        - [eqn, node, dof, coef]
+    rhs:
+        - r1
+        - r2
+        
+##  Alternative constraints
+
+constraints:
+    - terms:
+          #- [ndSet,dof,coef]
+          - nodeSet:
+            dof:
+            coef:
+      rhs:
+
+##
+loads:
+    - type:  nodal, bodyForce, gravitational, centrifugal, surfacePressure, surfaceTraction, bodyHeatGen, surfaceFlux
+      activeTime: [start, end]
+      ##or
+      activeTime: start
+      setLoads:
+          ## nodal
+          - [nd,fx,fy,fz,mx,my,mz,Q]
+          ## bodyForce
+          - [el,fx,fy,fz,mx,my,mz,Q]
+          ## gravitational
+          - [el,ax,ay,az]
+          ## centrifugal
+          - [el,cx,cy,cz,rax,ray,raz,omega]
+          ## surfacePressure
+          - [el,nx,ny,nz,thetaTol,p]
+          ## surfaceTraction
+          - [el,nx,ny,nz,thetaTol,tx,ty,tz]
+          ## bodyHeatGen
+          - [el,Q]
+          ## surfaceFlux
+          - [el,nx,ny,nz,thetaTol,f]
+          
+## Alternative loads
+
+loads:
+    - type: nodal, bodyForce, gravitational, centrifugal, surfacePressure, surfaceTraction, bodyHeatGen, surfaceFlux
+      activeTime: [start,end]
+      center:
+      axis:
+      angularVelocity:
+      normDir:
+      normTolerance:
+      load:
+      nodeSet: (label or set name)
+      elementSet: (label or set name)
+
+##
+initialState:
+    displacement:
+        - [nd,Ux,Uy,Yz,Rx,Ry,Rz]
+    velocity:
+        - [nd,Vx,Vy,Vz,VRx,VRy,VRz]
+    acceleration:
+        - [nd,Ax,Ay,Az,ARx,ARy,ARz]
+        
+## or
+
+initialState:
+    - node: (label)
+      displacement: [Ux,Uy,Yz,Rx,Ry,Rz]
