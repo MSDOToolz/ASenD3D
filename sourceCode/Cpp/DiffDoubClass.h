@@ -31,6 +31,8 @@ class Doub {
 		
 		void cs();
 		
+		void asn();
+		
 		void atn();
 		
 		void neg();
@@ -68,6 +70,8 @@ class DiffDoub {
 		void sn();
 		
 		void cs();
+		
+		void asn();
 		
 		void atn();
 		

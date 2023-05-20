@@ -59,7 +59,11 @@ class Material {
 		
 		double getDensity();
 		
-		double* getElastic();
+		double* getModulus();
+		
+		double* getPoissonRatio();
+		
+		double* getShearMod();
 
         double* getStiffMat();
 		
@@ -97,6 +101,8 @@ class Layer {
 		void setAngle(double newAngle);
 		
 		std::string getMatName();
+		
+		Material* getMatPt();
 		
 		double getThickness();
 		
@@ -174,6 +180,20 @@ class Section {
 		void setSpecHeat(double specHeat);
 		
 		Material* getMaterial();
+		
+		double* getOrientation();
+		
+		double getZOffset();
+		
+		Layer* getFirstLayer();
+		
+		double getArea();
+		
+		double* getAreaMoment();
+		
+		double getPolarMoment();
+		
+		double* getStiffMat();
 		
 		void setNext(Section *newNext);
 };

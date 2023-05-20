@@ -17,6 +17,7 @@ class Element {
 		int dofPerNd;
 		int numIntDof;
 		int nDim;
+		int defDim;
 		int *dofTable;  //dofTable[i][0] = nd/basis function of dof i, dofTable[i][1] = component of dof i
 		double *intPts;
 		double *ipWt;
@@ -24,6 +25,8 @@ class Element {
 		int *faceNds;
 		int numFaces;
 		double *internalDisp;
+		Doub *internalRu;
+		double *internalMat;
 		IntList designVars;
 		DoubList dvCoef;
 		Section *sectPtr;
@@ -40,23 +43,41 @@ class Element {
 		
 		Element* getNext();
 //dup1
-        void getStiffMat(Doub& Cmat, DVPt& dvAr);
 
-        void getNdCrds(Doub& xGlob, NdPt& ndAr, DVPt& dvAr);
+// Properties
+        void getThickOffset(Doub& thickness, Doub& zOffset, DVPt dvAr[]);
 		
-		void getNdDisp(Doub& globDisp, NdPt& ndAr);
+        void getStiffMat(Doub Cmat[], DVPt dvAr[]);
 
-		void evalN(Doub& nVec, Doub& dNds, double spt[]);
+        void getNdCrds(Doub xGlob[], NdPt ndAr[], DVPt dvAr[]);
 		
-		void getIpData(Doub& nVec, Doub& dNdx, Doub& detJ, Doub& locNds, double spt[]);
+		void getLocOri(Doub locOri[], DVPt dvAr[]);
 		
-		void getInstOri(Doub& instOriMat, Doub& locOri, Doub& globDisp, bool stat);
+		void correctOrient(Doub locOri[], Doub xGlob[]);
+
+// Solution Fields		
+		void getNdDisp(Doub globDisp[], NdPt ndAr[]);
+
+		void evalN(Doub nVec[], Doub dNds[], double spt[]);
 		
-		void getInstDisp(Doub& instDisp, Doub& globDisp, Doub& instOriMat, Doub& locOri, Doub& xGlob, int dv1, int dv2);
+		void getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], double spt[]);
 		
-		void getSectionDef(Doub& secDef, Doub& globDisp,  Doub& instOriMat, Doub& locOri, Doub& xGlob, Doub& dNdx, Doub& nVec, int dv1, int dv2);
+		void getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool stat);
 		
-		void getSolidStrain(Doub& strain, Doub& ux, Doub& dNdx, Doub& locOri, int dv1, int dv2, bool nLGeom);
+		void getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], int dv1, int dv2);
+		
+		void getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], int dv1, int dv2);
+		
+		void getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[], int dv1, int dv2, bool nLGeom);
+		
+// Equations
+
+        void getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
+		
+		void condenseMat(double mat[]);
+		
+		void getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
+		
 //end dup
 };
 

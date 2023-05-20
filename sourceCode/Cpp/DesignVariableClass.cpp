@@ -80,6 +80,10 @@ int DesignVariable::getComponent() {
 	return component;
 }
 
+int DesignVariable::getLayer() {
+	return layer;
+}
+
 DesignVariable* DesignVariable::getNext() {
 	return nextDV;
 }

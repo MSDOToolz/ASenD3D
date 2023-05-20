@@ -110,7 +110,7 @@ class ShellRegion:
                                 minPt = sN
                         meshNds[ndi] = minPt
                     mData['nodes'] = meshNds
-                    moved = True
+                    moved = True     
                 elif(self.edgeEls[3] < self.edgeEls[1]):
                     seg = Segment2D('line',[[-1.0,1.0],[-1.0,-1.0]],self.edgeEls[3])
                     bnd = seg.getNodesEdges()
@@ -127,12 +127,11 @@ class ShellRegion:
                         meshNds[ndi] = minPt
                     mData['nodes'] = meshNds
                     moved = True
-
                 
-                elLst = mData['elements']
-                ndLst = mData['nodes']
                 if(moved):                    
                     mData = mt.mergeDuplicateNodes(mData)
+                    elLst = mData['elements']
+                    ndLst = mData['nodes']     
                     for eli in range(0,len(elLst)):
                         srted = np.sort(elLst[eli])
                         for i in range(0,3):
@@ -150,6 +149,9 @@ class ShellRegion:
                             if(k < 0.0):
                                 elLst[eli,1] = n3
                                 elLst[eli,2] = n2
+                else:
+                    elLst = mData['elements']
+                    ndLst = mData['nodes'] 
 
                 XYZ = self.XYZCoord(ndLst)
                 
@@ -163,8 +165,6 @@ class ShellRegion:
         else:
             bndData = self.initialBoundary()
             mesh = Mesh2D(bndData['nodes'],bndData['elements'])
-            # print('boundaryElements')
-            # print(bndData['elements'])
             mData = mesh.createUnstructuredMesh(self.elType)
             XYZ = self.XYZCoord(mData['nodes'])
             mData['nodes'] = XYZ

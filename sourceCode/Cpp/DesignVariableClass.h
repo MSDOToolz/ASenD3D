@@ -46,6 +46,8 @@ class DesignVariable {
 		
 		int getComponent();
 		
+		int getLayer();
+		
 		DesignVariable* getNext();
 		
 		void destroy();

@@ -258,13 +258,13 @@ void Model::readModelInput(string fileName) {
 					} else if(headings[2] == "J" && dataLen == 1) {
 						newSec->setPolarMoment(stod(data[1]);
 					} else if(headings[2] == "stiffness" && dataLen == 3) {
-						intInp[0] = stoi(data[0]);
-						intInp[1] = stoi(data[1]);
+						intInp[0] = stoi(data[0]) - 1;
+						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
 						newSec->setStiffness(intInp[0],intInp[1],doubInp[0]);
 					} else if(headings[2] == "mass" && dataLen == 3) {
-						intInp[0] = stoi(data[0]);
-						intInp[1] = stoi(data[1]);
+						intInp[0] = stoi(data[0]) - 1;
+						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
 						newSec->setMass(intInp[0],intInp[1],doubInp[0]);
 					} else if(headings[2] == "expLoadCoef" && dataLen == 6) {
@@ -318,8 +318,8 @@ void Model::readModelInput(string fileName) {
 						}
 						newMat->setShearMod(doubInp);
 					} else if(headings[2] == "stiffness" && dataLen == 3) {
-						intInp[0] = stoi(data[0]);
-						intInp[1] = stoi(data[1]);
+						intInp[0] = stoi(data[0]) - 1;
+						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
 						newMat->setStiffness(intInp[0],intInp[1],doubInp[0]);
 					} 
@@ -651,8 +651,19 @@ void Model::readDesVarInput(string fileName) {
 						doubInp[1] = 1.0e+100;
 					}
 					newDVar->setActiveTime(doubInp);
-				} else if(headings[1] == "component" && dataLen == 1) {
-					newDVar->setComponent(stoi(data[0]);
+				} else if(headings[1] == "component") {
+					if(dataLen == 1) {
+					    newDVar->setComponent(stoi(data[0]);
+					} else if(dataLen == 2) {
+						intInp[0] = stoi(data[0]) - 1;
+						intInp[1] = stoi(data[1]) - 1;
+						if(intInp[0] >= intInp[1]) {
+							i1 = 6*intInp[1] + intInp[0];
+						} else {
+							i1 = 6*intInp[0] + intInp[1];
+						}
+						newDVar->setComponent(i1);
+					}
 				} else if(headings[1] == "layer" && dataLen == 1) {
 					newDVar->setLayer(stoi(data[0]));
 				} else if(headings[1] == "coefficients" && dataLen == 1) {

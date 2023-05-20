@@ -8,6 +8,11 @@ using namespace std;
 
 Material::Material(string newName) {
 	name = newName;
+	int i1;
+	for(i1 = 0; i1 < 36; i1++) {
+		stiffness[i1] = 0.0;
+	}
+	return;
 }
 
 void Material::setDensity(double newDen) {
@@ -122,8 +127,16 @@ double Material::getDensity() {
 	return density;
 }
 
-double* Material::getElastic() {
-	return &elastic[0];
+double* Material::getModulus() {
+	return &modulus[0];
+}
+
+double* Material::getPoissonRatio() {
+	return &poissonRatio[0];
+}
+
+double* Material::getShearMod() {
+	return &shearMod[0];
 }
 
 double* Material::getStiffMat() {
@@ -178,6 +191,10 @@ string Layer::getMatName() {
 	return matName;
 }
 
+Material* Layer::getMatPt() {
+	return matPtr;
+}
+
 double Layer::getThickness() {
 	return thickness;
 }
@@ -230,6 +247,13 @@ Layer* LayerList::getFirst() {
 
 Section::Section(string newType) {
 	type = newType;
+	int i1;
+	for (i1 = 0; i1 < 36; i1++) {
+		stiffness[i1] = 0.0;
+		mass[i1] = 0.0;
+	}
+	matPtr = NULL;
+	nextSection = NULL;
 	return;
 }
 
@@ -332,6 +356,34 @@ void Section::setSpecHeat(double specHeat) {
 
 Material* Section::getMaterial() {
 	return matPtr;
+}
+
+double* getOrientation() {
+	return &orientation[0];
+}
+
+double Section::getZOffset() {
+	return zOffset;
+}
+
+Layer* Section::getFirstLayer() {
+	return layers.getFirst();
+}
+
+double Section::getArea() {
+	return area;
+}
+
+double* Section::getAreaMoment() {
+	return &areaMoment[0];
+}
+
+double Section::getPolarMoment() {
+	return polarMoment;
+}
+
+double* Section::getStiffMat() {
+	return &stiffness[0];
 }
 
 void Section::setNext(Section *newNext) {

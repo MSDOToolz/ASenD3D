@@ -60,6 +60,11 @@ void Doub::cs() {
 	return;
 }
 
+void Doub::asn() {
+	val = asin(val);
+	return;
+}
+
 void Doub::atn() {
 	val = atan(val);
 	return;
@@ -148,6 +153,13 @@ void DiffDoub::sn() {
 void DiffDoub::cs() {
 	tmp = cos(val);
 	dval = -sin(val)*dval;
+	val = tmp;
+	return;
+}
+
+void DiffDoub::asn() {
+	tmp = asin(val);
+	dval = dval/cos(tmp);
 	val = tmp;
 	return;
 }
