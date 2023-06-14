@@ -20,7 +20,7 @@ readNodeResults: X
 solve: X
     elastic: yes
     thermal: no
-    nonLinearGeom: no
+    nonlinearGeom: no
     staticLoadTime:
     loadRampSteps:
     dynamic: no

@@ -15,6 +15,162 @@ const double r_pi = 3.14159265358979324;
 const double r_pio180 = 0.0174532925199432958;
 const double r_1ort3 = 0.577350269189625765;
 
+void Element::condenseMat(double mat[]) {
+	int stRow;
+	int endRow;
+	int endCol;
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	double xVec[33];
+	double bVec[33];
+	
+	stRow = numNds*dofPerNd;
+	endRow = stRow + numIntDof - 1;
+	endCol = numIntDof - 1;
+	qRFactor(internalMat, numIntDof, stRow, endRow, 0, endCol, 0);
+	
+	for (i1 = 0; i1 < stRow; i1++) {
+		bVec[i1] = 0.0;
+	}
+	
+	for (i1 = 0; i1 < stRow; i1++) {
+		i3 = stRow;
+		i4 = i1*numIntDof;
+		for (i2 = 0; i2 < numIntDof; i2++) {
+			bVec[i3] = internalMat[i4];
+			i3++;
+			i4++;
+		}
+		solveqRxEqb(xVec,internalMat,bVec,numIntDof,stRow,endRow,0,endCol,0);
+		i4 = i1;
+		for (i2 = 0; i2 < stRow; i2++) {
+			i5 = i2*numIntDof;
+			for (i3 = 0; i3 < numIntDof; i3++) {
+				mat[i4]+= internalMat[i5]*xVec[i3];
+				i5++;
+			}
+			i4+= (endRow+1);
+		}
+	}
+	
+	return;
+}
+
+void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int stRow;
+	int endRow;
+	int endCol;
+	int nd;
+	int dof;
+	int glbInd;
+	double xVec[33];
+	double bVec[33];
+
+    stRow = numNds*dofPerNd;
+    endRow = stRow + numIntDof - 1;
+	endCol = numIntDof - 1;
+	for (i1 = 0; i1 < stRow; i1++) {
+		bVec[i1] = 0.0;
+	}
+	
+	if(forSoln == 1) {
+		i2 = stRow;
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			bVec[i2] = internalRu[i1].val;
+			i2++;
+		}
+	} else {
+		i2 = stRow;
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			bVec[i2] = -internaldLdu[i1];
+			i2++;
+		}
+	}
+	
+	solveqRxEqb(xVec,internalMat,bVec,numIntDof,stRow,endRow,0,endCol,0);
+	for (i1 = 0; i1 < stRow; i1++) {
+		nd = dofTable[i1][0];
+		dof = dofTable[i1][1];
+		glbInd = ndAr[nd].ptr->getDofIndex(dof);
+		i3 = i1*numIntDof;
+		for (i2 = 0; i2 < numIntDof; i2++) {
+			extVec[glbInd]+= internalMat[i3]*xVec[i2];
+			i3++;
+		}
+	}		
+	
+	return;
+}
+
+void Element::updateInternal(double extVec[], int forSoln) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int stRow;
+	int endRow;
+	int endCol;
+	int nd;
+	int dof;
+	int glbInd;
+	double xVec[33];
+	double bVec[33];
+
+    stRow = numNds*dofPerNd;
+    endRow = stRow + numIntDof - 1;
+	endCol = numIntDof - 1;
+	for (i1 = 0; i1 < stRow; i1++) {
+		bVec[i1] = 0.0;
+	}
+	
+	if(forSoln == 1) {
+		i2 = stRow;
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			bVec[i2] = -internalRu[i1].val;
+			i2++;
+		}
+	} else {
+		i2 = stRow;
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			bVec[i2] = internaldLdu[i1];
+			i2++;
+		}
+	}
+	
+	for (i1 = 0; i1 < stRow; i1++) {
+		nd = dofTable[i1][0];
+		dof = dofTable[i1][1];
+		glbInd = ndAr[nd].ptr->getDofIndex(dof);
+		i3 = i1*numIntDof;
+		i4 = stRow;
+		for (i2 = 0; i2 < numIntDof; i2++) {
+			bVec[i4]-= internalMat[i3]*extVec[glbInd];
+			i3++;
+			i4++;
+		}
+	}
+	
+	solveqRxEqb(xVec,internalMat,bVec,numIntDof,stRow,endRow,0,endCol,0);
+	
+	if(forSoln == 1) {
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			internalDisp[i1]+= xVec[i1];
+		}
+	} else {
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			internalAdj[i1]+= xVec[i1];
+		}
+	}
+	
+	return;
+}
+
 //dup1
 
 void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]) {
@@ -161,10 +317,6 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Nd
 	return;
 }
 
-void Element::condenseMat(double mat[]) {
-	return;
-}
-
 void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn, bool nLGeom, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;
@@ -215,8 +367,9 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn,
 					i4++;
 				}
 			}
+			//Condense Matrix
+			condenseMat(dRdu);
 		}
-		//Condense Matrix
 	}
 	
 	for (i1 = 0; i1 < totDof; i1++) {
@@ -236,9 +389,6 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn,
 					i3++;
 				}
 			}
-		} else {
-			i2 = i1 - numNds*dofPerNd;
-			internalRu[i2].setVal(Rvec[i1]);
 		}
 	}
 	

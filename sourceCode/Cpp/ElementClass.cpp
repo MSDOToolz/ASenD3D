@@ -318,10 +318,14 @@ Element::Element(int newType) {
 	
 	if(numIntDof == 0) {
 		internalDisp = NULL;
+		internaldLdu = NULL;
+		internalAdj = NULL;
 		internalRu = NULL;
 		internalMat = NULL;
 	} else {
 		internalDisp = new double[numIntDof];
+		internaldLdu = new double[numIntDof];
+		internalAdj = new double[numIntDof];
 		internalRu = new Doub[numIntDof];
 		i1 = (numNds*dofPerNd + numIntDof)*numIntDof;
 		internalMat = new double[i1];

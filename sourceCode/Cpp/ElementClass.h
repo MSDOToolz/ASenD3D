@@ -25,6 +25,8 @@ class Element {
 		int *faceNds;
 		int numFaces;
 		double *internalDisp;
+		double *internaldLdu;
+		double *internalAdj;
 		Doub *internalRu;
 		double *internalMat;
 		IntList designVars;
@@ -70,11 +72,17 @@ class Element {
 		
 		void getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[], int dv1, int dv2, bool nLGeom);
 		
-// Equations
-
-        void getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
+//end dup
 		
+// Equations
 		void condenseMat(double mat[]);
+		
+		void updateExternal(double extVec[], int forSoln, NdPt ndAr[]);
+		
+		void updateInternal(double extVec[], int forSoln, NdPt ndAr[]);
+
+//dup1
+        void getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
 		
 		void getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
 		

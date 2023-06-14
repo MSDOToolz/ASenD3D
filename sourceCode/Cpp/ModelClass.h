@@ -2,6 +2,7 @@
 #define MODEL
 #include <fstream>
 #include <iostream>
+#include "JobClass.h"
 #include "NodeClass.h"
 #include "ElementClass.h"
 #include "SetClass.h"
@@ -25,30 +26,11 @@ class Model {
 		DesVarList designVars;
 		DVPt *dVarArray;
 		Objective objective;
+		Job job;
 	
 	public:
 	    Model();
 		
-		// Input
-		void readInputLine(std::ifstream& inFile,std::string& fileLine,std::string headings[],std::string data[], int& dataLen);
-		
-		void readModelInput(std::string fileName);
-		
-		void readConstraintInput(std::string fileName);
-		
-		void readLoadInput(std::string fileName);
-		
-		void readInitialState(std::string fileName);
-		
-		void readDesVarInput(std::string fileName);
-		
-		void readObjectiveInput(std::stine fileName);
-		
-		// Analysis
-		
-		// Output
-		
-		//
 		NodeList* getNodes();
 		
 		ElementList* getElements();
@@ -64,6 +46,36 @@ class Model {
 		ConstraintList* getConstraints();
 		
 		DesVarList* getDesignVars();
+		
+		void executeJob();
+
+        void destroy();	// Finish	
+		
+		// Input
+		
+		void readInputLine(std::ifstream& inFile,std::string& fileLine,std::string headings[],std::string data[], int& dataLen);
+		
+		void readJob(std::string fileName);
+		
+		void readModelInput(std::string fileName);
+		
+		void readConstraintInput(std::string fileName);
+		
+		void readLoadInput(std::string fileName);
+		
+		void readInitialState(std::string fileName);
+		
+		void readDesVarInput(std::string fileName);
+		
+		void readObjectiveInput(std::string fileName);
+		
+		void readDesVarValues(std::string fileName);
+		
+		// Analysis
+		
+		// Output
+		
+		//
 };
 
 #endif

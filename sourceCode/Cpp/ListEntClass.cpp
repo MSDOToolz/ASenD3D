@@ -1,5 +1,8 @@
 #include <cstddef>
+#include <string>
 #include "ListEntClass.h"
+
+using namespace std;
 
 IntListEnt::IntListEnt(int newVal) {
 	value = newVal;
@@ -145,6 +148,53 @@ void DoubList::destroy() {
 	return;
 }
 
+StringListEnt::StringListEnt(string newStr) {
+	value = newStr;
+	next = NULL;
+	return;
+}
+
+StringList::StringList() {
+	len = 0;
+	first = NULL;
+	last = NULL;
+	return;
+}
+
+int StringList::getLength() {
+	return len;
+}
+
+StringListEnt* StringList::getFirst() {
+	return first;
+}
+
+void StringList::addEntry(string newStr) {
+	StringListEnt *newEnt = new StringListEnt(newStr);
+	if(!first) {
+		first = newEnt;
+		last = newEnt;
+	} else {
+		last->next = newEnt;
+		last = newEnt;
+	}
+	len++;
+	return;
+}
+
+void StringList::destroy() {
+	StringList *thisEnt = first;
+	StringList *nextEnt;
+	while(thisEnt) {
+		nextEnt = thisEnt->next;
+		delete thisEnt;
+		thisEnt = nextEnt;
+	}
+	first = NULL;
+	last = NULL;
+	len = 0;
+	return;
+}
 
 MatrixEnt::MatrixEnt(int newRow, int newCol, double newVal) {
 	row = newRow;

@@ -1,3 +1,4 @@
+#include <string>
 #include "ElementClass.h"
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"

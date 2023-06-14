@@ -1,5 +1,7 @@
 #ifndef LISTENT
 #define LISTENT
+#include <string>
+
 class IntListEnt {
     public:
 	    int value;
@@ -52,6 +54,32 @@ class DoubList {
 		void addEntry(double newDoub);
 		
 		void addIfAbsent(double newDoub);
+		
+		void destroy();
+};
+
+class StringListEnt {
+	public:
+	    std::string value;
+		StringListEnt *next;
+		
+		StringListEnt(std::string newStr);
+};
+
+class StringList {
+	private:
+	    int len;
+		StringListEnt *first;
+		StringListEnt *last;
+		
+	public:
+	    StringList();
+		
+		int getLength();
+		
+		StringListEnt* getFirst();
+		
+		void addEntry(std::string newStr);
 		
 		void destroy();
 };
