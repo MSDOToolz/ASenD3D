@@ -121,6 +121,16 @@ void Material::setMaxStrEng(double newMax) {
 
 void Material::setMaxMises(double newMax) {
 	maxMises = newMax;
+	return;
+}
+
+void Material::setNext(Material *newMat) {
+	nextMat = newMat;
+	return;
+}
+
+string Material::getName() {
+	return name;
 }
 
 double Material::getDensity() {
@@ -143,6 +153,9 @@ double* Material::getStiffMat() {
 	return &stiffness[0];
 }
 
+Material* Material::getNext() {
+	return nextMat;
+}
 
 MaterialList::MaterialList() {
 	firstMat = NULL;
@@ -267,6 +280,11 @@ void Section::setMaterial(string newMat) {
 	return;
 }
 
+void Section::setMatPtr(Material *newMat) {
+	matPtr = newMat;
+	return;
+}
+
 void Section::setOrientation(double newOri[]) {
 	orientation[0] = newOri[0];
 	orientation[1] = newOri[1];
@@ -354,7 +372,15 @@ void Section::setSpecHeat(double specHeat) {
 	return;
 }
 
-Material* Section::getMaterial() {
+string Section::getElset() {
+	return elSetName;
+}
+
+string Section::getMaterial() {
+	return matName;
+}
+
+Material* Section::getMatPtr() {
 	return matPtr;
 }
 
@@ -384,6 +410,10 @@ double Section::getPolarMoment() {
 
 double* Section::getStiffMat() {
 	return &stiffness[0];
+}
+
+Section* Section::getNext() {
+	return nextSection;
 }
 
 void Section::setNext(Section *newNext) {

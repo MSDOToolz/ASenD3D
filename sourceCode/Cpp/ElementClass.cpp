@@ -4,6 +4,7 @@
 #include "DesignVariableClass.h"
 #include "NodeClass.h"
 #include "SectionClass.h"
+#include "FaceClass.h"
 #include "matrixFunctions.h"
 
 using namespace std;
@@ -29,34 +30,15 @@ Element::Element(int newType) {
 		nDim = 4;
 		defDim = 6;
 		numIP = 1;
-		numFaces = 4;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
 		dofTable = new int[i1][2];
 		intPts = new double[numIP][3];
 		ipWt = new double[numIP];
-		faceNds = new int[numFaces][6];
-		for (i1 = 0; i1 < numFaces; i1++) {
-			for (i2 = 0; i2 < 6; i2++) {
-				faceNds[i1][i2] = -1;
-			}
-		}
 		intPts[0][0] = 0.25;
 		intPts[0][1] = 0.25;
 		intPts[0][2] = 0.25;
 		ipWt[0] = r_1o6;
-		faceNds[0][0] = 0;
-		faceNds[0][1] = 2;
-		faceNds[0][2] = 1;
-		faceNds[1][0] = 0;
-		faceNds[1][1] = 1;
-		faceNds[1][2] = 3;
-		faceNds[2][0] = 1;
-		faceNds[2][1] = 2;
-		faceNds[2][2] = 3;
-		faceNds[3][0] = 0;
-		faceNds[3][1] = 3;
-		faceNds[3][2] = 2;
 	} else if(type == 6) {
 		numNds = 6;
 		dofPerNd = 3;
@@ -64,18 +46,11 @@ Element::Element(int newType) {
 		nDim = 6;
 		defDim = 6;
 		numIP = 2;
-		numFaces = 5;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
 		dofTable = new int[i1][2];
 		intPts = new double[numIP][3];
 		ipWt = new double[numIP];
-		faceNds = new int[numFaces][6];
-		for (i1 = 0; i1 < numFaces; i1++) {
-			for (i2 = 0; i2 < 6; i2++) {
-				faceNds[i1][i2] = -1;
-			}
-		}
 		intPts[0][0] = r_1o3;
 		intPts[0][1] = r_1o3;
 		intPts[0][2] = -r_1ort3;
@@ -84,24 +59,6 @@ Element::Element(int newType) {
 		intPts[1][2] = r_1ort3;
 		ipWt[0] = 0.5;
 		ipWt[1] = 0.5;
-		faceNds[0][0] = 0;
-		faceNds[0][1] = 2;
-		faceNds[0][2] = 1;
-		faceNds[1][0] = 3;
-		faceNds[1][1] = 4;
-		faceNds[1][2] = 5;
-		faceNds[2][0] = 0;
-		faceNds[2][1] = 1;
-		faceNds[2][2] = 4;
-		faceNds[2][3] = 3;
-		faceNds[3][0] = 1;
-		faceNds[3][1] = 2;
-		faceNds[3][2] = 5;
-		faceNds[3][3] = 4;
-		faceNds[4][0] = 0;
-		faceNds[4][1] = 3;
-		faceNds[4][2] = 5;
-		faceNds[4][3] = 2;
 	} else if(type == 8 || type == 81) {
 		numNds = 8;
 		dofPerNd = 3;
@@ -114,18 +71,11 @@ Element::Element(int newType) {
 		}
 		defDim = 6;
 		numIP = 8;
-		numFaces = 6;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
 		dofTable = new int[i1][2];
 		intPts = new double[numIP][3];
 		ipWt = new double[numIP];
-		faceNds = new int[numFaces][6];
-		for (i1 = 0; i1 < numFaces; i1++) {
-			for (i2 = 0; i2 < 6; i2++) {
-				faceNds[i1][i2] = -1;
-			}
-		}
 		int sVal[2] = {-r_1ort3,r_1ort3};
 		i4 = 0;
 		for (i1 = 0; i1 < 2; i1++) {
@@ -138,30 +88,6 @@ Element::Element(int newType) {
 				}
 			}
 		}
-		faceNds[0][0] = 3;
-		faceNds[0][1] = 2;
-		faceNds[0][2] = 1;
-		faceNds[0][3] = 0;
-		faceNds[1][0] = 4;
-		faceNds[1][1] = 5;
-		faceNds[1][2] = 6;
-		faceNds[1][3] = 7;
-		faceNds[2][0] = 0;
-		faceNds[2][1] = 1;
-		faceNds[2][2] = 5;
-		faceNds[2][3] = 4;
-		faceNds[3][0] = 1;
-		faceNds[3][1] = 2;
-		faceNds[3][2] = 6;
-		faceNds[3][3] = 5;
-		faceNds[4][0] = 2;
-		faceNds[4][1] = 3;
-		faceNds[4][2] = 7;
-		faceNds[4][3] = 6;
-		faceNds[5][0] = 3;
-		faceNds[5][1] = 0;
-		faceNds[5][2] = 4;
-		faceNds[5][3] = 7;
 		if(type == 81) {
 			i3 = 24;
 			for (i1 = 8; i1 < 11; i1++) {
@@ -179,18 +105,11 @@ Element::Element(int newType) {
 		nDim = 6;
 		defDim = 9;
 		numIP = 3;
-		numFaces = 2;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
 		dofTable = new int[i1][2];
 		intPts = new double[numIP][3];
 		ipWt = new double[numIP];
-		faceNds = new int[numFaces][6];
-		for (i1 = 0; i1 < numFaces; i1++) {
-			for (i2 = 0; i2 < 6; i2++) {
-				faceNds[i1][i2] = -1;
-			}
-		}
 		intPts[0][0] = r_1o6;
 		intPts[0][1] = r_1o6;
 		intPts[0][2] = 0.0;
@@ -203,12 +122,6 @@ Element::Element(int newType) {
 		ipWt[0] = r_1o6;
 		ipWt[1] = r_1o6;
 		ipWt[2] = r_1o6;
-		faceNds[0][0] = 0;
-		faceNds[0][1] = 1;
-		faceNds[0][2] = 2;
-		faceNds[1][0] = 0;
-		faceNds[1][1] = 2;
-		faceNds[1][2] = 1;
 		dofTable[18][0] = 3;
 		dofTable[18][1] = 2;
 		dofTable[19][0] = 4;
@@ -222,18 +135,11 @@ Element::Element(int newType) {
 		nDim = 10;
 		defDef = 9;
 		numIP = 4;
-		numFaces = 2;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
 		dofTable = new int[i1][2];
 		intPts = new double[numIP][3];
 		ipWt = new double[numIP];
-		faceNds = new int[numFaces][6];
-		for (i1 = 0; i1 < numFaces; i1++) {
-			for (i2 = 0; i2 < 6; i2++) {
-				faceNds[i1][i2] = -1;
-			}
-		}
 		intPts[0][0] = -r_1ort3;
 		intPts[0][1] = -r_1ort3;
 		intPts[0][2] = 0.0;
@@ -250,14 +156,6 @@ Element::Element(int newType) {
 		ipWt[1] = 1.0;
 		ipWt[2] = 1.0;
 		ipWt[3] = 1.0;
-	    faceNds[0][0] = 0;
-		faceNds[0][1] = 1;
-		faceNds[0][2] = 2;
-		faceNds[0][3] = 3;
-		faceNds[1][0] = 0;
-		faceNds[1][1] = 3;
-		faceNds[1][2] = 2;
-		faceNds[1][3] = 1;
 		dofTable[24][0] = 4;
 		dofTable[24][1] = 0;
 		dofTable[25][0] = 5;
@@ -281,18 +179,11 @@ Element::Element(int newType) {
 		nDim = 3;
 		defDim = 6;
 		numIP = 2;
-		numFaces = 1;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
 		dofTable = new int[i1][2];
 		intPts = new double[numIP][3];
 		ipWt = new double[numIP];
-		faceNds = new int[numFaces][6];
-		for (i1 = 0; i1 < numFaces; i1++) {
-			for (i2 = 0; i2 < 6; i2++) {
-				faceNds[i1][i2] = -1;
-			}
-		}
 		intPts[0][0] = -r_1ort3;
 		intPts[0][1] = 0.0;
 		intPts[0][2] = 0.0;
@@ -350,13 +241,167 @@ void Element::setNodes(int newNds[]) {
 	return;
 }
 
+void Element::setSectPtr(Section *newSec) {
+	sectPtr = newSec;
+	return;
+}
+
+void Element::initializeFaces() {
+	Face *newFc;
+	
+	if(type == 4) {
+		newFc = new Face(3);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,2,nodes[2]);
+		newFc->setNode(2,1,nodes[1]);
+		faces.addFace(newFc);
+		newFc = new Face(3);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,1,nodes[1]);
+		newFc->setNode(2,3,nodes[3]);
+		faces.addFace(newFc);
+		newFc = new Face(3);
+		newFc->setNode(0,1,nodes[1]);
+		newFc->setNode(1,2,nodes[2]);
+		newFc->setNode(2,3,nodes[3]);
+		faces.addFace(newFc);
+		newFc = new Face(3);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,3,nodes[3]);
+		newFc->setNode(2,2,nodes[2]);
+		faces.addFace(newFc);
+	} else if(type == 6) {
+        newFc = new Face(3);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,2,nodes[2]);
+		newFc->setNode(2,1,nodes[1]);
+		faces.addFace(newFc);
+		newFc = new Face(3);
+		newFc->setNode(0,3,nodes[3]);
+		newFc->setNode(1,4,nodes[4]);
+		newFc->setNode(2,5,nodes[5]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,1,nodes[1]);
+		newFc->setNode(2,4,nodes[4]);
+		newFc->setNode(3,3,nodes[3]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,1,nodes[1]);
+		newFc->setNode(1,2,nodes[2]);
+		newFc->setNode(2,5,nodes[5]);
+		newFc->setNode(3,4,nodes[4]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,3,nodes[3]);
+		newFc->setNode(2,5,nodes[5]);
+		newFc->setNode(3,2,nodes[2]);
+		faces.addFace(newFc);
+	} else if(type == 8 || type == 81) {
+		newFc = new Face(4);
+		newFc->setNode(0,3,nodes[3]);
+		newFc->setNode(1,2,nodes[2]);
+		newFc->setNode(2,1,nodes[1]);
+		newFc->setNode(3,0,nodes[0]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,4,nodes[4]);
+		newFc->setNode(1,5,nodes[5]);
+		newFc->setNode(2,6,nodes[6]);
+		newFc->setNode(3,7,nodes[7]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,1,nodes[1]);
+		newFc->setNode(2,5,nodes[5]);
+		newFc->setNode(3,4,nodes[4]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,1,nodes[1]);
+		newFc->setNode(1,2,nodes[2]);
+		newFc->setNode(2,6,nodes[6]);
+		newFc->setNode(3,5,nodes[5]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,2,nodes[2]);
+		newFc->setNode(1,3,nodes[3]);
+		newFc->setNode(2,7,nodes[7]);
+		newFc->setNode(3,6,nodes[6]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,3,nodes[3]);
+		newFc->setNode(1,0,nodes[0]);
+		newFc->setNode(2,4,nodes[4]);
+		newFc->setNode(3,7,nodes[7]);
+		faces.addFace(newFc);
+	} else if(type == 3) {
+		newFc = new Face(3);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,1,nodes[1]);
+		newFc->setNode(2,2,nodes[2]);
+		faces.addFace(newFc);
+		newFc = new Face(3);
+		newFc->setNode(0,2,nodes[2]);
+		newFc->setNode(1,1,nodes[1]);
+		newFc->setNode(2,0,nodes[0]);
+		faces.addFace(newFc);
+	} else if(type == 41) {
+		newFc = new Face(4);
+		newFc->setNode(0,0,nodes[0]);
+		newFc->setNode(1,1,nodes[1]);
+		newFc->setNode(2,2,nodes[2]);
+		newFc->setNode(3,3,nodes[3]);
+		faces.addFace(newFc);
+		newFc = new Face(4);
+		newFc->setNode(0,3,nodes[3]);
+		newFc->setNode(1,2,nodes[2]);
+		newFc->setNode(2,1,nodes[1]);
+		newFc->setNode(3,0,nodes[0]);
+		faces.addFace(newFc);
+	} 
+	
+	return;
+}
+
 void Element::setNext(Element *newEl) {
 	nextEl = newEl;
 	return;
 }
 
+int Element::getLabel() {
+	return label;
+}
+
+int Element::getNumNds() {
+	return numNds;
+}
+
+int Element::getDofPerNd() {
+	return dofPerNd;
+}
+
+int* Element::getNodes() {
+	return nodes;
+}
+
+IntList* Element::getDesignVars() {
+	return &designVars;
+}
+
+Face* Element::getFirstFace() {
+	return faces.getFirst();
+}
+
 Element* Element::getNext() {
 	return nextEl;
+}
+
+void Element::addDesignVariable(int dIndex, double coef) {
+	designVars.addEntry(dVNum);
+	dvCoef.addEntry(coef);
+	return;
 }
 
 ElPt::ElPt() {

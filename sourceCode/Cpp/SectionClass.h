@@ -21,6 +21,7 @@ class Material {
 		double maxShearStrain[3];
 		double maxStrEng;
 		double maxMises;
+		Material *nextMat;
 		
 	public:
 	    Material(std::string newName);
@@ -57,6 +58,10 @@ class Material {
 		
 		void setMaxMises(double newMax);
 		
+		void setNext(Material *newNext);
+		
+		std::string getName();
+		
 		double getDensity();
 		
 		double* getModulus();
@@ -66,6 +71,8 @@ class Material {
 		double* getShearMod();
 
         double* getStiffMat();
+		
+		Material* getNext();	
 		
 };
 
@@ -157,6 +164,8 @@ class Section {
 		
 		void setMaterial(std::string newMat);
 		
+		void setMatPtr(Material *newMat);
+		
 		void setOrientation(double newOri[]);
 		
 		void setZOffset(double newZOff);
@@ -179,7 +188,11 @@ class Section {
 		
 		void setSpecHeat(double specHeat);
 		
-		Material* getMaterial();
+		std::string getElset();
+		
+		std::string getMaterial();
+		
+		Material* getMatPtr();
 		
 		double* getOrientation();
 		
@@ -194,6 +207,8 @@ class Section {
 		double getPolarMoment();
 		
 		double* getStiffMat();
+		
+		Section* getNext();
 		
 		void setNext(Section *newNext);
 };

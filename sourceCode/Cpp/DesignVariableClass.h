@@ -15,6 +15,7 @@ class DesignVariable {
 		DoubList coefs;
 		Doub value;
 		DiffDoub diffVal;
+		IntList compElList;
 		DesignVariable *nextDV;
 		
     public:
@@ -36,9 +37,17 @@ class DesignVariable {
 		
 		void setNext(DesignVariable* newNext);
 		
-		void addCoefficient(double newCoef);		
+		void addCoefficient(double newCoef);
+
+        void addCompEl(int newEl);		
 		
 		std::string getCategory();
+		
+		std::string getElSet();
+		
+		std::string getNdSet();
+		
+		DoubList* getCoefs();
 		
 		void getValue(Doub& inp);
 		

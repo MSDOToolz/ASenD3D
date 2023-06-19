@@ -62,8 +62,25 @@ void DesignVariable::addCoefficient(double newCoef) {
 	return;
 }
 
+void DesignVariable::addCompEl(int newEl) {
+	compElList.addIfAbsent(newEl);
+	return;
+}
+
 string DesignVariable::getCategory() {
 	return category;
+}
+
+string DesignVariable::getElSet() {
+	return elSetName;
+}
+
+string DesignVariable::getNdSet() {
+	return ndSetName;
+}
+
+DoubList* DesignVariable::getCoefs() {
+	return &coefs;
 }
 
 void DesignVariable::getValue(Doub& inp) {

@@ -24,6 +24,10 @@ IntListEnt* IntList::getFirst() {
 	return first;
 }
 
+IntListEnt* IntList::getLast() {
+	return last;
+}
+
 void IntList::addEntry(int newInt) {
 	IntListEnt *newEnt = new IntListEnt(newInt);
 	if(!first) {

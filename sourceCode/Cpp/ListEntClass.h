@@ -23,6 +23,8 @@ class IntList {
 		
 		IntListEnt* getFirst();
 		
+		IntListEnt* getLast();
+		
 		void addEntry(int newInt);
 		
 		void addIfAbsent(int newInt);

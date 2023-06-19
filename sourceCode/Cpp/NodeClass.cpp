@@ -10,6 +10,7 @@ using namespace std;
 
 Node::Node(int newLab) {
 	label = newLab;
+	numDof = 3;
 	int i1;
 	for (i1=0; i1 < 6; i1++) {
 		displacement[i1] = 0.0;
@@ -20,10 +21,20 @@ Node::Node(int newLab) {
 	nextNd = NULL;
 }
 
+void Node::setNumDof(int nDof) {
+	numDof = nDof;
+	return;
+}
+
 void Node::setCrd(double newCrd[]) {
 	coord[0] = newCrd[0];
 	coord[1] = newCrd[1];
 	coord[2] = newCrd[2];
+	return;
+}
+
+void Node::setDofIndex(int dof, int index) {
+	dofIndex[dof] = index;
 	return;
 }
 
@@ -70,6 +81,18 @@ void Node::setInitialTdot(double newTdot) {
 void Node::addDesignVariable(int dIndex, double coef) {
 	dVars.addEntry(dIndex);
 	coefs.addEntry(coef);
+	return;
+}
+
+IntList* Node::getDesignVars() {
+	return &dVars;
+}
+
+void Node::getCrd(double crdOut[]) {
+	crdOut[0] = coord[0];
+	crdOut[1] = coord[1];
+	crdOut[2] = coord[2];
+	return;
 }
 
 int Node::getLabel() {

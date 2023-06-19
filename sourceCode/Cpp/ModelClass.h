@@ -5,6 +5,7 @@
 #include "JobClass.h"
 #include "NodeClass.h"
 #include "ElementClass.h"
+#include "FaceClass.h"
 #include "SetClass.h"
 #include "SectionClass.h"
 #include "ConstraintClass.h"
@@ -72,6 +73,14 @@ class Model {
 		void readDesVarValues(std::string fileName);
 		
 		// Analysis
+		
+		void reorderNodes(int blockDim);
+		
+		void updateReference();
+		
+		void findSurfaceFaces();
+		
+		void analysisPrep(int blockDim);
 		
 		// Output
 		

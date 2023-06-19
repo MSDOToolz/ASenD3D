@@ -12,6 +12,16 @@ const double magtol = 1.0e-8;
 const double maxMag = 1.0e+12;
 const double minMag = 1.0e-12;
 
+double getDist(double p1[], double p2[]) {
+	double dist;
+	double vec[3];
+	vec[0] = p1[0] - p2[0];
+	vec[1] = p1[1] - p2[1];
+	vec[2] = p1[2] - p2[2];
+	dist = sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+	return dist;
+}
+
 void crossProd(double prod[], double v1[], double v2[]) {
 	prod[0] = v1[1]*v2[2] - v1[2]*v2[1];
 	prod[1] = v1[2]*v2[0] - v1[0]*v2[2];

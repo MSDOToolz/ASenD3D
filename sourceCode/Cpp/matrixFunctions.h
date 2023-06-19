@@ -3,6 +3,8 @@
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
 
+double getDist(double p1[], double p2[]);
+
 void crossProd(double prod[], double v1[], double v2[]);
 
 void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);

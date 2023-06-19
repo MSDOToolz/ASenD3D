@@ -544,6 +544,7 @@ void Model::readModelInput(string fileName) {
 		throw invalid_argument(errSt);
 	}
 	
+	// Populate node array
 	i1 = nodes.getLength();
 	nodeArray = new NdPt[i1];
 	newNd = nodes.getFirst();
@@ -553,6 +554,7 @@ void Model::readModelInput(string fileName) {
 		newNd = newNd->getNext();
 	}
 	
+	// Populate element array
 	i1 = elements.getLength();
 	elementArray = new ElPt[i1];
 	newEl = elements.getFirst();
@@ -806,6 +808,7 @@ void Model::readDesVarInput(string fileName) {
 		throw invalid_argument(errSt);
 	}
 	
+	// Populate design variable array
 	i1 = designVars.getLength();
 	dVarArray = new DVPt[i1];
 	newDVar = designVars.getFirst();

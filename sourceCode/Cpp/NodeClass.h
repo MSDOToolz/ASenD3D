@@ -8,6 +8,7 @@
 class Node {
 	private:
 	    int label;
+		int numDof;
 		int dofIndex[6];
 	    double coord[3];
 		double displacement[6];
@@ -32,7 +33,11 @@ class Node {
     public:
 	    Node(int newLab);
 		
+		void setNumDof(int nDof);
+		
 		void setCrd(double newCrd[]);
+		
+		void setDofIndex(int dof, int index);
 		
 		void setInitialDisp(double newDisp[]);
 		
@@ -45,6 +50,12 @@ class Node {
 		void setInitialTdot(double newTdot);
 		
 		void addDesignVariable(int dIndex, double coef);
+		
+		IntList* getDesignVars();
+		
+		void getCrd(double crdOut[]);
+		
+		int getLabel();
 		
 		//dup1
 		void getCrd(Doub crdOut[], DVPt dvAr[]);

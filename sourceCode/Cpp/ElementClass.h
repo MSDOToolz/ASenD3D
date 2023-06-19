@@ -7,6 +7,7 @@
 #include "NodeClass.h"
 #include "SectionClass.h"
 #include "matrixFunctions.h"
+#include "FaceClass.h"
 
 class Element {
 	private:
@@ -22,8 +23,7 @@ class Element {
 		double *intPts;
 		double *ipWt;
 		int numIP;
-		int *faceNds;
-		int numFaces;
+		FaceList faces;
 		double *internalDisp;
 		double *internaldLdu;
 		double *internalAdj;
@@ -39,11 +39,29 @@ class Element {
 		
 		void setLabel(int newLab);
 
-        void setNodes(int newNds[]);	
+        void setNodes(int newNds[]);
+
+        void setSectPtr(Section *newSec);
+
+        void initializeFaces();		
 		
 		void setNext(Element *newEl);
 		
+		int getLabel();
+		
+		int getNumNds();
+		
+		int getDofPerNd();
+		
+		int* getNodes();
+		
+		IntList* getDesignVars();
+		
+		Face* getFirstFace();
+		
 		Element* getNext();
+		
+		void addDesignVariable(int dIndex, double coef);
 //dup1
 
 // Properties
