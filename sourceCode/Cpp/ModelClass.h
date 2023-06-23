@@ -82,6 +82,12 @@ class Model {
 		
 		void analysisPrep(int blockDim);
 		
+		void solveStep();
+		
+		void solve();
+		
+		void eigenSolve();
+		
 		// Output
 		
 		//

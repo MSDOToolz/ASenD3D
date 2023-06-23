@@ -1,6 +1,7 @@
 import numpy as np
 import os
-from ruamel.yaml import YAML
+##from ruamel.yaml import YAML
+import yaml
 
 class ModelInputBuilder():
 
@@ -279,10 +280,10 @@ class ModelInputBuilder():
         self.modelData['materials'].append(newMat)
         
     def writeModelInput(self,fileName):
-        yamlReader = YAML() ## or YAML(typ='safe'), default is 'rt' for round trip
+        #yamlReader = YAML() ## or YAML(typ='safe'), default is 'rt' for round trip
 
         outFile = open('temp.yaml','w')
-        yamlReader.dump(self.modelData,outFile)
+        yaml.dump(self.modelData,stream=outFile,sort_keys=False)
         outFile.close()
         
         inFile = open('temp.yaml','r')
