@@ -5,23 +5,27 @@ from ShellRegionClass import *
 class Surface():
 
     def __init__(self,regionList=[],regionNames=[],meshList=[],meshNames=[]):
-        self.shellRegions = regionList
-        self.regionNames = regionNames
-        self.meshes = meshList
-        self.meshNames = meshNames
+        self.shellRegions = list()
+        self.shellRegions.extend(regionList)
+        self.regionNames = list()
+        self.regionNames.extend(regionNames)
+        self.meshes = list()
+        self.meshes.extend(meshList) 
+        self.meshNames = list()
+        self.meshNames.extend(meshNames)
         
-    def addShellRegion(self,regType,keyPts,numEls,name='',natSpaceCrds=[],elType='quad',meshMethod='free'):
+    def addShellRegion(self,regType,keyPts,numEls,name=None,natSpaceCrds=[],elType='quad',meshMethod='free'):
         self.shellRegions.append(ShellRegion(regType,keyPts,numEls,natSpaceCrds,elType,meshMethod))
-        if(name == ''):
+        if(name == None):
             numReg = len(self.shellRegions)
             regName = 'Sub-Region_' + str(numReg)
             self.regionNames.append(regName)
         else:
             self.regionNames.append(name)
         
-    def addMesh(self,meshData,name=''):
+    def addMesh(self,meshData,name=None):
         self.meshes.append(meshData)
-        if(name == ''):
+        if(name == None):
             numMsh = len(self.meshes)
             meshName = 'Sub-Mesh_' + str(numMsh)
             self.meshNames.append(meshName)

@@ -5,7 +5,8 @@ from Segment2DClass import *
 class Boundary2D():
 
     def __init__(self,segList=[]):
-        self.segList = segList
+        self.segList = list()
+        self.segList.extend(segList)
         
     def addSegment(self,segType,keyPts,numEls):
         self.segList.append(Segment2D(segType,keyPts,numEls))

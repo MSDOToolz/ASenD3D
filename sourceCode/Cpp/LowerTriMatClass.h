@@ -1,0 +1,35 @@
+#ifndef LOWERTRIMAT
+#define LOWERTRIMAT
+#include "ListEntClass.h"
+#include "ConstraintClass.h"
+
+class LowerTriMat {
+	private:
+	    double *mat;
+		int *range;
+		int *minCol;
+		double *zVec;
+		int dim;
+		int size;
+		int maxBandwidth;
+		bool allocated;
+	
+	public:
+        LowerTriMat();
+		
+		void setDim(int newDim);
+		
+		void allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int maxBw);
+		
+		bool isAllocated();
+		
+		void populateFromSparseMat(SparseMat& spMat, ConstraintList& cList);
+		
+		void ldlFactor();
+		
+		void ldlSolve(double solnVec[], double rhs[]);
+		
+		void destroy();
+};
+
+#endif

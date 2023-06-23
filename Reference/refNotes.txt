@@ -1,0 +1,88 @@
+
+General try/catch:
+try {
+    // something
+} catch(...) {
+    // something else
+}
+
+Strings:
+
+    string name = "Mary"
+    name[0] = "M"
+
+    member functions: (Murtach p. 221,223,225)
+	    length()   /Length of string
+		find(str) /Returns index of the first occurence of str, -1 if none
+		find(str,i) /Returns the index of first occurence of str starting from index i, -1 if none
+		substr(i) /Returns substring starting at i and going to the end
+		substr(i, len)  /Starting at i going for specified length
+
+    conversion (Murtach p. 199)
+	   to_string(num) 
+	   stoi(str) /  Convert string to an integer
+	   stod(str) / Convert string to a double
+	   
+File I/O:
+    Output: (169)
+	    ofstream output_file;
+		output_file.open("temps.txt");
+		output_file << fixed << setprecision(int);  /int is the number of decimal places
+		// default is scientific notation, say fixed to specify fixed notation.
+		output_file << 48.4 << ', ' << 58.2 << '\n';
+		
+	Input: (171)
+	    ifstream input_file;
+		input_file.open("myFile.txt");
+		string id;
+		string descr;
+		string price;
+		while(!input_file.eof()) {
+		    getline(input_file, id, ',');
+			getline(input_file, descr, ',');
+			getline(input_file, price);
+		}
+		
+		or,
+		double high;
+		double low;
+		input_file >> high >> low;
+
+Math:
+    #include <cmath>
+	using namespace std;
+	
+	sqrt();
+	pow(base,exponent);
+	cos();
+	sin();
+	tan();
+	acos();
+	asin();
+	atan();
+	exp();
+	log(); // natural log
+	log10(); 
+		
+Complex:
+
+   // Program illustrating the use of real() and
+	// imag() function
+	#include <iostream>	
+
+	// for std::complex, std::real, std::imag
+	#include <complex>	
+	using namespace std;
+
+	// driver function
+	int main()
+	{
+	// defines the complex number: (10 + 2i)
+	std::complex<double> mycomplex(10.0, 2.0);
+
+	// prints the real part using the real function
+	cout << "Real part: " << real(mycomplex) << endl;
+	cout << "Imaginary part: " << imag(mycomplex) << endl;
+	return 0;
+	}
+ 

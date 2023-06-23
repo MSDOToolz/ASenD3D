@@ -1,0 +1,128 @@
+## AStrO Commands
+
+readModelInput: X
+    fileName:
+readLoads: X
+    fileName:
+readConstraints: X
+    fileName:
+readInitialState: X 
+    fileName:
+readDesignVarInput: X
+    fileName:
+readDesignVarValues: X
+    fileName:
+readObjectiveInput: X
+    fileName:
+readNodeResults: X
+    fileName:
+
+solve: X
+    elastic: yes
+    thermal: no
+    nonlinearGeom: no
+    staticLoadTime:
+    loadRampSteps:
+    dynamic: no
+    timeStep: 0.01
+    newmarkBeta:
+    newmarkGamma:
+    simPeriod:
+    saveSolnHist: no
+    solverMethod:
+    solverBandwidth:
+    solverBlockDim:
+
+modalAnalysis: X
+    type: buckling
+    numModes: 10
+    
+setSolnToMode: X
+    solnField: displacement, velocity, acceleration
+    mode:
+    maxAmplitude:
+
+calcObjective: X
+    
+calcObjGradient: X
+
+writeNodeResults: X
+    fileName:
+    nodeSet:
+    fields:
+        - temperature
+        - tdot
+        - displacement
+        - velocity
+        - acceleration
+        - reactionForce
+        - reactionHeatGen
+    timeSteps: all
+    ## or
+    timeSteps:
+        - 1
+        - 3
+        - 7
+        - [10,100,10]
+
+writeElementResults: X
+    fileName:
+    elementSet: 
+    fields:
+        - stress
+        - strain
+        - strainEnergyDen
+        - heatFlux
+        - tempGradient
+        - temperature
+        - shellDeformation
+        - shellForceMoment
+        - beamDeformation
+        - beamForceMoment
+    timeSteps: all
+    ## or
+    timeSteps:
+        - 1
+        - 3
+        - 7
+        - [10,100,10]
+        
+writeModalResults: X
+    fileName:
+    writeModes: yes
+
+writeDesignVarValues: X
+    fileName:
+    include:
+        - category
+        - component
+        - layer
+        - nodeSet
+        - elementSet
+        - activeTime
+
+writeNodeCoordinates: X
+    fileName:
+    nodeSet:
+        
+writeElementProperties: X
+    fileName:
+    elementSet:
+    properties:
+        - density
+        - modulus
+        ...
+
+writeObjective: X
+    fileName:
+    include:
+        - category
+        - operator
+        - component
+        - layer
+        - coefficient
+        - exponent
+        - elementSet
+        - nodeSet
+        - activeTime
+    writeGradient: yes
