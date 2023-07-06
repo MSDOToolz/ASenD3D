@@ -141,7 +141,7 @@ loads:
 ## Alternative loads
 
 loads:
-    - type: nodal, bodyForce, gravitational, centrifugal, surfacePressure, surfaceTraction, bodyHeatGen, surfaceFlux
+    - type: nodalForce, bodyForce, gravitational, centrifugal, surfacePressure, surfaceTraction, nodalHeatGen, bodyHeatGen, surfaceFlux
       activeTime: [start,end]
       center:
       axis:
@@ -160,6 +160,9 @@ initialState:
         - [nd,Vx,Vy,Vz,VRx,VRy,VRz]
     acceleration:
         - [nd,Ax,Ay,Az,ARx,ARy,ARz]
+    temperature:
+        - [nd, T]
+    tdot:
         
 ## or
 

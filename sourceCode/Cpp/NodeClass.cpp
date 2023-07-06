@@ -98,6 +98,11 @@ void Node::getCrd(double crdOut[]) {
 int Node::getLabel() {
 	return label;
 }
+
+int Node::getNumDof() {
+	return numDof;
+}
+
 //dup1
 void Node::getCrd(Doub crdOut[], DVPt dvAr[]) {
 	crdOut[0].setVal(coord[0]);
@@ -139,7 +144,7 @@ void Node::getDisp(Doub disp[]) {
 //end dup
 
 int Node::getDofIndex(int dof) {
-	return dofIndex[dof-1];
+	return dofIndex[dof];
 }
 
 Node* Node::getNext() {

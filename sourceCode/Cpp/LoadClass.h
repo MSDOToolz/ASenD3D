@@ -27,7 +27,11 @@ class Load {
 		
 		void setNodeSet(std::string newSet);
 		
+		void setNdSetPtr(Set *newSet);
+		
 		void setElSet(std::string newSet);
+		
+		void setElSetPtr(Set *newSet);
 		
 		void setLoad(double newLd[]);
 		

@@ -26,8 +26,18 @@ void Load::setNodeSet(string newSet) {
 	return;
 }
 
+void Load::setNdSetPtr(Set *newSet) {
+	ndSetPtr = newSet;
+	return;
+}
+
 void Load::setElSet(string newSet) {
 	elementSet = newSet;
+	return;
+}
+
+void Load::setElSetPtr(Set *newSet) {
+	elSetPtr = newSet;
 	return;
 }
 

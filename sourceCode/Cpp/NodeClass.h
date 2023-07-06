@@ -57,6 +57,8 @@ class Node {
 		
 		int getLabel();
 		
+		int getNumDof();
+		
 		//dup1
 		void getCrd(Doub crdOut[], DVPt dvAr[]);
 		

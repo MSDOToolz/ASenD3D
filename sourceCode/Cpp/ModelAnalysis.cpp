@@ -3,6 +3,7 @@
 #include "ElementClass.h"
 #include "DesignVariableClass.h"
 #include "FaceClass.h"
+#include "DiffDoubClass.h"
 #include "matrixFunctions.h"
 
 using namespace std;
@@ -128,6 +129,8 @@ void Model::reorderNodes(int blockDim) {
 		}
 		thisNd = thisNd->next;
 	}
+	elMatDim = i2;
+	elasticMat.setDim(elMatDim);
 
     for (i1 = 0; i1 < numNodes; i1++) {
 		nodalConn[i1].destroy();
@@ -181,10 +184,32 @@ void Model::updateReference() {
 		thisSec = thisSec->getNext();
 	}
 	
-	// Build DV reference list for nodes and elements
-	DesignVariable *thisDV = designVars.getFirst();
+	// Set node & element set pointers in loads
 	string ndSet;
 	Set *nsPtr;
+	Load *thisLoad = loads.getFirst();
+	while(thisLoad) {
+		ndSet = thisLoad->getNodeSet();
+		nsPtr = nodeSets.getFirst();
+		while(nsPtr) {
+			if(nsPtr->getName() == ndSet) {
+				thisLoad->setNdSetPtr(nsPtr);
+			}
+			nsPtr = nsPtr->getNext();
+		}
+		elSet = thisLoad->getElSet();
+		esPtr = elementSets.getFirst();
+		while(esPtr) {
+			if(esPtr->getName() == elSet) {
+				thisLoad->setElSetPtr(esPtr);
+			}
+			esPtr = esPtr->getNext();
+		}
+		thisLoad = thisLoad->getNext();
+	}
+	
+	// Build DV reference list for nodes and elements
+	DesignVariable *thisDV = designVars.getFirst();
 	DoubList *coefs;
 	DoubListEnt *thisDoub;
 	int coefLen;
@@ -322,6 +347,43 @@ void Model::analysisPrep(int blockDim) {
 	updateReference();
 	reorderNodes(blockDim);
 	findSurfaceFaces();
+	
+	return;
+}
+
+void Model::buildElasticAppLoad(double appLd[], double time) {
+	// Construct loads from input file
+	int i1;
+	int numDof;
+	int dofInd;
+	Load *thisLoad = loads.getFirst();
+	string ldType;
+	double actTime[2];
+	double ndLoad[6];
+	Set *thisSet;
+	IntListEnt *thisEnt;
+	Node *thisNd;
+	while(thisLoad) {
+		ldType = thisLd->getType();
+		thisLd->getActTime(actTime);
+		if(time >= actTime[0] && time <= actTime[1]) {
+			if(ldType == "nodalForce") {
+				thisLoad->getLoad(ndLoad);
+				thisSet = thisLoad->getNdSetPtr();
+				thisEnt = thisSet->getFirstEntry();
+				while(thisEnt) {
+					thisNd = nodeArray[thisEnt->value].ptr;
+					numDof = thisNd->getNumDof();
+					for (i1 = 0; i1 < numDof; i1++) {
+						dofInd = thisNd->getDofIndex(i1);
+						appLd[dofInd]+= ndLoad[i1];
+					}
+					thisEnt = thisEnt->next;
+				}
+			}
+		}
+		thisLoad = thisLoad->getNext();
+	}
 	
 	return;
 }

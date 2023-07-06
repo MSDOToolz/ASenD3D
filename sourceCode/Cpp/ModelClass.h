@@ -11,6 +11,7 @@
 #include "ConstraintClass.h"
 #include "DesignVariableClass.h"
 #include "ObjectiveClass.h"
+#include "DiffDoubClass.h"
 
 class Model {
 	private:
@@ -28,6 +29,9 @@ class Model {
 		DVPt *dVarArray;
 		Objective objective;
 		Job job;
+		
+		int elMatDim;
+		SparseMat elasticMat;
 	
 	public:
 	    Model();
@@ -82,11 +86,17 @@ class Model {
 		
 		void analysisPrep(int blockDim);
 		
+		void buildElasticAppLoad(double appLd[], double time);
+		
+		void buildElasticSolnLoad();
+		
 		void solveStep();
 		
 		void solve();
 		
 		void eigenSolve();
+		
+		void getObjGradient();
 		
 		// Output
 		
