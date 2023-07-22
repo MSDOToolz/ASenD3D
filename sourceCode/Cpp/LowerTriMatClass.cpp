@@ -34,6 +34,10 @@ void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList,
 	MatrixEnt *mEnt2;
 	Constraint *thisConst;
 	
+	if(!mat) {
+		setDim(spMat.getDim())
+	}
+	
 	for (i1 = 0; i1 < dim; i1++) {
 		range[i1] = 1;
 		mEnt1 = spMat.getFirstEnt(i1);

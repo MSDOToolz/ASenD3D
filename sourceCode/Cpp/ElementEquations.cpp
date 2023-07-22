@@ -95,7 +95,7 @@ void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	
 	solveqRxEqb(xVec,internalMat,bVec,numIntDof,stRow,endRow,0,endCol,0);
 	for (i1 = 0; i1 < stRow; i1++) {
-		nd = dofTable[i1][0];
+		nd = nodes[dofTable[i1][0]];
 		dof = dofTable[i1][1];
 		glbInd = ndAr[nd].ptr->getDofIndex(dof);
 		i3 = i1*numIntDof;
@@ -144,7 +144,7 @@ void Element::updateInternal(double extVec[], int forSoln) {
 	}
 	
 	for (i1 = 0; i1 < stRow; i1++) {
-		nd = dofTable[i1][0];
+		nd = nodes[dofTable[i1][0]];
 		dof = dofTable[i1][1];
 		glbInd = ndAr[nd].ptr->getDofIndex(dof);
 		i3 = i1*numIntDof;

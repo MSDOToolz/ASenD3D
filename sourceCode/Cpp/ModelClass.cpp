@@ -13,6 +13,8 @@
 using namespace std;
 
 Model::Model() {
+	anPrepRun = false;
+	timeStepsSaved = 0;
 	return;
 }
 

@@ -38,33 +38,43 @@ void Node::setDofIndex(int dof, int index) {
 	return;
 }
 
+void Node::setDisplacement(double newDisp[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		displacement[i1] = newDisp[i1]
+	}
+	return;
+}
+
+void Node::addToDisplacement(double delDisp[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		displacement[i1] += newDisp[i1]
+	}	
+	return;
+}
+
 void Node::setInitialDisp(double newDisp[]) {
-	initialDisp[0] = newDisp[0];
-	initialDisp[1] = newDisp[1];
-	initialDisp[2] = newDisp[2];
-	initialDisp[3] = newDisp[3];
-	initialDisp[4] = newDisp[4];
-	initialDisp[5] = newDisp[5];
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		initialDisp[i1] = newDisp[i1]
+	}
 	return;
 }
 
 void Node::setInitialVel(double newVel[]) {
-	initialVel[0] = newVel[0];
-	initialVel[1] = newVel[1];
-	initialVel[2] = newVel[2];
-	initialVel[3] = newVel[3];
-	initialVel[4] = newVel[4];
-	initialVel[5] = newVel[5];
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		initialVel[i1] = newVel[i1]
+	}
 	return;
 }
 
 void Node::setInitialAcc(double newAcc[]) {
-	initialAcc[0] = newAcc[0];
-	initialAcc[1] = newAcc[1];
-	initialAcc[2] = newAcc[2];
-	initialAcc[3] = newAcc[3];
-	initialAcc[4] = newAcc[4];
-	initialAcc[5] = newAcc[5];
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		initialAcc[i1] = newAcc[i1]
+	}
 	return;
 }
 
@@ -76,6 +86,39 @@ void Node::setInitialTemp(double newTemp) {
 void Node::setInitialTdot(double newTdot) {
 	initialTdot = newTdot;
 	return;
+}
+
+void Node::initializeDisp() {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		prevDisp[i1] = initialDisp[i1];
+		prevVel[i1] = initialVel[i1];
+		prevAcc[i1] = initialAcc[i1];
+		displacement[i1] = initialDisp[i1];
+	}
+	return;
+}
+
+void Node::updateVelAcc(double nmBeta, double nmGamma, double delT) {
+	double c1 = 1.0/(delT*delT*(nmBeta-nmGamma));
+	double c2 = delT*delT*(0.5 + nmBeta - nmGamma);
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		acceleration[i1] = c1*(prevDisp[i1] - displacement[i1] + delT*prevVel[i1] + c2*prevAcc[i1]);
+		velocity[i1] = prevVel[i1] + delT*((1.0-nmGamma)*prevAcc[i1] + nmGamma*acceleration[i1]);
+	}
+	
+	return;
+}
+
+void Node::advanceDisp() {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		prevDisp[i1] = displacement[i1];
+		prevVel[i1] = velocity[i1];
+		prevAcc[i1] = acceleration[i1];
+	}
+	return;	
 }
 
 void Node::addDesignVariable(int dIndex, double coef) {
@@ -101,6 +144,38 @@ int Node::getLabel() {
 
 int Node::getNumDof() {
 	return numDof;
+}
+
+void Node::getDisp(double dispOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		dispOut[i1] = displacement[i1];
+	}
+	return;
+}
+
+void Node::getVel(double velOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		velOut[i1] = velocity[i1];
+	}
+	return;
+}
+
+void Node::getAcc(double accOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		accOut[i1] = acceleration[i1];
+	}
+	return;
+}
+
+double Node::getTemperature() {
+	return temperature;
+}
+
+double Node::getTdot() {
+	return tempChangeRate;
 }
 
 //dup1
@@ -137,6 +212,38 @@ void Node::getDisp(Doub disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
 	    disp[i1].setVal(displacement[i1]);
+	}
+	return;
+}
+
+void Node::getElasticDVLoad(Doub ld[], DVPt dvAr[]) {
+	int i1;
+	int dIndex;
+	IntListEnt *thisDV;
+	DoubListEnt *thisCoef;
+	DesignVariable *dPtr;
+	Doub dVal;
+	Doub coef;
+	string cat;
+	int comp;
+	for (i1 = 0; i1 < 6; i1++) {
+		ld[i1].setVal(0.0);
+	}
+	thisDV = dVars.getFirst();
+	thisCoef = coefs.getFirst();
+	while(thisDV) {
+		dIndex = thisDV->value;
+		dPtr = dvAr[dIndex].ptr;
+		dPtr->getValue(dVal);
+		cat = dPtr->getCategory();
+		comp = dPtr->getComponent() - 1;
+		if(cat == "elasticLoad") {
+			coef.setVal(thisCoef->value);
+			coef.mult(dVal);
+			ld[comp].add(coef);
+		}
+		thisDV = thisDV->next;
+		thisCoef = thisCoef->next;
 	}
 	return;
 }

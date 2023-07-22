@@ -224,6 +224,21 @@ void SparseMat::setDim(int newDim) {
 	return;
 }
 
+void SparseMat::zeroAll() {
+	int i1;
+	MatrixEnt *thisEnt;
+	
+	for (i1 = 0; i1 < dim; i1++) {
+		thisEnt = matrix[i1].ptr;
+		while(thisEnt) {
+		    thisEnt->value = 0.0;
+			thisEnt = thisEnt->nextEnt;
+		}
+	}
+	
+	return;
+}
+
 void SparseMat::addEntry(int row, int col, double val) {
 	MatrixEnt *thisEnt = matrix[row].ptr;
 	if(!thisEnt) {

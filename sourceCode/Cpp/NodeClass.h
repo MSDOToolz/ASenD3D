@@ -1,8 +1,11 @@
 #ifndef NODECLASS
 #define NODECLASS
+#include <string>
+#include <iostream>
 #include "ListEntClass.h"
 #include "DiffDoubClass.h"
 #include "DesignVariableClass.h"
+
 
 
 class Node {
@@ -39,6 +42,10 @@ class Node {
 		
 		void setDofIndex(int dof, int index);
 		
+		void setDisplacement(double newDisp[]);
+		
+		void addToDisplacement(double delDisp[]);
+		
 		void setInitialDisp(double newDisp[]);
 		
 		void setInitialVel(double newVel[]);
@@ -48,6 +55,12 @@ class Node {
 		void setInitialTemp(double newTemp);
 		
 		void setInitialTdot(double newTdot);
+		
+		void initializeDisp();
+		
+		void updateVelAcc(double nmBeta, double nmGamma, double delT);
+		
+		void advanceDisp();
 		
 		void addDesignVariable(int dIndex, double coef);
 		
@@ -59,13 +72,27 @@ class Node {
 		
 		int getNumDof();
 		
+		void getDisp(double dispOut[]);
+		
+		void getVel(double velOut[]);
+		
+		void getAcc(double accOut[]);
+		
+		double getTemperature();
+		
+		double getTdot();
+		
 		//dup1
 		void getCrd(Doub crdOut[], DVPt dvAr[]);
 		
 		void getDisp(Doub disp[]);
+		
+		void getElasticDVLoad(Doub ld[], DVPt dvAr[]);
 		//end dup		
 		
 		int getDofIndex(int dof);
+		
+		Node* getNext();
 		
 		void setNext(Node *newNext);
 		

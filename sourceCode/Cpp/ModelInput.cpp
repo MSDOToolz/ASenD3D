@@ -114,7 +114,8 @@ void Model::readJob(string fileName) {
 	string prevLdHd = "";
 	int hdLdSpace[4] = {0,0,0,0};
 	string data[11];
-	int dataLen;	
+	int dataLen;
+	string errSt;
 	
 	JobCommand *newCmd;
 	
@@ -193,7 +194,19 @@ void Model::readJob(string fileName) {
 				newCmd->fields.addEntry(data[0]);
 			} else if(headings[1] == "timeSteps") {
 				if(dataLen == 1) {
-					newCmd->timeSteps.addEntry(stoi(data[0]));
+					if(data[0] == "all") {
+						newCmd->timeStepTag = "all";
+					} else if(data[0] == "last") {
+						newCmd->timeStepTag = "last";
+					} else {
+						try {
+							i1 = stoi(data[0]);
+							newCmd->timeSteps.addEntry(stoi(data[0]));
+						} catch(...) {
+							errSt = "Warning: possible invalid entry for " + headings[0] + " timeSteps in job file " + fileName;
+							cout << errSt << endl;
+						}
+					}
 				} else if(dataLen > 1) {
 					i2 = stoi(data[0]);
 					i3 = stoi(data[1]);
@@ -229,7 +242,7 @@ void Model::readJob(string fileName) {
 			prevLdHd = headings[0];
 		}
 	} else {
-		string errSt = "Error: could not open model input file: " + fileName;
+		errSt = "Error: could not open job file: " + fileName;
 		throw invalid_argument(errSt);
 	}
 	

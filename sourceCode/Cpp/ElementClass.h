@@ -53,6 +53,8 @@ class Element {
 		
 		int getDofPerNd();
 		
+		int getNumIntDof();
+		
 		int* getNodes();
 		
 		IntList* getDesignVars();

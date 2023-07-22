@@ -30,6 +30,7 @@ File I/O:
 		output_file << fixed << setprecision(int);  /int is the number of decimal places
 		// default is scientific notation, say fixed to specify fixed notation.
 		output_file << 48.4 << ', ' << 58.2 << '\n';
+		output_file.close();
 		
 	Input: (171)
 	    ifstream input_file;

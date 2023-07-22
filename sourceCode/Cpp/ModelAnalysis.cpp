@@ -1,5 +1,7 @@
+#include <cmath>
 #include "ModelClass.h"
 #include "ListEntClass.h"
+#include "LowerTriMatClass.h"
 #include "ElementClass.h"
 #include "DesignVariableClass.h"
 #include "FaceClass.h"
@@ -131,6 +133,10 @@ void Model::reorderNodes(int blockDim) {
 	}
 	elMatDim = i2;
 	elasticMat.setDim(elMatDim);
+	
+	tempV1 = new double[elMatDim];
+	tempV2 = new double[elMatDim];
+	tempD1 = new Doub[elMatDim];
 
     for (i1 = 0; i1 < numNodes; i1++) {
 		nodalConn[i1].destroy();
@@ -348,6 +354,7 @@ void Model::analysisPrep(int blockDim) {
 	reorderNodes(blockDim);
 	findSurfaceFaces();
 	
+	anPrepRun = true;
 	return;
 }
 
@@ -356,10 +363,12 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	int i1;
 	int numDof;
 	int dofInd;
+	Node *thisNd;
 	Load *thisLoad = loads.getFirst();
 	string ldType;
 	double actTime[2];
 	double ndLoad[6];
+	Doub ndDVLd[6]
 	Set *thisSet;
 	IntListEnt *thisEnt;
 	Node *thisNd;
@@ -383,6 +392,173 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 			}
 		}
 		thisLoad = thisLoad->getNext();
+	}
+	
+    thisNd = nodes.getFirst();
+	while(thisNd) {
+		thisNd->getElasticDVLoad(ndDVLd,dVarArray);
+		numDof = thisNd->getNumDof();
+		for (i1 = 0; i1 < numDof; i1++) {
+			dofInd = thisNd->getDofIndex(i1);
+			appLd[dofInd]+= ndDVLd[i1].val;
+		}
+		thisNd = thisNd->getNext();
+	}
+	
+	return;
+}
+
+void Model::buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool nLGeom) {
+	int i1;
+	Element *thisEl;
+	
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		tempD1[i1].setVal(0.0);
+	}
+	
+	if(buildMat) {
+		elasticMat.zeroAll();
+	}
+	
+	thisEl = elements.getFirst();
+	while(thisEl) {
+		thisEl->getRu(tempD1,elasticMat,buildMat,dyn,nLGeom,nodeArray,dVarArray);
+		thisEl = thisEl->getNext();
+	}
+	
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		solnLd[i1]-= tempD1[i1].val;
+	}
+	
+	return;
+}
+
+void solveStep(JobCommand *cmd, double time, double appLdFact) {
+	int i1;
+	int i2;
+	int maxNLit;
+	double dUnorm;
+	double dUtol;
+	double absdU;
+	int ndof;
+	int dofInd;
+	double ndDelDisp[6];
+	Node *thisNd;
+	Element *thisEl;
+	
+	if(cmd->thermal) {
+	}
+		
+	if(cmd->elastic) {
+		if(cmd->nonlinearGeom) {
+			maxNLit = 50;
+		} else {
+			maxNLit = 1;
+		}
+		
+		dUtol = 1.0e-12;
+		dUnorm = 1.0;
+		i2 = 0;
+		while(i2 < maxNLit && dUnorm > dUtol) {
+			for (i1 = 0; i1 < elMatDim; i1++) {
+				tempV1[i1] = 0.0;
+			}
+			buildElasticAppLoad(tempV1,time);
+			for (i1 = 0; i1 < elMatDim; i1++) {
+				tempV1[i1] *= appLdFact;
+			}
+			buildElasticSolnLoad(tempV1,cmd->nonlinearGeom,cmd->dynamic,cmd->nonlinearGeom);
+			thisEl = elements.getFirst();
+			while(thisEl) {
+				if(thisEl->getNumIntDof() > 0) {
+				    thisEl->updateExternal(tempV1,1,nodeArray);
+				}
+				thisEl = thisEl->getNext();
+			}
+			if(cmd->solverMethod == "direct") {
+				if(cmd->nonlinearGeom) {
+					elasticLT.populateFromSparseMat(elasticMat,constraints);
+					elasticLT.ldlFactor();
+				}
+				elasticLT.ldlSolve(tempV2,tempV1);
+			}
+			thisNd = nodes.getFirst();
+			while(thisNd) {
+				ndof = thisNd->getNumDof();
+				for (i1 = 0; i1 < ndof; i1++) {
+					dofInd = thisNd->getDofIndex(i1);
+					ndDelDisp[i1] = tempV2[dofInd];
+				}
+				thisNd->addToDisplacement(ndDelDisp);
+				if(cmd->dynamic) {
+					thisNd->updateVelAcc(cmd->newmarkBeta,cmd->newmarkGamma,cmd->timeStep);
+				}
+				thisNd = thisNd->getNext();
+			}
+			thisEl = elements.getFirst();
+			while(thisEl) {
+				if(thisEl->getNumIntDof() > 0) {
+				    thisEl->updateInternal(tempV2,1,nodeArray);
+				}
+				thisEl = thisEl->getNext();
+			}
+			dUnorm = 0.0;
+			for (i1 = 0; i1 < elMatDim; i1++) {
+				absdU = abs(tempV2[i1]);
+				if(absdU > dUnorm) {
+					dUnorm = absdU;
+				}
+			}
+			i2++;
+		}
+	}
+
+	
+	return;
+}
+
+void Model::solve(JobCommand *cmd) {
+	int i1;
+	int i2:
+	double appLdFact;
+	double c1 = 1.0/(ldSteps*ldSteps);
+	Node *thisNd;
+	
+	if(!anPrepRun) {
+		analysisPrep(cmd->solverBlockDim);
+	}
+	
+	if(cmd->thermal) {
+	}
+	
+	if(cmd->elastic) {
+		thisNd = nodes.getFirst();
+		while(thisNd) {
+			thisNd->initializeDisp();
+			thisNd = thisNd->getNext();
+		}
+		if(!elasticLT.isAllocated()) {
+			buildElasticSolnLoad(tempV1,true,cmd->dynamic,cmd->nonlinearGeom);
+			elasticLT.allocateFromSparseMat(elasticMat,constraints,cmd->solverBandwidth);
+		}
+		if(!cmd->nonlinearGeom) {
+			elasticLT.populateFromSparseMat(elasticMat,constraints)
+			elasticLT.ldlFactor();
+		}
+	}
+	
+	if(cmd->dynamic) {
+	} else {
+		if(cmd->nonlinearGeom) {
+			for (i1 = 0; i1 < ldSteps; i1++) {
+				i2 = ldSteps - i1 - 1;
+				appLdFact = 1.0 - c1*i2*i2;
+				solveStep(cmd,cmd->staticLoadTime,appLdFact);
+			}
+		} else {
+			appLdFact = 1.0;
+			solveStep(cmd,cmd->staticLoadTime,appLdFact);
+		}
 	}
 	
 	return;

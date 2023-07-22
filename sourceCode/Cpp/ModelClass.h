@@ -31,7 +31,14 @@ class Model {
 		Job job;
 		
 		int elMatDim;
+		bool anPrepRun;
+		int timeStepsSaved;
 		SparseMat elasticMat;
+		LowerTriMat elasticLT;
+		
+		double *tempV1;
+		double *tempV2;
+		Doub *tempD1;
 	
 	public:
 	    Model();
@@ -88,17 +95,19 @@ class Model {
 		
 		void buildElasticAppLoad(double appLd[], double time);
 		
-		void buildElasticSolnLoad();
+		void buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool nLGeom);
 		
-		void solveStep();
+		void solveStep(JobCommand *cmd, double time, double appLdFact);
 		
-		void solve();
+		void solve(JobCommand *cmd);
 		
 		void eigenSolve();
 		
 		void getObjGradient();
 		
 		// Output
+		
+		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
 		
 		//
 };

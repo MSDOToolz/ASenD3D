@@ -17,7 +17,7 @@ JobCommand::JobCommand() {
 	saveSolnHist = false;
 	simPeriod = 1.0;
 	solverBandwidth = 100;
-	solverBlockDim = 100;
+	solverBlockDim = 2000000000;
 	solverMethod = "direct";
 	staticLoadTime = 0.0;
 	thermal = false;
@@ -34,6 +34,7 @@ JobCommand::JobCommand() {
 	
 	// writeNodeResults
 	nodeSet = "all";
+	timeStepTag = "";
 	
 	// writeElementResults
 	elementSet = "all";

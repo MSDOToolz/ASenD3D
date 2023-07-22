@@ -37,6 +37,7 @@ class JobCommand {
 		std::string nodeSet;
 		StringList fields;
 		IntList timeSteps;
+		std::string timeStepTag;
 		
 		// writeElementResults
 		std::string elementSet;

@@ -113,6 +113,8 @@ class SparseMat {
 		
 		void setDim(int newDim);
 		
+		void zeroAll();
+		
 		void addEntry(int row, int col, double val);
 		
 		int getDim();

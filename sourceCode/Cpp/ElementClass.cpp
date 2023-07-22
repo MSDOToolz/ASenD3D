@@ -382,6 +382,10 @@ int Element::getDofPerNd() {
 	return dofPerNd;
 }
 
+int Element::getNumIntDof() {
+	return numIntDof;
+}
+
 int* Element::getNodes() {
 	return nodes;
 }
