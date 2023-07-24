@@ -1,11 +1,13 @@
 #include <cmath>
 #include "ModelClass.h"
 #include "ListEntClass.h"
+#include "SetClass.h"
 #include "LowerTriMatClass.h"
 #include "ElementClass.h"
 #include "DesignVariableClass.h"
 #include "FaceClass.h"
 #include "DiffDoubClass.h"
+#include "LoadClass.h"
 #include "matrixFunctions.h"
 
 using namespace std;
@@ -121,7 +123,7 @@ void Model::reorderNodes(int blockDim) {
 		i2++;
 		thisPt->setDofIndex(2,i2);
 		i2++;
-		if(thisPt->numDof == 6) {
+		if(thisPt->getNumDof() == 6) {
 			thisPt->setDofIndex(3,i2);
 			i2++;
 			thisPt->setDofIndex(4,i2);
@@ -133,6 +135,16 @@ void Model::reorderNodes(int blockDim) {
 	}
 	elMatDim = i2;
 	elasticMat.setDim(elMatDim);
+
+	thisEl = elements.getFirst();
+	while (thisEl) {
+		i3 = thisEl->getNumIntDof();
+		if (i3 > 0) {
+			thisEl->setIntDofIndex(i2);
+			i2 += i3;
+		}
+		thisEl = thisEl->getNext();
+	}
 	
 	tempV1 = new double[elMatDim];
 	tempV2 = new double[elMatDim];
@@ -178,7 +190,7 @@ void Model::updateReference() {
 			if(matName == thisSec->getMaterial()) {
 				thisSec->setMatPtr(thisMat);
 			}
-			thisLay = getFirstLayer();
+			thisLay = thisSec->getFirstLayer();
 			while(thisLay) {
 				if(matName == thisLay->getMatName()) {
 					thisLay->setMatPtr(thisMat);
@@ -368,13 +380,13 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	string ldType;
 	double actTime[2];
 	double ndLoad[6];
-	Doub ndDVLd[6]
+	Doub ndDVLd[6];
 	Set *thisSet;
 	IntListEnt *thisEnt;
 	Node *thisNd;
 	while(thisLoad) {
-		ldType = thisLd->getType();
-		thisLd->getActTime(actTime);
+		ldType = thisLoad->getType();
+		thisLoad->getActTime(actTime);
 		if(time >= actTime[0] && time <= actTime[1]) {
 			if(ldType == "nodalForce") {
 				thisLoad->getLoad(ndLoad);
@@ -433,7 +445,7 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool 
 	return;
 }
 
-void solveStep(JobCommand *cmd, double time, double appLdFact) {
+void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 	int i1;
 	int i2;
 	int maxNLit;
@@ -519,8 +531,9 @@ void solveStep(JobCommand *cmd, double time, double appLdFact) {
 
 void Model::solve(JobCommand *cmd) {
 	int i1;
-	int i2:
+	int i2;
 	double appLdFact;
+	double ldSteps = cmd->loadRampSteps;
 	double c1 = 1.0/(ldSteps*ldSteps);
 	Node *thisNd;
 	
@@ -542,7 +555,7 @@ void Model::solve(JobCommand *cmd) {
 			elasticLT.allocateFromSparseMat(elasticMat,constraints,cmd->solverBandwidth);
 		}
 		if(!cmd->nonlinearGeom) {
-			elasticLT.populateFromSparseMat(elasticMat,constraints)
+			elasticLT.populateFromSparseMat(elasticMat, constraints);
 			elasticLT.ldlFactor();
 		}
 	}

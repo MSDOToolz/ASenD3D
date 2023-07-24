@@ -4,8 +4,8 @@ import os
 
 fileNames = ['matrixFunctions.cpp','matrixFunctions.h']
 
-leadingStrings = [' ','(',',','\t']
-trailingStrings = [' ','&','*','[','(']
+leadingStrings = [' ','(',',',':','\t']
+trailingStrings = [' ','&','*','[','(','_']
 
 strings = list()
 repStrings1 = list()

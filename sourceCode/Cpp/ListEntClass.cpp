@@ -187,8 +187,8 @@ void StringList::addEntry(string newStr) {
 }
 
 void StringList::destroy() {
-	StringList *thisEnt = first;
-	StringList *nextEnt;
+	StringListEnt *thisEnt = first;
+	StringListEnt *nextEnt;
 	while(thisEnt) {
 		nextEnt = thisEnt->next;
 		delete thisEnt;
@@ -270,17 +270,27 @@ MatrixEnt* SparseMat::getFirstEnt(int row) {
 	return matrix[row].ptr;
 }
 
-void SparseMat::vectorMultipy(double prod[], double inpVec[]) {
+void SparseMat::vectorMultiply(double prod[], double inpVec[], bool transpose) {
 	int i1;
 	int col;
 	MatrixEnt *thisEnt;
-	for (i1=0; i1<dim; i1++) {
-		prod[i1] = 0.0;
-		thisEnt = matrix[i1].ptr;
-		while(thisEnt) {
-			col = thisEnt->col;
-			prod[i1] += thisEnt->value*inpVec[col];
-			thisEnt = thisEnt->nextEnt;
+	if(transpose) {
+		for (i1=0; i1<dim; i1++) {
+			thisEnt = matrix[i1].ptr;
+			while(thisEnt) {
+				col = thisEnt->col;
+				prod[col] += thisEnt->value*inpVec[i1];
+				thisEnt = thisEnt->nextEnt;
+			}
+		}
+	} else {
+		for (i1=0; i1<dim; i1++) {
+			thisEnt = matrix[i1].ptr;
+			while(thisEnt) {
+				col = thisEnt->col;
+				prod[i1] += thisEnt->value*inpVec[col];
+				thisEnt = thisEnt->nextEnt;
+			}
 		}
 	}
 	return;

@@ -19,9 +19,10 @@ class Element {
 		int numIntDof;
 		int nDim;
 		int defDim;
-		int *dofTable;  //dofTable[i][0] = nd/basis function of dof i, dofTable[i][1] = component of dof i
-		double *intPts;
-		double *ipWt;
+		int *dofTable;  //dofTable[2*i] = nd/basis function of dof i, dofTable[2*i+1] = component of dof i
+		int intDofIndex;
+		double* intPts;
+		double* ipWt;
 		int numIP;
 		FaceList faces;
 		double *internalDisp;
@@ -31,6 +32,7 @@ class Element {
 		double *internalMat;
 		IntList designVars;
 		DoubList dvCoef;
+		IntList compDVars;
 		Section *sectPtr;
 		Element *nextEl;
 		
@@ -43,7 +45,9 @@ class Element {
 
         void setSectPtr(Section *newSec);
 
-        void initializeFaces();		
+        void initializeFaces();	
+
+		void setIntDofIndex(int newInd);
 		
 		void setNext(Element *newEl);
 		
@@ -64,6 +68,8 @@ class Element {
 		Element* getNext();
 		
 		void addDesignVariable(int dIndex, double coef);
+
+		void addCompDVar(int dIndex);
 //dup1
 
 // Properties
@@ -91,6 +97,8 @@ class Element {
 		void getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], int dv1, int dv2);
 		
 		void getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[], int dv1, int dv2, bool nLGeom);
+
+		void getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, Doub_StressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		
 //end dup
 		
@@ -131,5 +139,23 @@ class ElementList {
 		
 		Element* getFirst();
 };
+
+//dup1
+class Doub_StressPrereq {
+    public:
+		Doub globNds[30];
+		Doub locNds[30];
+		Doub locOri[9];
+		Doub instOri[720];
+		Doub globDisp[60];
+		Doub Cmat[81];
+		Doub* layerZ;
+		Doub* layerQ;
+
+		Doub_StressPrereq();
+
+		void destroy();
+};
+//end dup
 
 #endif

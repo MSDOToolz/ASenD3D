@@ -95,8 +95,8 @@ void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	
 	solveqRxEqb(xVec,internalMat,bVec,numIntDof,stRow,endRow,0,endCol,0);
 	for (i1 = 0; i1 < stRow; i1++) {
-		nd = nodes[dofTable[i1][0]];
-		dof = dofTable[i1][1];
+		nd = nodes[dofTable[2*i1]];
+		dof = dofTable[2*i1+1];
 		glbInd = ndAr[nd].ptr->getDofIndex(dof);
 		i3 = i1*numIntDof;
 		for (i2 = 0; i2 < numIntDof; i2++) {
@@ -108,7 +108,7 @@ void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	return;
 }
 
-void Element::updateInternal(double extVec[], int forSoln) {
+void Element::updateInternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -144,8 +144,8 @@ void Element::updateInternal(double extVec[], int forSoln) {
 	}
 	
 	for (i1 = 0; i1 < stRow; i1++) {
-		nd = nodes[dofTable[i1][0]];
-		dof = dofTable[i1][1];
+		nd = nodes[dofTable[2*i1]];
+		dof = dofTable[2*i1+1];
 		glbInd = ndAr[nd].ptr->getDofIndex(dof);
 		i3 = i1*numIntDof;
 		i4 = stRow;
@@ -226,7 +226,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Nd
 	totDof = numNds*dofPerNd + numIntDof;
 	
 	for (i1 = 0; i1 < numIP; i1++) {
-		getIpData(nVec,dNdx,detJ,xLoc,&intPts[i1][0]);
+		getIpData(nVec,dNdx,detJ,xLoc,&intPts[3*i1]);
 		dJwt.setVal(detJ);
 		tmp.setVal(ipWt[i1]);
 		dJwt.mult(tmp);
@@ -346,7 +346,7 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn,
 		}
 	}
 	
-	getRuk(Rvec, dRdu, getMatrix, nLGeom, ndAr[], dvAr[]);
+	getRuk(Rvec, dRdu, getMatrix, nLGeom, ndAr, dvAr);
 	
 	if(dyn) {
 	}
@@ -373,19 +373,19 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn,
 	}
 	
 	for (i1 = 0; i1 < totDof; i1++) {
-		nd = dofTable[i1][0];
-		dof = dofTable[i1][1];
+		nd = dofTable[2*i1];
+		dof = dofTable[2*i1+1];
 		if(nd < numNds) {
 			nd = nodes[nd];
 			globInd = ndAr[nd].ptr->getDofIndex(dof);
-			globR[globInd].add(Rvec[i1])
+			globR[globInd].add(Rvec[i1]);
 			if(getMatrix) {
 				i3 = i1*totDof;
 				for (i2 = 0; i2 < ndDof; i2++) {
-					nd2 = nodes[dofTable[i2][0]];
-					dof2 = dofTable[i2][1];
+					nd2 = nodes[dofTable[2*i2]];
+					dof2 = dofTable[2*i2+1];
 					globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
-					globdRdu.addEntry(globInd,globInd2,dRdu[i3])
+					globdRdu.addEntry(globInd, globInd2, dRdu[i3]);
 					i3++;
 				}
 			}

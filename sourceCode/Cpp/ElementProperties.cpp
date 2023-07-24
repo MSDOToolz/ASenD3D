@@ -97,6 +97,7 @@ void Element::getStiffMat(Doub Cmat[], DVPt dvAr[]) {
 	Doub a11;
 	Doub a12;
 	Doub a21;
+	Doub a22;
 	Doub Offset;
 	Doub zCrd;
 	Doub zNext;
@@ -105,13 +106,15 @@ void Element::getStiffMat(Doub Cmat[], DVPt dvAr[]) {
 	Doub JDV;
 	Doub dvVal;
 	Doub coef;
+	Doub xVec[6];
+	Doub bVec[6];
 	IntListEnt *thisDV;
 	DoubListEnt *thisCoef;
 	DesignVariable *thisDVpt;
 	string dvCat;
 	
 	if(dofPerNd == 3) { // solid elements
-		matPt = sectPtr->getMaterial();
+		matPt = sectPtr->getMatPtr();
 		stiffMat = matPt->getStiffMat();
 		if(stiffMat[0] > 0.0) {
 			for (i1 = 0; i1 < 36; i1++) {
@@ -207,11 +210,11 @@ void Element::getStiffMat(Doub Cmat[], DVPt dvAr[]) {
 			Smat[35].setVal(1.0);
 			Smat[35].dvd(shearModDV[2]);
 			
-			getDetInv(coef,Cmat,Smat,6,0);
+			getDetInv(coef,Cmat,Smat,6,0,xVec,bVec);
 		}
 	} else { // section elements
 		if(type == 2) { // beams
-			matPt = sectPtr->getMaterial();
+			matPt = sectPtr->getMatPtr();
 		    stiffMat = sectPtr->getStiffMat();
 			if(stiffMat[0] > 0.0) {
 				for (i1 = 0; i1 < 36; i1++) {
@@ -342,7 +345,7 @@ void Element::getStiffMat(Doub Cmat[], DVPt dvAr[]) {
 			for (i1 = 0; i1 < 81; i1++) {
 				Cmat[i1].setVal(0.0);
 			}
-			getThickOffset(thknss, Offset, DVPt dvAr[]);
+			getThickOffset(thknss, Offset, dvAr);
 			tmp.setVal(1.0);
 			tmp.add(Offset);
 			zCrd.setVal(-0.5);
@@ -415,7 +418,7 @@ void Element::getStiffMat(Doub Cmat[], DVPt dvAr[]) {
 				Smat[4].dvd(modulusDV[1]);
 				Smat[8].setVal(1.0);
 				Smat[8].dvd(shearModDV[0]);
-				getDetInv(coef,Qmat,Smat,3,0);
+				getDetInv(coef,Qmat,Smat,3,0,xVec,bVec);
 				
 				angleRad.setVal(r_pio180);
 				angleRad.mult(angle);
@@ -461,7 +464,7 @@ void Element::getStiffMat(Doub Cmat[], DVPt dvAr[]) {
 				Te[6].mult(tmp);
 				Te[7].mult(tmp);
 				
-				getDetInv(coef,TeInv,Te,3,0);
+				getDetInv(coef,TeInv,Te,3,0,xVec,bVec);
 				
 				matMul(Te,Qmat,TeInv,3,3,3);
 				matMul(Qmat,Ts,Te,3,3,3);

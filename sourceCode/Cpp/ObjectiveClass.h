@@ -1,5 +1,6 @@
 #ifndef OBJECTIVE
 #define OBJECTIVE
+#include "ListEntClass.h"
 
 class ObjectiveTerm {
 	private:
@@ -14,6 +15,22 @@ class ObjectiveTerm {
 		std::string ndSetName;
 		std::string tgtTag;
 		DoubList tgtVals;
+		ObjectiveTerm* next;
+
+		double* qVec;
+		double* elVolVec;
+		double* tgtVec;
+		double* errNormVec;
+
+		int qLen;
+
+		SparseMat dQdU;
+		SparseMat dQdV;
+		SparseMat dQdA;
+		SparseMat dQdT;
+		SparseMat dQdTdot;
+		SparseMat dQdD;
+		SparseMat dVdD;
 		
 	public:
 	    ObjectiveTerm(std::string newCat);
@@ -35,8 +52,28 @@ class ObjectiveTerm {
 		void setNdset(std::string newNdset);
 		
 		void setTgtTag(std::string newTag);
+
+		void setNext(ObjectiveTerm* newNext);
 		
 		void addTargetValue(double newTgt);
+
+		double getPowerNorm();
+
+		void dPowerNormdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[]);
+
+		void dPowerNormdD(double dLdD[]);
+
+		double getVolIntegral();
+
+		void dVolIntegraldU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[]);
+
+		void dVolIntegraldD(double dLdD[]);
+
+		double getVolAverage();
+
+		void dVolAveragedU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[]);
+
+		void dVolAveragedD(double dLdD[]);
 };
 
 class Objective {

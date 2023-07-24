@@ -2,6 +2,7 @@
 #define MATRIXFUN
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
+#include "LowerTriMatClass.h"
 
 double getDist(double p1[], double p2[]);
 

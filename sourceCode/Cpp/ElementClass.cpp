@@ -23,6 +23,7 @@ Element::Element(int newType) {
 	int i2;
 	int i3;
 	int i4;
+	int i5;
 	if(type == 4) {
 		numNds = 4;
 		dofPerNd = 3;
@@ -32,12 +33,12 @@ Element::Element(int newType) {
 		numIP = 1;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1][2];
-		intPts = new double[numIP][3];
+		dofTable = new int[i1 * 2]; //int[i1][2];
+		intPts = new double[numIP*3];
 		ipWt = new double[numIP];
-		intPts[0][0] = 0.25;
-		intPts[0][1] = 0.25;
-		intPts[0][2] = 0.25;
+		intPts[0] = 0.25;
+		intPts[1] = 0.25;
+		intPts[2] = 0.25;
 		ipWt[0] = r_1o6;
 	} else if(type == 6) {
 		numNds = 6;
@@ -48,15 +49,15 @@ Element::Element(int newType) {
 		numIP = 2;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1][2];
-		intPts = new double[numIP][3];
+		dofTable = new int[i1 * 2];// int[i1][2];
+		intPts = new double[numIP*3];
 		ipWt = new double[numIP];
-		intPts[0][0] = r_1o3;
-		intPts[0][1] = r_1o3;
-		intPts[0][2] = -r_1ort3;
-		intPts[1][0] = r_1o3;
-		intPts[1][1] = r_1o3;
-		intPts[1][2] = r_1ort3;
+		intPts[0] = r_1o3;
+		intPts[1] = r_1o3;
+		intPts[2] = -r_1ort3;
+		intPts[3] = r_1o3;
+		intPts[4] = r_1o3;
+		intPts[5] = r_1ort3;
 		ipWt[0] = 0.5;
 		ipWt[1] = 0.5;
 	} else if(type == 8 || type == 81) {
@@ -73,18 +74,23 @@ Element::Element(int newType) {
 		numIP = 8;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1][2];
-		intPts = new double[numIP][3];
+		dofTable = new int[i1 * 2];//int[i1][2];
+		intPts = new double[numIP*3];
 		ipWt = new double[numIP];
 		int sVal[2] = {-r_1ort3,r_1ort3};
 		i4 = 0;
+		i5 = 0;
 		for (i1 = 0; i1 < 2; i1++) {
 			for (i2 = 0; i2 < 2; i2++) {
 				for (i3 = 0; i3 < 2; i3++) {
-					intPts[i4][0] = sVal[i3];
-					intPts[i4][1] = sVal[i2];
-					intPts[i4][2] = sVal[i1];
+					intPts[i5] = sVal[i3];
+					i5++;
+					intPts[i5] = sVal[i2];
+					i5++;
+					intPts[i5] = sVal[i1];
+					i5++;
 					ipWt[i4] = 1.0;
+					i4++;
 				}
 			}
 		}
@@ -92,8 +98,8 @@ Element::Element(int newType) {
 			i3 = 24;
 			for (i1 = 8; i1 < 11; i1++) {
 				for (i2 = 0; i2 < 3; i2++) {
-					dofTable[i3][0] = i1;
-					dofTable[i3][1] = i2;
+					dofTable[2*i3] = i1;
+					dofTable[2*i3+1] = i2;
 					i3++;
 				}
 			}
@@ -107,71 +113,71 @@ Element::Element(int newType) {
 		numIP = 3;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1][2];
-		intPts = new double[numIP][3];
+		dofTable = new int[2*i1];
+		intPts = new double[numIP*3];
 		ipWt = new double[numIP];
-		intPts[0][0] = r_1o6;
-		intPts[0][1] = r_1o6;
-		intPts[0][2] = 0.0;
-		intPts[1][0] = r_2o3;
-		intPts[1][1] = r_1o6;
-		intPts[1][2] = 0.0;
-		intPts[2][0] = r_1o6;
-		intPts[2][1] = r_2o3;
-		intPts[2][2] = 0.0;
+		intPts[0] = r_1o6;
+		intPts[1] = r_1o6;
+		intPts[2] = 0.0;
+		intPts[3] = r_2o3;
+		intPts[4] = r_1o6;
+		intPts[5] = 0.0;
+		intPts[6] = r_1o6;
+		intPts[7] = r_2o3;
+		intPts[8] = 0.0;
 		ipWt[0] = r_1o6;
 		ipWt[1] = r_1o6;
 		ipWt[2] = r_1o6;
-		dofTable[18][0] = 3;
-		dofTable[18][1] = 2;
-		dofTable[19][0] = 4;
-		dofTable[19][1] = 2;
-		dofTable[20][0] = 5;
-		dofTable[20][1] = 2;
+		dofTable[36] = 3;
+		dofTable[37] = 2;
+		dofTable[38] = 4;
+		dofTable[39] = 2;
+		dofTable[40] = 5;
+		dofTable[41] = 2;
 	} else if(type == 41) {
 		numNds = 4;
 		dofPerNd = 6;
 		numIntDof = 8;
 		nDim = 10;
-		defDef = 9;
+		defDim = 9;
 		numIP = 4;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1][2];
-		intPts = new double[numIP][3];
+		dofTable = new int[2*i1];
+		intPts = new double[numIP*3];
 		ipWt = new double[numIP];
-		intPts[0][0] = -r_1ort3;
-		intPts[0][1] = -r_1ort3;
-		intPts[0][2] = 0.0;
-		intPts[1][0] = r_1ort3;
-		intPts[1][1] = -r_1ort3;
-		intPts[1][2] = 0.0;
-		intPts[2][0] = -r_1ort3;
-		intPts[2][1] = r_1ort3;
-		intPts[2][2] = 0.0;
-		intPts[3][0] = r_1ort3;
-		intPts[3][1] = r_1ort3;
-		intPts[3][2] = 0.0;
+		intPts[0] = -r_1ort3;
+		intPts[1] = -r_1ort3;
+		intPts[2] = 0.0;
+		intPts[3] = r_1ort3;
+		intPts[4] = -r_1ort3;
+		intPts[5] = 0.0;
+		intPts[6] = -r_1ort3;
+		intPts[7] = r_1ort3;
+		intPts[8] = 0.0;
+		intPts[9] = r_1ort3;
+		intPts[10] = r_1ort3;
+		intPts[11] = 0.0;
 		ipWt[0] = 1.0;
 		ipWt[1] = 1.0;
 		ipWt[2] = 1.0;
 		ipWt[3] = 1.0;
-		dofTable[24][0] = 4;
-		dofTable[24][1] = 0;
-		dofTable[25][0] = 5;
-		dofTable[25][1] = 0;
-		dofTable[26][0] = 4;
-		dofTable[26][1] = 1;
-		dofTable[27][0] = 5;
-		dofTable[27][1] = 1;
-		dofTable[28][0] = 6;
-		dofTable[28][1] = 2;
-		dofTable[29][0] = 7;
-		dofTable[29][1] = 2;
-		dofTable[30][0] = 8;
-		dofTable[30][1] = 2;
-		dofTable[31][0] = 9;
-		dofTable[31][1] = 2;
+		dofTable[48] = 4;
+		dofTable[49] = 0;
+		dofTable[50] = 5;
+		dofTable[51] = 0;
+		dofTable[52] = 4;
+		dofTable[53] = 1;
+		dofTable[54] = 5;
+		dofTable[55] = 1;
+		dofTable[56] = 6;
+		dofTable[57] = 2;
+		dofTable[58] = 7;
+		dofTable[59] = 2;
+		dofTable[60] = 8;
+		dofTable[61] = 2;
+		dofTable[62] = 9;
+		dofTable[63] = 2;
 	} else if(type == 2) {
 		numNds = 2;
 		dofPerNd = 6;
@@ -181,28 +187,28 @@ Element::Element(int newType) {
 		numIP = 2;
 		nodes = new int[numNds];
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1][2];
-		intPts = new double[numIP][3];
+		dofTable = new int[i1*2];
+		intPts = new double[numIP*3];
 		ipWt = new double[numIP];
-		intPts[0][0] = -r_1ort3;
-		intPts[0][1] = 0.0;
-		intPts[0][2] = 0.0;
-		intPts[1][0] = r_1ort3;
-		intPts[1][1] = 0.0;
-		intPts[1][2] = 0.0;
+		intPts[0] = -r_1ort3;
+		intPts[1] = 0.0;
+		intPts[2] = 0.0;
+		intPts[3] = r_1ort3;
+		intPts[4] = 0.0;
+		intPts[5] = 0.0;
 		ipWt[0] = 1.0;
 		ipWt[1] = 1.0;
-		dofTable[12][0] = 2;
-		dofTable[12][1] = 1;
-		dofTable[13][0] = 2;
-		dofTable[13][1] = 2;
+		dofTable[24] = 2;
+		dofTable[25] = 1;
+		dofTable[26] = 2;
+		dofTable[27] = 2;
 	}
 	
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
 		for (i2 = 0; i2 < dofPerNd; i2++) {
-			dofTable[i3][0] = i1;
-			dofTable[i3][1] = i2;
+			dofTable[2*i3] = i1;
+			dofTable[2*i3+1] = i2;
 			i3++;
 		}
 	}
@@ -221,6 +227,8 @@ Element::Element(int newType) {
 		i1 = (numNds*dofPerNd + numIntDof)*numIntDof;
 		internalMat = new double[i1];
 	}
+
+	intDofIndex = 0;
 	
 	sectPtr = NULL;
 	nextEl = NULL;
@@ -365,6 +373,11 @@ void Element::initializeFaces() {
 	return;
 }
 
+void Element::setIntDofIndex(int newInd) {
+	intDofIndex = newInd;
+	return;
+}
+
 void Element::setNext(Element *newEl) {
 	nextEl = newEl;
 	return;
@@ -403,8 +416,13 @@ Element* Element::getNext() {
 }
 
 void Element::addDesignVariable(int dIndex, double coef) {
-	designVars.addEntry(dVNum);
+	designVars.addEntry(dIndex);
 	dvCoef.addEntry(coef);
+	return;
+}
+
+void Element::addCompDVar(int dIndex) {
+	compDVars.addIfAbsent(dIndex);
 	return;
 }
 
@@ -439,3 +457,18 @@ int ElementList::getLength() {
 Element* ElementList::getFirst() {
 	return firstEl;
 }
+
+// Stress prerequisite classes
+
+//dup1
+ Doub_StressPrereq::Doub_StressPrereq() {
+	layerZ = NULL;
+	layerQ = NULL;
+	return;
+}
+
+void Doub_StressPrereq::destroy() {
+	delete[] layerZ;
+	return;
+}
+//end dup

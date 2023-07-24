@@ -15,6 +15,7 @@ const double r_pi = 3.14159265358979324;
 const double r_pio180 = 0.0174532925199432958;
 const double r_1ort3 = 0.577350269189625765;
 
+//dup1
 void Element::getNdDisp(Doub globDisp[], NdPt ndAr[]) {
 	int i1;
 	int i2;
@@ -38,8 +39,8 @@ void Element::getNdDisp(Doub globDisp[], NdPt ndAr[]) {
 	if(numIntDof > 0) {
 		i2 = numNds*dofPerNd;
 		for (i3 = 0; i3 < numIntDof; i3++) {
-			i4 = dofTable[i2][0];
-			i5 = dofTable[i2][1];
+			i4 = dofTable[2*i2];
+			i5 = dofTable[2*i2+1];
 			i6 = nDim*i5 + i4;
 			globDisp[i6].setVal(internalDisp[i3]);
 			i2++;
@@ -86,7 +87,7 @@ void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 		dNds[7].setVal(0.5*(1.0-spt[2]));
 		dNds[8].setVal(-0.5*spt[1]);
 		
-	    nVec[3].setVal(0.5*(1.0-spt[0]-spt[1])*(1.0+spt[2])
+		nVec[3].setVal(0.5 * (1.0 - spt[0] - spt[1]) * (1.0 + spt[2]));
 		dNds[9].setVal(-0.5*(1.0+spt[2]));
 		dNds[10].setVal(-0.5*(1.0+spt[2]));
 		dNds[11].setVal(0.5*(1.0-spt[0]-spt[1]));
@@ -101,7 +102,7 @@ void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 		dNds[16].setVal(0.5*(1.0+spt[2]));
 		dNds[17].setVal(0.5*spt[1]);
 	} else if(type == 8 || type == 81) {
-		nVec[0].setVal(0.125*(1.0-spt[0])*(1.0-spt[1])*(1.0-spt[2])):
+		nVec[0].setVal(0.125 * (1.0 - spt[0]) * (1.0 - spt[1]) * (1.0 - spt[2]));
 		dNds[0].setVal(-0.125*(1.0-spt[1])*(1.0-spt[2]));
 		dNds[1].setVal(-0.125*(1.0-spt[0])*(1.0-spt[2]));
 		dNds[2].setVal(-0.125*(1.0-spt[0])*(1.0-spt[1]));
@@ -267,6 +268,8 @@ void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], dou
 	evalN(nVec, dNds, spt);
 	Doub jMat[9];
 	Doub jInv[9];
+	Doub xVec[3];
+	Doub bVec[3];
 	Doub zDir;
 	Doub tmp;
 	
@@ -280,7 +283,7 @@ void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], dou
 		if(zDir.val > 0.0) {
 			jMat[8].setVal(1.0);
 		} else {
-			jMat[8].setVal(-1.0)
+			jMat[8].setVal(-1.0);
 		}
 	} else if(type == 2) {
 		jMat[4].setVal(1.0);
@@ -291,7 +294,7 @@ void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], dou
 		}
 	}
 	
-	getDetInv(detJ,jInv,jMat,3,0);
+	getDetInv(detJ,jInv,jMat,3,0,xVec,bVec);
 	
 	matMul(dNdx,dNds,jInv,nDim,3,3);
 	
@@ -313,7 +316,7 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 	int stIndex;
 	int iOriSize = (numNds+1)*144;
 	for (i1 = 0; i1 < iOriSize; i1++) {
-		instOriMat[i1].setValue(0.0);
+		instOriMat[i1].setVal(0.0);
 	}
 	bool isDiff = locOri[0].diffType();
 	
@@ -335,15 +338,15 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 	rot[2].dvd(nnds);
 	
 	if(stat) {
-		dOridThet(instOriMat[0],locOri,rot,0,0);
+		dOridThet(&instOriMat[0],locOri,rot,0,0);
 		for (i1 = 1; i1 <= numNds; i1++) {
-			i2 = 3*Dim + i1 - 1;
+			i2 = 3*nDim + i1 - 1;
 			rot[0].setVal(globDisp[i2]);
 			rot[1].setVal(globDisp[i2+nDim]);
 			rot[2].setVal(globDisp[i2+2*nDim]);
 			for (i2 = 0; i2 < 4; i2++) {
 				stIndex = 144*i1 + 36*i2;
-				dOridThet(instOriMat[stIndex],locOri,rot,i2,0);
+				dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
 				i3 = stIndex;
 				i4 = 144*i1 + 9*i2;
 				for (i5 = 0; i5 < 9; i5++) {
@@ -356,7 +359,7 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 	} else if(isDiff) {
 		for (i2 = 0; i2 < 4; i2++) {
 			stIndex = 36*i2;
-			dOridThet(instOriMat[stIndex],locOri,rot,i2,0);
+			dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
 			i3 = stIndex;
 			i4 = 9*i2;
 			for (i5 = 0; i5 < 9; i5++) {
@@ -366,13 +369,13 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 			}
 		}
 		for (i1 = 1; i1 <= numNds; i1++) {
-			i2 = 3*Dim + i1 - 1;
+			i2 = 3*nDim + i1 - 1;
 			rot[0].setVal(globDisp[i2]);
 			rot[1].setVal(globDisp[i2+nDim]);
 			rot[2].setVal(globDisp[i2+2*nDim]);
 			for (i2 = 0; i2 < 4; i2++) {
 				stIndex = 144*i1 + 36*i2;
-				dOridThet(instOriMat[stIndex],locOri,rot,i2,0);
+				dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
 				i3 = stIndex;
 				i4 = 144*i1 + 9*i2;
 				for (i5 = 0; i5 < 9; i5++) {
@@ -385,7 +388,7 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 	} else {
 		for (i2 = 0; i2 < 4; i2++) {
 			stIndex = 36*i2;
-			dOridThet(instOriMat[stIndex],locOri,rot,i2,0);
+			dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
 			i3 = stIndex;
 			i4 = 9*i2;
 			for (i5 = 0; i5 < 9; i5++) {
@@ -395,7 +398,7 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 			}
 			for (i6 = i2; i6 < 4; i6++) {
 				stIndex = 36*i2 + 9*i6;
-				dOridThet(instOriMat[stIndex],locOri,rot,i2,i6);
+				dOridThet(&instOriMat[stIndex],locOri,rot,i2,i6);
 				i3 = stIndex;
 				i4 = 36*i6 + 9*i2;
 				for (i5 = 0; i5 < 9; i5++) {
@@ -406,13 +409,13 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 			}
 		}
 		for (i1 = 1; i1 <= numNds; i1++) {
-			i2 = 3*Dim + i1 - 1;
+			i2 = 3*nDim + i1 - 1;
 			rot[0].setVal(globDisp[i2]);
 			rot[1].setVal(globDisp[i2+nDim]);
 			rot[2].setVal(globDisp[i2+2*nDim]);
 			for (i2 = 0; i2 < 4; i2++) {
 				stIndex = 144*i1 + 36*i2;
-				dOridThet(instOriMat[stIndex],locOri,rot,i2,0);
+				dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
 				i3 = stIndex;
 				i4 = 144*i1 + 9*i2;
 				for (i5 = 0; i5 < 9; i5++) {
@@ -422,7 +425,7 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 				}
 				for (i6 = i2; i6 < 4; i6++) {
 					stIndex = 144*i1 + 36*i2 + 9*i6;
-					dOridThet(instOriMat[stIndex],locOri,rot,i2,i6);
+					dOridThet(&instOriMat[stIndex],locOri,rot,i2,i6);
 					i3 = stIndex;
 					i4 = 144*i1 + 36*i6 + 9*i2;
 					for (i5 = 0; i5 < 9; i5++) {
@@ -489,8 +492,8 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 		i2 = numNds*dofPerNd;
 		i3 = i2 + numIntDof;
 		for (i1 = i2; i1 < i3; i1++) {
-			i4 = dofTable[i1][0];
-			i5 = dofTable[i1][1];
+			i4 = dofTable[2*i1];
+			i5 = dofTable[2*i1+1];
 			i6 = i5*nDim + i4;
 			instDisp[i6].setVal(globDisp[i6]);
 		}
@@ -520,8 +523,8 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 		}
 	} else if((dv1+1)*(dv2+1) == 0) {
 		dv1 = dv1 + dv2 + 1;
-		nd = dofTable[dv1][0];
-		dof = dofTable[dv1][1];
+		nd = dofTable[2*dv1];
+		dof = dofTable[2*dv1+1];
 		if(dof < 3) {
 			if(nd < numNds) {
 				i1 = nd; // Index in instDisp
@@ -604,10 +607,10 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 			}
 		}
 	} else {
-		nd = dofTable[dv1][0];
-		dof = dofTable[dv1][1];
-		nd2 = dofTable[dv2][0];
-		dof2 = dofTable[dv2][1];
+		nd = dofTable[2*dv1];
+		dof = dofTable[2*dv1+1];
+		nd2 = dofTable[2*dv2];
+		dof2 = dofTable[2*dv2+1];
 		nnInv.setVal(1.0/numNds);
 		nnInv2.setVal(nnInv);
 		nnInv2.sqr();
@@ -767,17 +770,17 @@ void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], 
 	Doub rot[3];
 	Doub tmp;
 	
-	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, int dv1, int dv2);
+	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, dv1, dv2);
 	
 	if(dv1 + dv2 == -2) {
 		matMul(ux,instDisp,dNdx,3,nDim,3);
 		i1 = 3*nDim;
-		matMul(rx,instDisp[i1],dNdx,3,nDim,3);
-		matMul(rot,instDisp[i1],nVec,3,nDim,1);
+		matMul(rx,&instDisp[i1],dNdx,3,nDim,3);
+		matMul(rot,&instDisp[i1],nVec,3,nDim,1);
 	} else if((dv1+1)*(dv2+1) == 0) {
 		dv1 = dv1 + dv2 + 1;
-		nd = dofTable[dv1][0];
-		dof = dofTable[dv1][1];
+		nd = dofTable[2*dv1];
+		dof = dofTable[2*dv1+1];
 		if(dof < 3) {
 			i3 = 0;
 			i4 = nd;
@@ -827,10 +830,10 @@ void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], 
 			}
 		}
 	} else {
-		nd = dofTable[dv1][0];
-		dof = dofTable[dv1][1];
-		nd2 = dofTable[dv2][0];
-		dof2 = dofTable[dv2][1];
+		nd = dofTable[2*dv1];
+		dof = dofTable[2*dv1+1];
+		nd2 = dofTable[2*dv2];
+		dof2 = dofTable[2*dv2+1];
 		if(dof < 3 && dof2 < 3) {
 			for (i1 = 0; i1 < 9; i1++) {
 				secDef[i1].setVal(0.0);
@@ -970,11 +973,11 @@ void Element::getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[
 		}
 	} else if((dv1+1)*(dv2+1) == 0) {
 		if(dv1 > -1) {
-			nd = dofTable[dv1][0];
-			dof = dofTable[dv1][1];
+			nd = dofTable[2*dv1];
+			dof = dofTable[2*dv1+1];
 		} else {
-			nd = dofTable[dv2][0];
-			dof = dofTable[dv2][1];
+			nd = dofTable[2*dv2];
+			dof = dofTable[2*dv2+1];
 		}
 		for (i1 = 0; i1 < 3; i1++) {
 			i4 = 4*i1;
@@ -1006,10 +1009,10 @@ void Element::getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[
 		}
 	} else {
 		if(nLGeom) {
-			nd = dofTable[dv1][0];
-			dof = dofTable[dv1][1];
-			nd2 = dofTable[dv2][0];
-			dof2 = dofTable[dv2][1];
+			nd = dofTable[2*dv1];
+			dof = dofTable[2*dv1+1];
+			nd2 = dofTable[2*dv2];
+			dof2 = dofTable[2*dv2+1];
 			if(dof == dof2) {
 				for (i1 = 0; i1 < 3; i1++) {
 					i4 = 4*i1;
@@ -1044,3 +1047,27 @@ void Element::getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[
 	
 	return;
 }
+
+void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, Doub_StressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+	Doub nVec[11];
+	Doub dNdx[33];
+	Doub detJ;
+	Doub ux[9];
+	Doub secDef[9];
+
+	if (type == 41 || type == 3) {
+		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
+		strain
+
+	} else if(type != 2) {
+		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+		matMul(ux, pre.globDisp, dNdx, 3, nDim, 3);
+		getSolidStrain(strain, ux, dNdx, pre.locOri, -1, -1, nLGeom);
+		// rem: Add temperature dependence
+		matMul(stress, pre.Cmat, strain, 6, 6, 1);
+	}
+	return;
+}
+
+//end dup
