@@ -8,6 +8,7 @@
 #include "FaceClass.h"
 #include "SetClass.h"
 #include "SectionClass.h"
+#include "LoadClass.h"
 #include "ConstraintClass.h"
 #include "DesignVariableClass.h"
 #include "ObjectiveClass.h"
@@ -33,6 +34,7 @@ class Model {
 		int elMatDim;
 		bool anPrepRun;
 		int timeStepsSaved;
+		bool nonlinearGeom;
 		SparseMat elasticMat;
 		LowerTriMat elasticLT;
 		
@@ -65,7 +67,7 @@ class Model {
 		
 		// Input
 		
-		void readInputLine(std::ifstream& inFile,std::string& fileLine,std::string headings[],std::string data[], int& dataLen);
+		void readInputLine(std::ifstream& inFile,std::string& fileLine,std::string headings[],int hdLdSpace[], std::string data[], int& dataLen);
 		
 		void readJob(std::string fileName);
 		
@@ -82,6 +84,8 @@ class Model {
 		void readObjectiveInput(std::string fileName);
 		
 		void readDesVarValues(std::string fileName);
+
+		void readTimeStepSoln();
 		
 		// Analysis
 		
@@ -106,8 +110,12 @@ class Model {
 		void getObjGradient();
 		
 		// Output
+
+		void writeTimeStepSoln();
 		
 		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
+
+		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, int timeStep, NdPt ndAr[], DVPt dvAr[]);
 		
 		//
 };

@@ -1,15 +1,22 @@
 #include <cmath>
 #include "ObjectiveClass.h"
 #include "ListEntClass.h"
+#include "NodeClass.h"
+#include "ElementClass.h"
+#include "DesignVariableClass.h"
 
 using namespace std;
 
 ObjectiveTerm::ObjectiveTerm(string newCat) {
 	category = newCat;
+	elSetPtr = NULL;
+	ndSetPtr = NULL;
 	qVec = NULL;
 	elVolVec = NULL;
 	tgtVec = NULL;
 	errNormVec = NULL;
+	next = NULL;
+	qLen = 0;
 }
 
 void ObjectiveTerm::setOperator(string newOp) {
@@ -48,8 +55,18 @@ void ObjectiveTerm::setElset(string newElset) {
 	return;
 }
 
+void ObjectiveTerm::setElsetPtr(Set* newPtr) {
+	elSetPtr = newPtr;
+	return;
+}
+
 void ObjectiveTerm::setNdset(string newNdset) {
 	ndSetName = newNdset;
+	return;
+}
+
+void ObjectiveTerm::setNdsetPtr(Set* newPtr) {
+	ndSetPtr = newPtr;
 	return;
 }
 
@@ -65,6 +82,55 @@ void ObjectiveTerm::setNext(ObjectiveTerm* newNext) {
 
 void ObjectiveTerm::addTargetValue(double newTgt) {
 	tgtVals.addEntry(newTgt);
+	return;
+}
+
+string ObjectiveTerm::getElsetName() {
+	return elSetName;
+}
+
+string ObjectiveTerm::getNdsetName() {
+	return ndSetName;
+}
+
+ObjectiveTerm* ObjectiveTerm::getNext() {
+	return next;
+}
+
+void ObjectiveTerm::allocateObj() {
+	if (qLen == 0) {
+		if (elSetPtr) {
+			qLen = elSetPtr->getLength();
+		}
+		else if (ndSetPtr) {
+			qLen = ndSetPtr->getLength();
+		}
+		if (qLen > 0) {
+			qVec = new double[qLen];
+			if (optr == "powerNorm") {
+				tgtVec = new double[qLen];
+			} else if (optr == "volumeIntegral" || optr == "volumeAverage") {
+				elVolVec = new double[qLen];
+			}
+		}
+	}
+	return;
+}
+
+void ObjectiveTerm::allocateObjGrad() {
+	allocateObj();
+	if (qLen > 0 && dQdU.getDim() == 0) {
+		dQdU.setDim(qLen);
+		dQdV.setDim(qLen);
+		dQdA.setDim(qLen);
+		dQdT.setDim(qLen);
+		dQdTdot.setDim(qLen);
+		dQdD.setDim(qLen);
+		dVdD.setDim(qLen);
+		if (optr == "powerNorm") {
+			errNormVec = new double[qLen];
+		}
+	}
 	return;
 }
 
@@ -247,6 +313,11 @@ void ObjectiveTerm::dVolAveragedD(double dLdD[]) {
 	}
 
 	return;
+}
+
+double ObjectiveTerm::getObjVal(NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
+
+
 }
 
 Objective::Objective() {

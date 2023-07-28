@@ -383,6 +383,10 @@ void Element::setNext(Element *newEl) {
 	return;
 }
 
+int Element::getType() {
+	return type;
+}
+
 int Element::getLabel() {
 	return label;
 }
@@ -397,6 +401,18 @@ int Element::getDofPerNd() {
 
 int Element::getNumIntDof() {
 	return numIntDof;
+}
+
+int Element::getNumIP() {
+	return numIP;
+}
+
+double* Element::getIP() {
+	return intPts;
+}
+
+int Element::getNumLayers() {
+	return sectPtr->getNumLayers();
 }
 
 int* Element::getNodes() {
@@ -461,14 +477,26 @@ Element* ElementList::getFirst() {
 // Stress prerequisite classes
 
 //dup1
- Doub_StressPrereq::Doub_StressPrereq() {
+ DoubStressPrereq::DoubStressPrereq() {
 	layerZ = NULL;
+	layerThk = NULL;
+	layerAng = NULL;
 	layerQ = NULL;
+	currentLayLen = 0;
 	return;
 }
 
-void Doub_StressPrereq::destroy() {
+void DoubStressPrereq::destroy() {
 	delete[] layerZ;
+	delete[] layerThk;
+	delete[] layerAng;
+	delete[] layerQ;
+	layerZ = NULL;
+	layerThk = NULL;
+	layerAng = NULL;
+	layerQ = NULL;
+	currentLayLen = 0;
+
 	return;
 }
 //end dup

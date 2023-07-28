@@ -259,6 +259,8 @@ void Model::readModelInput(string fileName) {
 	
 	int i1;
 	int i2;
+	int i3;
+	int i4;
 	double doubInp[10];
 	int intInp[10];
 	
@@ -376,7 +378,7 @@ void Model::readModelInput(string fileName) {
 					for (i1 = 0; i1 < 6; i1++) {
 						doubInp[i1] = stod(data[i1]);
 					}
-					newSet->setOrientation(doubInp);
+					newSec->setOrientation(doubInp);
 				} else if(headings[1] == "layup") {
 					if(headings[2] == "zOffset" && dataLen == 1) {
 						newSec->setZOffset(stod(data[0]));
@@ -399,7 +401,7 @@ void Model::readModelInput(string fileName) {
 						}
 						newSec->setAreaMoment(doubInp);
 					} else if(headings[2] == "J" && dataLen == 1) {
-						newSec->setPolarMoment(stod(data[1]);
+						newSec->setPolarMoment(stod(data[1]));
 					} else if(headings[2] == "stiffness" && dataLen == 3) {
 						intInp[0] = stoi(data[0]) - 1;
 						intInp[1] = stoi(data[1]) - 1;
@@ -477,8 +479,9 @@ void Model::readModelInput(string fileName) {
 							doubInp[i1] = stod(data[i1]);
 						}
 						newMat->setExpansion(doubInp);
-					} else if(headings[2] == "specHeat" && dataLen == 1) {
+					} else if (headings[2] == "specHeat" && dataLen == 1) {
 						newMat->setSpecHeat(stod(data[0]));
+					}
 				} else if(headings[1] == "failure") {
 					if(headings[2] == "maxStress") {
 						if(headings[3] == "tensile" && dataLen > 0) {
@@ -488,7 +491,7 @@ void Model::readModelInput(string fileName) {
 								doubInp[2] = stod(data[2]);
 							} else {
 								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0]:
+								doubInp[2] = doubInp[0];
 							}
 							newMat->setMaxTenStress(doubInp);
 						} else if(headings[3] == "compressive" && dataLen > 0) {
@@ -498,7 +501,7 @@ void Model::readModelInput(string fileName) {
 								doubInp[2] = stod(data[2]);
 							} else {
 								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0]:
+								doubInp[2] = doubInp[0];
 							}
 							newMat->setMaxCompStress(doubInp);
 						} else if(headings[3] == "shear" && dataLen > 0) {
@@ -508,7 +511,7 @@ void Model::readModelInput(string fileName) {
 								doubInp[2] = stod(data[2]);
 							} else {
 								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0]:
+								doubInp[2] = doubInp[0];
 							}
 							newMat->setMaxShearStress(doubInp);
 						}
@@ -520,7 +523,7 @@ void Model::readModelInput(string fileName) {
 								doubInp[2] = stod(data[2]);
 							} else {
 								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0]:
+								doubInp[2] = doubInp[0];
 							}
 							newMat->setMaxTenStrain(doubInp);
 						} else if(headings[3] == "compressive" && dataLen > 0) {
@@ -530,7 +533,7 @@ void Model::readModelInput(string fileName) {
 								doubInp[2] = stod(data[2]);
 							} else {
 								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0]:
+								doubInp[2] = doubInp[0];
 							}
 							newMat->setMaxCompStrain(doubInp);
 						} else if(headings[3] == "shear" && dataLen > 0) {
@@ -540,7 +543,7 @@ void Model::readModelInput(string fileName) {
 								doubInp[2] = stod(data[2]);
 							} else {
 								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0]:
+								doubInp[2] = doubInp[0];
 							}
 							newMat->setMaxShearStrain(doubInp);
 						}
@@ -573,7 +576,7 @@ void Model::readModelInput(string fileName) {
 	newEl = elements.getFirst();
 	while(newEl) {
 		i1 = newEl->getLabel();
-		elArray[i1].ptr = newEl;
+		elementArray[i1].ptr = newEl;
 		newEl = newEl->getNext();
 	}
 	
@@ -615,7 +618,7 @@ void Model::readConstraintInput(string fileName) {
 					} else if(headings[2] == "dof" && dataLen == 1) {
 						newTerm->setDof(stoi(data[0]));
 					} else if(headings[2] == "coef" && dataLen == 1) {
-						newTerm->setCoef(stod(data[0]);
+						newTerm->setCoef(stod(data[0]));
 					}
 				} else if(headings[1] == "rhs" && dataLen == 1) {
 					newConst->setRhs(stod(data[0]));
@@ -677,19 +680,19 @@ void Model::readLoadInput(string fileName) {
 				} else if(headings[1] == "normDir" && dataLen == 3) {
 					doubInp[0] = stod(data[0]);
 					doubInp[1] = stod(data[1]);
-					doubInp{2] = stod(data[2]);
+					doubInp[2] = stod(data[2]);
 					newLd->setNormDir(doubInp);
 				} else if(headings[1] == "normTolerance" && dataLen == 1) {
 					newLd->setNormTol(stod(data[0]));
 				} else if(headings[1] == "center" && dataLen == 3) {
 					doubInp[0] = stod(data[0]);
 					doubInp[1] = stod(data[1]);
-					doubInp{2] = stod(data[2]);
+					doubInp[2] = stod(data[2]);
 					newLd->setCenter(doubInp);
 				} else if(headings[1] == "axis" && dataLen == 3) {
 					doubInp[0] = stod(data[0]);
 					doubInp[1] = stod(data[1]);
-					doubInp{2] = stod(data[2]);
+					doubInp[2] = stod(data[2]);
 					newLd->setAxis(doubInp);
 				} else if(headings[1] == "angularVelocity") {
 					newLd->setAngVel(stod(data[0]));
@@ -731,7 +734,7 @@ void Model::readInitialState(string fileName) {
 					i2 = 1;
 					for (i1 = 0; i1 < 6; i1++) {
 						if(i2 < dataLen) {
-							doubInp[i1] = stod(data[i2])
+							doubInp[i1] = stod(data[i2]);
 						} else {
 							doubInp[i1] = 0.0;
 						}
@@ -798,7 +801,7 @@ void Model::readDesVarInput(string fileName) {
 					newDVar->setActiveTime(doubInp);
 				} else if(headings[1] == "component") {
 					if(dataLen == 1) {
-					    newDVar->setComponent(stoi(data[0]);
+					    newDVar->setComponent(stoi(data[0]));
 					} else if(dataLen == 2) {
 						intInp[0] = stoi(data[0]) - 1;
 						intInp[1] = stoi(data[1]) - 1;
@@ -908,7 +911,7 @@ void Model::readDesVarValues(string fileName) {
 	int label;
 	double value;
 	
-	infile.open(fileName);
+	inFile.open(fileName);
 	if(inFile) {
 		while(!inFile.eof()) {
 		    readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);

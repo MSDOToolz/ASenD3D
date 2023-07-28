@@ -30,7 +30,7 @@ void Material::setModulus(double newMod[]) {
 void Material::setPoissonRatio(double newPR[]) {
 	poissonRatio[0] = newPR[0];
 	poissonRatio[1] = newPR[1];
-	poissonRatio[2] = newPr[2];
+	poissonRatio[2] = newPR[2];
 	return;
 }
 
@@ -185,8 +185,6 @@ Material* MaterialList::getFirst() {
 
 Layer::Layer(string newNm) {
 	matName = newNm;
-	thickness = newThk;
-	angle = newAng;
 	return;
 }
 
@@ -384,12 +382,16 @@ Material* Section::getMatPtr() {
 	return matPtr;
 }
 
-double* getOrientation() {
+double* Section::getOrientation() {
 	return &orientation[0];
 }
 
 double Section::getZOffset() {
 	return zOffset;
+}
+
+int Section::getNumLayers() {
+	return layers.getLength();
 }
 
 Layer* Section::getFirstLayer() {

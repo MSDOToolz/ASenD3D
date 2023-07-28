@@ -201,6 +201,12 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Nd
 	Doub secFcMom[9];
 	Doub dStndU[288];
 	Doub CdSdU[288];
+
+	Doub zOffset;
+	Doub* layThk = NULL;
+	Doub* layZ = NULL;
+	Doub* layAng = NULL;
+	Doub* layQ = NULL;
 	
 	Doub tmp;
 	
@@ -214,11 +220,25 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Nd
 	getNdCrds(xGlob,ndAr,dvAr);
 	getLocOri(locOri,dvAr);
 	getNdDisp(globDisp,ndAr);
-	getStiffMat(Cmat,dvAr);
 	
 	if(dofPerNd == 6) {
 		correctOrient(locOri,xGlob);
 		getInstOri(instOriMat,locOri,globDisp,stat);
+		if (type == 2) {
+			getBeamStiff(Cmat, dvAr);
+		} else if (type == 41 || type == 3) {
+			i1 = sectPtr->getNumLayers();
+			layThk = new Doub[i1];
+			layZ = new Doub[i1];
+			layAng = new Doub[i1];
+			layQ = new Doub[9 * i1];
+			getLayerThkZ(layThk, layZ, zOffset, dvAr);
+			getLayerAngle(layAng, dvAr);
+			getLayerQ(layQ, dvAr);
+			getABD(Cmat, layThk, layZ, layQ, layAng);
+		}
+	} else {
+		getSolidStiff(Cmat, dvAr);
 	}
 	
 	matMul(xLoc,locOri,xGlob,3,3,numNds);
@@ -312,6 +332,13 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Nd
 				}
 			}
 		}		
+	}
+
+	if (type == 41 || type == 3) {
+		delete[] layThk;
+		delete[] layZ;
+		delete[] layAng;
+		delete[] layQ;
 	}
 	
 	return;

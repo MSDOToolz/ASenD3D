@@ -50,6 +50,8 @@ class Element {
 		void setIntDofIndex(int newInd);
 		
 		void setNext(Element *newEl);
+
+		int getType();
 		
 		int getLabel();
 		
@@ -58,6 +60,12 @@ class Element {
 		int getDofPerNd();
 		
 		int getNumIntDof();
+
+		int getNumIP();
+
+		double* getIP();
+
+		int getNumLayers();
 		
 		int* getNodes();
 		
@@ -73,9 +81,21 @@ class Element {
 //dup1
 
 // Properties
-        void getThickOffset(Doub& thickness, Doub& zOffset, DVPt dvAr[]);
-		
-        void getStiffMat(Doub Cmat[], DVPt dvAr[]);
+		void getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DVPt dvAr[]);
+
+		void getLayerQ(Doub layQ[], DVPt dvAr[]);
+
+		void getLayerAngle(Doub layAng[], DVPt dvAr[]);
+
+		void transformStrain(Doub stnNew[], Doub stnOrig[], Doub& angle);
+
+		void transformQ(Doub qNew[], Doub qOrig[], Doub& angle);
+
+		void getSolidStiff(Doub Cmat[], DVPt dvAr[]);
+
+		void getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub layAng[]);
+
+		void getBeamStiff(Doub Cmat[], DVPt dvAr[]);
 
         void getNdCrds(Doub xGlob[], NdPt ndAr[], DVPt dvAr[]);
 		
@@ -83,7 +103,7 @@ class Element {
 		
 		void correctOrient(Doub locOri[], Doub xGlob[]);
 
-// Solution Fields		
+// Solution Fields
 		void getNdDisp(Doub globDisp[], NdPt ndAr[]);
 
 		void evalN(Doub nVec[], Doub dNds[], double spt[]);
@@ -93,12 +113,18 @@ class Element {
 		void getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool stat);
 		
 		void getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], int dv1, int dv2);
+
+		void getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		
 		void getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], int dv1, int dv2);
 		
 		void getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[], int dv1, int dv2, bool nLGeom);
 
-		void getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, Doub_StressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+		void getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
+
+		void dStressStraindU(Doub dsdU[], Doub dedU[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
+
+		void putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt ndAr[]);
 		
 //end dup
 		
@@ -141,7 +167,7 @@ class ElementList {
 };
 
 //dup1
-class Doub_StressPrereq {
+class DoubStressPrereq {
     public:
 		Doub globNds[30];
 		Doub locNds[30];
@@ -150,9 +176,12 @@ class Doub_StressPrereq {
 		Doub globDisp[60];
 		Doub Cmat[81];
 		Doub* layerZ;
+		Doub* layerThk;
+		Doub* layerAng;
 		Doub* layerQ;
+		int currentLayLen;
 
-		Doub_StressPrereq();
+		DoubStressPrereq();
 
 		void destroy();
 };

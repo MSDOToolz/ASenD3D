@@ -752,6 +752,40 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 	return;
 }
 
+void Element::getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+	int numLay;
+	Doub offset;
+	getNdCrds(pre.globNds, ndAr, dvAr);
+	getLocOri(pre.locOri, dvAr);
+	getNdDisp(pre.globDisp, ndAr);
+	if (dofPerNd == 6) {
+		correctOrient(pre.locOri, pre.globNds);
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+		if (type != 2) {
+			numLay = sectPtr->getNumLayers();
+			if (numLay > pre.currentLayLen) {
+				if (pre.currentLayLen > 0) {
+					pre.destroy();
+				}
+				pre.layerZ = new Doub[numLay];
+				pre.layerThk = new Doub[numLay];
+				pre.layerAng = new Doub[numLay];
+				pre.layerQ = new Doub[9 * numLay];
+				pre.currentLayLen = numLay;
+			}
+			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
+			getLayerAngle(pre.layerAng, dvAr);
+			getLayerQ(pre.layerQ, dvAr);
+		}
+	} else {
+		getSolidStiff(pre.Cmat, dvAr);
+	}
+	matMul(pre.locNds, pre.locOri, pre.globNds, 3, 3, numNds);
+
+
+	return;
+}
+
 void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], int dv1, int dv2) {
 	int i1;
 	int i2;
@@ -1048,17 +1082,48 @@ void Element::getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[
 	return;
 }
 
-void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, Doub_StressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre) {
 	Doub nVec[11];
 	Doub dNdx[33];
 	Doub detJ;
 	Doub ux[9];
 	Doub secDef[9];
+	Doub sectStrn[3];
+	Doub tmp;
 
 	if (type == 41 || type == 3) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
-		strain
+		
+		sectStrn[0].setVal(secDef[0]);
+		tmp.setVal(pre.layerZ[layer]);
+		tmp.mult(secDef[3]);
+		sectStrn[0].add(tmp);
+		
+		sectStrn[1].setVal(secDef[1]);
+		tmp.setVal(pre.layerZ[layer]);
+		tmp.mult(secDef[4]);
+		sectStrn[1].sub(tmp);
+
+		sectStrn[2].setVal(secDef[2]);
+		tmp.setVal(pre.layerZ[layer]);
+		tmp.mult(secDef[5]);
+		sectStrn[2].add(tmp);
+
+		tmp.setVal(pre.layerAng[layer]);
+		tmp.neg();
+		transformStrain(strain, sectStrn, tmp);
+		matMul(stress, &pre.layerQ[9 * layer], strain, 3, 3, 1);
+
+		strain[3].setVal(strain[2]);
+		strain[2].setVal(0.0);
+		strain[4].setVal(0.0);
+		strain[5].setVal(0.0);
+
+		stress[3].setVal(stress[2]);
+		stress[2].setVal(0.0);
+		stress[4].setVal(0.0);
+		stress[5].setVal(0.0);
 
 	} else if(type != 2) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
@@ -1067,6 +1132,99 @@ void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int la
 		// rem: Add temperature dependence
 		matMul(stress, pre.Cmat, strain, 6, 6, 1);
 	}
+	return;
+}
+
+void Element::dStressStraindU(Doub dsdU[], Doub dedU[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre) {
+	int i1;
+	int i2;
+	int i3;
+	Doub nVec[11];
+	Doub dNdx[33];
+	Doub detJ;
+	Doub ux[9];
+	Doub secDef[9];
+	Doub sectStrn[3];
+	Doub dStrain[6];
+	Doub dStress[6];
+	Doub tmp;
+
+	int totDof = numNds * dofPerNd + numIntDof;
+	if (type == 41 || type == 3) {
+		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+		for (i1 = 0; i1 < totDof; i1++) {
+			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i1, -1);
+
+			sectStrn[0].setVal(secDef[0]);
+			tmp.setVal(pre.layerZ[layer]);
+			tmp.mult(secDef[3]);
+			sectStrn[0].add(tmp);
+
+			sectStrn[1].setVal(secDef[1]);
+			tmp.setVal(pre.layerZ[layer]);
+			tmp.mult(secDef[4]);
+			sectStrn[1].sub(tmp);
+
+			sectStrn[2].setVal(secDef[2]);
+			tmp.setVal(pre.layerZ[layer]);
+			tmp.mult(secDef[5]);
+			sectStrn[2].add(tmp);
+
+			tmp.setVal(pre.layerAng[layer]);
+			tmp.neg();
+			transformStrain(dStrain, sectStrn, tmp);
+			matMul(dStress, &pre.layerQ[9 * layer], dStrain, 3, 3, 1);
+
+			dedU[i1].setVal(dStrain[0]);
+			dedU[totDof + i1].setVal(dStrain[1]);
+			dedU[3 * totDof + i1].setVal(dStrain[2]);
+
+			dsdU[i1].setVal(dStress[0]);
+			dsdU[totDof + i1].setVal(dStress[1]);
+			dsdU[3 * totDof + i1].setVal(dStress[2]);
+		}
+
+	}
+	else if (type != 2) {
+		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+		matMul(ux, pre.globDisp, dNdx, 3, nDim, 3);
+		for (i1 = 0; i1 < totDof; i1++) {
+			getSolidStrain(dStrain, ux, dNdx, pre.locOri, i1, -1, nLGeom);
+			// rem: Add temperature dependence
+			matMul(dStress, pre.Cmat, dStrain, 6, 6, 1);
+			i3 = i1;
+			for (i2 = 0; i2 < 6; i2++) {
+				dedU[i3].setVal(dStrain[i2]);
+				dsdU[i3].setVal(dStress[i2]);
+				i3 += totDof;
+			}
+		}
+	}
+
+	return;
+}
+
+void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt ndAr[]) {
+	int i1;
+	int ndDof = numNds + dofPerNd;
+	int totDof = ndDof + numIntDof;
+	int nd;
+	int dof;
+	int globInd;
+	for (i1 = 0; i1 < totDof; i1++) {
+		if (i1 < ndDof) {
+			nd = nodes[dofTable[2 * i1]];
+			dof = dofTable[2 * i1 + 1];
+			globInd = ndAr[nd].ptr->getDofIndex(dof);
+			qMat.addEntry(matRow, globInd, elQVec[i1].val);
+		}
+		else {
+			dof = i1 - ndDof;
+			globInd = intDofIndex + dof;
+			qMat.addEntry(matRow, globInd, elQVec[i1].val);
+		}
+	}
+
 	return;
 }
 

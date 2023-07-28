@@ -176,7 +176,7 @@ class Section {
 		
 		void setAreaMoment(double newI[]);
 		
-		void setPolarMoment(double newJ[]);
+		void setPolarMoment(double newJ);
 		
 		void setStiffness(int row, int col, double val);
 		
@@ -197,6 +197,8 @@ class Section {
 		double* getOrientation();
 		
 		double getZOffset();
+
+		int getNumLayers();
 		
 		Layer* getFirstLayer();
 		
@@ -215,8 +217,8 @@ class Section {
 
 class SectionList {
 	private:
-	    Node *firstSec;
-		Node *lastSec;
+		Section* firstSec;
+		Section* lastSec;
 		int length;
 		
 	public:

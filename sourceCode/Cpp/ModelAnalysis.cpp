@@ -325,6 +325,29 @@ void Model::updateReference() {
 		}
 		thisEl = thisEl->getNext();
 	}
+
+	// Set the node and element set pointers in the objective terms
+
+	ObjectiveTerm* thisTerm = objective.getFirst();
+	while (thisTerm) {
+		elSet = thisTerm->getElsetName();
+		esPtr = elementSets.getFirst();
+		while (esPtr) {
+			if (esPtr->getName() == elSet) {
+				thisTerm->setElsetPtr(esPtr);
+			}
+			esPtr = esPtr->getNext();
+		}
+		ndSet = thisTerm->getNdsetName();
+		nsPtr = nodeSets.getFirst();
+		while (nsPtr) {
+			if (nsPtr->getName() == ndSet) {
+				thisTerm->setNdsetPtr(nsPtr);
+			}
+			nsPtr = nsPtr->getNext();
+		}
+		thisTerm = thisTerm->getNext();
+	}
 	
 	return;
 }
