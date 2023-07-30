@@ -70,6 +70,8 @@ class Element {
 		int* getNodes();
 		
 		IntList* getDesignVars();
+
+		IntListEnt* getFirstCompDV();
 		
 		Face* getFirstFace();
 		
@@ -97,6 +99,8 @@ class Element {
 
 		void getBeamStiff(Doub Cmat[], DVPt dvAr[]);
 
+		void getDensity(Doub& den, int layer, DVPt dvAr[]);
+
         void getNdCrds(Doub xGlob[], NdPt ndAr[], DVPt dvAr[]);
 		
 		void getLocOri(Doub locOri[], DVPt dvAr[]);
@@ -105,6 +109,8 @@ class Element {
 
 // Solution Fields
 		void getNdDisp(Doub globDisp[], NdPt ndAr[]);
+
+		//double getDispSqr(Doub globDisp[]);
 
 		void evalN(Doub nVec[], Doub dNds[], double spt[]);
 		
@@ -115,6 +121,8 @@ class Element {
 		void getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], int dv1, int dv2);
 
 		void getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+
+		void getVolume(Doub& vol, DoubStressPrereq& pre, int layer);
 		
 		void getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], int dv1, int dv2);
 		

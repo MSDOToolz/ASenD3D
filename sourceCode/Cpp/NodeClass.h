@@ -13,6 +13,7 @@ class Node {
 	    int label;
 		int numDof;
 		int dofIndex[6];
+		int sortedRank;
 	    double coord[3];
 		double displacement[6];
 		double velocity[6];
@@ -41,6 +42,8 @@ class Node {
 		void setCrd(double newCrd[]);
 		
 		void setDofIndex(int dof, int index);
+
+		void setSortedRank(int newRank);
 		
 		void setDisplacement(double newDisp[]);
 		
@@ -91,6 +94,8 @@ class Node {
 		//end dup		
 		
 		int getDofIndex(int dof);
+
+		int getSortedRank();
 		
 		Node* getNext();
 		

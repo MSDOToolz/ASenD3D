@@ -38,10 +38,15 @@ void Node::setDofIndex(int dof, int index) {
 	return;
 }
 
+void Node::setSortedRank(int newRank) {
+	sortedRank = newRank;
+	return;
+}
+
 void Node::setDisplacement(double newDisp[]) {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
-		displacement[i1] = newDisp[i1]
+		displacement[i1] = newDisp[i1];
 	}
 	return;
 }
@@ -49,7 +54,7 @@ void Node::setDisplacement(double newDisp[]) {
 void Node::addToDisplacement(double delDisp[]) {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
-		displacement[i1] += newDisp[i1]
+		displacement[i1] += delDisp[i1];
 	}	
 	return;
 }
@@ -57,7 +62,7 @@ void Node::addToDisplacement(double delDisp[]) {
 void Node::setInitialDisp(double newDisp[]) {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
-		initialDisp[i1] = newDisp[i1]
+		initialDisp[i1] = newDisp[i1];
 	}
 	return;
 }
@@ -65,7 +70,7 @@ void Node::setInitialDisp(double newDisp[]) {
 void Node::setInitialVel(double newVel[]) {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
-		initialVel[i1] = newVel[i1]
+		initialVel[i1] = newVel[i1];
 	}
 	return;
 }
@@ -73,7 +78,7 @@ void Node::setInitialVel(double newVel[]) {
 void Node::setInitialAcc(double newAcc[]) {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
-		initialAcc[i1] = newAcc[i1]
+		initialAcc[i1] = newAcc[i1];
 	}
 	return;
 }
@@ -252,6 +257,10 @@ void Node::getElasticDVLoad(Doub ld[], DVPt dvAr[]) {
 
 int Node::getDofIndex(int dof) {
 	return dofIndex[dof];
+}
+
+int Node::getSortedRank() {
+	return sortedRank;
 }
 
 Node* Node::getNext() {

@@ -423,6 +423,10 @@ IntList* Element::getDesignVars() {
 	return &designVars;
 }
 
+IntListEnt* Element::getFirstCompDV() {
+	return compDVars.getFirst();
+}
+
 Face* Element::getFirstFace() {
 	return faces.getFirst();
 }

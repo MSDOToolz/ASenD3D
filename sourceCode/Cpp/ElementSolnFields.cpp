@@ -50,6 +50,24 @@ void Element::getNdDisp(Doub globDisp[], NdPt ndAr[]) {
 	return;
 }
 
+//double Element::getDispSqr(Doub globDisp[]) {
+//	int i1;
+//	int i2;
+//	int i3;
+//	double dispVec[3] = {0.0,0.0,0.0};
+//	double dp = 0;
+//	for (i1 = 0; i1 < 3; i1++) {
+//		i3 = i1 * nDim;
+//		for (i2 = 0; i2 < numNds; i2++) {
+//			dispVec[i1] += globDisp[i3].val;
+//			i3++;
+//		}
+//		dispVec[i1] /= numNds;
+//		dp += dispVec[i1] * dispVec[i1];
+//	}
+//	return dp;
+//}
+
 void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 	if(type == 4) {
 		nVec[0].setVal(1.0-spt[0]-spt[1]-spt[2]);
@@ -782,6 +800,34 @@ void Element::getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	}
 	matMul(pre.locNds, pre.locOri, pre.globNds, 3, 3, numNds);
 
+
+	return;
+}
+
+void Element::getVolume(Doub& vol, DoubStressPrereq& pre, int layer) {
+	int i1;
+	Doub nVec[11];
+	Doub dNdx[33];
+	Doub detJ;
+	Doub thk;
+	Doub tmp;
+
+	if (type == 2) {
+		thk.setVal(sectPtr->getArea()); //rem: update to factor in dvars;
+	} else if (type == 3 || type == 41) {
+		thk.setVal(pre.layerThk[layer]);
+	} else {
+		thk.setVal(1.0);
+	}
+
+	vol.setVal(0.0);
+	for (i1 = 0; i1 < numIP; i1++) {
+		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
+		tmp.setVal(ipWt[i1]);
+		tmp.mult(detJ);
+		tmp.mult(thk);
+		vol.add(tmp);
+	}
 
 	return;
 }

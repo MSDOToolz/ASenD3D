@@ -112,11 +112,14 @@ void Model::reorderNodes(int blockDim) {
 	// Update the global degree of freedom indexes for the nodes
 	
     i2 = 0;
+	i3 = 0;
 	thisNd = orderedNds.getFirst();
 	Node *thisPt;
 	while(thisNd) {
 		nd1 = thisNd->value;
 		thisPt = nodeArray[nd1].ptr;
+		thisPt->setSortedRank(i3);
+		i3++;
 		thisPt->setDofIndex(0,i2);
 		i2++;
 		thisPt->setDofIndex(1,i2);

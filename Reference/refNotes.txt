@@ -6,6 +6,9 @@ try {
     // something else
 }
 
+throw runtime_error("Error string");
+throw invalid_argument("Error string");
+
 Strings:
 
     string name = "Mary"

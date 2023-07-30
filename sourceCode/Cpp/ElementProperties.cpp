@@ -750,6 +750,65 @@ void Element::getBeamStiff(Doub Cmat[], DVPt dvAr[]) {
 	return;
 }
 
+void Element::getDensity(Doub& den, int layer, DVPt dvAr[]) {
+	int layi;
+	Layer* thisLay;
+	Material* thisMat;
+	IntListEnt* thisDV;
+	DoubListEnt* thisCoef;
+	DesignVariable* thisDVPt;
+	string cat;
+	int dvLay;
+	Doub coef;
+	Doub dvVal;
+
+	if (type == 3 || type == 4) {
+		thisLay = sectPtr->getFirstLayer();
+		layi = 0;
+		while (layi < layer && thisLay) {
+			thisLay = thisLay->getNext();
+			layi++;
+		}
+		thisMat = thisLay->getMatPt();
+		den.setVal(thisMat->getDensity());
+		thisDV = designVars.getFirst();
+		thisCoef = dvCoef.getFirst();
+		while (thisDV) {
+			thisDVPt = dvAr[thisDV->value].ptr;
+			cat = thisDVPt->getCategory();
+			dvLay = thisDVPt->getLayer();
+			if (cat == "density" && dvLay == layer) {
+				coef.setVal(thisCoef->value);
+				thisDVPt->getValue(dvVal);
+				dvVal.mult(coef);
+				den.add(dvVal);
+			}
+			thisDV = thisDV->next;
+			thisCoef = thisCoef->next;
+		}
+	} else {
+		thisMat = sectPtr->getMatPtr();
+		den.setVal(thisMat->getDensity());
+		thisDV = designVars.getFirst();
+		thisCoef = dvCoef.getFirst();
+		while (thisDV) {
+			thisDVPt = dvAr[thisDV->value].ptr;
+			cat = thisDVPt->getCategory();
+			dvLay = thisDVPt->getLayer();
+			if (cat == "density") {
+				coef.setVal(thisCoef->value);
+				thisDVPt->getValue(dvVal);
+				dvVal.mult(coef);
+				den.add(dvVal);
+			}
+			thisDV = thisDV->next;
+			thisCoef = thisCoef->next;
+		}
+	}
+
+	return;
+}
+
 void Element::getNdCrds(Doub xGlob[], NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;

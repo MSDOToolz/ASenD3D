@@ -21,6 +21,7 @@ class ObjectiveTerm {
 		Set* ndSetPtr;
 		std::string tgtTag;
 		DoubList tgtVals;
+		double value;
 		ObjectiveTerm* next;
 
 		double* qVec;
@@ -63,6 +64,8 @@ class ObjectiveTerm {
 		
 		void setTgtTag(std::string newTag);
 
+		void setValue(double newVal);
+
 		void setNext(ObjectiveTerm* newNext);
 		
 		void addTargetValue(double newTgt);
@@ -70,6 +73,8 @@ class ObjectiveTerm {
 		std::string getElsetName();
 
 		std::string getNdsetName();
+
+		double getValue();
 
 		ObjectiveTerm* getNext();
 
@@ -95,7 +100,11 @@ class ObjectiveTerm {
 
 		void dVolAveragedD(double dLdD[]);
 
-		double getObjVal(NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+		void getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+
+		void getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+
+		void getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
 };
 
 class Objective {
