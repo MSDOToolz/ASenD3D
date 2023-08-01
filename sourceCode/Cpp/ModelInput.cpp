@@ -597,7 +597,8 @@ void Model::readConstraintInput(string fileName) {
 	int i2;
 	double doubInp[10];
 	int intInp[10];
-	string prevHd2 = "";
+	string allTypes = "displacement temperature";
+	string errSt;
 	
     Constraint *newConst = NULL;
 	ConstraintTerm *newTerm;
@@ -607,12 +608,18 @@ void Model::readConstraintInput(string fileName) {
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "constraints") {
-				if(headings[1] == "terms") {
+				if (headings[1] == "type" && dataLen == 1) {
+					newConst = new Constraint;
+					constraints.addConstraint(newConst);
+					i1 = allTypes.find(data[0]);
+					if (i1 < 0) {
+						errSt = "Error: " + data[0] + " is not a valid constraint type.  Allowable values are " + allTypes;
+						throw invalid_argument(errSt);
+					}
+					newConst->setType(data[0]);
+				}
+				else if(headings[1] == "terms") {
 					if(headings[2] == "nodeSet" && dataLen == 1) {
-						if(prevHd2 == "") {
-							newConst = new Constraint;
-							constraints.addConstraint(newConst);
-						}
 						newTerm = new ConstraintTerm(data[0]);
 						newConst->addTerm(newTerm);
 					} else if(headings[2] == "dof" && dataLen == 1) {
@@ -624,10 +631,9 @@ void Model::readConstraintInput(string fileName) {
 					newConst->setRhs(stod(data[0]));
 				}
 			}
-			prevHd2 = headings[2];
 		}
 	} else {
-		string errSt = "Error: could not open constraint input file: " + fileName;
+		errSt = "Error: could not open constraint input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
 	return;

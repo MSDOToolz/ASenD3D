@@ -103,6 +103,12 @@ void DiffDoub::setVal(double inp, double dinp) {
 	return;
 }
 
+void DiffDoub::setVal(Doub& inp) {
+	val = inp.val;
+	dval = 0.0;
+	return;
+}
+
 void DiffDoub::setVal(DiffDoub& inp) {
 	val = inp.val;
 	dval = inp.dval;

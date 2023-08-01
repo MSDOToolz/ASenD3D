@@ -1,11 +1,11 @@
 import os
 
-##fileNames = ['ElementClass.cpp','ElementClass.h','matrixFunctions.cpp','matrixFunctions.h','NodeClass.cpp','NodeClass.h']
+fileNames = ['ElementClass.cpp','ElementClass.h','ElementEquations.cpp','ElementProperties.cpp','ElementSolnFields.cpp','matrixFunctions.cpp','matrixFunctions.h','NodeClass.cpp','NodeClass.h']
 
-fileNames = ['matrixFunctions.cpp','matrixFunctions.h']
+##fileNames = ['matrixFunctions.cpp','matrixFunctions.h']
 
 leadingStrings = [' ','(',',',':','\t']
-trailingStrings = [' ','&','*','[','(','_']
+trailingStrings = [' ','&','*','[','(','Stress']
 
 strings = list()
 repStrings1 = list()
@@ -116,3 +116,5 @@ for fn in fileNames:
     
     os.remove(fn)
     os.rename('temp.out',fn)
+    
+    print('copied '+fn)

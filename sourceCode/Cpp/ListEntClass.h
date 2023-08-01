@@ -122,6 +122,8 @@ class SparseMat {
 		MatrixEnt* getFirstEnt(int row);
 		
 		void vectorMultiply(double prod[], double inpVec[], bool transpose);
+
+		double getMaxAbsVal();
 		
 		void destroy();
 };

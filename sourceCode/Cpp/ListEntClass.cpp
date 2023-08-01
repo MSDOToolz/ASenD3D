@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstddef>
 #include <string>
 #include "ListEntClass.h"
@@ -214,6 +215,7 @@ MEPtr::MEPtr () {
 
 
 SparseMat::SparseMat() {
+	dim = 0;
 	matrix = NULL;
 	return;
 }
@@ -294,6 +296,21 @@ void SparseMat::vectorMultiply(double prod[], double inpVec[], bool transpose) {
 		}
 	}
 	return;
+}
+
+double SparseMat::getMaxAbsVal() {
+	int i1;
+	MatrixEnt* thisEnt;
+	double thisVal;
+	double maxVal = 0.0;
+	for (i1 = 0; i1 < dim; i1++) {
+		thisEnt = matrix[i1].ptr;
+		thisVal = abs(thisEnt->value);
+		if (thisVal > maxVal) {
+			maxVal = thisVal;
+		}
+	}
+	return maxVal;
 }
 
 void SparseMat::destroy() {

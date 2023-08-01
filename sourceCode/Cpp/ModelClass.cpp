@@ -15,7 +15,7 @@ using namespace std;
 Model::Model() {
 	anPrepRun = false;
 	timeStepsSaved = 0;
-	nonlinearGeom = false;
+	elasticScaled = false;
 	return;
 }
 

@@ -32,15 +32,34 @@ class Model {
 		Job job;
 		
 		int elMatDim;
+		int totGlobDof;
 		bool anPrepRun;
 		int timeStepsSaved;
-		bool nonlinearGeom;
+		JobCommand* solveCmd;
+		
 		SparseMat elasticMat;
 		LowerTriMat elasticLT;
+		bool elasticScaled;
 		
 		double *tempV1;
 		double *tempV2;
+		double* tempV3;
 		Doub *tempD1;
+
+		double* dLdU;
+		double* dLdV;
+		double* dLdA;
+		double* dLdT;
+		double* dLdTdot;
+		double* uAdj;
+		double* vAdj;
+		double* aAdj;
+		double* tAdj;
+		double* tdotAdj;
+
+		DiffDoub* dRudD;
+
+		double* dLdD;
 	
 	public:
 	    Model();
@@ -90,6 +109,8 @@ class Model {
 		// Analysis
 		
 		void reorderNodes(int blockDim);
+
+		void buildConstraintMats();
 		
 		void updateReference();
 		
@@ -100,12 +121,22 @@ class Model {
 		void buildElasticAppLoad(double appLd[], double time);
 		
 		void buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool nLGeom);
+
+		void scaleElasticConst();
+
+		void buildElasticConstLoad(double constLd[]);
 		
 		void solveStep(JobCommand *cmd, double time, double appLdFact);
 		
 		void solve(JobCommand *cmd);
 		
 		void eigenSolve();
+
+		void augmentdLdU();
+
+		void solveForAdjoint();
+
+		void dRelasticdD();
 		
 		void getObjGradient();
 		
@@ -116,6 +147,8 @@ class Model {
 		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
 
 		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, int timeStep, NdPt ndAr[], DVPt dvAr[]);
+
+		void writeObjective(std::string fileName, StringList& includeFields, bool writeGrad);
 		
 		//
 };

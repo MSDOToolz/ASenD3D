@@ -6,8 +6,6 @@
 #include "DiffDoubClass.h"
 #include "DesignVariableClass.h"
 
-
-
 class Node {
 	private:
 	    int label;
@@ -92,6 +90,16 @@ class Node {
 		
 		void getElasticDVLoad(Doub ld[], DVPt dvAr[]);
 		//end dup		
+//skip 
+ 
+//DiffDoub versions: 
+		void getCrd(DiffDoub crdOut[], DVPt dvAr[]);
+		
+		void getDisp(DiffDoub disp[]);
+		
+		void getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]);
+ 
+//end skip 
 		
 		int getDofIndex(int dof);
 

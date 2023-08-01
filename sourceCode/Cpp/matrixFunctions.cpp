@@ -979,7 +979,7 @@ void qRFactor(DiffDoub mat[], int colDim, int stRow, int endRow, int stCol, int 
 			}
 		}
 		for (i2 = i2Min; i2 <= i2Max; i2++) {
-			k11 = (i2-1)*colDim + i1;
+			k11 = (i2Min-1)*colDim + i1;
 			k12 = i2*colDim + i1;
 			if(abs(mat[k11].val) < tol) {
 				mat[k11].val = tol;
@@ -1015,8 +1015,8 @@ void qRFactor(DiffDoub mat[], int colDim, int stRow, int endRow, int stCol, int 
 				tmp.setVal(cth);
 				tmp.mult(mat[k23]);
 				p2.add(tmp);
-				mat[k11].setVal(p1);
-				mat[k12].setVal(p2);
+				mat[k22].setVal(p1);
+				mat[k23].setVal(p2);
 			}
 			mat[k12].setVal(theta);
 		}
@@ -1119,9 +1119,9 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
 	for (i1 = 0; i1 < colDim; i1++) {
 		for (i2 = 0; i2 < colDim; i2++) {
 			if(i1 == i2) {
-				bVec[i1].setVal(1.0);
+				bVec[i2].setVal(1.0);
 			} else {
-			    bVec[i1].setVal(0.0);
+			    bVec[i2].setVal(0.0);
 			}
 		}
 		solveqRxEqb(xVec,mat,bVec,colDim,0,(colDim-1),0,(colDim-1),triDiag);

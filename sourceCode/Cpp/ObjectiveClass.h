@@ -70,9 +70,23 @@ class ObjectiveTerm {
 		
 		void addTargetValue(double newTgt);
 
+		std::string getCategory();
+
+		std::string getOperator();
+
+		int getComponent();
+
+		int getLayer();
+
+		double getCoef();
+
+		double getExpnt();
+
 		std::string getElsetName();
 
 		std::string getNdsetName();
+
+		double* getActTime();
 
 		double getValue();
 
@@ -121,6 +135,12 @@ class Objective {
 		int getLength();
 		
 		ObjectiveTerm* getFirst();
+
+		void calculateTerms(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+
+		void calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+
+		void calculatedLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
 };
 
 #endif

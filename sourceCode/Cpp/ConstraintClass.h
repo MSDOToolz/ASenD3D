@@ -34,16 +34,22 @@ class Constraint {
 	private:
 	    ConstraintTerm *firstTerm;
 		ConstraintTerm *lastTerm;
+		std::string type;
 		double rhs;
 		SparseMat mat;
+		double scaleFact;
 		Constraint *nextConst;
 		
 	public:
 	    Constraint();
+
+		void setType(std::string newType);
 		
 		void addTerm(ConstraintTerm *newTerm);
 		
 		void setRhs(double newRhs);
+
+		void setScaleFact(double newSFact);
 		
 		void setNext(Constraint *newNext);
 		
@@ -52,8 +58,12 @@ class Constraint {
 		void buildMat(Set *firstSet, NdPt ndAr[]);
 		
 		int getMatDim();
+
+		double getScaleFact();
 		
 		MatrixEnt* getMatFirst(int row);
+
+		void getLoad(double cLd[], double uVec[], double qVec[],int resDim);
 		
 		void destroy();
 };
@@ -69,6 +79,10 @@ class ConstraintList {
 		void addConstraint(Constraint *newConst);
 		
 		Constraint* getFirst();
+
+		void scaleElastic(double newSF);
+
+		void getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim);
 		
 		void destroy();
 };

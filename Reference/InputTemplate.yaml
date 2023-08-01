@@ -107,7 +107,8 @@ constraints:
 ##  Alternative constraints
 
 constraints:
-    - terms:
+    - type: displacement, temperature
+      terms:
           #- [ndSet,dof,coef]
           - nodeSet:
             dof:

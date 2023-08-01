@@ -49,6 +49,13 @@ Constraint::Constraint() {
 	firstTerm = NULL;
 	lastTerm = NULL;
 	nextConst = NULL;
+	rhs = 0.0;
+	scaleFact = 0.0;
+	return;
+}
+
+void Constraint::setType(string newType) {
+	type = newType;
 	return;
 }
 
@@ -65,6 +72,11 @@ void Constraint::addTerm(ConstraintTerm *newTerm) {
 
 void Constraint::setRhs(double newRhs) {
 	rhs = newRhs;
+	return;
+}
+
+void Constraint::setScaleFact(double newSFact) {
+	scaleFact = newSFact;
 	return;
 }
 
@@ -89,6 +101,7 @@ void Constraint::buildMat(Set *firstSet, NdPt ndAr[]) {
 	bool setFound;
 	IntListEnt *thisNd;
 	Set *thisSet;
+
 	ConstraintTerm *thisTerm = firstTerm;
 	while(thisTerm) {
 		setNm = thisTerm->getSetName();
@@ -118,7 +131,12 @@ void Constraint::buildMat(Set *firstSet, NdPt ndAr[]) {
 			ndIndex = stoi(setNm);
 			coef = thisTerm->getCoef();
 			dof = thisTerm->getDof();
-			col = ndAr[ndIndex].ptr->getDofIndex(dof);
+			if (type == "displacement") {
+				col = ndAr[ndIndex].ptr->getDofIndex(dof-1);
+			}
+			else if(type == "temperature") {
+				col = ndAr[ndIndex].ptr->getSortedRank();
+			}
 			for(row = 0; row < setLen; row++) {
 				mat.addEntry(row,col,coef);
 			}
@@ -134,7 +152,12 @@ void Constraint::buildMat(Set *firstSet, NdPt ndAr[]) {
 						ndIndex = thisNd->value;
 						coef = thisTerm->getCoef();
 						dof = thisTerm->getDof();
-						col = ndAr[ndIndex].ptr->getDofIndex(dof);
+						if (type == "displacement") {
+							col = ndAr[ndIndex].ptr->getDofIndex(dof - 1);
+						}
+						else if (type == "temperature") {
+							col = ndAr[ndIndex].ptr->getSortedRank();
+						}
 						mat.addEntry(row,col,coef);
 						thisNd = thisNd->next;
 						row++;
@@ -152,8 +175,27 @@ int Constraint::getMatDim() {
 	return mat.getDim();
 }
 
+double Constraint::getScaleFact() {
+	return scaleFact;
+}
+
 MatrixEnt* Constraint::getMatFirst(int row) {
 	return mat.getFirstEnt(row);
+}
+
+void Constraint::getLoad(double cLd[], double uVec[], double qVec[], int resDim) {
+	int i1;
+	int dim = mat.getDim();
+	for (i1 = 0; i1 < dim; i1++) {
+		qVec[i1] = -rhs;
+	}
+	mat.vectorMultiply(qVec, uVec, false);
+	mat.vectorMultiply(cLd, qVec, true);
+	for (i1 = 0; i1 < resDim; i1++) {
+		cLd[i1] *= -scaleFact;
+	}
+
+	return;
 }
 
 void Constraint::destroy() {
@@ -187,6 +229,24 @@ void ConstraintList::addConstraint(Constraint *newConst) {
 
 Constraint* ConstraintList::getFirst() {
 	return firstConst;
+}
+
+void ConstraintList::scaleElastic(double newSF) {
+	Constraint* thisConst = firstConst;
+	while (thisConst) {
+		thisConst->setScaleFact(newSF);
+		thisConst = thisConst->getNext();
+	}
+	return;
+}
+
+void ConstraintList::getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim) {
+	Constraint* thisConst = firstConst;
+	while (thisConst) {
+		thisConst->getLoad(cLd,uVec,qVec,resDim);
+		thisConst = thisConst->getNext();
+	}
+	return;
 }
 
 void ConstraintList::destroy() {

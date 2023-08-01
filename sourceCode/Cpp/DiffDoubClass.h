@@ -54,6 +54,8 @@ class DiffDoub {
 		void setVal(double inp);
 		
 		void setVal(double inp, double dinp);
+
+		void setVal(Doub& inp);
 		
 		void setVal(DiffDoub& inp);
 		

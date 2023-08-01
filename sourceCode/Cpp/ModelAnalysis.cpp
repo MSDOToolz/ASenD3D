@@ -148,10 +148,26 @@ void Model::reorderNodes(int blockDim) {
 		}
 		thisEl = thisEl->getNext();
 	}
+	totGlobDof = i2;
 	
 	tempV1 = new double[elMatDim];
 	tempV2 = new double[elMatDim];
+	tempV3 = new double[elMatDim];
 	tempD1 = new Doub[elMatDim];
+
+	i3 = nodes.getLength();
+	dLdU = new double[totGlobDof];
+	dLdV = new double[elMatDim];
+	dLdA = new double[elMatDim];
+	dLdT = new double[i3];
+	dLdTdot = new double[i3];
+	uAdj = new double[elMatDim];
+	vAdj = new double[elMatDim];
+	aAdj = new double[elMatDim];
+	tAdj = new double[i3];
+	tdotAdj = new double[i3];
+
+	dRudD = new DiffDoub[elMatDim];
 
     for (i1 = 0; i1 < numNodes; i1++) {
 		nodalConn[i1].destroy();
@@ -161,6 +177,16 @@ void Model::reorderNodes(int blockDim) {
 	
 	delete[] nodalConn;
 	delete[] nodeInserted;
+	return;
+}
+
+void Model::buildConstraintMats() {
+	Set* firstNdSet = nodeSets.getFirst();
+	Constraint* thisConst = constraints.getFirst();
+	while (thisConst) {
+		thisConst->buildMat(firstNdSet, nodeArray);
+		thisConst = thisConst->getNext();
+	}
 	return;
 }
 
@@ -390,6 +416,7 @@ void Model::findSurfaceFaces() {
 void Model::analysisPrep(int blockDim) {
 	updateReference();
 	reorderNodes(blockDim);
+	buildConstraintMats();
 	findSurfaceFaces();
 	
 	anPrepRun = true;
@@ -471,6 +498,32 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool 
 	return;
 }
 
+void Model::scaleElasticConst() {
+	double scaleFact = 1000.0*elasticMat.getMaxAbsVal();
+	constraints.scaleElastic(scaleFact);
+	elasticScaled = true;
+	return;
+}
+
+void Model::buildElasticConstLoad(double constLd[]) {
+	int i1;
+	double ndDisp[6];
+	int ndDof;
+	int globInd;
+	Node* thisNd = nodes.getFirst();
+	while (thisNd) {
+		thisNd->getDisp(ndDisp);
+		ndDof = thisNd->getNumDof();
+		for (i1 = 0; i1 < ndDof; i1++) {
+			globInd = thisNd->getDofIndex(i1);
+			tempV2[globInd] = ndDisp[i1];
+		}
+		thisNd = thisNd->getNext();
+	}
+	constraints.getTotalLoad(constLd, tempV2, tempV3, elMatDim);
+	return;
+}
+
 void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 	int i1;
 	int i2;
@@ -506,6 +559,10 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				tempV1[i1] *= appLdFact;
 			}
 			buildElasticSolnLoad(tempV1,cmd->nonlinearGeom,cmd->dynamic,cmd->nonlinearGeom);
+			if (!elasticScaled) {
+				scaleElasticConst();
+			}
+			buildElasticConstLoad(tempV1);
 			thisEl = elements.getFirst();
 			while(thisEl) {
 				if(thisEl->getNumIntDof() > 0) {
@@ -581,6 +638,9 @@ void Model::solve(JobCommand *cmd) {
 			elasticLT.allocateFromSparseMat(elasticMat,constraints,cmd->solverBandwidth);
 		}
 		if(!cmd->nonlinearGeom) {
+			if (!elasticScaled) {
+				scaleElasticConst();
+			}
 			elasticLT.populateFromSparseMat(elasticMat, constraints);
 			elasticLT.ldlFactor();
 		}
@@ -600,5 +660,51 @@ void Model::solve(JobCommand *cmd) {
 		}
 	}
 	
+	return;
+}
+
+void Model::solveForAdjoint() {
+	int i1;
+	Element* thisEl;
+
+	if (solveCmd->elastic) {
+		if (solveCmd->dynamic) {
+
+		}
+		else {
+			for (i1 = 0; i1 < totGlobDof; i1++) {
+				dLdU[i1] = 0.0;
+			}
+			objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray,elementArray,dVarArray);
+			thisEl = elements.getFirst();
+			while (thisEl) {
+				thisEl->setIntdLdU(dLdU);
+				thisEl->updateExternal(dLdU, 0, nodeArray);
+				thisEl = thisEl->getNext();
+			}
+			if (solveCmd->solverMethod == "direct") {
+				elasticLT.ldlSolve(uAdj, dLdU);
+			}
+			thisEl = elements.getFirst();
+			while (thisEl) {
+				thisEl->updateInternal(uAdj, 0, nodeArray);
+				thisEl = thisEl->getNext();
+			}
+		}
+	}
+
+	if (solveCmd->thermal) {
+
+	}
+	return;
+}
+
+void Model::getObjGradient() {
+	if (solveCmd->dynamic) {
+
+	}
+	else {
+
+	}
 	return;
 }

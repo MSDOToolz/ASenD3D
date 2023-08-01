@@ -214,3 +214,73 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 
 	return;
 }
+
+void Model::writeObjective(string fileName, StringList& includeFields, bool writeGrad) {
+	int i1;
+	int numDV;
+	double totObj;
+	double thisVal;
+	ObjectiveTerm* thisTerm;
+	StringListEnt* thisFld;
+	string fldStr;
+	double* actTime;
+
+	ofstream outFile;
+	outFile.open(fileName);
+	outFile << setprecision(12);
+
+	outFile << "objective:\n";
+	outFile << "    terms:\n";
+	thisTerm = objective.getFirst();
+	while (thisTerm) {
+		thisVal = thisTerm->getValue();
+		outFile << "        - value: " << thisVal << "\n";
+		thisFld = includeFields.getFirst();
+		while (thisFld) {
+			fldStr = thisFld->value;
+			if (fldStr == "category") {
+				outFile << "          category: " << thisTerm->getCategory() << "\n";
+			}
+			else if (fldStr == "operator") {
+				outFile << "          operator: " << thisTerm->getOperator() << "\n";
+			}
+			else if (fldStr == "component") {
+				outFile << "          component: " << thisTerm->getComponent() << "\n";
+			}
+			else if (fldStr == "layer") {
+				outFile << "          layer: " << thisTerm->getLayer() << "\n";
+			}
+			else if (fldStr == "coefficient") {
+				outFile << "          coefficient: " << thisTerm->getCoef() << "\n";
+			}
+			else if (fldStr == "exponent") {
+				outFile << "          exponent: " << thisTerm->getExpnt() << "\n";
+			}
+			else if (fldStr == "elementSet") {
+				outFile << "          elementSet: " << thisTerm->getElsetName() << "\n";
+			}
+			else if (fldStr == "nodeSet") {
+				outFile << "          nodeSet: " << thisTerm->getNdsetName() << "\n";
+			}
+			else if (fldStr == "activeTime") {
+				actTime = thisTerm->getActTime();
+				outFile << "          activeTime: [" << actTime[0] << ", " << actTime[1] << "]\n";
+			}
+			thisFld = thisFld->next;
+		}
+		totObj += thisVal;
+		thisTerm = thisTerm->getNext();
+	}
+	outFile << "    totalValue: " << totObj << "\n";
+	if (writeGrad) {
+		outFile << "objectiveGradient:\n";
+		numDV = designVars.getLength();
+		for (i1 = 0; i1 < numDV; i1++) {
+			outFile << "    - [" << i1 << ", " << dLdD[i1] << "]\n";
+		}
+	}
+
+	outFile.close();
+
+	return;
+}

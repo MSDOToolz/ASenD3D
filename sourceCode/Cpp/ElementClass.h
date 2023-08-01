@@ -28,7 +28,7 @@ class Element {
 		double *internalDisp;
 		double *internaldLdu;
 		double *internalAdj;
-		Doub *internalRu;
+		DiffDoub *internalRu;
 		double *internalMat;
 		IntList designVars;
 		DoubList dvCoef;
@@ -48,6 +48,8 @@ class Element {
         void initializeFaces();	
 
 		void setIntDofIndex(int newInd);
+
+		void setIntdLdU(double globdLdU[]);
 		
 		void setNext(Element *newEl);
 
@@ -135,6 +137,61 @@ class Element {
 		void putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt ndAr[]);
 		
 //end dup
+//skip 
+ 
+//DiffDoub versions: 
+
+		void getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset, DVPt dvAr[]);
+
+		void getLayerQ(DiffDoub layQ[], DVPt dvAr[]);
+
+		void getLayerAngle(DiffDoub layAng[], DVPt dvAr[]);
+
+		void transformStrain(DiffDoub stnNew[], DiffDoub stnOrig[], DiffDoub& angle);
+
+		void transformQ(DiffDoub qNew[], DiffDoub qOrig[], DiffDoub& angle);
+
+		void getSolidStiff(DiffDoub Cmat[], DVPt dvAr[]);
+
+		void getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layQ[], DiffDoub layAng[]);
+
+		void getBeamStiff(DiffDoub Cmat[], DVPt dvAr[]);
+
+		void getDensity(DiffDoub& den, int layer, DVPt dvAr[]);
+
+        void getNdCrds(DiffDoub xGlob[], NdPt ndAr[], DVPt dvAr[]);
+		
+		void getLocOri(DiffDoub locOri[], DVPt dvAr[]);
+		
+		void correctOrient(DiffDoub locOri[], DiffDoub xGlob[]);
+
+		void getNdDisp(DiffDoub globDisp[], NdPt ndAr[]);
+
+
+		void evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]);
+		
+		void getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDoub locNds[], double spt[]);
+		
+		void getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], bool stat);
+		
+		void getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], int dv1, int dv2);
+
+		void getStressPrereq(DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+
+		void getVolume(DiffDoub& vol, DiffDoubStressPrereq& pre, int layer);
+		
+		void getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], DiffDoub dNdx[], DiffDoub nVec[], int dv1, int dv2);
+		
+		void getSolidStrain(DiffDoub strain[], DiffDoub ux[], DiffDoub dNdx[], DiffDoub locOri[], int dv1, int dv2, bool nLGeom);
+
+		void getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre);
+
+		void dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre);
+
+		void putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], int matRow, NdPt ndAr[]);
+		
+ 
+//end skip 
 		
 // Equations
 		void condenseMat(double mat[]);
@@ -149,6 +206,15 @@ class Element {
 		void getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
 		
 //end dup
+//skip 
+ 
+//DiffDoub versions: 
+        void getRuk(DiffDoub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
+		
+		void getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
+		
+ 
+//end skip 
 };
 
 class ElPt {
@@ -194,5 +260,28 @@ class DoubStressPrereq {
 		void destroy();
 };
 //end dup
+//skip 
+ 
+//DiffDoub versions: 
+class DiffDoubStressPrereq {
+    public:
+		DiffDoub globNds[30];
+		DiffDoub locNds[30];
+		DiffDoub locOri[9];
+		DiffDoub instOri[720];
+		DiffDoub globDisp[60];
+		DiffDoub Cmat[81];
+		DiffDoub* layerZ;
+		DiffDoub* layerThk;
+		DiffDoub* layerAng;
+		DiffDoub* layerQ;
+		int currentLayLen;
+
+		DiffDoubStressPrereq();
+
+		void destroy();
+};
+ 
+//end skip 
 
 #endif

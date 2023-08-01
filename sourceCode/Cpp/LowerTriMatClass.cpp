@@ -35,7 +35,7 @@ void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList,
 	Constraint *thisConst;
 	
 	if(!mat) {
-		setDim(spMat.getDim())
+		setDim(spMat.getDim());
 	}
 	
 	for (i1 = 0; i1 < dim; i1++) {
@@ -108,6 +108,7 @@ void LowerTriMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList)
 	int i3;
 	int i4;
 	int constDim;
+	double constSF;
 	
 	MatrixEnt *mEnt1;
 	MatrixEnt *mEnt2;
@@ -132,6 +133,7 @@ void LowerTriMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList)
 	thisConst = cList.getFirst();
 	while(thisConst) {
 		constDim = thisConst->getMatDim();
+		constSF = thisConst->getScaleFact();
 		for (i1 = 0; i1 < constDim; i1++) {
 			mEnt1 = thisConst->getMatFirst(i1);
 			while(mEnt1) {
@@ -141,7 +143,7 @@ void LowerTriMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList)
 					i3 = mEnt2->col;
 					if(i3 <= i2 && i3 >= minCol[i2]) {
 						i4 = range[i2] + (i3 - minCol[i2]);
-						mat[i4]+= mEnt1->value*mEnt2->value;
+						mat[i4] += constSF * mEnt1->value * mEnt2->value;
 					}
 					mEnt2 = mEnt2->nextEnt;
 				}

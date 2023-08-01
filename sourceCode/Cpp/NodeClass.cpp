@@ -254,6 +254,80 @@ void Node::getElasticDVLoad(Doub ld[], DVPt dvAr[]) {
 }
 
 //end dup
+//skip 
+ 
+//DiffDoub versions: 
+void Node::getCrd(DiffDoub crdOut[], DVPt dvAr[]) {
+	crdOut[0].setVal(coord[0]);
+	crdOut[1].setVal(coord[1]);
+	crdOut[2].setVal(coord[2]);
+	IntListEnt *currD = dVars.getFirst();
+	DoubListEnt *currCoef = coefs.getFirst();
+	int dIndex;
+	DesignVariable *dPtr;
+	DiffDoub dVal;
+	int comp;
+	string cat;
+	DiffDoub coef;
+	while(currD) {
+		dIndex = currD->value;
+		dPtr = dvAr[dIndex].ptr;
+		dPtr->getValue(dVal);
+		cat = dPtr->getCategory();
+		comp = dPtr->getComponent() - 1;
+		if(cat == "nodeCoord") {
+			coef.setVal(currCoef->value);
+			coef.mult(dVal);
+			crdOut[comp].add(coef);
+		}
+		currD = currD->next;
+		currCoef = currCoef->next;
+	}
+	return;
+}
+
+void Node::getDisp(DiffDoub disp[]) {
+	int i1;
+	for (i1 = 0; i1 < 6; i1++) {
+	    disp[i1].setVal(displacement[i1]);
+	}
+	return;
+}
+
+void Node::getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]) {
+	int i1;
+	int dIndex;
+	IntListEnt *thisDV;
+	DoubListEnt *thisCoef;
+	DesignVariable *dPtr;
+	DiffDoub dVal;
+	DiffDoub coef;
+	string cat;
+	int comp;
+	for (i1 = 0; i1 < 6; i1++) {
+		ld[i1].setVal(0.0);
+	}
+	thisDV = dVars.getFirst();
+	thisCoef = coefs.getFirst();
+	while(thisDV) {
+		dIndex = thisDV->value;
+		dPtr = dvAr[dIndex].ptr;
+		dPtr->getValue(dVal);
+		cat = dPtr->getCategory();
+		comp = dPtr->getComponent() - 1;
+		if(cat == "elasticLoad") {
+			coef.setVal(thisCoef->value);
+			coef.mult(dVal);
+			ld[comp].add(coef);
+		}
+		thisDV = thisDV->next;
+		thisCoef = thisCoef->next;
+	}
+	return;
+}
+
+ 
+//end skip 
 
 int Node::getDofIndex(int dof) {
 	return dofIndex[dof];
