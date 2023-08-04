@@ -214,11 +214,11 @@ Element::Element(int newType) {
 	}
 	
 	if(numIntDof == 0) {
-		internalDisp = NULL;
-		internaldLdu = NULL;
-		internalAdj = NULL;
-		internalRu = NULL;
-		internalMat = NULL;
+		internalDisp = nullptr;
+		internaldLdu = nullptr;
+		internalAdj = nullptr;
+		internalRu = nullptr;
+		internalMat = nullptr;
 	} else {
 		internalDisp = new double[numIntDof];
 		internaldLdu = new double[numIntDof];
@@ -230,8 +230,8 @@ Element::Element(int newType) {
 
 	intDofIndex = 0;
 	
-	sectPtr = NULL;
-	nextEl = NULL;
+	sectPtr = nullptr;
+	nextEl = nullptr;
 	
 	return;
 }
@@ -456,14 +456,33 @@ void Element::addCompDVar(int dIndex) {
 	return;
 }
 
+void Element::destroy() {
+	delete[] nodes;
+	delete[] dofTable;
+	delete[] intPts;
+	delete[] ipWt;
+	if (numIntDof > 0) {
+		delete[] internalDisp;
+		delete[] internaldLdu;
+		delete[] internalAdj;
+		delete[] internalRu;
+		delete[] internalMat;
+	}
+	faces.destroy();
+	designVars.destroy();
+	dvCoef.destroy();
+	compDVars.destroy();
+	return;
+}
+
 ElPt::ElPt() {
-	ptr = NULL;
+	ptr = nullptr;
 }
 
 //ElementList begin
 ElementList::ElementList() {
-	firstEl = NULL;
-	lastEl = NULL;
+	firstEl = nullptr;
+	lastEl = nullptr;
 	length = 0;
 	return;
 }
@@ -488,14 +507,26 @@ Element* ElementList::getFirst() {
 	return firstEl;
 }
 
+void ElementList::destroy() {
+	Element* thisEl = firstEl;
+	Element* nextEl;
+	while (thisEl) {
+		nextEl = thisEl->getNext();
+		thisEl->destroy();
+		delete thisEl;
+		thisEl = nextEl;
+	}
+	return;
+}
+
 // Stress prerequisite classes
 
 //dup1
  DoubStressPrereq::DoubStressPrereq() {
-	layerZ = NULL;
-	layerThk = NULL;
-	layerAng = NULL;
-	layerQ = NULL;
+	layerZ = nullptr;
+	layerThk = nullptr;
+	layerAng = nullptr;
+	layerQ = nullptr;
 	currentLayLen = 0;
 	return;
 }
@@ -507,10 +538,10 @@ void DoubStressPrereq::destroy() {
 	    delete[] layerAng;
 	    delete[] layerQ;
 	}
-	layerZ = NULL;
-	layerThk = NULL;
-	layerAng = NULL;
-	layerQ = NULL;
+	layerZ = nullptr;
+	layerThk = nullptr;
+	layerAng = nullptr;
+	layerQ = nullptr;
 	currentLayLen = 0;
 
 	return;
@@ -520,10 +551,10 @@ void DoubStressPrereq::destroy() {
  
 //DiffDoub versions: 
  DiffDoubStressPrereq::DiffDoubStressPrereq() {
-	layerZ = NULL;
-	layerThk = NULL;
-	layerAng = NULL;
-	layerQ = NULL;
+	layerZ = nullptr;
+	layerThk = nullptr;
+	layerAng = nullptr;
+	layerQ = nullptr;
 	currentLayLen = 0;
 	return;
 }
@@ -535,10 +566,10 @@ void DiffDoubStressPrereq::destroy() {
 	    delete[] layerAng;
 	    delete[] layerQ;
 	}
-	layerZ = NULL;
-	layerThk = NULL;
-	layerAng = NULL;
-	layerQ = NULL;
+	layerZ = nullptr;
+	layerThk = nullptr;
+	layerAng = nullptr;
+	layerQ = nullptr;
 	currentLayLen = 0;
 
 	return;

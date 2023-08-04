@@ -55,6 +55,8 @@ class JobCommand {
 		JobCommand *next;
 		
 		JobCommand();
+
+		void destroy();
 };
 
 class Job {
@@ -71,6 +73,8 @@ class Job {
 		int getLength();
 		
 		JobCommand* getFirst();
+
+		void destroy();
 };
 
 #endif

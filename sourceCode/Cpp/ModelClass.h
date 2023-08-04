@@ -136,7 +136,7 @@ class Model {
 
 		void solveForAdjoint();
 
-		void dRelasticdD();
+		void dRelasticdD(int dVarNum);
 		
 		void getObjGradient();
 		
@@ -146,7 +146,7 @@ class Model {
 		
 		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
 
-		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, int timeStep, NdPt ndAr[], DVPt dvAr[]);
+		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, int timeStep);
 
 		void writeObjective(std::string fileName, StringList& includeFields, bool writeGrad);
 		

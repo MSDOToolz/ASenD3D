@@ -82,6 +82,8 @@ class Element {
 		void addDesignVariable(int dIndex, double coef);
 
 		void addCompDVar(int dIndex);
+
+		void destroy();
 //dup1
 
 // Properties
@@ -200,6 +202,8 @@ class Element {
 		
 		void updateInternal(double extVec[], int forSoln, NdPt ndAr[]);
 
+		double getIntAdjdRdD();
+
 //dup1
         void getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
 		
@@ -238,6 +242,8 @@ class ElementList {
 		int getLength();
 		
 		Element* getFirst();
+
+		void destroy();
 };
 
 //dup1

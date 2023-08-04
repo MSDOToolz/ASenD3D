@@ -7,14 +7,14 @@ using namespace std;
 
 IntListEnt::IntListEnt(int newVal) {
 	value = newVal;
-	next = NULL;
+	next = nullptr;
 }
 
 
 IntList::IntList() {
 	len = 0;
-	first = NULL;
-	last = NULL;
+	first = nullptr;
+	last = nullptr;
 }
 
 int IntList::getLength() {
@@ -75,8 +75,8 @@ void IntList::destroy() {
 		delete thisEnt;
 		thisEnt = nextEnt;
 	}
-	first = NULL;
-	last = NULL;
+	first = nullptr;
+	last = nullptr;
 	len = 0;
 	return;
 }
@@ -84,12 +84,12 @@ void IntList::destroy() {
 
 DoubListEnt::DoubListEnt(double newVal) {
 	value = newVal;
-	next = NULL;
+	next = nullptr;
 }
 
 DoubList::DoubList() {
-	first = NULL;
-	last = NULL;
+	first = nullptr;
+	last = nullptr;
 	len = 0;
 }
 
@@ -147,22 +147,22 @@ void DoubList::destroy() {
 		delete thisEnt;
 		thisEnt = nextEnt;
 	}
-	first = NULL;
-	last = NULL;
+	first = nullptr;
+	last = nullptr;
 	len = 0;
 	return;
 }
 
 StringListEnt::StringListEnt(string newStr) {
 	value = newStr;
-	next = NULL;
+	next = nullptr;
 	return;
 }
 
 StringList::StringList() {
 	len = 0;
-	first = NULL;
-	last = NULL;
+	first = nullptr;
+	last = nullptr;
 	return;
 }
 
@@ -195,8 +195,8 @@ void StringList::destroy() {
 		delete thisEnt;
 		thisEnt = nextEnt;
 	}
-	first = NULL;
-	last = NULL;
+	first = nullptr;
+	last = nullptr;
 	len = 0;
 	return;
 }
@@ -205,18 +205,18 @@ MatrixEnt::MatrixEnt(int newRow, int newCol, double newVal) {
 	row = newRow;
 	col = newCol;
 	value = newVal;
-	nextEnt = NULL;
+	nextEnt = nullptr;
 }
 
 
 MEPtr::MEPtr () {
-	ptr = NULL;
+	ptr = nullptr;
 }
 
 
 SparseMat::SparseMat() {
 	dim = 0;
-	matrix = NULL;
+	matrix = nullptr;
 	return;
 }
 
@@ -317,7 +317,7 @@ void SparseMat::destroy() {
 	MatrixEnt *thisEnt;
 	MatrixEnt *nextEnt;
 	int i1;
-	for (i1 = 0; i1 < dim; i1++ ){
+	for (i1 = 0; i1 < dim; i1++){
 		thisEnt = matrix[i1].ptr;
 		while(thisEnt) {
 			nextEnt = thisEnt->nextEnt;

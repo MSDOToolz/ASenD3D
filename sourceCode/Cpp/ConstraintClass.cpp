@@ -9,7 +9,7 @@ using namespace std;
 
 ConstraintTerm::ConstraintTerm(string newNSet) {
 	nodeSet = newNSet;
-	nextTerm = NULL;
+	nextTerm = nullptr;
 	return;
 }
 
@@ -46,9 +46,9 @@ ConstraintTerm* ConstraintTerm::getNext() {
 
 
 Constraint::Constraint() {
-	firstTerm = NULL;
-	lastTerm = NULL;
-	nextConst = NULL;
+	firstTerm = nullptr;
+	lastTerm = nullptr;
+	nextConst = nullptr;
 	rhs = 0.0;
 	scaleFact = 0.0;
 	return;
@@ -211,8 +211,8 @@ void Constraint::destroy() {
 }
 
 ConstraintList::ConstraintList() {
-	firstConst = NULL;
-	lastConst = NULL;
+	firstConst = nullptr;
+	lastConst = nullptr;
 	return;
 }
 

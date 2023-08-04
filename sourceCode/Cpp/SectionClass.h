@@ -90,6 +90,8 @@ class MaterialList {
 		int getLength();
 		
 		Material* getFirst();
+
+		void destroy();
 };
 
 class Layer {
@@ -136,6 +138,8 @@ class LayerList {
 		int getLength();
 		
 		Layer* getFirst();
+
+		void destroy();
 };
 
 class Section {
@@ -213,6 +217,8 @@ class Section {
 		Section* getNext();
 		
 		void setNext(Section *newNext);
+
+		void destroy();
 };
 
 class SectionList {
@@ -229,6 +235,8 @@ class SectionList {
 		int getLength();
 		
 		Section* getFirst();
+
+		void destroy();
 };
 
 #endif

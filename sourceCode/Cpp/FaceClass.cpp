@@ -1,11 +1,12 @@
 #include "FaceClass.h"
 
+using namespace std;
 Face::Face(int newNumNds) {
 	numNds = newNumNds;
 	locNodes = new int[numNds];
 	globNodes = new int[numNds];
 	onSurf = true;
-	next = NULL;
+	next = nullptr;
 	return;
 }
 
@@ -31,7 +32,7 @@ void Face::sortedNodes(int srtNds[]) {
 	int i4;
 	int swap;
 	for (i1 = 0; i1 < numNds; i1++) {
-		srtNds[i1] = globNds[i1];
+		srtNds[i1] = globNodes[i1];
 	}
 	i3 = numNds - 1;
 	for (i1 = 0; i1 < i3; i1++) {
@@ -78,8 +79,8 @@ void Face::destroy() {
 
 // Begin FaceList
 FaceList::FaceList() {
-	first = NULL;
-	last = NULL;
+	first = nullptr;
+	last = nullptr;
 	len = 0;
 	return;
 }

@@ -90,6 +90,8 @@ class LoadList {
 		int getLength();
 		
 		Load* getFirst();
+
+		void destroy();
 };
 
 #endif

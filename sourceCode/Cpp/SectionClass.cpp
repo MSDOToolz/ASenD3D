@@ -158,8 +158,8 @@ Material* Material::getNext() {
 }
 
 MaterialList::MaterialList() {
-	firstMat = NULL;
-	lastMat = NULL;
+	firstMat = nullptr;
+	lastMat = nullptr;
 	length = 0;
 }
 
@@ -182,6 +182,19 @@ Material* MaterialList::getFirst() {
 	return firstMat;
 }
 
+void MaterialList::destroy() {
+	Material* thisMat = firstMat;
+	Material* nextMat;
+	while (thisMat) {
+		nextMat = thisMat->getNext();
+		delete thisMat;
+		thisMat = nextMat;
+	}
+	firstMat = nullptr;
+	lastMat = nullptr;
+	length = 0;
+	return;
+}
 
 Layer::Layer(string newNm) {
 	matName = newNm;
@@ -230,8 +243,8 @@ void Layer::setMatPtr(Material *newPtr) {
 
 
 LayerList::LayerList() {
-	firstLay = NULL;
-	lastLay = NULL;
+	firstLay = nullptr;
+	lastLay = nullptr;
 	length = 0;
 }
 
@@ -255,6 +268,19 @@ Layer* LayerList::getFirst() {
 	return firstLay;
 }
 
+void LayerList::destroy() {
+	Layer* thisLay = firstLay;
+	Layer* nextLay;
+	while (thisLay) {
+		nextLay = thisLay->getNext();
+		delete thisLay;
+		thisLay = nextLay;
+	}
+	firstLay = nullptr;
+	lastLay = nullptr;
+	length = 0;
+	return;
+}
 
 Section::Section(string newType) {
 	type = newType;
@@ -263,8 +289,8 @@ Section::Section(string newType) {
 		stiffness[i1] = 0.0;
 		mass[i1] = 0.0;
 	}
-	matPtr = NULL;
-	nextSection = NULL;
+	matPtr = nullptr;
+	nextSection = nullptr;
 	return;
 }
 
@@ -423,10 +449,14 @@ void Section::setNext(Section *newNext) {
 	return;
 }
 
+void Section::destroy() {
+	layers.destroy();
+	return;
+}
 
 SectionList::SectionList() {
-	firstSec = NULL;
-	lastSec = NULL;
+	firstSec = nullptr;
+	lastSec = nullptr;
 	length = 0;
 	return;
 }
@@ -449,4 +479,19 @@ int SectionList::getLength() {
 
 Section* SectionList::getFirst() {
 	return firstSec;
+}
+
+void SectionList::destroy() {
+	Section* thisSec = firstSec;
+	Section* nextSec;
+	while (thisSec) {
+		nextSec = thisSec->getNext();
+		thisSec->destroy();
+		delete thisSec;
+		thisSec = nextSec;
+	}
+	firstSec = nullptr;
+	lastSec = nullptr;
+	length = 0;
+	return;
 }

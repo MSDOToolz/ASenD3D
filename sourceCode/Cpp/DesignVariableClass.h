@@ -3,6 +3,7 @@
 #include <string>
 #include "ListEntClass.h"
 #include "DiffDoubClass.h"
+#include "SetClass.h"
 
 class DesignVariable {
 	private:
@@ -12,6 +13,7 @@ class DesignVariable {
 		double activeTime[2];
 		std::string elSetName;
 		std::string ndSetName;
+		Set* ndSetPtr;
 		DoubList coefs;
 		Doub value;
 		DiffDoub diffVal;
@@ -28,6 +30,8 @@ class DesignVariable {
 		void setElset(std::string newElset);
 		
 		void setNdset(std::string newNdset);
+
+		void setNdsetPtr(Set* newSet);
 		
 		void setValue(double newVal);
 		
@@ -56,6 +60,10 @@ class DesignVariable {
 		int getComponent();
 		
 		int getLayer();
+
+		IntListEnt* getFirstEl();
+
+		IntListEnt* getFirstNd();
 		
 		DesignVariable* getNext();
 		
@@ -83,6 +91,8 @@ class DesVarList {
 		int getLength();
 		
 		DesignVariable* getFirst();
+
+		void destroy();
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include "ListEntClass.h"
 #include "SetClass.h"
 #include "LowerTriMatClass.h"
+#include "NodeClass.h"
 #include "ElementClass.h"
 #include "DesignVariableClass.h"
 #include "FaceClass.h"
@@ -169,6 +170,14 @@ void Model::reorderNodes(int blockDim) {
 
 	dRudD = new DiffDoub[elMatDim];
 
+	i3 = designVars.getLength();
+	if (i3 > 0) {
+		dLdD = new double[i3];
+	}
+	else {
+		dLdD = nullptr;
+	}
+
     for (i1 = 0; i1 < numNodes; i1++) {
 		nodalConn[i1].destroy();
 	}
@@ -319,6 +328,7 @@ void Model::updateReference() {
 						thisDoub = thisDoub->next;
 					}
 				}
+				thisDV->setNdsetPtr(nsPtr);
 			}
 			nsPtr = nsPtr->getNext();
 		}
@@ -348,7 +358,10 @@ void Model::updateReference() {
 			desVars = nodeArray[elNodes[i1]].ptr->getDesignVars();
 			thisInt = desVars->getFirst();
 			while(thisInt) {
-				dVarArray[thisInt->value].ptr->addCompEl(elLabel);
+				thisDV = dVarArray[thisInt->value].ptr;
+				if (thisDV->getCategory() == "nodeCoord") {
+					dVarArray[thisInt->value].ptr->addCompEl(elLabel);
+				}
 				thisInt = thisInt->next;
 			}
 		}
@@ -437,6 +450,8 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	Set *thisSet;
 	IntListEnt *thisEnt;
 	Node *thisNd;
+
+	//Loads from model input file
 	while(thisLoad) {
 		ldType = thisLoad->getType();
 		thisLoad->getActTime(actTime);
@@ -459,6 +474,7 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 		thisLoad = thisLoad->getNext();
 	}
 	
+	// Design variable dependent loads.
     thisNd = nodes.getFirst();
 	while(thisNd) {
 		thisNd->getElasticDVLoad(ndDVLd,dVarArray);
@@ -699,12 +715,79 @@ void Model::solveForAdjoint() {
 	return;
 }
 
+void Model::dRelasticdD(int dVarNum) {
+	int i1;
+	int numDof;
+	int globInd;
+	Doub dvVal;
+	DesignVariable* thisDV = dVarArray[dVarNum].ptr;
+	thisDV->getValue(dvVal);
+	thisDV->setDiffVal(dvVal.val, 1.0);
+
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		dRudD[i1].setVal(0.0);
+	}
+
+	// Solution-dependent contribution of load
+	IntListEnt* thisEnt = thisDV->getFirstEl();
+	Element* thisElPt;
+	while (thisEnt) {
+		thisElPt = elementArray[thisEnt->value].ptr;
+		thisElPt->getRu(dRudD, elasticMat, false, solveCmd->dynamic, solveCmd->nonlinearGeom, nodeArray, dVarArray);
+		thisEnt = thisEnt->next;
+	}
+
+
+	// Design variable dependent contribution
+	thisEnt = thisDV->getFirstNd();
+	Node* thisNdPt;
+	DiffDoub ndLd[6];
+	while (thisEnt) {
+		thisNdPt = nodeArray[thisEnt->value].ptr;
+		thisNdPt->getElasticDVLoad(ndLd, dVarArray);
+		numDof = thisNdPt->getNumDof();
+		for (i1 = 0; i1 < numDof; i1++) {
+			globInd = thisNdPt->getDofIndex(i1);
+			ndLd[i1].neg();
+			dRudD[globInd].add(ndLd[i1]);
+		}
+		thisEnt = thisEnt->next;
+	}
+
+	return;
+}
+
 void Model::getObjGradient() {
+	int i1;
+	int i2;
+	int numDV = designVars.getLength();
+	Element* thisEl;
+
+	objective.clearValues();
+	for (i1 = 0; i1 < numDV; i1++) {
+		dLdD[i1] = 0.0;
+	}
+
 	if (solveCmd->dynamic) {
 
 	}
 	else {
-
+		objective.calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+		solveForAdjoint();
+		objective.calculatedLdD(dLdD, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+		for (i1 = 0; i1 < numDV; i1++) {
+			if (solveCmd->elastic) {
+				dRelasticdD(i1);
+				for (i2 = 0; i2 < elMatDim; i2++) {
+					dLdD[i1] -= uAdj[i2] * dRudD[i2].dval;
+				}
+				thisEl = elements.getFirst();
+				while (thisEl) {
+					dLdD[i1] -= thisEl->getIntAdjdRdD();
+					thisEl = thisEl->getNext();
+				}
+			}
+		}
 	}
 	return;
 }

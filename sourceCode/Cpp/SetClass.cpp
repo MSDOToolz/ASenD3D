@@ -6,7 +6,7 @@ using namespace std;
 
 Set::Set(string newNm) {
     name = newNm;
-    nextSet = NULL;
+    nextSet = nullptr;
 }
 
 void Set::addEntry(int newLabel) {
@@ -34,10 +34,15 @@ void Set::setNext(Set* newNext) {
     return;
 }
 
+void Set::destroy() {
+	labels.destroy();
+	return;
+}
+
 
 SetList::SetList() {
-	firstSet = NULL;
-	lastSet = NULL;
+	firstSet = nullptr;
+	lastSet = nullptr;
 	length = 0;
 }
 
@@ -58,4 +63,19 @@ int SetList::getLength() {
 
 Set* SetList::getFirst() {
 	return firstSet;
+}
+
+void SetList::destroy() {
+	Set* thisSet = firstSet;
+	Set* nextSet;
+	while (thisSet) {
+		nextSet = thisSet->getNext();
+		thisSet->destroy();
+		delete thisSet;
+		thisSet = nextSet;
+	}
+	firstSet = nullptr;
+	lastSet = nullptr;
+	length = 0;
+	return;
 }

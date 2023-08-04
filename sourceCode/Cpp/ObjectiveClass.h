@@ -119,6 +119,8 @@ class ObjectiveTerm {
 		void getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
 
 		void getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+
+		void destroy();
 };
 
 class Objective {
@@ -136,11 +138,15 @@ class Objective {
 		
 		ObjectiveTerm* getFirst();
 
+		void clearValues();
+
 		void calculateTerms(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
 
 		void calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
 
 		void calculatedLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+
+		void destroy();
 };
 
 #endif

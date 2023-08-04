@@ -23,6 +23,8 @@ class Set {
 		 Set* getNext();
 		 
 		 void setNext(Set* newNext);
+
+		 void destroy();
 };
 
 class SetList {
@@ -39,5 +41,7 @@ class SetList {
 		int getLength();
 		
 		Set* getFirst();
+
+		void destroy();
 };
 #endif

@@ -45,13 +45,21 @@ JobCommand::JobCommand() {
 	// writeObjective
 	writeGradient = true;	
 	
-	next = NULL;
+	next = nullptr;
+	return;
+}
+
+void JobCommand::destroy() {
+	fields.destroy();
+	timeSteps.destroy();
+	properties.destroy();
+	objInclude.destroy();
 	return;
 }
 
 Job::Job() {
-	firstCmd = NULL;
-	lastCmd = NULL;
+	firstCmd = nullptr;
+	lastCmd = nullptr;
 	length = 0;
 }
 
@@ -72,4 +80,16 @@ int Job::getLength() {
 
 JobCommand* Job::getFirst() {
 	return firstCmd;
+}
+
+void Job::destroy() {
+	JobCommand* thisCmd = firstCmd;
+	JobCommand* nextCmd;
+	while (thisCmd) {
+		nextCmd = thisCmd->next;
+		thisCmd->destroy();
+		delete thisCmd;
+		thisCmd = nextCmd;
+	}
+	return;
 }

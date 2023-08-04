@@ -18,7 +18,7 @@ Node::Node(int newLab) {
 		acceleration[i1] = 0.0;
 		dofIndex[i1] = 0;
 	}
-	nextNd = NULL;
+	nextNd = nullptr;
 }
 
 void Node::setNumDof(int nDof) {
@@ -352,13 +352,13 @@ void Node::destroy() {
 }
 
 NdPt::NdPt() {
-	ptr = NULL;
+	ptr = nullptr;
 }
 
 
 NodeList::NodeList() {
-	firstNode = NULL;
-	lastNode = NULL;
+	firstNode = nullptr;
+	lastNode = nullptr;
 	length = 0;
 }
 
@@ -379,4 +379,19 @@ int NodeList::getLength() {
 
 Node* NodeList::getFirst() {
 	return firstNode;
+}
+
+void NodeList::destroy() {
+	Node* thisNd = firstNode;
+	Node* nextNd;
+	while (thisNd) {
+		nextNd = thisNd->getNext();
+		thisNd->destroy();
+		delete thisNd;
+		thisNd = nextNd;
+	}
+	firstNode = nullptr;
+	lastNode = nullptr;
+	length = 0;
+	return;
 }

@@ -2,6 +2,7 @@
 #include <string>
 #include "ListEntClass.h"
 #include "DiffDoubClass.h"
+#include "SetClass.h"
 using namespace std;
 
 
@@ -11,11 +12,12 @@ DesignVariable::DesignVariable(string newCat) {
 	layer = 0;
 	elSetName = "";
 	ndSetName = "";
+	ndSetPtr = nullptr;
 	activeTime[0] = 0.0;
 	activeTime[1] = 1.0e+100;
 	value.setVal(0.0);
 	diffVal.setVal(0.0);
-	nextDV = NULL;
+	nextDV = nullptr;
 }
 
 void DesignVariable::setActiveTime(double newAt[]) {
@@ -35,6 +37,11 @@ void DesignVariable::setElset(string newElset) {
 
 void DesignVariable::setNdset(std::string newNdset) {
 	ndSetName = newNdset;
+	return;
+}
+
+void DesignVariable::setNdsetPtr(Set* newSet) {
+	ndSetPtr = newSet;
 	return;
 }
 
@@ -101,25 +108,37 @@ int DesignVariable::getLayer() {
 	return layer;
 }
 
+IntListEnt* DesignVariable::getFirstEl() {
+	return compElList.getFirst();
+}
+
+IntListEnt* DesignVariable::getFirstNd() {
+	if (ndSetPtr) {
+		return ndSetPtr->getFirstEntry();
+	}
+	return nullptr;
+}
+
 DesignVariable* DesignVariable::getNext() {
 	return nextDV;
 }
 
 void DesignVariable::destroy() {
 	coefs.destroy();
+	compElList.destroy();
 	return;
 }
 
 
 DVPt::DVPt() {
-	ptr = NULL;
+	ptr = nullptr;
 	return;
 }
 
 
 DesVarList::DesVarList() {
-	firstDVar = NULL;
-	lastDVar = NULL;
+	firstDVar = nullptr;
+	lastDVar = nullptr;
 	length = 0;
 }
 
@@ -140,4 +159,16 @@ int DesVarList::getLength() {
 
 DesignVariable* DesVarList::getFirst() {
 	return firstDVar;
+}
+
+void DesVarList::destroy() {
+	DesignVariable* thisDV = firstDVar;
+	DesignVariable* nextDV;
+	while (thisDV) {
+		nextDV = thisDV->getNext();
+		thisDV->destroy();
+		delete thisDV;
+		thisDV = nextDV;
+	}
+	return;
 }

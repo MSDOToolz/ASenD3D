@@ -6,10 +6,13 @@
 using namespace std;
 
 LowerTriMat::LowerTriMat() {
-	mat = NULL;
-	range = NULL;
-	minCol = NULL;
-	zVec = NULL;
+	mat = nullptr;
+	range = nullptr;
+	minCol = nullptr;
+	zVec = nullptr;
+	dim = 0;
+	size = 0;
+	maxBandwidth = 0;
 	allocated = false;
 	return;
 }
@@ -249,9 +252,13 @@ void LowerTriMat::ldlSolve(double solnVec[], double rhs[]) {
 }
 
 void LowerTriMat::destroy() {
-	delete[] mat;
-	delete[] range;
-	delete[] minCol;
-	delete[] zVec;
+	if (dim < 0) {
+		delete[] range;
+		delete[] minCol;
+		delete[] zVec;
+	}
+	if (mat) {
+		delete[] mat;
+	}
 	return;
 }

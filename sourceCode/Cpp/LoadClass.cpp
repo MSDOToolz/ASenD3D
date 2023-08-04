@@ -10,8 +10,8 @@ Load::Load(string newType) {
 	type = newType;
 	activeTime[0] = 0.0;
 	activeTime[1] = 1.0e+100;
-	ndSetPtr = NULL;
-	elSetPtr = NULL;
+	ndSetPtr = nullptr;
+	elSetPtr = nullptr;
 	return;
 }
 
@@ -172,8 +172,8 @@ Load* Load::getNext() {
 //LoadList
 
 LoadList::LoadList() {
-	firstLoad = NULL;
-	lastLoad = NULL;
+	firstLoad = nullptr;
+	lastLoad = nullptr;
 	length = 0;
 }
 
@@ -194,4 +194,18 @@ int LoadList::getLength() {
 
 Load* LoadList::getFirst() {
 	return firstLoad;
+}
+
+void LoadList::destroy() {
+	Load* thisLd = firstLoad;
+	Load* nextLd;
+	while (thisLd) {
+		nextLd = thisLd->getNext();
+		delete thisLd;
+		thisLd = nextLd;
+	}
+	firstLoad = nullptr;
+	lastLoad = nullptr;
+	length = 0;
+	return;
 }

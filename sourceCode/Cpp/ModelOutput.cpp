@@ -104,7 +104,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	return;
 }
 
-void Model::writeElementResults(string fileName, string elSet, StringList& fields, int timeStep, NdPt ndAr[], DVPt dvAr[]) {
+void Model::writeElementResults(string fileName, string elSet, StringList& fields, int timeStep) {
 	int i1;
 	int i2;
 	int i3;
@@ -166,7 +166,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			outFile << "        - [" << elLabel << ", ";
 			fieldList = "stress strain strainEnergyDen";
 			if (fieldList.find(thisField) > -1) {
-				elPt->getStressPrereq(stPre, ndAr, dvAr);
+				elPt->getStressPrereq(stPre, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
 				intPts = elPt->getIP();
 				for (i1 = 0; i1 < numIP; i1++) {
@@ -177,7 +177,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 						numLay = 1;
 					}
 					for (i2 = 0; i2 < numLay; i2++) {
-						elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, nonlinearGeom, stPre);
+						elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
 						if (thisField == "strain") {
 							outFile << i1 << ", " << i2 << ", " << strain[0].val;
 							for (i3 = 1; i3 < 6; i3++) {

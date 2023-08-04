@@ -600,7 +600,7 @@ void Model::readConstraintInput(string fileName) {
 	string allTypes = "displacement temperature";
 	string errSt;
 	
-    Constraint *newConst = NULL;
+    Constraint *newConst = nullptr;
 	ConstraintTerm *newTerm;
 	
 	inFile.open(fileName);

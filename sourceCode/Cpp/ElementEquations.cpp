@@ -179,6 +179,15 @@ void Element::updateInternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	return;
 }
 
+double Element::getIntAdjdRdD() {
+	int i1;
+	double prod = 0.0;
+	for (i1 = 0; i1 < numIntDof; i1++) {
+		prod += internalAdj[i1] * internalRu[i1].dval;
+	}
+	return prod;
+}
+
 //dup1
 
 void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]) {
@@ -211,10 +220,10 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Nd
 	Doub CdSdU[288];
 
 	Doub zOffset;
-	Doub* layThk = NULL;
-	Doub* layZ = NULL;
-	Doub* layAng = NULL;
-	Doub* layQ = NULL;
+	Doub* layThk = nullptr;
+	Doub* layZ = nullptr;
+	Doub* layAng = nullptr;
+	Doub* layQ = nullptr;
 	
 	Doub tmp;
 	
@@ -465,10 +474,10 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], bool getMatrix, bool nLGeom
 	DiffDoub CdSdU[288];
 
 	DiffDoub zOffset;
-	DiffDoub* layThk = NULL;
-	DiffDoub* layZ = NULL;
-	DiffDoub* layAng = NULL;
-	DiffDoub* layQ = NULL;
+	DiffDoub* layThk = nullptr;
+	DiffDoub* layZ = nullptr;
+	DiffDoub* layAng = nullptr;
+	DiffDoub* layQ = nullptr;
 	
 	DiffDoub tmp;
 	

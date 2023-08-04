@@ -9,13 +9,13 @@ using namespace std;
 
 ObjectiveTerm::ObjectiveTerm(string newCat) {
 	category = newCat;
-	elSetPtr = NULL;
-	ndSetPtr = NULL;
-	qVec = NULL;
-	elVolVec = NULL;
-	tgtVec = NULL;
-	errNormVec = NULL;
-	next = NULL;
+	elSetPtr = nullptr;
+	ndSetPtr = nullptr;
+	qVec = nullptr;
+	elVolVec = nullptr;
+	tgtVec = nullptr;
+	errNormVec = nullptr;
+	next = nullptr;
 	qLen = 0;
 }
 
@@ -135,6 +135,7 @@ ObjectiveTerm* ObjectiveTerm::getNext() {
 }
 
 void ObjectiveTerm::allocateObj() {
+	int i1;
 	if (qLen == 0) {
 		if (elSetPtr) {
 			qLen = elSetPtr->getLength();
@@ -148,15 +149,29 @@ void ObjectiveTerm::allocateObj() {
 				tgtVec = new double[qLen];
 			} else if (optr == "volumeIntegral" || optr == "volumeAverage") {
 				elVolVec = new double[qLen];
-				tgtVec = new double;
+				tgtVec = new double[1];
 			}
 		}
 	}
+
+	for (i1 = 0; i1 < qLen; i1++) {
+		qVec[i1] = 0.0;
+		if (optr == "powerNorm") {
+			tgtVec[i1] = 0.0;
+		}
+		else {
+			elVolVec[i1] = 0.0;
+		}
+	}
+	if (optr == "volumeIntegral" || optr == "volumeAverage") {
+		tgtVec[1] = 0.0;
+	}
+
 	return;
 }
 
 void ObjectiveTerm::allocateObjGrad() {
-	allocateObj();
+	int i1;
 	if (qLen > 0 && dQdU.getDim() == 0) {
 		dQdU.setDim(qLen);
 		dQdV.setDim(qLen);
@@ -168,6 +183,16 @@ void ObjectiveTerm::allocateObjGrad() {
 		if (optr == "powerNorm") {
 			errNormVec = new double[qLen];
 		}
+	}
+	dQdU.zeroAll();
+	dQdV.zeroAll();
+	dQdA.zeroAll();
+	dQdT.zeroAll();
+	dQdTdot.zeroAll();
+	dQdD.zeroAll();
+	dVdD.zeroAll();
+	for (i1 = 0; i1 < qLen; i1++) {
+		errNormVec[i1] = 0.0;
 	}
 	return;
 }
@@ -431,9 +456,9 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 			}
 			tgtLen = tgtVals.getLength();
 			if (tgtLen == 0) {
-				*tgtVec = 0.0;
+				tgtVec[0] = 0.0;
 			} else {
-				*tgtVec = tgtVals.getFirst()->value;
+				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
 				stPre.destroy();
@@ -506,9 +531,9 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (tgtVals.getLength() == 0) {
-				*tgtVec = 0.0;
+				tgtVec[0] = 0.0;
 			} else {
-				*tgtVec = tgtVals.getFirst()->value;
+				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
 				stPre.destroy();
@@ -547,9 +572,9 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 			qInd++;
 		}
 		if (tgtVals.getLength() == 0) {
-			*tgtVec = 0.0;
+			tgtVec[0] = 0.0;
 		} else {
-			*tgtVec = tgtVals.getFirst()->value;
+			tgtVec[0] = tgtVals.getFirst()->value;
 		}
 		stPre.destroy();
 		value+= getVolIntegral();
@@ -571,7 +596,6 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	int i3;
 	int tgtLen;
 	double tgtVal;
-	allocateObj();
 	allocateObjGrad();
 	IntListEnt* thisEnt;
 	DoubListEnt* thisDb;
@@ -720,8 +744,6 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 	int i1;
 	int tgtLen;
 	double tgtVal;
-	allocateObj();
-	allocateObjGrad();
 	IntListEnt* thisEnt;
 	IntListEnt* thisDVEnt;
 	int dvi;
@@ -844,9 +866,34 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 	return;
 }
 
+void ObjectiveTerm::destroy() {
+	tgtVals.destroy();
+	if (qVec) {
+		delete[] qVec;
+	}
+	if (elVolVec) {
+		delete[] elVolVec;
+	}
+	if (tgtVec) {
+		delete[] tgtVec;
+	}
+	if (errNormVec) {
+		delete[] errNormVec;
+	}
+	dQdU.destroy();
+	dQdV.destroy();
+	dQdA.destroy();
+	dQdT.destroy();
+	dQdTdot.destroy();
+	dQdD.destroy();
+	dVdD.destroy();
+
+	return;
+}
+
 Objective::Objective() {
-	firstTerm = NULL;
-	lastTerm = NULL;
+	firstTerm = nullptr;
+	lastTerm = nullptr;
 	length = 0;
 }
 
@@ -867,6 +914,15 @@ int Objective::getLength() {
 
 ObjectiveTerm* Objective::getFirst() {
 	return firstTerm;
+}
+
+void Objective::clearValues() {
+	ObjectiveTerm* thisTerm = firstTerm;
+	while (thisTerm) {
+		thisTerm->setValue(0.0);
+		thisTerm = thisTerm->getNext();
+	}
+	return;
 }
 
 void Objective::calculateTerms(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
@@ -893,5 +949,20 @@ void Objective::calculatedLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr
 		thisTerm->getdLdD(dLdD, time, nLGeom, ndAr, elAr, dvAr);
 		thisTerm = thisTerm->getNext();
 	}
+	return;
+}
+
+void Objective::destroy() {
+	ObjectiveTerm* thisTerm = firstTerm;
+	ObjectiveTerm* nextTerm;
+	while (thisTerm) {
+		nextTerm = thisTerm->getNext();
+		thisTerm->destroy();
+		delete thisTerm;
+		thisTerm = nextTerm;
+	}
+	firstTerm = nullptr;
+	lastTerm = nullptr;
+	length = 0;
 	return;
 }

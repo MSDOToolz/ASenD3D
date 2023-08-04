@@ -133,6 +133,8 @@ class NodeList {
 		int getLength();
 		
 		Node* getFirst();
+
+		void destroy();
 };
 
 #endif
