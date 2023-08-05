@@ -17,16 +17,14 @@ using namespace std;
 void Model::readInputLine(ifstream& inFile, string& fileLine, string headings[], int hdLdSpace[], string data[], int& dataLen) {
 	int i1;
 	int i2;
-	int i3;
-	int i4;
 	int lnLen;
 	int wrdLen;
-	bool brk;
 	getline(inFile,fileLine);
 	i1 = fileLine.find("#");
 	if(i1 > -1) {
 		fileLine = fileLine.substr(0,i1);
 	}
+	fileLine = fileLine + " ";
 	lnLen = fileLine.length();
 	i1 = fileLine.find(":");
 	dataLen = 0;
@@ -117,7 +115,7 @@ void Model::readJob(string fileName) {
 	int dataLen;
 	string errSt;
 	
-	JobCommand *newCmd;
+	JobCommand *newCmd = nullptr;
 	
 	inFile.open(fileName);
 	if(inFile) {
@@ -261,16 +259,16 @@ void Model::readModelInput(string fileName) {
 	int i2;
 	int i3;
 	int i4;
-	double doubInp[10];
-	int intInp[10];
+	double doubInp[10] = { 0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+	int intInp[10] = {0,0,0,0,0,0,0,0,0,0};
 	
-	Node *newNd;
-	Element *newEl;
+	Node *newNd = nullptr;
+	Element *newEl = nullptr;
 	int elType;
-	Set *newSet;
-	Section *newSec;
-	Layer *newLay;
-	Material *newMat;
+	Set *newSet = nullptr;
+	Section *newSec = nullptr;
+	Layer *newLay = nullptr;
+	Material *newMat = nullptr;
 	
 	inFile.open(fileName);
 	if(inFile) {
@@ -594,14 +592,11 @@ void Model::readConstraintInput(string fileName) {
 	int dataLen;
 	
 	int i1;
-	int i2;
-	double doubInp[10];
-	int intInp[10];
 	string allTypes = "displacement temperature";
 	string errSt;
 	
     Constraint *newConst = nullptr;
-	ConstraintTerm *newTerm;
+	ConstraintTerm *newTerm = nullptr;
 	
 	inFile.open(fileName);
 	if(inFile) {
@@ -648,11 +643,8 @@ void Model::readLoadInput(string fileName) {
 	int dataLen;
 	
 	int i1;
-	int i2;
-	double doubInp[10];
-	int intInp[10];
-	
-	Load *newLd;
+	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
+	Load *newLd = nullptr;
 	
 	inFile.open(fileName);
 	if(inFile) {
@@ -725,8 +717,7 @@ void Model::readInitialState(string fileName) {
 	int i2;
 	int i3;
 	int ndi;
-	double doubInp[10];
-	int intInp[10];
+	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
 	string dispHdings = " displacement velocity acceleration";
 	
 	inFile.open(fileName);
@@ -780,10 +771,10 @@ void Model::readDesVarInput(string fileName) {
 	
 	int i1;
 	int i2;
-	double doubInp[10];
-	int intInp[10];
+	double doubInp[10] = {0,0,0,0,0,0,0,0,0,0};
+	int intInp[10] = {0,0,0,0,0,0,0,0,0,0};
 	
-	DesignVariable *newDVar;
+	DesignVariable* newDVar = nullptr;
 	
 	inFile.open(fileName);
 	if(inFile) {
@@ -852,12 +843,8 @@ void Model::readObjectiveInput(string fileName) {
 	string data[11];
 	int dataLen;
 	
-	int i1;
-	int i2;
-	double doubInp[10];
-	int intInp[10];
-	
-	ObjectiveTerm *newTerm;
+	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
+	ObjectiveTerm* newTerm = nullptr;
 	
 	inFile.open(fileName);
 	if(inFile) {

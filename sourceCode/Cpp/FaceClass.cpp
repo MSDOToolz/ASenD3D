@@ -1,6 +1,7 @@
 #include "FaceClass.h"
 
 using namespace std;
+
 Face::Face(int newNumNds) {
 	numNds = newNumNds;
 	locNodes = new int[numNds];
@@ -77,6 +78,14 @@ void Face::destroy() {
 	return;
 }
 
+// FacePt
+
+FacePt::FacePt(Face* newFc) {
+	fc = newFc;
+	next = nullptr;
+	return;
+}
+
 // Begin FaceList
 FaceList::FaceList() {
 	first = nullptr;
@@ -147,5 +156,77 @@ void FaceList::destroy() {
 		delete thisFc;
 		thisFc = nextFc;
 	}
+	return;
+}
+
+//FacePtList
+
+FacePtList::FacePtList() {
+	first = nullptr;
+	last = nullptr;
+	len = 0;
+	return;
+}
+
+void FacePtList::addFace(FacePt* newFpt) {
+	if (!first) {
+		first = newFpt;
+		last = newFpt;
+	}
+	else {
+		last->next = newFpt;
+		last = newFpt;
+	}
+	len++;
+	return;
+}
+
+bool FacePtList::addIfAbsent(Face* newFc) {
+	int i1;
+	int newNumNds;
+	int newSrtd[8];
+	int thisNumNds;
+	int thisSrtd[8];
+	bool allMatch;
+	FacePt* thisFc;
+
+	newNumNds = newFc->getNumNds();
+	newFc->sortedNodes(newSrtd);
+	thisFc = first;
+	while (thisFc) {
+		thisNumNds = thisFc->fc->getNumNds();
+		if (thisNumNds == newNumNds) {
+			thisFc->fc->sortedNodes(thisSrtd);
+			allMatch = true;
+			for (i1 = 0; i1 < thisNumNds; i1++) {
+				if (thisSrtd[i1] != newSrtd[i1]) {
+					allMatch = false;
+				}
+			}
+			if (allMatch) {
+				newFc->setOnSurface(false);
+				thisFc->fc->setOnSurface(false);
+				return false;
+			}
+		}
+		thisFc = thisFc->next;
+	}
+
+	FacePt* newFpt = new FacePt(newFc);
+	addFace(newFpt);
+	return true;
+}
+
+void FacePtList::destroy() {
+	FacePt* thisFpt = first;
+	FacePt* nextFpt;
+	while (thisFpt) {
+		nextFpt = thisFpt->next;
+		delete thisFpt;
+		thisFpt = nextFpt;
+	}
+	first = nullptr;
+	last = nullptr;
+	len = 0;
 	return;
 }

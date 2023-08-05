@@ -232,6 +232,7 @@ void Model::writeObjective(string fileName, StringList& includeFields, bool writ
 	outFile << "objective:\n";
 	outFile << "    terms:\n";
 	thisTerm = objective.getFirst();
+	totObj = 0.0;
 	while (thisTerm) {
 		thisVal = thisTerm->getValue();
 		outFile << "        - value: " << thisVal << "\n";

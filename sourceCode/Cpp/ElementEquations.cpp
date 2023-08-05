@@ -172,7 +172,7 @@ void Element::updateInternal(double extVec[], int forSoln, NdPt ndAr[]) {
 		}
 	} else {
 		for (i1 = 0; i1 < numIntDof; i1++) {
-			internalAdj[i1] == xVec[i1];
+			internalAdj[i1] = xVec[i1];
 		}
 	}
 	

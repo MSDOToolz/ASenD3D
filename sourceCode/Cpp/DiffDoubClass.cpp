@@ -20,12 +20,6 @@ void Doub::setVal(Doub& inp) {
 	return;
 }
 
-void Doub::setVal(DiffDoub& inp) {
-	val = inp.val;
-	dval = inp.dval;
-	return;
-}
-
 void Doub::add(Doub& inp) {
 	val+= inp.val;
 	return;

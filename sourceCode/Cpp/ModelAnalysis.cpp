@@ -397,6 +397,7 @@ void Model::updateReference() {
 void Model::findSurfaceFaces() {
 	int i1;
 	int lowNd;
+	bool added;
 	
 	Element *thisEl = elements.getFirst();
 	while(thisEl) {
@@ -405,14 +406,14 @@ void Model::findSurfaceFaces() {
 	}
 	
 	int numNodes = nodes.getLength();
-	FaceList *fLArray = new FaceList[numNodes];
+	FacePtList* fLArray = new FacePtList[numNodes];
 	thisEl = elements.getFirst();
-	Face *thisFc;
+	Face* thisFc;
 	while(thisEl) {
 		thisFc = thisEl->getFirstFace();
 		while(thisFc) {
 			lowNd = thisFc->getLowNd();
-			fLArray[lowNd].addIfAbsent(thisFc);
+			added = fLArray[lowNd].addIfAbsent(thisFc);
 			thisFc = thisFc->getNext();
 		}
 		thisEl = thisEl->getNext();
@@ -449,7 +450,6 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	Doub ndDVLd[6];
 	Set *thisSet;
 	IntListEnt *thisEnt;
-	Node *thisNd;
 
 	//Loads from model input file
 	while(thisLoad) {
@@ -549,7 +549,7 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 	double absdU;
 	int ndof;
 	int dofInd;
-	double ndDelDisp[6];
+	double ndDelDisp[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	Node *thisNd;
 	Element *thisEl;
 	
@@ -632,7 +632,7 @@ void Model::solve(JobCommand *cmd) {
 	int i1;
 	int i2;
 	double appLdFact;
-	double ldSteps = cmd->loadRampSteps;
+	int ldSteps = cmd->loadRampSteps;
 	double c1 = 1.0/(ldSteps*ldSteps);
 	Node *thisNd;
 	

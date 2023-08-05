@@ -46,7 +46,6 @@ void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int en
 	double cth;
 	double p1;
 	double p2;
-	double tmp;
 
 	for (i1 = stCol; i1 <= endCol; i1++) {
 		i2Min = stRow + (i1 - stCol) + 1;
@@ -94,21 +93,15 @@ void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stR
 	int i1;
 	int i2;
 	int i3;
-	int i4;
 	int i2Min;
 	int i2Max;
-	int i3Min;
-	int i3Max;
 	int k11;
 	int k12;
-	int k22;
-	int k23;
 	double theta;
 	double sth;
 	double cth;
 	double p1;
 	double p2;
-	double tmp;
 	double rowSum;
 
     for (i1 = stCol; i1 <= endCol; i1++) {
@@ -165,7 +158,6 @@ void symFactor(double mat[], double qMat[], int matDim) {
 	int i3;
 	int i4;
 	int i5;
-	int i6;
 	double theta;
 	double sth;
 	double cth;
@@ -512,7 +504,7 @@ void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int tr
 	double tmp;
 	int matSize = matDim*matDim;
 	int newTd = triDiag;
-	double *qMat;
+	double* qMat = nullptr;
 	if(triDiag == 0) {
 		qMat = new double[matSize];
 		symFactor(mat,qMat,matDim);
@@ -838,15 +830,10 @@ void solveqRxEqb(Doub xVec[], Doub mat[], Doub bVec[], int colDim, int stRow, in
 	int i1;
 	int i2;
 	int i3;
-	int i4;
 	int i2Min;
 	int i2Max;
-	int i3Min;
-	int i3Max;
 	int k11;
 	int k12;
-	int k22;
-	int k23;
 	Doub theta;
 	Doub sth;
 	Doub cth;
@@ -1028,15 +1015,10 @@ void solveqRxEqb(DiffDoub xVec[], DiffDoub mat[], DiffDoub bVec[], int colDim, i
 	int i1;
 	int i2;
 	int i3;
-	int i4;
 	int i2Min;
 	int i2Max;
-	int i3Min;
-	int i3Max;
 	int k11;
 	int k12;
-	int k22;
-	int k23;
 	DiffDoub theta;
 	DiffDoub sth;
 	DiffDoub cth;
@@ -1220,9 +1202,6 @@ void rotateOrient(Doub instOri[], Doub locOri[], Doub rot[]) {
 	int i1;
 	int i2;
 	int i3;
-	int i4;
-	int i5;
-	int i6;
 	
 	oneHalf.setVal(0.5);
 	
@@ -1483,9 +1462,6 @@ void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]) {
 	int i1;
 	int i2;
 	int i3;
-	int i4;
-	int i5;
-	int i6;
 	
 	oneHalf.setVal(0.5);
 	
@@ -1741,9 +1717,6 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 	int i1;
 	int i2;
 	int i3;
-	int i4;
-	int i5;
-	int i6;
 	
 	oneHalf.setVal(0.5);
 	

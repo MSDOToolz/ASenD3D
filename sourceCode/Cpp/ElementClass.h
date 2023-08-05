@@ -9,6 +9,50 @@
 #include "matrixFunctions.h"
 #include "FaceClass.h"
 
+//dup1
+class DoubStressPrereq {
+public:
+	Doub globNds[30];
+	Doub locNds[30];
+	Doub locOri[9];
+	Doub instOri[720];
+	Doub globDisp[60];
+	Doub Cmat[81];
+	Doub* layerZ;
+	Doub* layerThk;
+	Doub* layerAng;
+	Doub* layerQ;
+	int currentLayLen;
+
+	DoubStressPrereq();
+
+	void destroy();
+};
+//end dup
+//skip 
+
+//DiffDoub versions: 
+class DiffDoubStressPrereq {
+public:
+	DiffDoub globNds[30];
+	DiffDoub locNds[30];
+	DiffDoub locOri[9];
+	DiffDoub instOri[720];
+	DiffDoub globDisp[60];
+	DiffDoub Cmat[81];
+	DiffDoub* layerZ;
+	DiffDoub* layerThk;
+	DiffDoub* layerAng;
+	DiffDoub* layerQ;
+	int currentLayLen;
+
+	DiffDoubStressPrereq();
+
+	void destroy();
+};
+
+//end skip 
+
 class Element {
 	private:
 	    int type;
@@ -246,48 +290,6 @@ class ElementList {
 		void destroy();
 };
 
-//dup1
-class DoubStressPrereq {
-    public:
-		Doub globNds[30];
-		Doub locNds[30];
-		Doub locOri[9];
-		Doub instOri[720];
-		Doub globDisp[60];
-		Doub Cmat[81];
-		Doub* layerZ;
-		Doub* layerThk;
-		Doub* layerAng;
-		Doub* layerQ;
-		int currentLayLen;
 
-		DoubStressPrereq();
-
-		void destroy();
-};
-//end dup
-//skip 
- 
-//DiffDoub versions: 
-class DiffDoubStressPrereq {
-    public:
-		DiffDoub globNds[30];
-		DiffDoub locNds[30];
-		DiffDoub locOri[9];
-		DiffDoub instOri[720];
-		DiffDoub globDisp[60];
-		DiffDoub Cmat[81];
-		DiffDoub* layerZ;
-		DiffDoub* layerThk;
-		DiffDoub* layerAng;
-		DiffDoub* layerQ;
-		int currentLayLen;
-
-		DiffDoubStressPrereq();
-
-		void destroy();
-};
- 
-//end skip 
 
 #endif

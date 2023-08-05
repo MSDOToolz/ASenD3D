@@ -75,7 +75,7 @@ void Element::getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DVPt dvAr[
 	zCrd.mult(tmp);
 
 	layi = 0;
-	Layer* thisLay = sectPtr->getFirstLayer();
+	thisLay = sectPtr->getFirstLayer();
 	while (thisLay) {
 		zNext.setVal(zCrd);
 		zNext.add(layThk[layi]);
@@ -190,11 +190,9 @@ void Element::getLayerQ(Doub layQ[], DVPt dvAr[]) {
 }
 
 void Element::getLayerAngle(Doub layAng[], DVPt dvAr[]) {
-	int i1;
 	int i2;
 	int layi;
 	int dvInd;
-	int dvComp;
 	Layer* thisLay;
 	Doub angle;
 	Doub dvVal;
@@ -811,7 +809,6 @@ void Element::getDensity(Doub& den, int layer, DVPt dvAr[]) {
 
 void Element::getNdCrds(Doub xGlob[], NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
-	int i2;
 	Doub ndCrd[3];
 	Node *nPtr;
 	
@@ -1033,7 +1030,7 @@ void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset
 	zCrd.mult(tmp);
 
 	layi = 0;
-	Layer* thisLay = sectPtr->getFirstLayer();
+	thisLay = sectPtr->getFirstLayer();
 	while (thisLay) {
 		zNext.setVal(zCrd);
 		zNext.add(layThk[layi]);
@@ -1148,11 +1145,9 @@ void Element::getLayerQ(DiffDoub layQ[], DVPt dvAr[]) {
 }
 
 void Element::getLayerAngle(DiffDoub layAng[], DVPt dvAr[]) {
-	int i1;
 	int i2;
 	int layi;
 	int dvInd;
-	int dvComp;
 	Layer* thisLay;
 	DiffDoub angle;
 	DiffDoub dvVal;
@@ -1766,7 +1761,6 @@ void Element::getDensity(DiffDoub& den, int layer, DVPt dvAr[]) {
 
 void Element::getNdCrds(DiffDoub xGlob[], NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
-	int i2;
 	DiffDoub ndCrd[3];
 	Node *nPtr;
 	

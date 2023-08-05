@@ -247,7 +247,7 @@ void SparseMat::addEntry(int row, int col, double val) {
 		matrix[row].ptr = new MatrixEnt(row,col,val);
 	} else {
 		bool inserted = false;
-		MatrixEnt *prevEnt;
+		MatrixEnt *prevEnt = nullptr;
 		while(thisEnt && !inserted) {
 			if(thisEnt->col == col) {
 				thisEnt->value+= val;

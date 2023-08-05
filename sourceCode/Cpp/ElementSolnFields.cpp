@@ -278,10 +278,6 @@ void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 }
 
 void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], double spt[]) {
-	int i1;
-	int i2;
-	int i3;
-	
 	Doub dNds[33];
 	evalN(nVec, dNds, spt);
 	Doub jMat[9];
@@ -329,8 +325,6 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 	int i4;
 	int i5;
 	int i6;
-	int i7;
-	int i8;
 	int stIndex;
 	int iOriSize = (numNds+1)*144;
 	for (i1 = 0; i1 < iOriSize; i1++) {
@@ -466,13 +460,11 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 	int i5;
 	int i6;
 	int i7;
-	int i8;
 	int nd;
 	int ndOInd;
 	int dof;
 	int dofOInd;
 	int nd2;
-	int nd2OInd;
 	int dof2;
 	int dof2OInd;
 	Doub tmp;
@@ -1522,9 +1514,6 @@ void Element::evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]) {
 }
 
 void Element::getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDoub locNds[], double spt[]) {
-	int i1;
-	int i2;
-	int i3;
 	
 	DiffDoub dNds[33];
 	evalN(nVec, dNds, spt);
@@ -1573,8 +1562,6 @@ void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub glob
 	int i4;
 	int i5;
 	int i6;
-	int i7;
-	int i8;
 	int stIndex;
 	int iOriSize = (numNds+1)*144;
 	for (i1 = 0; i1 < iOriSize; i1++) {
@@ -1710,13 +1697,11 @@ void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub ins
 	int i5;
 	int i6;
 	int i7;
-	int i8;
 	int nd;
 	int ndOInd;
 	int dof;
 	int dofOInd;
 	int nd2;
-	int nd2OInd;
 	int dof2;
 	int dof2OInd;
 	DiffDoub tmp;

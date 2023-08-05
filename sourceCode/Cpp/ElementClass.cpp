@@ -9,12 +9,12 @@
 
 using namespace std;
 
+const double r_1ort3 = 0.577350269189625765; //0.577350269189625765;
 const double r_2o3 = 0.666666666666666667;
 const double r_1o3 = 0.333333333333333333;
 const double r_1o6 = 0.166666666666666667;
 const double r_pi = 3.14159265358979324;
 const double r_pio180 = 0.0174532925199432958;
-const double r_1ort3 = 0.577350269189625765;
 
 
 Element::Element(int newType) {
@@ -77,7 +77,7 @@ Element::Element(int newType) {
 		dofTable = new int[i1 * 2];//int[i1][2];
 		intPts = new double[numIP*3];
 		ipWt = new double[numIP];
-		int sVal[2] = {-r_1ort3,r_1ort3};
+		double sVal[2] = {-r_1ort3,r_1ort3};
 		i4 = 0;
 		i5 = 0;
 		for (i1 = 0; i1 < 2; i1++) {

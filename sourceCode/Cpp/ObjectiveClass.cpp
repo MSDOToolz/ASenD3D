@@ -390,7 +390,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 	IntListEnt* thisEnt;
 	DoubListEnt* thisDb;
 	int qInd;
-	int label;
 	double ndData[6];
 	Element* thisEl;
 	DoubStressPrereq stPre;
@@ -432,12 +431,12 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 			tgtLen = tgtVals.getLength();
 			if (tgtLen == 0) {
 				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] == 0.0;
+					tgtVec[i1] = 0.0;
 				}
 			} else if (tgtLen == 1) {
 				tgtVal = tgtVals.getFirst()->value;
 				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] == tgtVal;
+					tgtVec[i1] = tgtVal;
 				}
 			} else {
 				thisDb = tgtVals.getFirst();
@@ -507,13 +506,13 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 			tgtLen = tgtVals.getLength();
 			if (tgtLen == 0) {
 				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] == 0.0;
+					tgtVec[i1] = 0.0;
 				}
 			}
 			else if (tgtLen == 1) {
 				tgtVal = tgtVals.getFirst()->value;
 				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] == tgtVal;
+					tgtVec[i1] = tgtVal;
 				}
 			}
 			else {
@@ -594,16 +593,12 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	int i1;
 	int i2;
 	int i3;
-	int tgtLen;
-	double tgtVal;
 	allocateObjGrad();
 	IntListEnt* thisEnt;
-	DoubListEnt* thisDb;
 	int qInd;
 	int label;
 	int dofInd;
 	int currRank;
-	double ndData[6];
 	Element* thisEl;
 	DoubStressPrereq stPre;
 	double spt[3] = { 0.0,0.0,0.0 };
@@ -616,7 +611,6 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	int elDofPerNd;
 	int elNumIntDof;
 	int elTotDof;
-	double seDen;
 	Doub eVol;
 	Doub eDen;
 
@@ -742,15 +736,10 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 	}
 
 	int i1;
-	int tgtLen;
-	double tgtVal;
 	IntListEnt* thisEnt;
 	IntListEnt* thisDVEnt;
 	int dvi;
-	DoubListEnt* thisDb;
 	int qInd;
-	int label;
-	double ndData[6];
 	Element* thisEl;
 	DesignVariable* thisDV;
 	Doub dvVal;

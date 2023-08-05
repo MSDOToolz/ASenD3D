@@ -31,6 +31,14 @@ class Face {
 		void destroy();
 };
 
+class FacePt {
+    public:
+		Face* fc;
+		FacePt* next;
+
+		FacePt(Face* newFc);
+};
+
 class FaceList {
 	private:
 	    Face *first;
@@ -46,6 +54,23 @@ class FaceList {
 		
 		Face* getFirst();
 		
+		void destroy();
+};
+
+class FacePtList {
+    private:
+		FacePt* first;
+		FacePt* last;
+		int len;
+
+    public:
+
+		FacePtList();
+
+		void addFace(FacePt* newFpt);
+
+		bool addIfAbsent(Face* newFc);
+
 		void destroy();
 };
 

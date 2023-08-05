@@ -4,8 +4,15 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
-	
+//int main(int argc, char* argv[]) {
+// ------------------------------------
+int main() {
+	int argc = 2;
+	string argv[2];
+	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/runJob1.yaml";
+
+// --------------------------------------
+
 	if(argc < 2) {
 		cout << "Error: no job script file name provided." << endl;
 		return 0;

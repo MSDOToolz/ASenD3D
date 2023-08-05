@@ -53,7 +53,6 @@ DesVarList* Model::getDesignVars() {
 }
 
 void Model::executeJob() {
-	int i1;
 	int i2;
 	int numTsteps;
 	IntListEnt* thisEnt;
@@ -66,6 +65,7 @@ void Model::executeJob() {
 		cmdStr = thisCmd->cmdString;
 		fileName = thisCmd->fileName;
 		if(cmdStr == "readModelInput") {
+			cout << "reading model input: " << fileName << endl;
 			readModelInput(fileName);
 			readConstraintInput(fileName);
 			readLoadInput(fileName);
@@ -77,8 +77,10 @@ void Model::executeJob() {
 		} else if(cmdStr == "readInitialState") {
 			readInitialState(fileName);
 		} else if(cmdStr == "readDesignVarInput") {
+			cout << "reading design variable input: " << fileName << endl;
 			readDesVarInput(fileName);
 		} else if(cmdStr == "readObjectiveInput") {
+			cout << "reading objective input: " << fileName << endl;
 			readObjectiveInput(fileName);
 		} else if (cmdStr == "solve") {
 			solve(thisCmd);

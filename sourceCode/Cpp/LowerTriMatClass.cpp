@@ -165,7 +165,6 @@ void LowerTriMat::ldlFactor() {
 	int i3;
 	int i4;
 	int i5;
-	int i6;
 	int stCol;
 	double sum;
 	

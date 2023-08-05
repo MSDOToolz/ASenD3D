@@ -52,9 +52,9 @@ void Load::setLoad(double newLd[]) {
 }
 
 void Load::setNormDir(double newNDir[]) {
-	normalDir[0] = newLd[0];
-	normalDir[1] = newLd[1];
-	normalDir[2] = newLd[2];
+	normalDir[0] = newNDir[0];
+	normalDir[1] = newNDir[1];
+	normalDir[2] = newNDir[2];
 	double mag = normalDir[0]*normalDir[0] + normalDir[1]*normalDir[1] + normalDir[2]*normalDir[2];
 	mag = 1.0/sqrt(mag);
 	normalDir[0] = mag*normalDir[0];

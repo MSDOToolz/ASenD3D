@@ -15,8 +15,6 @@ class Doub {
 		
 		void setVal(Doub& inp);
 		
-		void setVal(DiffDoub& inp);
-		
 		void add(Doub& inp);
 		
 		void sub(Doub& inp);
