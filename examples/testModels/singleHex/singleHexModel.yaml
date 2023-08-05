@@ -1,0 +1,77 @@
+## Model of a single hex element
+nodes:
+    - [0, -0.5, -0.5, -0.5]
+    - [1, 0.5, -0.5, -0.5]
+    - [2, 0.5, 0.5, -0.5]
+    - [3, -0.5, 0.5, -0.5]
+    - [4, -0.5, -0.5, 0.5]
+    - [5, 0.5, -0.5, 0.5]
+    - [6, 0.5, 0.5, 0.5]
+    - [7, -0.5, 0.5, 0.5]
+elements:
+    - type: brickIM
+      connectivity:
+          - [0, 0, 1, 2, 3, 4, 5, 6, 7]
+sets:
+    node:
+        - name: upperX
+          labels:
+              - 1
+              - 2
+              - 5
+              - 6
+    element:
+        - name: el0
+          labels:
+              - 0
+sections:
+    - type: solid
+      material: myMat
+      elementSet: el0
+materials:
+    - name: myMat
+      elastic:
+          E: 1000000
+          nu: 0.2
+          G: 416666
+constraints:
+    - type: displacement
+      terms:
+          - nodeSet: 0
+            dof: 1
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 0
+            dof: 2
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 0
+            dof: 3
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 3
+            dof: 1
+            coef: 1.0
+    - type: displacement
+      terms:
+          - nodeSet: 3
+            dof: 3
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 4
+            dof: 2
+            coef: 1.0
+      rhs: 0.0
+loads:
+    - type: nodalForce
+      activeTime: [0.0,1.0]
+      load: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0]
+      nodeSet: upperX
