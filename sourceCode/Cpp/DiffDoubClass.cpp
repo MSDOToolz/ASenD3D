@@ -4,6 +4,8 @@
 using namespace std;
 
 Doub::Doub() {
+	val = 0.0;
+	dval = 0.0;
 }
 
 bool Doub::diffType() {
@@ -78,6 +80,10 @@ void Doub::neg() {
 
 
 DiffDoub::DiffDoub() {
+	val = 0.0;
+	dval = 0.0;
+	tmp = 0.0;
+	tmp2 = 0.0;
 	return;
 }
 
@@ -186,6 +192,11 @@ void DiffDoub::neg() {
 
 
 Diff2Doub::Diff2Doub() {
+	val = 0.0;
+	dv1 = 0.0;
+	dv2 = 0.0;
+	dv12 = 0.0;
+	return;
 }
 
 bool Diff2Doub::diffType() {

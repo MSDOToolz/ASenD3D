@@ -29,9 +29,11 @@ public:
 	void destroy();
 };
 //end dup
+ 
 //skip 
-
+ 
 //DiffDoub versions: 
+//dup1
 class DiffDoubStressPrereq {
 public:
 	DiffDoub globNds[30];
@@ -50,7 +52,8 @@ public:
 
 	void destroy();
 };
-
+//end dup
+ 
 //end skip 
 
 class Element {
@@ -92,6 +95,8 @@ class Element {
         void initializeFaces();	
 
 		void setIntDofIndex(int newInd);
+
+		void setIntDisp(double newDisp[]);
 
 		void setIntdLdU(double globdLdU[]);
 		
@@ -183,10 +188,13 @@ class Element {
 		void putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt ndAr[]);
 		
 //end dup
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup1
 
+// Properties
 		void getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset, DVPt dvAr[]);
 
 		void getLayerQ(DiffDoub layQ[], DVPt dvAr[]);
@@ -211,8 +219,10 @@ class Element {
 		
 		void correctOrient(DiffDoub locOri[], DiffDoub xGlob[]);
 
+// Solution Fields
 		void getNdDisp(DiffDoub globDisp[], NdPt ndAr[]);
 
+		//double getDispSqr(DiffDoub globDisp[]);
 
 		void evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]);
 		
@@ -236,6 +246,7 @@ class Element {
 
 		void putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], int matRow, NdPt ndAr[]);
 		
+//end dup
  
 //end skip 
 		
@@ -254,13 +265,16 @@ class Element {
 		void getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
 		
 //end dup
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup1
         void getRuk(DiffDoub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
 		
 		void getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn, bool nLGeom, NdPt ndAr[], DVPt dvAr[]);
 		
+//end dup
  
 //end skip 
 };

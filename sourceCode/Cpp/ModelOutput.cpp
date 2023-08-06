@@ -16,6 +16,7 @@ using namespace std;
 
 void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields, int timeStep) {
 	int i1;
+	Set* setPt;
 	string errStr;
 	string thisField;
 	IntListEnt *thisEnt;
@@ -28,20 +29,15 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 		// Read the results from the time step file and store them in nodes
 	}
 	
-	Set *setPt = nodeSets.getFirst();
-	bool found = false;
-	while(!found && setPt) {
-		if(setPt->getName() == nodeSet) {
-			found = true;
-		} else {
-			setPt = setPt->getNext();
-		}
+	try {
+		i1 = nsMap.at(nodeSet);
+		setPt = nsArray[i1].ptr;
 	}
-	
-	if(!found) {
-		errStr = "Warning: there is no node set named " + nodeSet + ", aborting writeNodeResults";
+	catch (...) {
+		errStr = "Warning: there is no node set named " + nodeSet + ". Defaulting to all nodes in writeNodeResults";
 		cout << errStr << endl;
-		return;
+		i1 = nsMap.at("all");
+		setPt = nsArray[i1].ptr;
 	}
 	
 	ofstream outFile;

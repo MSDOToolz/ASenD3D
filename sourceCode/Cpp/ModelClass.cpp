@@ -152,7 +152,9 @@ void Model::destroy() {
 	elements.destroy();
 	delete[] elementArray;
 	nodeSets.destroy();
+	delete[] nsArray;
 	elementSets.destroy();
+	delete[] esArray;
 	sections.destroy();
 	materials.destroy();
 	constraints.destroy();

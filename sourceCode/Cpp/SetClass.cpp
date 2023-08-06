@@ -4,9 +4,15 @@
 
 using namespace std;
 
-Set::Set(string newNm) {
-    name = newNm;
+Set::Set() {
+    name = "";
     nextSet = nullptr;
+	return;
+}
+
+void Set::setName(string newNm) {
+	name = newNm;
+	return;
 }
 
 void Set::addEntry(int newLabel) {
@@ -39,6 +45,10 @@ void Set::destroy() {
 	return;
 }
 
+SetPt::SetPt() {
+	ptr = nullptr;
+	return;
+}
 
 SetList::SetList() {
 	firstSet = nullptr;
@@ -63,6 +73,10 @@ int SetList::getLength() {
 
 Set* SetList::getFirst() {
 	return firstSet;
+}
+
+Set* SetList::getLast() {
+	return lastSet;
 }
 
 void SetList::destroy() {

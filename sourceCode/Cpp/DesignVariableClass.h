@@ -12,6 +12,7 @@ class DesignVariable {
 		int layer;
 		double activeTime[2];
 		std::string elSetName;
+		Set* elSetPtr;
 		std::string ndSetName;
 		Set* ndSetPtr;
 		DoubList coefs;
@@ -28,6 +29,8 @@ class DesignVariable {
 		void setLayer(int newLay);
 		
 		void setElset(std::string newElset);
+
+		void setElsetPtr(Set* newSet);
 		
 		void setNdset(std::string newNdset);
 
@@ -48,8 +51,12 @@ class DesignVariable {
 		std::string getCategory();
 		
 		std::string getElSet();
+
+		Set* getElsetPtr();
 		
 		std::string getNdSet();
+
+		Set* getNdsetPtr();
 		
 		DoubList* getCoefs();
 		

@@ -83,21 +83,24 @@ class Node {
 		
 		double getTdot();
 		
-		//dup1
+//dup1
 		void getCrd(Doub crdOut[], DVPt dvAr[]);
 		
 		void getDisp(Doub disp[]);
 		
 		void getElasticDVLoad(Doub ld[], DVPt dvAr[]);
-		//end dup		
+//end dup		
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup1
 		void getCrd(DiffDoub crdOut[], DVPt dvAr[]);
 		
 		void getDisp(DiffDoub disp[]);
 		
 		void getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]);
+//end dup		
  
 //end skip 
 		

@@ -11,6 +11,7 @@ DesignVariable::DesignVariable(string newCat) {
 	component = 1;
 	layer = 0;
 	elSetName = "";
+	elSetPtr = nullptr;
 	ndSetName = "";
 	ndSetPtr = nullptr;
 	activeTime[0] = 0.0;
@@ -32,6 +33,11 @@ void DesignVariable::setLayer(int newLay) {
 
 void DesignVariable::setElset(string newElset) {
 	elSetName = newElset;
+	return;
+}
+
+void DesignVariable::setElsetPtr(Set* newPtr) {
+	elSetPtr = newPtr;
 	return;
 }
 
@@ -82,8 +88,16 @@ string DesignVariable::getElSet() {
 	return elSetName;
 }
 
+Set* DesignVariable::getElsetPtr() {
+	return elSetPtr;
+}
+
 string DesignVariable::getNdSet() {
 	return ndSetName;
+}
+
+Set* DesignVariable::getNdsetPtr() {
+	return ndSetPtr;
 }
 
 DoubList* DesignVariable::getCoefs() {

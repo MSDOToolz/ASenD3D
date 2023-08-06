@@ -289,6 +289,12 @@ Section::Section(string newType) {
 		stiffness[i1] = 0.0;
 		mass[i1] = 0.0;
 	}
+	for (i1 = 1; i1 < 8; i1++) {
+		orientation[i1] = 0.0;
+	}
+	orientation[0] = 1.0;
+	orientation[4] = 1.0;
+	orientation[8] = 1.0;
 	matPtr = nullptr;
 	nextSection = nullptr;
 	return;

@@ -9,7 +9,13 @@ using namespace std;
 
 ConstraintTerm::ConstraintTerm(string newNSet) {
 	nodeSet = newNSet;
+	nsPtr = nullptr;
 	nextTerm = nullptr;
+	return;
+}
+
+void ConstraintTerm::setNsPtr(Set* newPtr) {
+	nsPtr = newPtr;
 	return;
 }
 
@@ -25,6 +31,10 @@ void ConstraintTerm::setCoef(double newCoef) {
 
 string ConstraintTerm::getSetName() {
 	return nodeSet;
+}
+
+Set* ConstraintTerm::getSetPtr() {
+	return nsPtr;
 }
 
 int ConstraintTerm::getDof() {
@@ -104,71 +114,57 @@ void Constraint::buildMat(Set *firstSet, NdPt ndAr[]) {
 
 	ConstraintTerm *thisTerm = firstTerm;
 	while(thisTerm) {
-		setNm = thisTerm->getSetName();
-		try {
-			ndIndex = stoi(setNm);
-		} catch(...) {
-			thisSet = firstSet;
-			setFound = false;
-			while(thisSet && !setFound) {
-				if(thisSet->getName() == setNm) {
-					setFound = true;
-					setiLen = thisSet->getLength();
-					if(setiLen > setLen) {
-						setLen = setiLen;
-					}
-				}
-				thisSet = thisSet->getNext();
-			}
+		thisSet = thisTerm->getSetPtr();
+		setiLen = thisSet->getLength();
+		if (setiLen > setLen) {
+			setLen = setiLen;
 		}
 		thisTerm = thisTerm->getNext();
 	}
+
 	mat.setDim(setLen);
 	thisTerm = firstTerm;
 	while(thisTerm) {
-		setNm = thisTerm->getSetName();
-		try {
-			ndIndex = stoi(setNm);
-			coef = thisTerm->getCoef();
-			dof = thisTerm->getDof();
+		coef = thisTerm->getCoef();
+		dof = thisTerm->getDof();
+		thisSet = thisTerm->getSetPtr();
+		if (thisSet->getLength() == 1) {
+			thisNd = thisSet->getFirstEntry();
+			ndIndex = thisNd->value;
 			if (type == "displacement") {
-				col = ndAr[ndIndex].ptr->getDofIndex(dof-1);
+				col = ndAr[ndIndex].ptr->getDofIndex(dof - 1);
 			}
-			else if(type == "temperature") {
+			else {
 				col = ndAr[ndIndex].ptr->getSortedRank();
 			}
-			for(row = 0; row < setLen; row++) {
-				mat.addEntry(row,col,coef);
-			}
-		} catch(...) {
-			thisSet = firstSet;
-			setFound = false;
-			while(thisSet && !setFound) {
-				if(thisSet->getName() == setNm) {
-					setFound = true;
-					thisNd = thisSet->getFirstEntry();
-					row = 0;
-					while(thisNd) {
-						ndIndex = thisNd->value;
-						coef = thisTerm->getCoef();
-						dof = thisTerm->getDof();
-						if (type == "displacement") {
-							col = ndAr[ndIndex].ptr->getDofIndex(dof - 1);
-						}
-						else if (type == "temperature") {
-							col = ndAr[ndIndex].ptr->getSortedRank();
-						}
-						mat.addEntry(row,col,coef);
-						thisNd = thisNd->next;
-						row++;
-					}
-				}
-				thisSet = thisSet->getNext();
+			for (row = 0; row < setLen; row++) {
+				mat.addEntry(row, col, coef);
 			}
 		}
+		else {
+			thisNd = thisSet->getFirstEntry();
+			row = 0;
+			while (thisNd) {
+				ndIndex = thisNd->value;
+				if (type == "displacement") {
+					col = ndAr[ndIndex].ptr->getDofIndex(dof - 1);
+				}
+				else {
+					col = ndAr[ndIndex].ptr->getSortedRank();
+				}
+				mat.addEntry(row, col, coef);
+				thisNd = thisNd->next;
+				row++;
+			}
+		}
+
 		thisTerm = thisTerm->getNext();
 	}
 	return;
+}
+
+ConstraintTerm* Constraint::getFirst() {
+	return firstTerm;
 }
 
 int Constraint::getMatDim() {

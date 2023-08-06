@@ -211,16 +211,12 @@ void Model::updateReference() {
 	IntListEnt *thisInt;
 	while(thisSec) {
 		elSet = thisSec->getElset();
-		esPtr = elementSets.getFirst();
-		while(esPtr) {
-			if(esPtr->getName() == elSet) {
-				thisInt = esPtr->getFirstEntry();
-				while(thisInt) {
-					elementArray[thisInt->value].ptr->setSectPtr(thisSec);
-					thisInt = thisInt->next;
-				}
-			}
-			esPtr = esPtr->getNext();
+		i1 = esMap.at(elSet);
+		esPtr = esArray[i1].ptr;
+		thisInt = esPtr->getFirstEntry();
+		while(thisInt) {
+			elementArray[thisInt->value].ptr->setSectPtr(thisSec);
+			thisInt = thisInt->next;
 		}
 		thisMat = materials.getFirst();
 		while(thisMat) {
@@ -240,99 +236,129 @@ void Model::updateReference() {
 		thisSec = thisSec->getNext();
 	}
 	
-	// Set node & element set pointers in loads
+	// Set node & element set pointers in loads, constraints, design variables and objectives
 	string ndSet;
 	Set *nsPtr;
 	Load *thisLoad = loads.getFirst();
 	while(thisLoad) {
-		ndSet = thisLoad->getNodeSet();
-		nsPtr = nodeSets.getFirst();
-		while(nsPtr) {
-			if(nsPtr->getName() == ndSet) {
-				thisLoad->setNdSetPtr(nsPtr);
-			}
-			nsPtr = nsPtr->getNext();
+		try {
+			ndSet = thisLoad->getNodeSet();
+			i1 = nsMap.at(ndSet);
+			thisLoad->setNdSetPtr(nsArray[i1].ptr);
 		}
-		elSet = thisLoad->getElSet();
-		esPtr = elementSets.getFirst();
-		while(esPtr) {
-			if(esPtr->getName() == elSet) {
-				thisLoad->setElSetPtr(esPtr);
-			}
-			esPtr = esPtr->getNext();
+		catch (...) {
+			elSet = thisLoad->getElSet();
+			i1 = esMap.at(elSet);
+			thisLoad->setElSetPtr(esArray[i1].ptr);
 		}
 		thisLoad = thisLoad->getNext();
 	}
+
+	Constraint* thisConst = constraints.getFirst();
+	ConstraintTerm* thisCTerm;
+	while (thisConst) {
+		thisCTerm = thisConst->getFirst();
+		while (thisCTerm) {
+			ndSet = thisCTerm->getSetName();
+			i1 = nsMap.at(ndSet);
+			thisCTerm->setNsPtr(nsArray[i1].ptr);
+			thisCTerm = thisCTerm->getNext();
+		}
+		thisConst = thisConst->getNext();
+	}
+
+	DesignVariable* thisDV = designVars.getFirst();
+	while (thisDV) {
+		try {
+			ndSet = thisDV->getNdSet();
+			i1 = nsMap.at(ndSet);
+			thisDV->setNdsetPtr(nsArray[i1].ptr);
+		}
+		catch (...) {
+			elSet = thisDV->getElSet();
+			i1 = esMap.at(elSet);
+			thisDV->setElsetPtr(esArray[i1].ptr);
+		}
+		thisDV = thisDV->getNext();
+	}
+
+	ObjectiveTerm* thisTerm = objective.getFirst();
+	while (thisTerm) {
+		try {
+			elSet = thisTerm->getElsetName();
+			i1 = esMap.at(elSet);
+			thisTerm->setElsetPtr(esArray[i1].ptr);
+		}
+		catch (...) {
+			ndSet = thisTerm->getNdsetName();
+			i1 = nsMap.at(ndSet);
+			thisTerm->setNdsetPtr(nsArray[i1].ptr);
+		}
+		thisTerm = thisTerm->getNext();
+	}
 	
 	// Build DV reference list for nodes and elements
-	DesignVariable *thisDV = designVars.getFirst();
 	DoubList *coefs;
 	DoubListEnt *thisDoub;
 	int coefLen;
 	double constCoef;
 	int DVi = 0;
+	thisDV = designVars.getFirst();
 	while(thisDV) {
-		elSet = thisDV->getElSet();
-		ndSet = thisDV->getNdSet();
 		coefs = thisDV->getCoefs();
 		coefLen = coefs->getLength();
-		esPtr = elementSets.getFirst();
-		while(esPtr) {
-			if(esPtr->getName() == elSet) {
-				if(coefLen < 2) {
-					if(coefLen == 0) {
-						constCoef = 1.0;
-					} else {
-						thisDoub = coefs->getFirst();
-						constCoef = thisDoub->value;
-					}
-					thisInt = esPtr->getFirstEntry();
-					while(thisInt) {
-						elementArray[thisInt->value].ptr->addDesignVariable(DVi,constCoef);
-						thisInt = thisInt->next;
-					}
+		esPtr = thisDV->getElsetPtr();
+		if(esPtr) {
+			if(coefLen < 2) {
+				if(coefLen == 0) {
+					constCoef = 1.0;
 				} else {
-					thisInt = esPtr->getFirstEntry();
 					thisDoub = coefs->getFirst();
-					while(thisInt && thisDoub) {
-						elementArray[thisInt->value].ptr->addDesignVariable(DVi,thisDoub->value);
-						thisInt = thisInt->next;
-						thisDoub = thisDoub->next;
-					}
+					constCoef = thisDoub->value;
+				}
+				thisInt = esPtr->getFirstEntry();
+				while(thisInt) {
+					elementArray[thisInt->value].ptr->addDesignVariable(DVi,constCoef);
+					thisInt = thisInt->next;
 				}
 			}
-			esPtr = esPtr->getNext();
-		}
-		
-		nsPtr = nodeSets.getFirst();
-		while(nsPtr) {
-			if(nsPtr->getName() == ndSet) {
-				if(coefLen < 2) {
-					if(coefLen == 0) {
-						constCoef = 1.0;
-					} else {
-						thisDoub = coefs->getFirst();
-						constCoef = thisDoub->value;
-					}
-					thisInt = nsPtr->getFirstEntry();
-					while(thisInt) {
-						nodeArray[thisInt->value].ptr->addDesignVariable(DVi,constCoef);
-						thisInt = thisInt->next;
-					}
-				} else {
-					thisInt = nsPtr->getFirstEntry();
-					thisDoub = coefs->getFirst();
-					while(thisInt && thisDoub) {
-						nodeArray[thisInt->value].ptr->addDesignVariable(DVi,thisDoub->value);
-						thisInt = thisInt->next;
-						thisDoub = thisDoub->next;
-					}
+			else {
+				thisInt = esPtr->getFirstEntry();
+				thisDoub = coefs->getFirst();
+				while (thisInt && thisDoub) {
+					elementArray[thisInt->value].ptr->addDesignVariable(DVi, thisDoub->value);
+					thisInt = thisInt->next;
+					thisDoub = thisDoub->next;
 				}
-				thisDV->setNdsetPtr(nsPtr);
-			}
-			nsPtr = nsPtr->getNext();
+		    }
 		}
 		
+		nsPtr = thisDV->getNdsetPtr();
+		if (nsPtr) {
+			if (coefLen < 2) {
+				if (coefLen == 0) {
+					constCoef = 1.0;
+				}
+				else {
+					thisDoub = coefs->getFirst();
+					constCoef = thisDoub->value;
+				}
+				thisInt = nsPtr->getFirstEntry();
+				while (thisInt) {
+					nodeArray[thisInt->value].ptr->addDesignVariable(DVi, constCoef);
+					thisInt = thisInt->next;
+				}
+			}
+			else {
+				thisInt = nsPtr->getFirstEntry();
+				thisDoub = coefs->getFirst();
+				while (thisInt && thisDoub) {
+					nodeArray[thisInt->value].ptr->addDesignVariable(DVi, thisDoub->value);
+					thisInt = thisInt->next;
+					thisDoub = thisDoub->next;
+				}
+			}
+		}
 		thisDV = thisDV->getNext();
 		DVi++;
 	}
@@ -350,6 +376,7 @@ void Model::updateReference() {
 		thisInt = desVars->getFirst();
 		while(thisInt) {
 			dVarArray[thisInt->value].ptr->addCompEl(elLabel);
+			thisEl->addCompDVar(thisInt->value);
 			thisInt = thisInt->next;
 		}
 		elNumNds = thisEl->getNumNds();
@@ -361,34 +388,12 @@ void Model::updateReference() {
 				thisDV = dVarArray[thisInt->value].ptr;
 				if (thisDV->getCategory() == "nodeCoord") {
 					dVarArray[thisInt->value].ptr->addCompEl(elLabel);
+					thisEl->addCompDVar(thisInt->value);
 				}
 				thisInt = thisInt->next;
 			}
 		}
 		thisEl = thisEl->getNext();
-	}
-
-	// Set the node and element set pointers in the objective terms
-
-	ObjectiveTerm* thisTerm = objective.getFirst();
-	while (thisTerm) {
-		elSet = thisTerm->getElsetName();
-		esPtr = elementSets.getFirst();
-		while (esPtr) {
-			if (esPtr->getName() == elSet) {
-				thisTerm->setElsetPtr(esPtr);
-			}
-			esPtr = esPtr->getNext();
-		}
-		ndSet = thisTerm->getNdsetName();
-		nsPtr = nodeSets.getFirst();
-		while (nsPtr) {
-			if (nsPtr->getName() == ndSet) {
-				thisTerm->setNdsetPtr(nsPtr);
-			}
-			nsPtr = nsPtr->getNext();
-		}
-		thisTerm = thisTerm->getNext();
 	}
 	
 	return;
@@ -635,6 +640,8 @@ void Model::solve(JobCommand *cmd) {
 	int ldSteps = cmd->loadRampSteps;
 	double c1 = 1.0/(ldSteps*ldSteps);
 	Node *thisNd;
+	Element* thisEl;
+	double zeroAr[9] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	
 	if(!anPrepRun) {
 		analysisPrep(cmd->solverBlockDim);
@@ -648,6 +655,11 @@ void Model::solve(JobCommand *cmd) {
 		while(thisNd) {
 			thisNd->initializeDisp();
 			thisNd = thisNd->getNext();
+		}
+		thisEl = elements.getFirst();
+		while (thisEl) {
+			thisEl->setIntDisp(zeroAr);
+			thisEl = thisEl->getNext();
 		}
 		if(!elasticLT.isAllocated()) {
 			buildElasticSolnLoad(tempV1,true,cmd->dynamic,cmd->nonlinearGeom);

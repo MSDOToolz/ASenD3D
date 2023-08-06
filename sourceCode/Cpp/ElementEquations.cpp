@@ -234,6 +234,11 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Nd
 		stat = true;
 	}
 	
+	i2 = dofPerNd * nDim;
+	for (i1 = 0; i1 < i2; i1++) {
+		globDisp[i1].setVal(0.0);
+	}
+
 	getNdCrds(xGlob,ndAr,dvAr);
 	getLocOri(locOri,dvAr);
 	getNdDisp(globDisp,ndAr);
@@ -440,9 +445,11 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, bool dyn,
 }
 
 //end dup
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup1
 
 void Element::getRuk(DiffDoub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
@@ -488,6 +495,11 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], bool getMatrix, bool nLGeom
 		stat = true;
 	}
 	
+	i2 = dofPerNd * nDim;
+	for (i1 = 0; i1 < i2; i1++) {
+		globDisp[i1].setVal(0.0);
+	}
+
 	getNdCrds(xGlob,ndAr,dvAr);
 	getLocOri(locOri,dvAr);
 	getNdDisp(globDisp,ndAr);
@@ -665,6 +677,7 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, bool 
 					i4++;
 				}
 			}
+			//Condense Matrix
 			condenseMat(dRdu);
 		}
 	}
@@ -692,5 +705,6 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, bool 
 	return;
 }
 
+//end dup
  
 //end skip 

@@ -378,6 +378,14 @@ void Element::setIntDofIndex(int newInd) {
 	return;
 }
 
+void Element::setIntDisp(double newDisp[]) {
+	int i1;
+	for (i1 = 0; i1 < numIntDof; i1++) {
+		internalDisp[i1] = newDisp[i1];
+	}
+	return;
+}
+
 void Element::setIntdLdU(double globdLdU[]) {
 	int i1;
 	int i2 = intDofIndex;
@@ -546,10 +554,11 @@ void DoubStressPrereq::destroy() {
 
 	return;
 }
-//end dup
+//end dup 
 //skip 
  
 //DiffDoub versions: 
+//dup1
  DiffDoubStressPrereq::DiffDoubStressPrereq() {
 	layerZ = nullptr;
 	layerThk = nullptr;
@@ -574,5 +583,5 @@ void DiffDoubStressPrereq::destroy() {
 
 	return;
 }
- 
+//end dup 
 //end skip 

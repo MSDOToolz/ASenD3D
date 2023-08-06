@@ -969,9 +969,11 @@ void Element::correctOrient(Doub locOri[], Doub xGlob[]) {
 }
 
 //end dup
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup1
 
 void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset, DVPt dvAr[]) {
 	int layi = 0;
@@ -1464,6 +1466,7 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 		zMax.add(thk);
 		transformQ(Qmat, &layQ[i2], layAng[i1]);
 		
+		// A matrix portion
 		tmp.setVal(zMax);
 		tmp.sub(zMin);
 		for (i1 = 0; i1 < 3; i1++) {
@@ -1478,6 +1481,7 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 			}
 		}
 
+		// B matrix portion
 		tmp.setVal(zMax);
 		tmp.sqr();
 		tmp2.setVal(zMin);
@@ -1497,6 +1501,7 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 			}
 		}
 
+		// D matrix portion				
 		tmp.setVal(zMax);
 		tmp.sqr();
 		tmp.mult(zMax);
@@ -1920,5 +1925,6 @@ void Element::correctOrient(DiffDoub locOri[], DiffDoub xGlob[]) {
 	return;
 }
 
+//end dup
  
 //end skip 

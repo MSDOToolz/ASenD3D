@@ -2,6 +2,7 @@
 #define MODEL
 #include <fstream>
 #include <iostream>
+#include <map>
 #include "JobClass.h"
 #include "NodeClass.h"
 #include "ElementClass.h"
@@ -21,7 +22,11 @@ class Model {
 		ElementList elements;
 		ElPt *elementArray;
 		SetList nodeSets;
+		SetPt* nsArray;
+		std::map<std::string, int> nsMap;
 		SetList elementSets;
+		SetPt* esArray;
+		std::map<std::string, int> esMap;
 		SectionList sections;
 		MaterialList materials;
 		ConstraintList constraints;

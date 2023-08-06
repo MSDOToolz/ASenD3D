@@ -33,7 +33,8 @@ for fn in fileNames:
             
             for ln in lineList:
                 outFile.write(ln)
-                   
+                
+            outFile.write(' \n')
             outFile.write('//skip \n')
             outFile.write(' \n')
             outFile.write('//DiffDoub versions: \n')
@@ -44,7 +45,7 @@ for fn in fileNames:
                     preserve = True
                 elif('//end preserve' in ln):
                     preserve = False
-                elif('//' not in ln):
+                else:
                     if(preserve):
                         outFile.write(ln)
                     else:
@@ -64,7 +65,8 @@ for fn in fileNames:
             
             for ln in lineList:
                 outFile.write(ln)
-                        
+            
+            outFile.write(' \n')            
             outFile.write('//skip \n')
             outFile.write(' \n')
             outFile.write('//DiffDoub versions: \n')
@@ -75,7 +77,7 @@ for fn in fileNames:
                     preserve = True
                 elif('//end preserve' in ln):
                     preserve = False
-                elif('//' not in ln):
+                else:
                     if(preserve):
                         outFile.write(ln)
                     else:
@@ -92,7 +94,7 @@ for fn in fileNames:
                     preserve = True
                 elif('//end preserve' in ln):
                     preserve = False
-                elif('//' not in ln):
+                else:
                     if(preserve):
                         outFile.write(ln)
                     else:

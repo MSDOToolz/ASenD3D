@@ -933,9 +933,11 @@ void getDetInv(Doub& det, Doub inv[], Doub mat[], int colDim, int triDiag, Doub 
 }
 
 //end dup
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup1
 void qRFactor(DiffDoub mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
@@ -1117,9 +1119,9 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
 	return;
 }
 
+//end dup
  
 //end skip 
- 
  
 //dup2
 void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m2Cols) {
@@ -1379,9 +1381,11 @@ void rotateOrient(Doub instOri[], Doub locOri[], Doub rot[]) {
 	return;
 }
 //end dup
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup2
 void matMul(DiffDoub prod[], DiffDoub mat1[], DiffDoub mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
@@ -1578,6 +1582,7 @@ void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]) {
 		tmp2.setVal(unitRot[i1]);
 		tmp2.sqr();
 		tmp.sub(tmp2);
+		tmp.sqt(); // tmp = sqrt(1 - unitRot[i1]^2)
 		a1[3+i1].setVal(tmp);
 		for (i2 = 0; i2 < 3; i2++) {
 			if(i2 != i1) {
@@ -1631,12 +1636,16 @@ void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]) {
 		tmp.mult(a1[8]);
 		a2[8].add(tmp);
 		
+		transpose(a3,a2,3,3); // a3 = a2^T
+		matMul(a2,a3,a1,3,3,3); //a2 = a2^T*a1
 		matMul(instOri,locOri,a2,3,3,3);
 	}
 	return;
 }
+//end dup
  
 //Diff2Doub versions: 
+//dup2
 void matMul(Diff2Doub prod[], Diff2Doub mat1[], Diff2Doub mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
@@ -1833,6 +1842,7 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 		tmp2.setVal(unitRot[i1]);
 		tmp2.sqr();
 		tmp.sub(tmp2);
+		tmp.sqt(); // tmp = sqrt(1 - unitRot[i1]^2)
 		a1[3+i1].setVal(tmp);
 		for (i2 = 0; i2 < 3; i2++) {
 			if(i2 != i1) {
@@ -1886,13 +1896,15 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 		tmp.mult(a1[8]);
 		a2[8].add(tmp);
 		
+		transpose(a3,a2,3,3); // a3 = a2^T
+		matMul(a2,a3,a1,3,3,3); //a2 = a2^T*a1
 		matMul(instOri,locOri,a2,3,3,3);
 	}
 	return;
 }
+//end dup
  
 //end skip 
- 
 
 //dup1
 void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
@@ -1989,10 +2001,11 @@ void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
 	return;
 }
 
-//end dup 
+//end dup  
 //skip 
  
 //DiffDoub versions: 
+//dup1
 void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
 		rotateOrient(instOri, locOri, rot);
@@ -2085,12 +2098,5 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 	return;
 }
 
- 
+//end dup  
 //end skip 
- 
- 
- 
- 
- 
- 
- 

@@ -8,18 +8,23 @@
 class ConstraintTerm {
 	private:
 	    std::string nodeSet;
+		Set* nsPtr;
 		int dof;
 		double coef;
 		ConstraintTerm *nextTerm;
 		
 	public:
 	    ConstraintTerm(std::string newNSet);
+
+		void setNsPtr(Set* newSet);
 		
 		void setDof(int newDof);
 		
 		void setCoef(double newCoef);
 		
 		std::string getSetName();
+
+		Set* getSetPtr();
 		
 		int getDof();
 		
@@ -56,6 +61,8 @@ class Constraint {
 		Constraint* getNext();
 		
 		void buildMat(Set *firstSet, NdPt ndAr[]);
+
+		ConstraintTerm* getFirst();
 		
 		int getMatDim();
 

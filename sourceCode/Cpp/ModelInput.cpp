@@ -313,7 +313,8 @@ void Model::readModelInput(string fileName) {
 			} else if(headings[0] == "sets") {
 				if(headings[1] == "node") {
 					if(headings[2] == "name" && dataLen == 1) {
-						newSet = new Set(data[0]);
+						newSet = new Set;
+						newSet->setName(data[0]);
 						nodeSets.addSet(newSet);
 					} else if(headings[2] == "labels") {
 						if(dataLen == 1) {
@@ -340,7 +341,8 @@ void Model::readModelInput(string fileName) {
 					}
 				} else if(headings[1] == "element") {
 					if(headings[2] == "name" && dataLen == 1) {
-						newSet = new Set(data[0]);
+						newSet = new Set;
+						newSet->setName(data[0]);
 						elementSets.addSet(newSet);
 					} else if(headings[2] == "labels") {
 						if(dataLen == 1) {
@@ -576,6 +578,66 @@ void Model::readModelInput(string fileName) {
 		i1 = newEl->getLabel();
 		elementArray[i1].ptr = newEl;
 		newEl = newEl->getNext();
+	}
+
+	// Create all and individual nd/element sets
+
+	i1 = nodes.getLength();
+    
+	for (i2 = 0; i2 < i1; i2++) {
+		newSet = new Set;
+		newSet->setName(to_string(i2));
+		newSet->addEntry(i2);
+		nodeSets.addSet(newSet);
+	}
+
+	newSet = new Set;
+	newSet->setName("all");
+	for (i2 = 0; i2 < i1; i2++) {
+		newSet->addEntry(i2);
+	}
+	nodeSets.addSet(newSet);
+
+	i1 = elements.getLength();
+
+	for (i2 = 0; i2 < i1; i2++) {
+		newSet = new Set;
+		newSet->setName(to_string(i2));
+		newSet->addEntry(i2);
+		elementSets.addSet(newSet);
+	}
+
+	newSet = new Set;
+	newSet->setName("all");
+	for (i2 = 0; i2 < i1; i2++) {
+		newSet->addEntry(i2);
+	}
+	nodeSets.addSet(newSet);
+
+	// Populate set arrays
+
+	i1 = nodeSets.getLength();
+
+	nsArray = new SetPt[i1];
+	newSet = nodeSets.getFirst();
+	i2 = 0;
+	while (newSet) {
+		nsArray[i2].ptr = newSet;
+		nsMap.insert(make_pair(newSet->getName(), i2));
+		newSet = newSet->getNext();
+		i2++;
+	}
+
+	i1 = elementSets.getLength();
+
+	esArray = new SetPt[i1];
+	newSet = elementSets.getFirst();
+	i2 = 0;
+	while (newSet) {
+		esArray[i2].ptr = newSet;
+		esMap.insert(make_pair(newSet->getName(), i2));
+		newSet = newSet->getNext();
+		i2++;
 	}
 	
 	inFile.close();

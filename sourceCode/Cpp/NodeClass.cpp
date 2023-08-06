@@ -254,9 +254,11 @@ void Node::getElasticDVLoad(Doub ld[], DVPt dvAr[]) {
 }
 
 //end dup
+ 
 //skip 
  
 //DiffDoub versions: 
+//dup1
 void Node::getCrd(DiffDoub crdOut[], DVPt dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
@@ -326,8 +328,10 @@ void Node::getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]) {
 	return;
 }
 
+//end dup
  
 //end skip 
+
 
 int Node::getDofIndex(int dof) {
 	return dofIndex[dof];

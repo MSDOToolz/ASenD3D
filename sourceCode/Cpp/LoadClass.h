@@ -12,6 +12,7 @@ class Load {
 		Set *ndSetPtr;
 		std::string elementSet;
 		Set *elSetPtr;
+		Set single;
 		double load[6];
 		double normalDir[3];
 		double normTol;

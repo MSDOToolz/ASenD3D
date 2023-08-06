@@ -10,7 +10,9 @@ class Set {
 		Set *nextSet;
 		
     public:
-	     Set(std::string newNm);
+	     Set();
+
+		 void setName(std::string newNm);
 		 
 		 void addEntry(int newLabel);
 		 
@@ -27,6 +29,13 @@ class Set {
 		 void destroy();
 };
 
+class SetPt {
+    public:
+		Set* ptr;
+
+		SetPt();
+};
+
 class SetList {
 	private:
 	    Set *firstSet;
@@ -41,6 +50,8 @@ class SetList {
 		int getLength();
 		
 		Set* getFirst();
+
+		Set* getLast();
 
 		void destroy();
 };
