@@ -2,6 +2,7 @@
 #include "ListEntClass.h"
 #include "ConstraintClass.h"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -24,7 +25,6 @@ void LowerTriMat::setDim(int newDim) {
 	zVec = new double[newDim];
 	return;
 }
-
 
 void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int maxBw) {
 	int i1;
@@ -190,7 +190,7 @@ void LowerTriMat::ldlFactor() {
 		mat[i2] = mat[i2] - sum;
 		//get L terms for column i1
 		i2 = i1 + 1;
-		while(i2 < i1 + maxBandwidth && i2 < dim) { // i2 = row in L
+		while(i2 < (i1 + maxBandwidth) && i2 < dim) { // i2 = row in L
 		    if(minCol[i2] <= i1) {
 				stCol = minCol[i2];
 				if(minCol[i1] > stCol) {
@@ -247,6 +247,22 @@ void LowerTriMat::ldlSolve(double solnVec[], double rhs[]) {
 		i2 = range[i1+1] - 1;
 		solnVec[i1] = (zVec[i1]/mat[i2]) - sum;
 	}
+	return;
+}
+
+void LowerTriMat::writeToFile(ofstream& outFile) {
+	int i1;
+	int i2;
+	int col;
+	
+	for (i1 = 0; i1 < dim; i1++) {
+		col = minCol[i1];
+		for (i2 = range[i1]; i2 < range[i1 + 1]; i2++) {
+			outFile << "    - [" << i1 << ", " << col << ", " << mat[i2] << "]\n";
+			col++;
+		}
+	}
+
 	return;
 }
 

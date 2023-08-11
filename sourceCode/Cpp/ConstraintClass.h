@@ -4,6 +4,7 @@
 #include "SetClass.h"
 #include "NodeClass.h"
 #include <string>
+#include <fstream>
 
 class ConstraintTerm {
 	private:
@@ -71,6 +72,8 @@ class Constraint {
 		MatrixEnt* getMatFirst(int row);
 
 		void getLoad(double cLd[], double uVec[], double qVec[],int resDim);
+
+		void writeToFile(std::ofstream& outFile);
 		
 		void destroy();
 };
@@ -90,6 +93,8 @@ class ConstraintList {
 		void scaleElastic(double newSF);
 
 		void getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim);
+
+		void writeAllToFile(std::string fileName);
 		
 		void destroy();
 };

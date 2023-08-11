@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include <fstream>
 #include "ListEntClass.h"
 
 using namespace std;
@@ -305,12 +306,28 @@ double SparseMat::getMaxAbsVal() {
 	double maxVal = 0.0;
 	for (i1 = 0; i1 < dim; i1++) {
 		thisEnt = matrix[i1].ptr;
-		thisVal = abs(thisEnt->value);
-		if (thisVal > maxVal) {
-			maxVal = thisVal;
+		while (thisEnt) {
+			thisVal = abs(thisEnt->value);
+			if (thisVal > maxVal) {
+				maxVal = thisVal;
+			}
+			thisEnt = thisEnt->nextEnt;
 		}
 	}
 	return maxVal;
+}
+
+void SparseMat::writeToFile(ofstream& outFile) {
+	int i1;
+	MatrixEnt* thisEnt;
+	for (i1 = 0; i1 < dim; i1++) {
+		thisEnt = matrix[i1].ptr;
+		while (thisEnt) {
+			outFile << "    - [" << thisEnt->row << ", " << thisEnt->col << ", " << thisEnt->value << "]\n";
+			thisEnt = thisEnt->nextEnt;
+		}
+	}
+	return;
 }
 
 void SparseMat::destroy() {

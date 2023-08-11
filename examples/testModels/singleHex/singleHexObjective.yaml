@@ -10,8 +10,10 @@ objectiveTerms:
       component: 1
       coefficient: 1.0
       exponent: 1.0
+      elementSet: all
     - category: strain
       operator: powerNorm
       component: 1
       coefficient: 1.0
       exponent: 1.0
+      elementSet: all

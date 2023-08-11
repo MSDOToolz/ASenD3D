@@ -25,7 +25,7 @@ writeNodeResults:
 
 writeElementResults:
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/elementResults.yaml
-    elementSet: el0
+    elementSet: all
     fields:
         - stress
         - strain

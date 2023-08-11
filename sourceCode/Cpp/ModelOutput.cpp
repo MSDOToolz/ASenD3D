@@ -108,6 +108,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	string thisField;
 	IntListEnt* thisEnt;
 	Element* elPt;
+	Set* setPt;
 	int type;
 	int elLabel;
 	int numIP;
@@ -123,21 +124,15 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 		// Read the results from the time step file and store them in nodes
 	}
 
-	Set* setPt = elementSets.getFirst();
-	bool found = false;
-	while (!found && setPt) {
-		if (setPt->getName() == elSet) {
-			found = true;
-		}
-		else {
-			setPt = setPt->getNext();
-		}
+	try {
+		i1 = esMap.at(elSet);
+		setPt = esArray[i1].ptr;
 	}
-
-	if (!found) {
-		errStr = "Warning: there is no element set named " + elSet + ", aborting writeElementResults";
+	catch (...) {
+		errStr = "Warning: there is no element set named " + elSet + ". Defaulting to all elements in writeNodeResults";
 		cout << errStr << endl;
-		return;
+		i1 = nsMap.at("all");
+		setPt = esArray[i1].ptr;
 	}
 
 	ofstream outFile;
@@ -152,16 +147,17 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 		thisField = strPt->value;
 		outFile << "    " << thisField << ":\n";
 		fieldList = "stress strain";
-		if (fieldList.find(thisField) > -1) {
+		i2 = fieldList.find(thisField);
+		if (i2 > -1) {
 			outFile << "    ##  - [element label, integration pt, layer, S11, S22, S33, S12, S13, S23]\n";
 		}
 		thisEnt = setPt->getFirstEntry();
 		while (thisEnt) {
 			elLabel = thisEnt->value;
 			elPt = elementArray[elLabel].ptr;
-			outFile << "        - [" << elLabel << ", ";
 			fieldList = "stress strain strainEnergyDen";
-			if (fieldList.find(thisField) > -1) {
+			i2 = fieldList.find(thisField);
+			if (i2 > -1) {
 				elPt->getStressPrereq(stPre, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
 				intPts = elPt->getIP();
@@ -174,6 +170,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 					}
 					for (i2 = 0; i2 < numLay; i2++) {
 						elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
+						outFile << "        - [" << elLabel << ", ";
 						if (thisField == "strain") {
 							outFile << i1 << ", " << i2 << ", " << strain[0].val;
 							for (i3 = 1; i3 < 6; i3++) {

@@ -16,8 +16,20 @@ Node::Node(int newLab) {
 		displacement[i1] = 0.0;
 		velocity[i1] = 0.0;
 		acceleration[i1] = 0.0;
-		dofIndex[i1] = 0;
+		prevDisp[i1] = 0.0;
+		prevVel[i1] = 0.0;
+		prevAcc[i1] = 0.0;
+		initialDisp[i1] = 0.0;
+		initialVel[i1] = 0.0;
+		initialAcc[i1] = 0.0;
+		dofIndex[i1] = 0.0;
 	}
+	temperature = 0.0;
+	tempChangeRate = 0.0;
+	prevTemp = 0.0;
+	prevTdot = 0.0;
+	initialTemp = 0.0;
+	initialTdot = 0.0;
 	nextNd = nullptr;
 }
 

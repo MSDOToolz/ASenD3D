@@ -2,7 +2,7 @@
 designVariables:
     - category: modulus ## density, massMat, modulus, shearModulus, poissonRatio, stiffnessMat, thermalCond, thermalExp, specHeat, orientation, nodeCoord, elasticLoad, thermalLoad, thickness, angle, zOffset, area, areaMoment, polarMoment
       component: 1
-      elementSet: el0
+      elementSet: all
       coefficients: 1.0
     - category: nodeCoord
       component: 1

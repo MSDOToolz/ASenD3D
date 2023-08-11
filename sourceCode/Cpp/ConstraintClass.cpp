@@ -3,6 +3,7 @@
 #include "SetClass.h"
 #include "NodeClass.h"
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -186,11 +187,20 @@ void Constraint::getLoad(double cLd[], double uVec[], double qVec[], int resDim)
 		qVec[i1] = -rhs;
 	}
 	mat.vectorMultiply(qVec, uVec, false);
-	mat.vectorMultiply(cLd, qVec, true);
-	for (i1 = 0; i1 < resDim; i1++) {
-		cLd[i1] *= -scaleFact;
+	for (i1 = 0; i1 < dim; i1++) {
+		qVec[i1] *= -scaleFact;
 	}
+	mat.vectorMultiply(cLd, qVec, true);
 
+	return;
+}
+
+void Constraint::writeToFile(ofstream& outFile) {
+	outFile << "type: " << type << "\n";
+	outFile << "scale factor: " << scaleFact << "\n";
+	outFile << "rhs: " << rhs << "\n";
+	outFile << "matrix: \n";
+	mat.writeToFile(outFile);
 	return;
 }
 
@@ -237,11 +247,25 @@ void ConstraintList::scaleElastic(double newSF) {
 }
 
 void ConstraintList::getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim) {
+	int i1;
 	Constraint* thisConst = firstConst;
 	while (thisConst) {
 		thisConst->getLoad(cLd,uVec,qVec,resDim);
 		thisConst = thisConst->getNext();
 	}
+	return;
+}
+
+void ConstraintList::writeAllToFile(string fileName) {
+	ofstream outFile;
+	outFile.open(fileName);
+	Constraint* thisConst = firstConst;
+	while (thisConst) {
+		thisConst->writeToFile(outFile);
+		outFile << "##------------------------------------------------------\n";
+		thisConst = thisConst->getNext();
+	}
+	outFile.close();
 	return;
 }
 

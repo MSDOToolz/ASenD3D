@@ -1,6 +1,7 @@
 #ifndef LISTENT
 #define LISTENT
 #include <string>
+#include <fstream>
 
 class IntListEnt {
     public:
@@ -124,6 +125,8 @@ class SparseMat {
 		void vectorMultiply(double prod[], double inpVec[], bool transpose);
 
 		double getMaxAbsVal();
+
+		void writeToFile(std::ofstream& outFile);
 		
 		void destroy();
 };

@@ -520,7 +520,7 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool 
 }
 
 void Model::scaleElasticConst() {
-	double scaleFact = 1000.0*elasticMat.getMaxAbsVal();
+	double scaleFact = 100000.0*elasticMat.getMaxAbsVal();
 	constraints.scaleElastic(scaleFact);
 	elasticScaled = true;
 	return;
@@ -548,6 +548,7 @@ void Model::buildElasticConstLoad(double constLd[]) {
 void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 	int i1;
 	int i2;
+	int ideb;
 	int maxNLit;
 	double dUnorm;
 	double dUtol;
@@ -574,6 +575,7 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 		while(i2 < maxNLit && dUnorm > dUtol) {
 			for (i1 = 0; i1 < elMatDim; i1++) {
 				tempV1[i1] = 0.0;
+				tempV2[i1] = 0.0;
 			}
 			buildElasticAppLoad(tempV1,time);
 			for (i1 = 0; i1 < elMatDim; i1++) {
@@ -592,11 +594,25 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				thisEl = thisEl->getNext();
 			}
 			if(cmd->solverMethod == "direct") {
+				//--------------------------
+				ofstream outFile;
+				outFile.open("C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/sparseStiffness.yaml");
+				elasticMat.writeToFile(outFile);
+				outFile.close();
+				//-------------------------------
 				if(cmd->nonlinearGeom) {
 					elasticLT.populateFromSparseMat(elasticMat,constraints);
 					elasticLT.ldlFactor();
 				}
+				cout << "rhs" << endl;
+				for (ideb = 0; ideb < elMatDim; ideb++) {
+					cout << tempV1[ideb] << endl;
+				}
 				elasticLT.ldlSolve(tempV2,tempV1);
+				cout << "solution" << endl;
+				for (ideb = 0; ideb < elMatDim; ideb++) {
+					cout << tempV2[ideb] << endl;
+				}
 			}
 			thisNd = nodes.getFirst();
 			while(thisNd) {
@@ -671,6 +687,32 @@ void Model::solve(JobCommand *cmd) {
 			}
 			elasticLT.populateFromSparseMat(elasticMat, constraints);
 			elasticLT.ldlFactor();
+			//----------------------------- 
+			for (i1 = 0; i1 < elMatDim; i1++) {
+				tempV1[i1] = 0.0;
+				tempV2[i1] = 0.0;
+			}
+			i1 = nsMap.at("upperX");
+			Set* thisSet = nsArray[i1].ptr;
+			IntListEnt* thisEnt = thisSet->getFirstEntry();
+			while (thisEnt) {
+				i1 = nodeArray[thisEnt->value].ptr->getDofIndex(0);
+				tempV1[i1] = 0.001;
+				thisEnt = thisEnt->next;
+			}
+			elasticMat.vectorMultiply(tempV2, tempV1, false);
+			cout << "Reaction Force:" << endl;
+			for (i1 = 0; i1 < elMatDim; i1++) {
+				cout << tempV2[i1] << endl;
+			}
+			/*ofstream outFile;
+			outFile.open("C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/LTriStiffness.yaml");
+			elasticLT.writeToFile(outFile);
+			elasticLT.ldlFactor();
+			outFile << "---------------------------------------------------------\nFactored:\n";
+			elasticLT.writeToFile(outFile);
+			outFile.close();*/
+			// ---------------------------------
 		}
 	}
 	

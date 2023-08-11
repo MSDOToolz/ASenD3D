@@ -9,7 +9,7 @@ nodes:
     - [6, 0.5, 0.5, 0.5]
     - [7, -0.5, 0.5, 0.5]
 elements:
-    - type: brickIM
+    - type: brick8
       connectivity:
           - [0, 0, 1, 2, 3, 4, 5, 6, 7]
 sets:
@@ -20,20 +20,16 @@ sets:
               - 2
               - 5
               - 6
-    element:
-        - name: el0
-          labels:
-              - 0
 sections:
     - type: solid
       material: myMat
-      elementSet: el0
+      elementSet: all
 materials:
     - name: myMat
       elastic:
           E: 1000000
-          nu: 0.2
-          G: 416666
+          nu: 0.0
+          G: 500000
 constraints:
     - type: displacement
       terms:
@@ -58,6 +54,7 @@ constraints:
           - nodeSet: 3
             dof: 1
             coef: 1.0
+      rhs: 0.0
     - type: displacement
       terms:
           - nodeSet: 3
@@ -67,9 +64,14 @@ constraints:
     - type: displacement
       terms:
           - nodeSet: 4
-            dof: 2
+            dof: 1
             coef: 1.0
       rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 7
+            dof: 1
+            coef: 1.0
 loads:
     - type: nodalForce
       activeTime: [0.0,1.0]

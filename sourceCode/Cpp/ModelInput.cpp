@@ -612,7 +612,7 @@ void Model::readModelInput(string fileName) {
 	for (i2 = 0; i2 < i1; i2++) {
 		newSet->addEntry(i2);
 	}
-	nodeSets.addSet(newSet);
+	elementSets.addSet(newSet);
 
 	// Populate set arrays
 

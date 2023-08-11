@@ -1,5 +1,6 @@
 #ifndef LOWERTRIMAT
 #define LOWERTRIMAT
+#include <fstream>
 #include "ListEntClass.h"
 #include "ConstraintClass.h"
 
@@ -28,6 +29,8 @@ class LowerTriMat {
 		void ldlFactor();
 		
 		void ldlSolve(double solnVec[], double rhs[]);
+
+		void writeToFile(std::ofstream& outFile);
 		
 		void destroy();
 };
