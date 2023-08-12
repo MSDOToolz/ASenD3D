@@ -594,25 +594,11 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				thisEl = thisEl->getNext();
 			}
 			if(cmd->solverMethod == "direct") {
-				//--------------------------
-				ofstream outFile;
-				outFile.open("C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/sparseStiffness.yaml");
-				elasticMat.writeToFile(outFile);
-				outFile.close();
-				//-------------------------------
 				if(cmd->nonlinearGeom) {
 					elasticLT.populateFromSparseMat(elasticMat,constraints);
 					elasticLT.ldlFactor();
 				}
-				cout << "rhs" << endl;
-				for (ideb = 0; ideb < elMatDim; ideb++) {
-					cout << tempV1[ideb] << endl;
-				}
 				elasticLT.ldlSolve(tempV2,tempV1);
-				cout << "solution" << endl;
-				for (ideb = 0; ideb < elMatDim; ideb++) {
-					cout << tempV2[ideb] << endl;
-				}
 			}
 			thisNd = nodes.getFirst();
 			while(thisNd) {
@@ -687,32 +673,6 @@ void Model::solve(JobCommand *cmd) {
 			}
 			elasticLT.populateFromSparseMat(elasticMat, constraints);
 			elasticLT.ldlFactor();
-			//----------------------------- 
-			for (i1 = 0; i1 < elMatDim; i1++) {
-				tempV1[i1] = 0.0;
-				tempV2[i1] = 0.0;
-			}
-			i1 = nsMap.at("upperX");
-			Set* thisSet = nsArray[i1].ptr;
-			IntListEnt* thisEnt = thisSet->getFirstEntry();
-			while (thisEnt) {
-				i1 = nodeArray[thisEnt->value].ptr->getDofIndex(0);
-				tempV1[i1] = 0.001;
-				thisEnt = thisEnt->next;
-			}
-			elasticMat.vectorMultiply(tempV2, tempV1, false);
-			cout << "Reaction Force:" << endl;
-			for (i1 = 0; i1 < elMatDim; i1++) {
-				cout << tempV2[i1] << endl;
-			}
-			/*ofstream outFile;
-			outFile.open("C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/LTriStiffness.yaml");
-			elasticLT.writeToFile(outFile);
-			elasticLT.ldlFactor();
-			outFile << "---------------------------------------------------------\nFactored:\n";
-			elasticLT.writeToFile(outFile);
-			outFile.close();*/
-			// ---------------------------------
 		}
 	}
 	
@@ -746,6 +706,12 @@ void Model::solveForAdjoint() {
 				dLdU[i1] = 0.0;
 			}
 			objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray,elementArray,dVarArray);
+			//
+			cout << "dLdU" << endl;
+			for (i1 = 0; i1 < totGlobDof; i1++) {
+				cout << dLdU[i1] << endl;
+			}
+			//
 			thisEl = elements.getFirst();
 			while (thisEl) {
 				thisEl->setIntdLdU(dLdU);
@@ -807,6 +773,8 @@ void Model::dRelasticdD(int dVarNum) {
 		}
 		thisEnt = thisEnt->next;
 	}
+
+	thisDV->setDiffVal(dvVal.val, 0.0);
 
 	return;
 }

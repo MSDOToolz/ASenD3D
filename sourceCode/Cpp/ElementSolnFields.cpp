@@ -1245,7 +1245,7 @@ void Element::dStressStraindU(Doub dsdU[], Doub dedU[], double spt[], int layer,
 
 void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt ndAr[]) {
 	int i1;
-	int ndDof = numNds + dofPerNd;
+	int ndDof = numNds*dofPerNd;
 	int totDof = ndDof + numIntDof;
 	int nd;
 	int dof;

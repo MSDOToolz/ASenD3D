@@ -16,6 +16,8 @@ ObjectiveTerm::ObjectiveTerm(string newCat) {
 	tgtVec = nullptr;
 	errNormVec = nullptr;
 	next = nullptr;
+	activeTime[0] = -1.0;
+	activeTime[1] = 1.0e+100;
 	qLen = 0;
 }
 
@@ -384,6 +386,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 	}
 
 	int i1;
+	int fi;
 	int tgtLen;
 	double tgtVal;
 	allocateObj();
@@ -401,7 +404,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 	Doub eDen;
 
 	string catList = "displacement velocity acceleration temperature tdot";
-	if (catList.find(category) > -1) {
+	fi = catList.find(category);
+	if (fi > -1) {
 		if (!ndSetPtr) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid node set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the node set name is correct and defined in the model input file.";
@@ -471,7 +475,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		}
 	}
 	catList = "stress strain strainEnergyDen";
-	if (catList.find(category) > -1) {
+	fi = catList.find(category);
+	if (fi > -1) {
 		if (!elSetPtr) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
@@ -548,7 +553,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 	// rem: insert flux and grad(T) section
 
 	catList = "mass volume";
-	if (catList.find(category) > -1) {
+	fi = catList.find(category);
+	if (fi > -1) {
 		if (!elSetPtr) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
@@ -593,6 +599,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	int i1;
 	int i2;
 	int i3;
+	int fi;
 	allocateObjGrad();
 	IntListEnt* thisEnt;
 	int qInd;
@@ -615,7 +622,8 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	Doub eDen;
 
 	string catList = "displacement velocity acceleration temperature tdot";
-	if (catList.find(category) > -1) {
+	fi = catList.find(category);
+	if (fi > -1) {
 		if (!ndSetPtr) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid node set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the node set name is correct and defined in the model input file.";
@@ -666,7 +674,8 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		}
 	}
 	catList = "stress strain strainEnergyDen";
-	if (catList.find(category) > -1) {
+	fi = catList.find(category);
+	if (fi > -1) {
 		if (!elSetPtr) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
@@ -689,6 +698,12 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			}
 			else if (category == "strain") {
 				thisEl->putVecToGlobMat(dQdU, &dedU[i1], qInd, ndAr);
+				//
+				ofstream outFile;
+				outFile.open("dQdUMat");
+				dQdU.writeToFile(outFile);
+				outFile.close();
+				//
 			}
 			else {
 				for (i2 = 0; i2 < elTotDof; i2++) {
@@ -706,6 +721,9 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			qInd++;
 		}
 		if (optr == "powerNorm") {
+			for (i1 = 0; i1 < qLen; i1++) {
+				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			}
 			stPre.destroy();
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
@@ -736,6 +754,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 	}
 
 	int i1;
+	int fi;
 	IntListEnt* thisEnt;
 	IntListEnt* thisDVEnt;
 	int dvi;
@@ -753,7 +772,8 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 
 
 	string catList = "stress strain strainEnergyDen";
-	if (catList.find(category) > -1) {
+	fi = catList.find(category);
+	if (fi > -1) {
 		if (!elSetPtr) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
@@ -796,6 +816,9 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 			qInd++;
 		}
 		if (optr == "powerNorm") {
+			for (i1 = 0; i1 < qLen; i1++) {
+				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			}
 			stPre.destroy();
 			dPowerNormdD(dLdD);
 			return;
@@ -816,7 +839,8 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 	// rem: insert flux and grad(T) section
 
 	catList = "mass volume";
-	if (catList.find(category) > -1) {
+	fi = catList.find(category);
+	if (fi > -1) {
 		if (!elSetPtr) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
