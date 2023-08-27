@@ -11,8 +11,59 @@
 #include "ConstraintClass.h"
 #include "DesignVariableClass.h"
 #include "ObjectiveClass.h"
+#include "JobClass.h"
 
 using namespace std;
+
+void Model::writeTimeStepSoln(int tStep) {
+	int i1;
+	int dofPerNd;
+	int numIntDof;
+	double ndDat[6];
+	double elDat[9];
+	string fullFile = solveCmd->fileName + "solnTStep" + to_string(tStep) + ".out";
+	ofstream outFile;
+	outFile.open(fullFile);
+	outFile << setprecision(15);
+
+	Node* thisNd = nodes.getFirst();
+	while (thisNd) {
+		if (solveCmd->thermal) {
+
+		}
+		if (solveCmd->elastic) {
+			dofPerNd = thisNd->getNumDof();
+			thisNd->getPrevDisp(ndDat);
+			for (i1 = 0; i1 < dofPerNd; i1++) {
+				outFile << ndDat[i1] << "\n";
+			}
+			thisNd->getPrevVel(ndDat);
+			for (i1 = 0; i1 < dofPerNd; i1++) {
+				outFile << ndDat[i1] << "\n";
+			}
+			thisNd->getPrevAcc(ndDat);
+			for (i1 = 0; i1 < dofPerNd; i1++) {
+				outFile << ndDat[i1] << "\n";
+			}
+		}
+		thisNd = thisNd->getNext();
+	}
+
+	Element* thisEl = elements.getFirst();
+	while (thisEl) {
+		numIntDof = thisEl->getNumIntDof();
+		if (numIntDof < 0) {
+			thisEl->getIntPrevDisp(elDat);
+			for (i1 = 0; i1 < numIntDof; i1++) {
+				outFile << elDat[i1] << "\n";
+			}
+		}
+		thisEl = thisEl->getNext();
+	}
+
+	outFile.close();
+	return;
+}
 
 void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields, int timeStep) {
 	int i1;
@@ -27,6 +78,14 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	
 	if(timeStep >= 0) {
 		// Read the results from the time step file and store them in nodes
+		try {
+			readTimeStepSoln(timeStep);
+		}
+		catch (...) {
+			cout << "Error: time step " << timeStep << " requested for node results is out of range, or solution history was not saved" << endl;
+			cout << "Aborting writeNodeResults" << endl;
+			return;
+		}
 	}
 	
 	try {
@@ -122,6 +181,14 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 
 	if (timeStep >= 0) {
 		// Read the results from the time step file and store them in nodes
+		try {
+			readTimeStepSoln(timeStep);
+		}
+		catch (...) {
+			cout << "Error: time step " << timeStep << " requested for element results is out of range," << endl;
+			cout << "or solution history was not saved in the solve options. Aborting writeElementResults." << endl;
+			return;
+		}
 	}
 
 	try {
@@ -158,7 +225,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "stress strain strainEnergyDen";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
-				elPt->getStressPrereq(stPre, nodeArray, dVarArray);
+				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
 				intPts = elPt->getIP();
 				for (i1 = 0; i1 < numIP; i1++) {

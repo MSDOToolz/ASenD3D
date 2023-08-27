@@ -446,6 +446,10 @@ double* Section::getStiffMat() {
 	return &stiffness[0];
 }
 
+double* Section::getMassMat() {
+	return &mass[0];
+}
+
 Section* Section::getNext() {
 	return nextSection;
 }

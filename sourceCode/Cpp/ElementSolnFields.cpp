@@ -50,23 +50,45 @@ void Element::getNdDisp(Doub globDisp[], NdPt ndAr[]) {
 	return;
 }
 
-//double Element::getDispSqr(Doub globDisp[]) {
-//	int i1;
-//	int i2;
-//	int i3;
-//	double dispVec[3] = {0.0,0.0,0.0};
-//	double dp = 0;
-//	for (i1 = 0; i1 < 3; i1++) {
-//		i3 = i1 * nDim;
-//		for (i2 = 0; i2 < numNds; i2++) {
-//			dispVec[i1] += globDisp[i3].val;
-//			i3++;
-//		}
-//		dispVec[i1] /= numNds;
-//		dp += dispVec[i1] * dispVec[i1];
-//	}
-//	return dp;
-//}
+void Element::getNdVel(Doub globVel[], NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	Node* nPtr;
+	double ndVel[6];
+
+	for (i1 = 0; i1 < numNds; i1++) {
+		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr->getVel(ndVel);
+		i3 = i1;
+		for (i2 = 0; i2 < dofPerNd; i2++) {
+			globVel[i3].setVal(ndVel[i2]);
+			i3 += nDim;
+		}
+	}
+
+	return;
+}
+
+void Element::getNdAcc(Doub globAcc[], NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	Node* nPtr;
+	double ndAcc[6];
+
+	for (i1 = 0; i1 < numNds; i1++) {
+		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr->getAcc(ndAcc);
+		i3 = i1;
+		for (i2 = 0; i2 < dofPerNd; i2++) {
+			globAcc[i3].setVal(ndAcc[i2]);
+			i3 += nDim;
+		}
+	}
+
+	return;
+}
 
 void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 	if(type == 4) {
@@ -763,20 +785,25 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 	return;
 }
 
-void Element::getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]) {
 	int numLay;
 	Doub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
 	getLocOri(pre.locOri, dvAr);
 	getNdDisp(pre.globDisp, ndAr);
+	getNdVel(pre.globVel, ndAr);
+	getNdAcc(pre.globAcc, ndAr);
 	if (dofPerNd == 6) {
 		correctOrient(pre.locOri, pre.globNds);
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, stat);
 		if (type != 2) {
 			numLay = sectPtr->getNumLayers();
 			if (numLay > pre.currentLayLen) {
 				if (pre.currentLayLen > 0) {
-					pre.destroy();
+					delete[] pre.layerZ;
+					delete[] pre.layerThk;
+					delete[] pre.layerAng;
+					delete[] pre.layerQ;
 				}
 				pre.layerZ = new Doub[numLay];
 				pre.layerThk = new Doub[numLay];
@@ -787,9 +814,16 @@ void Element::getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
 			getLayerAngle(pre.layerAng, dvAr);
 			getLayerQ(pre.layerQ, dvAr);
+			getABD(pre.Cmat, pre.layerThk, pre.layerZ, pre.layerQ, pre.layerAng);
+			getShellMass(pre.Mmat, pre.layerThk, pre.layerZ, dvAr);
+		}
+		else {
+			getBeamStiff(pre.Cmat, dvAr);
+			getBeamMass(pre.Mmat, dvAr);
 		}
 	} else {
 		getSolidStiff(pre.Cmat, dvAr);
+		getDensity(pre.Mmat[0], 0, dvAr);
 	}
 	matMul(pre.locNds, pre.locOri, pre.globNds, 3, 3, numNds);
 
@@ -1267,7 +1301,57 @@ void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt n
 	return;
 }
 
-//end dup 
+//end dup
+
+void Element::getElVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int nd;
+	int dof;
+	int globInd;
+	int ndDof;
+	ndDof = numNds * dofPerNd;
+	i2 = 0;
+	for (i1 = 0; i1 < ndDof; i1++) {
+		nd = nodes[dofTable[i2]];
+		dof = dofTable[i2 + 1];
+		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		elVec[i1] = globVec[globInd];
+		i2 += 2;
+	}
+	if (intnl) {
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			elVec[i1 + ndDof] = globVec[i1 + intDofIndex];
+		}
+	}
+
+	return;
+}
+
+void Element::addToGlobVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int nd;
+	int dof;
+	int globInd;
+	int ndDof;
+	ndDof = numNds * dofPerNd;
+	i2 = 0;
+	for (i1 = 0; i1 < ndDof; i1++) {
+		nd = nodes[dofTable[i2]];
+		dof = dofTable[i2 + 1];
+		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globVec[globInd] += elVec[i1];
+		i2 += 2;
+	}
+	if (intnl) {
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			globVec[i1 + intDofIndex] += elVec[i1 + ndDof];
+		}
+	}
+
+	return;
+}
  
 //skip 
  
@@ -1307,23 +1391,25 @@ void Element::getNdDisp(DiffDoub globDisp[], NdPt ndAr[]) {
 	return;
 }
 
-//double Element::getDispSqr(DiffDoub globDisp[]) {
-//	int i1;
-//	int i2;
-//	int i3;
-//	double dispVec[3] = {0.0,0.0,0.0};
-//	double dp = 0;
-//	for (i1 = 0; i1 < 3; i1++) {
-//		i3 = i1 * nDim;
-//		for (i2 = 0; i2 < numNds; i2++) {
-//			dispVec[i1] += globDisp[i3].val;
-//			i3++;
-//		}
-//		dispVec[i1] /= numNds;
-//		dp += dispVec[i1] * dispVec[i1];
-//	}
-//	return dp;
-//}
+void Element::getNdAcc(DiffDoub globAcc[], NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	Node* nPtr;
+	double ndAcc[6];
+
+	for (i1 = 0; i1 < numNds; i1++) {
+		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr->getAcc(ndAcc);
+		i3 = i1;
+		for (i2 = 0; i2 < dofPerNd; i2++) {
+			globAcc[i3].setVal(ndAcc[i2]);
+			i3 += nDim;
+		}
+	}
+
+	return;
+}
 
 void Element::evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]) {
 	if(type == 4) {
@@ -2020,20 +2106,24 @@ void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub ins
 	return;
 }
 
-void Element::getStressPrereq(DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]) {
 	int numLay;
 	DiffDoub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
 	getLocOri(pre.locOri, dvAr);
 	getNdDisp(pre.globDisp, ndAr);
+	getNdAcc(pre.globAcc, ndAr);
 	if (dofPerNd == 6) {
 		correctOrient(pre.locOri, pre.globNds);
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, stat);
 		if (type != 2) {
 			numLay = sectPtr->getNumLayers();
 			if (numLay > pre.currentLayLen) {
 				if (pre.currentLayLen > 0) {
-					pre.destroy();
+					delete[] pre.layerZ;
+					delete[] pre.layerThk;
+					delete[] pre.layerAng;
+					delete[] pre.layerQ;
 				}
 				pre.layerZ = new DiffDoub[numLay];
 				pre.layerThk = new DiffDoub[numLay];
@@ -2044,9 +2134,16 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
 			getLayerAngle(pre.layerAng, dvAr);
 			getLayerQ(pre.layerQ, dvAr);
+			getABD(pre.Cmat, pre.layerThk, pre.layerZ, pre.layerQ, pre.layerAng);
+			getShellMass(pre.Mmat, pre.layerThk, pre.layerZ, dvAr);
+		}
+		else {
+			getBeamStiff(pre.Cmat, dvAr);
+			getBeamMass(pre.Mmat, dvAr);
 		}
 	} else {
 		getSolidStiff(pre.Cmat, dvAr);
+		getDensity(pre.Mmat[0], 0, dvAr);
 	}
 	matMul(pre.locNds, pre.locOri, pre.globNds, 3, 3, numNds);
 
@@ -2502,7 +2599,7 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], double spt[], in
 
 void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], int matRow, NdPt ndAr[]) {
 	int i1;
-	int ndDof = numNds + dofPerNd;
+	int ndDof = numNds*dofPerNd;
 	int totDof = ndDof + numIntDof;
 	int nd;
 	int dof;
@@ -2527,5 +2624,6 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], int matRow, Nd
 //end dup 
  
 //end skip 
+ 
 // 
 

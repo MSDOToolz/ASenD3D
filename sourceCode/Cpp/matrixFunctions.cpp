@@ -1123,6 +1123,7 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
  
 //end skip 
  
+ 
 //dup2
 void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
@@ -1134,9 +1135,9 @@ void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m
 	Doub tmp;
 	
 	i4 = 0;
+	i5 = 0;
 	for (i1 = 0; i1 < m1Rows; i1++) {
 		for (i2 = 0; i2 < m2Cols; i2++) {
-			i5 = i1*m1Cols;
 			i6 = i2;
 			prod[i4].setVal(0.0);
 			for (i3 = 0; i3 < m1Cols; i3++) {
@@ -1146,8 +1147,10 @@ void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m
 				i5++;
 				i6+= m2Cols;
 			}
+			i5 -= m1Cols;
 			i4++;
 		}
+		i5 += m1Cols;
 	}
 	return;
 }
@@ -1396,9 +1399,9 @@ void matMul(DiffDoub prod[], DiffDoub mat1[], DiffDoub mat2[], int m1Rows, int m
 	DiffDoub tmp;
 	
 	i4 = 0;
+	i5 = 0;
 	for (i1 = 0; i1 < m1Rows; i1++) {
 		for (i2 = 0; i2 < m2Cols; i2++) {
-			i5 = i1*m1Cols;
 			i6 = i2;
 			prod[i4].setVal(0.0);
 			for (i3 = 0; i3 < m1Cols; i3++) {
@@ -1408,8 +1411,10 @@ void matMul(DiffDoub prod[], DiffDoub mat1[], DiffDoub mat2[], int m1Rows, int m
 				i5++;
 				i6+= m2Cols;
 			}
+			i5 -= m1Cols;
 			i4++;
 		}
+		i5 += m1Cols;
 	}
 	return;
 }
@@ -1656,9 +1661,9 @@ void matMul(Diff2Doub prod[], Diff2Doub mat1[], Diff2Doub mat2[], int m1Rows, in
 	Diff2Doub tmp;
 	
 	i4 = 0;
+	i5 = 0;
 	for (i1 = 0; i1 < m1Rows; i1++) {
 		for (i2 = 0; i2 < m2Cols; i2++) {
-			i5 = i1*m1Cols;
 			i6 = i2;
 			prod[i4].setVal(0.0);
 			for (i3 = 0; i3 < m1Cols; i3++) {
@@ -1668,8 +1673,10 @@ void matMul(Diff2Doub prod[], Diff2Doub mat1[], Diff2Doub mat2[], int m1Rows, in
 				i5++;
 				i6+= m2Cols;
 			}
+			i5 -= m1Cols;
 			i4++;
 		}
+		i5 += m1Cols;
 	}
 	return;
 }
@@ -1905,6 +1912,7 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 //end dup
  
 //end skip 
+ 
 
 //dup1
 void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
@@ -2002,6 +2010,7 @@ void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
 }
 
 //end dup  
+ 
 //skip 
  
 //DiffDoub versions: 
@@ -2099,4 +2108,5 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 }
 
 //end dup  
+ 
 //end skip 

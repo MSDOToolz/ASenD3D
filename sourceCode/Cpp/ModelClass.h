@@ -46,9 +46,13 @@ class Model {
 		LowerTriMat elasticLT;
 		bool elasticScaled;
 		
-		double *tempV1;
-		double *tempV2;
+		double* tempV1;
+		double* tempV2;
 		double* tempV3;
+		double* tempV4;
+		double* tempV5;
+		double* tempV6;
+
 		Doub *tempD1;
 
 		double* dLdU;
@@ -109,7 +113,7 @@ class Model {
 		
 		void readDesVarValues(std::string fileName);
 
-		void readTimeStepSoln();
+		void readTimeStepSoln(int tStep);
 		
 		// Analysis
 		
@@ -137,6 +141,12 @@ class Model {
 		
 		void eigenSolve();
 
+		void backupElastic();
+
+		void restoreElastic();
+
+		void setSolutionVec();
+
 		void augmentdLdU();
 
 		void solveForAdjoint();
@@ -147,7 +157,7 @@ class Model {
 		
 		// Output
 
-		void writeTimeStepSoln();
+		void writeTimeStepSoln(int tStep);
 		
 		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
 

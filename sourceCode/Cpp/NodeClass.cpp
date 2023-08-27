@@ -11,6 +11,9 @@ using namespace std;
 Node::Node(int newLab) {
 	label = newLab;
 	numDof = 3;
+	coord[0] = 0.0;
+	coord[1] = 0.0;
+	coord[2] = 0.0;
 	int i1;
 	for (i1=0; i1 < 6; i1++) {
 		displacement[i1] = 0.0;
@@ -63,6 +66,11 @@ void Node::setDisplacement(double newDisp[]) {
 	return;
 }
 
+void Node::setTemperature(double newTemp) {
+	temperature = newTemp;
+	return;
+}
+
 void Node::addToDisplacement(double delDisp[]) {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
@@ -105,6 +113,40 @@ void Node::setInitialTdot(double newTdot) {
 	return;
 }
 
+void Node::setPrevDisp(double newDisp[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		prevDisp[i1] = newDisp[i1];
+	}
+	return;
+}
+
+void Node::setPrevVel(double newVel[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		prevVel[i1] = newVel[i1];
+	}
+	return;
+}
+
+void Node::setPrevAcc(double newAcc[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		prevAcc[i1] = newAcc[i1];
+	}
+	return;
+}
+
+void Node::setPrevTemp(double newTemp) {
+	prevTemp = newTemp;
+	return;
+}
+
+void Node::setPrevTdot(double newTdot) {
+	prevTdot = newTdot;
+	return;
+}
+
 void Node::initializeDisp() {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
@@ -136,6 +178,16 @@ void Node::advanceDisp() {
 		prevAcc[i1] = acceleration[i1];
 	}
 	return;	
+}
+
+void Node::backstepDisp() {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		displacement[i1] = prevDisp[i1];
+		velocity[i1] = prevVel[i1];
+		acceleration[i1] = prevAcc[i1];
+	}
+	return;
 }
 
 void Node::addDesignVariable(int dIndex, double coef) {
@@ -193,6 +245,38 @@ double Node::getTemperature() {
 
 double Node::getTdot() {
 	return tempChangeRate;
+}
+
+void Node::getPrevDisp(double dispOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		dispOut[i1] = prevDisp[i1];
+	}
+	return;
+}
+
+void Node::getPrevVel(double velOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		velOut[i1] = prevVel[i1];
+	}
+	return;
+}
+
+void Node::getPrevAcc(double accOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		accOut[i1] = prevAcc[i1];
+	}
+	return;
+}
+
+double Node::getPrevTemp() {
+	return prevTemp;
+}
+
+double Node::getPrevTdot() {
+	return prevTdot;
 }
 
 //dup1
@@ -343,6 +427,7 @@ void Node::getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]) {
 //end dup
  
 //end skip 
+ 
 
 
 int Node::getDofIndex(int dof) {

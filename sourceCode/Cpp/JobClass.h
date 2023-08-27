@@ -14,6 +14,8 @@ class JobCommand {
 		int loadRampSteps;
 		double newmarkBeta;
 		double newmarkGamma;
+		double rayDampCK;
+		double rayDampCM;
 		bool nonlinearGeom;
 		bool saveSolnHist;
 		double simPeriod;

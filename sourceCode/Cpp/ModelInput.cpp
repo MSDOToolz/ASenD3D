@@ -158,7 +158,9 @@ void Model::readJob(string fileName) {
 				} else {
 					newCmd->saveSolnHist = false;
 				}
-			} else if(headings[1] == "simPeriod" && dataLen == 1) {
+			} else if (headings[1] == "solnHistDir" && dataLen == 1) {
+				newCmd->fileName = data[0];
+			} else if (headings[1] == "simPeriod" && dataLen == 1) {
 				newCmd->simPeriod = stod(data[0]);
 			} else if(headings[1] == "solverBandwidth" && dataLen == 1) {
 				newCmd->solverBandwidth = stoi(data[0]);
@@ -981,5 +983,54 @@ void Model::readDesVarValues(string fileName) {
 		throw invalid_argument(errSt);		
 	}
 	
+	return;
+}
+
+void Model::readTimeStepSoln(int tStep) {
+	int i1;
+	int dofPerNd;
+	int numIntDof;
+	double ndDat[6];
+	double elDat[9];
+	string fullFile = solveCmd->fileName + "solnTStep" + to_string(tStep) + ".out";
+	ifstream inFile;
+	inFile.open(fullFile);
+
+	Node* thisNd = nodes.getFirst();
+	while (thisNd) {
+		if (solveCmd->thermal) {
+
+		}
+		if (solveCmd->elastic) {
+			dofPerNd = thisNd->getNumDof();
+			for (i1 = 0; i1 < dofPerNd; i1++) {
+				inFile >> ndDat[i1];
+			}
+			thisNd->setPrevDisp(ndDat);
+			for (i1 = 0; i1 < dofPerNd; i1++) {
+				inFile >> ndDat[i1];
+			}
+			thisNd->setPrevVel(ndDat);
+			for (i1 = 0; i1 < dofPerNd; i1++) {
+				inFile >> ndDat[i1];
+			}
+			thisNd->setPrevAcc(ndDat);
+		}
+		thisNd = thisNd->getNext();
+	}
+
+	Element* thisEl = elements.getFirst();
+	while (thisEl) {
+		numIntDof = thisEl->getNumIntDof();
+		if (numIntDof < 0) {
+			for (i1 = 0; i1 < numIntDof; i1++) {
+				inFile >> elDat[i1];
+			}
+			thisEl->setIntPrevDisp(elDat);
+		}
+		thisEl = thisEl->getNext();
+	}
+
+	inFile.close();
 	return;
 }

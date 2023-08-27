@@ -215,12 +215,14 @@ Element::Element(int newType) {
 	
 	if(numIntDof == 0) {
 		internalDisp = nullptr;
+		intPrevDisp = nullptr;
 		internaldLdu = nullptr;
 		internalAdj = nullptr;
 		internalRu = nullptr;
 		internalMat = nullptr;
 	} else {
 		internalDisp = new double[numIntDof];
+		intPrevDisp = new double[numIntDof];
 		internaldLdu = new double[numIntDof];
 		internalAdj = new double[numIntDof];
 		internalRu = new DiffDoub[numIntDof];
@@ -386,6 +388,30 @@ void Element::setIntDisp(double newDisp[]) {
 	return;
 }
 
+void Element::setIntPrevDisp(double newDisp[]) {
+	int i1;
+	for (i1 = 0; i1 < numIntDof; i1++) {
+		intPrevDisp[i1] = newDisp[i1];
+	}
+	return;
+}
+
+void Element::advanceIntDisp() {
+	int i1;
+	for (i1 = 0; i1 < numIntDof; i1++) {
+		intPrevDisp[i1] = internalDisp[i1];
+	}
+	return;
+}
+
+void Element::backstepIntDisp() {
+	int i1;
+	for (i1 = 0; i1 < numIntDof; i1++) {
+		internalDisp[i1] = intPrevDisp[i1];
+	}
+	return;
+}
+
 void Element::setIntdLdU(double globdLdU[]) {
 	int i1;
 	int i2 = intDofIndex;
@@ -419,6 +445,22 @@ int Element::getDofPerNd() {
 
 int Element::getNumIntDof() {
 	return numIntDof;
+}
+
+void Element::getIntDisp(double dispOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numIntDof; i1++) {
+		dispOut[i1] = internalDisp[i1];
+	}
+	return;
+}
+
+void Element::getIntPrevDisp(double dispOut[]) {
+	int i1;
+	for (i1 = 0; i1 < numIntDof; i1++) {
+		dispOut[i1] = intPrevDisp[i1];
+	}
+	return;
 }
 
 int Element::getNumIP() {
@@ -531,6 +573,17 @@ void ElementList::destroy() {
 
 //dup1
  DoubStressPrereq::DoubStressPrereq() {
+	globNds = new Doub[30];
+	locNds = new Doub[30];
+	locOri = new Doub[9];
+	instOri = new Doub[720];
+	globDisp = new Doub[60];
+	globVel = new Doub[30];
+	globAcc = new Doub[30];
+	Cmat = new Doub[81];
+	Mmat = new Doub[36];
+	BMat = new Doub[288];
+	CBMat = new Doub[288];
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
@@ -540,6 +593,17 @@ void ElementList::destroy() {
 }
 
 void DoubStressPrereq::destroy() {
+	delete[] globNds; 
+	delete[] locNds;
+	delete[] locOri;
+	delete[] instOri;
+	delete[] globDisp;
+	delete[] globVel;
+	delete[] globAcc;
+	delete[] Cmat;
+	delete[] Mmat;
+	delete[] BMat;
+	delete[] CBMat;
 	if(layerZ) {
 	    delete[] layerZ;
 	    delete[] layerThk;
@@ -555,11 +619,23 @@ void DoubStressPrereq::destroy() {
 	return;
 }
 //end dup 
+ 
 //skip 
  
 //DiffDoub versions: 
 //dup1
  DiffDoubStressPrereq::DiffDoubStressPrereq() {
+	globNds = new DiffDoub[30];
+	locNds = new DiffDoub[30];
+	locOri = new DiffDoub[9];
+	instOri = new DiffDoub[720];
+	globDisp = new DiffDoub[60];
+	globVel = new DiffDoub[30];
+	globAcc = new DiffDoub[30];
+	Cmat = new DiffDoub[81];
+	Mmat = new DiffDoub[36];
+	BMat = new DiffDoub[288];
+	CBMat = new DiffDoub[288];
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
@@ -569,6 +645,17 @@ void DoubStressPrereq::destroy() {
 }
 
 void DiffDoubStressPrereq::destroy() {
+	delete[] globNds; 
+	delete[] locNds;
+	delete[] locOri;
+	delete[] instOri;
+	delete[] globDisp;
+	delete[] globVel;
+	delete[] globAcc;
+	delete[] Cmat;
+	delete[] Mmat;
+	delete[] BMat;
+	delete[] CBMat;
 	if(layerZ) {
 	    delete[] layerZ;
 	    delete[] layerThk;
@@ -584,4 +671,5 @@ void DiffDoubStressPrereq::destroy() {
 	return;
 }
 //end dup 
+ 
 //end skip 

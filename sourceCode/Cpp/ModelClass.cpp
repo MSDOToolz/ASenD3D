@@ -171,6 +171,9 @@ void Model::destroy() {
 		delete[] tempV1;
 		delete[] tempV2;
 		delete[] tempV3;
+		delete[] tempV4;
+		delete[] tempV5;
+		delete[] tempV6;
 		delete[] tempD1;
 		delete[] dLdU;
 		delete[] dLdV;

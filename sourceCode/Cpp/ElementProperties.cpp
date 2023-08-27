@@ -807,6 +807,195 @@ void Element::getDensity(Doub& den, int layer, DVPt dvAr[]) {
 	return;
 }
 
+void Element::getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], DVPt dvAr[]) {
+	int i1;
+	int layi;
+	Doub layDen;
+	DesignVariable* thisDV;
+	Doub dvVal;
+	DoubListEnt* coefEnt;
+	Doub coef;
+	IntListEnt* dvEnt;
+
+	for (i1 = 0; i1 < 36; i1++) {
+		Mmat[i1].setVal(0.0);
+	}
+
+	Layer* thisLay = sectPtr->getFirstLayer();
+	layi = 0;
+	while (thisLay) {
+		layDen.setVal(thisLay->getMatPt()->getDensity());
+		dvEnt = designVars.getFirst();
+		coefEnt = dvCoef.getFirst();
+		while (dvEnt) {
+			thisDV = dvAr[dvEnt->value].ptr;
+			if (thisDV->getCategory() == "density" && thisDV->getLayer() == layi) {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				layDen.add(dvVal);
+			}
+			dvEnt = dvEnt->next;
+			coefEnt = coefEnt->next;
+		}
+		layDen.mult(layThk[layi]);
+		Mmat[0].add(layDen);
+		Mmat[7].add(layDen);
+		Mmat[14].add(layDen);
+		layDen.mult(layZ[layi]);
+		Mmat[4].add(layDen);
+		Mmat[24].add(layDen);
+		Mmat[9].sub(layDen);
+		Mmat[19].sub(layDen);
+		layDen.mult(layZ[layi]);
+		Mmat[21].add(layDen);
+		Mmat[28].add(layDen);
+		Mmat[35].add(layDen);
+		thisLay = thisLay->getNext();
+		layi++;
+	}
+
+	return;
+}
+
+void Element::getBeamMass(Doub Mmat[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int dvComp;
+
+	DesignVariable* thisDV;
+	Doub dvVal;
+	DoubListEnt* coefEnt;
+	Doub coef;
+	IntListEnt* dvEnt;
+
+	string dCat;
+	Material* matPt;
+	double* areaMom;
+	Doub denDV;
+	Doub areaDV;
+	Doub IDV[5];
+	Doub JDV;
+	Doub tmp;
+
+	double* massMat = sectPtr->getMassMat();
+	if (massMat[0] > 0.0) {
+		for (i1 = 0; i1 < 36; i1++) {
+			Mmat[i1].setVal(massMat[i1]);
+		}
+		dvEnt = designVars.getFirst();
+		coefEnt = dvCoef.getFirst();
+		while (dvEnt) {
+			thisDV = dvAr[dvEnt->value].ptr;
+			if (thisDV->getCategory() == "massMat") {
+				dvComp = thisDV->getComponent();
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				Mmat[dvComp].add(dvVal);
+			}
+			dvEnt = dvEnt->next;
+			coefEnt = coefEnt->next;
+		}
+		for (i1 = 1; i1 < 6; i1++) {
+			i3 = 6 * i1; // Lower tri term
+			i4 = i1; // Upper tri term
+			for (i2 = 0; i2 < i1; i2++) {
+				Mmat[i3].setVal(Mmat[i4]);
+				i3++;
+				i4 += 6;
+			}
+		}
+	}
+	else {
+		for (i1 = 0; i1 < 36; i1++) {
+			Mmat[i1].setVal(0.0);
+		}
+		areaMom = sectPtr->getAreaMoment();
+		for (i1 = 0; i1 < 5; i1++) {
+			IDV[i1].setVal(areaMom[i1]);
+		}
+		areaDV.setVal(sectPtr->getArea());
+		JDV.setVal(sectPtr->getPolarMoment());
+		matPt = sectPtr->getMatPtr();
+		denDV.setVal(matPt->getDensity());
+		dvEnt = designVars.getFirst();
+		coefEnt = dvCoef.getFirst();
+		while (dvEnt) {
+			thisDV = dvAr[dvEnt->value].ptr;
+			dCat = thisDV->getCategory();
+			if (dCat == "density") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				denDV.add(dvVal);
+			}
+			else if (dCat == "area") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				areaDV.add(dvVal);
+			}
+			else if (dCat == "areaMoment") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				dvComp = thisDV->getComponent();
+				IDV[dvComp - 1].add(dvVal);
+			}
+			else if (dCat == "polarMoment") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				JDV.add(dvVal);
+			}
+			dvEnt = dvEnt->next;
+			coefEnt = coefEnt->next;
+		}
+		tmp.setVal(denDV);
+		tmp.mult(areaDV);
+		Mmat[0].setVal(tmp);
+		Mmat[7].setVal(tmp);
+		Mmat[14].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[0]);
+		Mmat[4].setVal(tmp);
+		Mmat[9].setVal(tmp);
+		Mmat[9].neg();
+		tmp.setVal(denDV);
+		tmp.mult(IDV[1]);
+		Mmat[5].setVal(tmp);
+		Mmat[5].neg();
+		Mmat[15].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(JDV);
+		Mmat[21].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[2]);
+		Mmat[28].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[4]);
+		Mmat[29].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[3]);
+		Mmat[35].setVal(tmp);
+
+		for (i1 = 3; i1 < 6; i1++) {
+			i3 = 6 * i1; // Lower tri term
+			i4 = i1; // Upper tri term
+			for (i2 = 0; i2 < i1; i2++) {
+				Mmat[i3].setVal(Mmat[i4]);
+				i3++;
+				i4 += 6;
+			}
+		}
+	}
+
+	return;
+}
+
 void Element::getNdCrds(Doub xGlob[], NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	Doub ndCrd[3];
@@ -1764,6 +1953,195 @@ void Element::getDensity(DiffDoub& den, int layer, DVPt dvAr[]) {
 	return;
 }
 
+void Element::getShellMass(DiffDoub Mmat[], DiffDoub layThk[], DiffDoub layZ[], DVPt dvAr[]) {
+	int i1;
+	int layi;
+	DiffDoub layDen;
+	DesignVariable* thisDV;
+	DiffDoub dvVal;
+	DoubListEnt* coefEnt;
+	DiffDoub coef;
+	IntListEnt* dvEnt;
+
+	for (i1 = 0; i1 < 36; i1++) {
+		Mmat[i1].setVal(0.0);
+	}
+
+	Layer* thisLay = sectPtr->getFirstLayer();
+	layi = 0;
+	while (thisLay) {
+		layDen.setVal(thisLay->getMatPt()->getDensity());
+		dvEnt = designVars.getFirst();
+		coefEnt = dvCoef.getFirst();
+		while (dvEnt) {
+			thisDV = dvAr[dvEnt->value].ptr;
+			if (thisDV->getCategory() == "density" && thisDV->getLayer() == layi) {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				layDen.add(dvVal);
+			}
+			dvEnt = dvEnt->next;
+			coefEnt = coefEnt->next;
+		}
+		layDen.mult(layThk[layi]);
+		Mmat[0].add(layDen);
+		Mmat[7].add(layDen);
+		Mmat[14].add(layDen);
+		layDen.mult(layZ[layi]);
+		Mmat[4].add(layDen);
+		Mmat[24].add(layDen);
+		Mmat[9].sub(layDen);
+		Mmat[19].sub(layDen);
+		layDen.mult(layZ[layi]);
+		Mmat[21].add(layDen);
+		Mmat[28].add(layDen);
+		Mmat[35].add(layDen);
+		thisLay = thisLay->getNext();
+		layi++;
+	}
+
+	return;
+}
+
+void Element::getBeamMass(DiffDoub Mmat[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int dvComp;
+
+	DesignVariable* thisDV;
+	DiffDoub dvVal;
+	DoubListEnt* coefEnt;
+	DiffDoub coef;
+	IntListEnt* dvEnt;
+
+	string dCat;
+	Material* matPt;
+	double* areaMom;
+	DiffDoub denDV;
+	DiffDoub areaDV;
+	DiffDoub IDV[5];
+	DiffDoub JDV;
+	DiffDoub tmp;
+
+	double* massMat = sectPtr->getMassMat();
+	if (massMat[0] > 0.0) {
+		for (i1 = 0; i1 < 36; i1++) {
+			Mmat[i1].setVal(massMat[i1]);
+		}
+		dvEnt = designVars.getFirst();
+		coefEnt = dvCoef.getFirst();
+		while (dvEnt) {
+			thisDV = dvAr[dvEnt->value].ptr;
+			if (thisDV->getCategory() == "massMat") {
+				dvComp = thisDV->getComponent();
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				Mmat[dvComp].add(dvVal);
+			}
+			dvEnt = dvEnt->next;
+			coefEnt = coefEnt->next;
+		}
+		for (i1 = 1; i1 < 6; i1++) {
+			i3 = 6 * i1; // Lower tri term
+			i4 = i1; // Upper tri term
+			for (i2 = 0; i2 < i1; i2++) {
+				Mmat[i3].setVal(Mmat[i4]);
+				i3++;
+				i4 += 6;
+			}
+		}
+	}
+	else {
+		for (i1 = 0; i1 < 36; i1++) {
+			Mmat[i1].setVal(0.0);
+		}
+		areaMom = sectPtr->getAreaMoment();
+		for (i1 = 0; i1 < 5; i1++) {
+			IDV[i1].setVal(areaMom[i1]);
+		}
+		areaDV.setVal(sectPtr->getArea());
+		JDV.setVal(sectPtr->getPolarMoment());
+		matPt = sectPtr->getMatPtr();
+		denDV.setVal(matPt->getDensity());
+		dvEnt = designVars.getFirst();
+		coefEnt = dvCoef.getFirst();
+		while (dvEnt) {
+			thisDV = dvAr[dvEnt->value].ptr;
+			dCat = thisDV->getCategory();
+			if (dCat == "density") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				denDV.add(dvVal);
+			}
+			else if (dCat == "area") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				areaDV.add(dvVal);
+			}
+			else if (dCat == "areaMoment") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				dvComp = thisDV->getComponent();
+				IDV[dvComp - 1].add(dvVal);
+			}
+			else if (dCat == "polarMoment") {
+				coef.setVal(coefEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(coef);
+				JDV.add(dvVal);
+			}
+			dvEnt = dvEnt->next;
+			coefEnt = coefEnt->next;
+		}
+		tmp.setVal(denDV);
+		tmp.mult(areaDV);
+		Mmat[0].setVal(tmp);
+		Mmat[7].setVal(tmp);
+		Mmat[14].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[0]);
+		Mmat[4].setVal(tmp);
+		Mmat[9].setVal(tmp);
+		Mmat[9].neg();
+		tmp.setVal(denDV);
+		tmp.mult(IDV[1]);
+		Mmat[5].setVal(tmp);
+		Mmat[5].neg();
+		Mmat[15].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(JDV);
+		Mmat[21].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[2]);
+		Mmat[28].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[4]);
+		Mmat[29].setVal(tmp);
+		tmp.setVal(denDV);
+		tmp.mult(IDV[3]);
+		Mmat[35].setVal(tmp);
+
+		for (i1 = 3; i1 < 6; i1++) {
+			i3 = 6 * i1; // Lower tri term
+			i4 = i1; // Upper tri term
+			for (i2 = 0; i2 < i1; i2++) {
+				Mmat[i3].setVal(Mmat[i4]);
+				i3++;
+				i4 += 6;
+			}
+		}
+	}
+
+	return;
+}
+
 void Element::getNdCrds(DiffDoub xGlob[], NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	DiffDoub ndCrd[3];
@@ -1928,3 +2306,4 @@ void Element::correctOrient(DiffDoub locOri[], DiffDoub xGlob[]) {
 //end dup
  
 //end skip 
+ 

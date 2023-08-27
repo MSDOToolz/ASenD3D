@@ -213,6 +213,8 @@ class Section {
 		double getPolarMoment();
 		
 		double* getStiffMat();
+
+		double* getMassMat();
 		
 		Section* getNext();
 		

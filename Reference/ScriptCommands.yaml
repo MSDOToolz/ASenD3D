@@ -29,6 +29,7 @@ solve: X
     newmarkGamma:
     simPeriod:
     saveSolnHist: no
+    solnHistDir:
     solverMethod:
     solverBandwidth:
     solverBlockDim:

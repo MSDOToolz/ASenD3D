@@ -44,6 +44,8 @@ class Node {
 		void setSortedRank(int newRank);
 		
 		void setDisplacement(double newDisp[]);
+
+		void setTemperature(double newTemp);
 		
 		void addToDisplacement(double delDisp[]);
 		
@@ -56,12 +58,24 @@ class Node {
 		void setInitialTemp(double newTemp);
 		
 		void setInitialTdot(double newTdot);
+
+		void setPrevDisp(double newDisp[]);
+
+		void setPrevVel(double newVel[]);
+
+		void setPrevAcc(double newAcc[]);
+
+		void setPrevTemp(double newTemp);
+
+		void setPrevTdot(double newTdot);
 		
 		void initializeDisp();
 		
 		void updateVelAcc(double nmBeta, double nmGamma, double delT);
 		
 		void advanceDisp();
+
+		void backstepDisp();
 		
 		void addDesignVariable(int dIndex, double coef);
 		
@@ -82,6 +96,16 @@ class Node {
 		double getTemperature();
 		
 		double getTdot();
+
+		void getPrevDisp(double dispOut[]);
+
+		void getPrevVel(double velOut[]);
+
+		void getPrevAcc(double accOut[]);
+
+		double getPrevTemp();
+
+		double getPrevTdot();
 		
 //dup1
 		void getCrd(Doub crdOut[], DVPt dvAr[]);
@@ -103,6 +127,7 @@ class Node {
 //end dup		
  
 //end skip 
+ 
 		
 		int getDofIndex(int dof);
 

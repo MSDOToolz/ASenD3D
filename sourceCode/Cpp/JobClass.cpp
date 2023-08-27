@@ -13,6 +13,8 @@ JobCommand::JobCommand() {
 	loadRampSteps = 1;
 	newmarkBeta = 0.25;
 	newmarkGamma = 0.5;
+	rayDampCK = 0.0;
+	rayDampCM = 0.0;
 	nonlinearGeom = false;
 	saveSolnHist = false;
 	simPeriod = 1.0;
