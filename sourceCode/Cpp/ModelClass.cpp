@@ -17,6 +17,7 @@ Model::Model() {
 	anPrepRun = false;
 	timeStepsSaved = 0;
 	elasticScaled = false;
+	thermScaled = false;
 	return;
 }
 
@@ -44,8 +45,8 @@ MaterialList* Model::getMaterials() {
 	return &materials;
 }
 
-ConstraintList* Model::getConstraints() {
-	return &constraints;
+ConstraintList* Model::getElasticConstraints() {
+	return &elasticConst;
 }
 
 DesVarList* Model::getDesignVars() {
@@ -157,8 +158,9 @@ void Model::destroy() {
 	delete[] esArray;
 	sections.destroy();
 	materials.destroy();
-	constraints.destroy();
-	loads.destroy();
+    elasticConst.destroy();
+	thermalConst.destroy();
+	elasticLoads.destroy();
 	designVars.destroy();
 	delete[] dVarArray;
 	objective.destroy();

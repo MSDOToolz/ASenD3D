@@ -580,14 +580,24 @@ void ElementList::destroy() {
 	globDisp = new Doub[60];
 	globVel = new Doub[30];
 	globAcc = new Doub[30];
+	globTemp = new Doub[10];
+	globTdot = new Doub[10];
 	Cmat = new Doub[81];
 	Mmat = new Doub[36];
+	thermExp = new Doub[6];
+	Einit = new Doub[6];
+	TCmat = new Doub[9];
 	BMat = new Doub[288];
 	CBMat = new Doub[288];
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
 	layerQ = nullptr;
+	layerTE = nullptr;
+	layerE0 = nullptr;
+	layerDen = nullptr;
+	layerTC = nullptr;
+	layerSH = nullptr;
 	currentLayLen = 0;
 	return;
 }
@@ -600,8 +610,13 @@ void DoubStressPrereq::destroy() {
 	delete[] globDisp;
 	delete[] globVel;
 	delete[] globAcc;
+	delete[] globTemp;
+	delete[] globTdot;
 	delete[] Cmat;
 	delete[] Mmat;
+	delete[] thermExp;
+	delete[] Einit;
+	delete[] TCmat;
 	delete[] BMat;
 	delete[] CBMat;
 	if(layerZ) {
@@ -609,11 +624,21 @@ void DoubStressPrereq::destroy() {
 	    delete[] layerThk;
 	    delete[] layerAng;
 	    delete[] layerQ;
+		delete[] layerTE;
+		delete[] layerE0;
+		delete[] layerDen;
+		delete[] layerTC;
+		delete[] layerSH;
 	}
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
 	layerQ = nullptr;
+	layerTE = nullptr;
+	layerE0 = nullptr;
+	layerDen = nullptr;
+	layerTC = nullptr;
+	layerSH = nullptr;
 	currentLayLen = 0;
 
 	return;

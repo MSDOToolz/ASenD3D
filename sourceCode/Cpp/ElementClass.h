@@ -1,7 +1,6 @@
 #ifndef ELEMENT
 #define ELEMENT
 #include "DiffDoubClass.h"
-#include "DiffDoubClass.h"
 #include "ListEntClass.h"
 #include "DesignVariableClass.h"
 #include "NodeClass.h"
@@ -20,14 +19,26 @@ public:
 	Doub* globDisp;// [60] ;
 	Doub* globVel;
 	Doub* globAcc;// [30];
+	Doub* globTemp;
+	Doub* globTdot;
 	Doub* Cmat;// [81] ;
 	Doub* Mmat;// [36];
+	Doub* thermExp;
+	Doub* Einit;
+	Doub* TCmat;
+	Doub SpecHeat;
 	Doub* BMat;
 	Doub* CBMat;
 	Doub* layerZ;
 	Doub* layerThk;
 	Doub* layerAng;
 	Doub* layerQ;
+	Doub* layerTE;
+	Doub* layerE0;
+	Doub* layerDen;
+	Doub* layerTC;
+	Doub* layerSH;
+
 	int currentLayLen;
 
 	DoubStressPrereq();
@@ -165,6 +176,16 @@ class Element {
 
 		void getLayerAngle(Doub layAng[], DVPt dvAr[]);
 
+		void getLayerThExp(Doub layThExp[], DVPt dvAr[]);
+
+		void getLayerEinit(Doub layEinit[], DVPt dvAr[]);
+
+		void getLayerDen(Doub layerDen[], DVPt dvAr[]);
+
+		void getLayerCond(Doub layCond[], DVPt dvAr[]);
+
+		void getLayerSpecHeat(Doub laySH[], DVPt dvAr[]);
+
 		void transformStrain(Doub stnNew[], Doub stnOrig[], Doub& angle);
 
 		void transformQ(Doub qNew[], Doub qOrig[], Doub& angle);
@@ -175,11 +196,29 @@ class Element {
 
 		void getBeamStiff(Doub Cmat[], DVPt dvAr[]);
 
+		void getThermalExp(Doub thExp[], Doub Einit[], DVPt dvAr[]);
+
+		void getShellExpLoad(Doub expLd[], Doub E0Ld[], Doub layThk[], Doub layZ[], Doub layQ[], Doub layThExp[], Doub layEInit[], Doub layAng[]);
+
+		void getBeamExpLoad(Doub expLd[], Doub E0Ld[], DVPt dvAr[]);
+
 		void getDensity(Doub& den, int layer, DVPt dvAr[]);
 
-		void getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], DVPt dvAr[]);
+		void getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], Doub layDen[], DVPt dvAr[]);
 
 		void getBeamMass(Doub Mmat[], DVPt dvAr[]);
+
+		void getConductivity(Doub tCond[], DVPt dvAr[]);
+
+		void getShellCond(Doub tCond[], Doub layThk[], Doub layAng[], Doub layCond[], DVPt dvAr[]);
+
+		void getBeamCond(Doub tCond[], DVPt dvAr[]);
+
+		void getSpecificHeat(Doub& specHeat, DVPt dvAr[]);
+
+		void getShellSpecHeat(Doub& specHeat, Doub layThk[], Doub laySH[], Doub layDen[]);
+
+		void getBeamSpecHeat(Doub& specHeat, DVPt dvAr[]);
 
         void getNdCrds(Doub xGlob[], NdPt ndAr[], DVPt dvAr[]);
 		
@@ -193,6 +232,10 @@ class Element {
 		void getNdVel(Doub globVel[], NdPt ndAr[]);
 
 		void getNdAcc(Doub globAcc[], NdPt ndAr[]);
+
+		void getNdTemp(Doub globTemp[], NdPt ndAr[]);
+
+		void getNdTdot(Doub globTdot[], NdPt ndAr[]);
 
 		void evalN(Doub nVec[], Doub dNds[], double spt[]);
 		
@@ -306,6 +349,11 @@ class Element {
 
 		void getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		
+		void getRtk(Doub Rvec[], double dRdT[], bool getMatrix, DoubStressPrereq& pre);
+
+		void getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, DoubStressPrereq& pre);
+
+		void getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]);
 //end dup
  
 //skip 

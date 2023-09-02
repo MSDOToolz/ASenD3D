@@ -153,6 +153,18 @@ double* Material::getStiffMat() {
 	return &stiffness[0];
 }
 
+double* Material::getThermExp() {
+	return &expansion[0];
+}
+
+double* Material::getConductivity() {
+	return &conductivity[0];
+}
+
+double Material::getSpecificHeat() {
+	return specHeat;
+}
+
 Material* Material::getNext() {
 	return nextMat;
 }
@@ -295,6 +307,16 @@ Section::Section(string newType) {
 	orientation[0] = 1.0;
 	orientation[4] = 1.0;
 	orientation[8] = 1.0;
+	zOffset = 0.0;
+	area = 0.0;
+	for (i1 = 0; i1 < 5; i1++) {
+		areaMoment[i1] = 0.0;
+	}
+	for (i1 = 0; i1 < 6; i1++) {
+		expLoadCoef[i1] = 0.0;
+	}
+	conductivity = 0.0;
+	specHeat = 0.0;
 	matPtr = nullptr;
 	nextSection = nullptr;
 	return;
@@ -448,6 +470,18 @@ double* Section::getStiffMat() {
 
 double* Section::getMassMat() {
 	return &mass[0];
+}
+
+double* Section::getExpLoad() {
+	return &expLoadCoef[0];
+}
+
+double Section::getConductivity() {
+	return conductivity;
+}
+
+double Section::getSpecificHeat() {
+	return specHeat;
 }
 
 Section* Section::getNext() {

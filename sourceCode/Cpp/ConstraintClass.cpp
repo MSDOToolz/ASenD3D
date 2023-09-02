@@ -100,7 +100,7 @@ Constraint* Constraint::getNext() {
 	return nextConst;
 }
 
-void Constraint::buildMat(Set *firstSet, NdPt ndAr[]) {
+void Constraint::buildMat(NdPt ndAr[]) {
 	int setLen = 1;
 	int setiLen;
 	int ndIndex;
@@ -237,7 +237,7 @@ Constraint* ConstraintList::getFirst() {
 	return firstConst;
 }
 
-void ConstraintList::scaleElastic(double newSF) {
+void ConstraintList::setScaleFact(double newSF) {
 	Constraint* thisConst = firstConst;
 	while (thisConst) {
 		thisConst->setScaleFact(newSF);

@@ -61,7 +61,7 @@ class Constraint {
 		
 		Constraint* getNext();
 		
-		void buildMat(Set *firstSet, NdPt ndAr[]);
+		void buildMat(NdPt ndAr[]);
 
 		ConstraintTerm* getFirst();
 		
@@ -90,7 +90,7 @@ class ConstraintList {
 		
 		Constraint* getFirst();
 
-		void scaleElastic(double newSF);
+		void setScaleFact(double newSF);
 
 		void getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim);
 

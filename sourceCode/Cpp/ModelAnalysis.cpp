@@ -139,6 +139,7 @@ void Model::reorderNodes(int blockDim) {
 	}
 	elMatDim = i2;
 	elasticMat.setDim(elMatDim);
+	thermMat.setDim(nodes.getLength());
 
 	thisEl = elements.getFirst();
 	while (thisEl) {
@@ -172,6 +173,7 @@ void Model::reorderNodes(int blockDim) {
 	tdotAdj = new double[i3];
 
 	dRudD = new DiffDoub[elMatDim];
+	dRtdD = new DiffDoub[i3];
 
 	i3 = designVars.getLength();
 	if (i3 > 0) {
@@ -193,10 +195,14 @@ void Model::reorderNodes(int blockDim) {
 }
 
 void Model::buildConstraintMats() {
-	Set* firstNdSet = nodeSets.getFirst();
-	Constraint* thisConst = constraints.getFirst();
+	Constraint* thisConst = elasticConst.getFirst();
 	while (thisConst) {
-		thisConst->buildMat(firstNdSet, nodeArray);
+		thisConst->buildMat(nodeArray);
+		thisConst = thisConst->getNext();
+	}
+	thisConst = thermalConst.getFirst();
+	while (thisConst) {
+		thisConst->buildMat(nodeArray);
 		thisConst = thisConst->getNext();
 	}
 	return;
@@ -242,7 +248,7 @@ void Model::updateReference() {
 	// Set node & element set pointers in loads, constraints, design variables and objectives
 	string ndSet;
 	Set *nsPtr;
-	Load *thisLoad = loads.getFirst();
+	Load *thisLoad = elasticLoads.getFirst();
 	while(thisLoad) {
 		try {
 			ndSet = thisLoad->getNodeSet();
@@ -256,9 +262,34 @@ void Model::updateReference() {
 		}
 		thisLoad = thisLoad->getNext();
 	}
+	thisLoad = thermalLoads.getFirst();
+	while (thisLoad) {
+		try {
+			ndSet = thisLoad->getNodeSet();
+			i1 = nsMap.at(ndSet);
+			thisLoad->setNdSetPtr(nsArray[i1].ptr);
+		}
+		catch (...) {
+			elSet = thisLoad->getElSet();
+			i1 = esMap.at(elSet);
+			thisLoad->setElSetPtr(esArray[i1].ptr);
+		}
+		thisLoad = thisLoad->getNext();
+	}
 
-	Constraint* thisConst = constraints.getFirst();
+	Constraint* thisConst = elasticConst.getFirst();
 	ConstraintTerm* thisCTerm;
+	while (thisConst) {
+		thisCTerm = thisConst->getFirst();
+		while (thisCTerm) {
+			ndSet = thisCTerm->getSetName();
+			i1 = nsMap.at(ndSet);
+			thisCTerm->setNsPtr(nsArray[i1].ptr);
+			thisCTerm = thisCTerm->getNext();
+		}
+		thisConst = thisConst->getNext();
+	}
+	thisConst = thermalConst.getFirst();
 	while (thisConst) {
 		thisCTerm = thisConst->getFirst();
 		while (thisCTerm) {
@@ -451,7 +482,7 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	int numDof;
 	int dofInd;
 	Node *thisNd;
-	Load *thisLoad = loads.getFirst();
+	Load *thisLoad = elasticLoads.getFirst();
 	string ldType;
 	double actTime[2];
 	double ndLoad[6];
@@ -526,7 +557,14 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool 
 
 void Model::scaleElasticConst() {
 	double scaleFact = 100000.0*elasticMat.getMaxAbsVal();
-	constraints.scaleElastic(scaleFact);
+	elasticConst.setScaleFact(scaleFact);
+	elasticScaled = true;
+	return;
+}
+
+void Model::scaleThermalConst() {
+	double scaleFact = 100000.0 * elasticMat.getMaxAbsVal();
+	elasticConst.setScaleFact(scaleFact);
 	elasticScaled = true;
 	return;
 }
@@ -546,7 +584,7 @@ void Model::buildElasticConstLoad(double constLd[]) {
 		}
 		thisNd = thisNd->getNext();
 	}
-	constraints.getTotalLoad(constLd, tempV2, tempV3, elMatDim);
+	elasticConst.getTotalLoad(constLd, tempV2, tempV3, elMatDim);
 	return;
 }
 
@@ -600,7 +638,7 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 			}
 			if(cmd->solverMethod == "direct") {
 				if(cmd->nonlinearGeom) {
-					elasticLT.populateFromSparseMat(elasticMat,constraints);
+					elasticLT.populateFromSparseMat(elasticMat,elasticConst);
 					elasticLT.ldlFactor();
 				}
 				elasticLT.ldlSolve(tempV2,tempV1);
@@ -672,13 +710,13 @@ void Model::solve(JobCommand *cmd) {
 		}
 		if(!elasticLT.isAllocated()) {
 			buildElasticSolnLoad(tempV1,true,cmd->dynamic,cmd->nonlinearGeom);
-			elasticLT.allocateFromSparseMat(elasticMat,constraints,cmd->solverBandwidth);
+			elasticLT.allocateFromSparseMat(elasticMat,elasticConst,cmd->solverBandwidth);
 		}
 		if(!cmd->nonlinearGeom) {
 			if (!elasticScaled) {
 				scaleElasticConst();
 			}
-			elasticLT.populateFromSparseMat(elasticMat, constraints);
+			elasticLT.populateFromSparseMat(elasticMat, elasticConst);
 			elasticLT.ldlFactor();
 		}
 	}
@@ -878,7 +916,7 @@ void Model::solveForAdjoint() {
 		}
 		if (solveCmd->nonlinearGeom) {
 			buildElasticSolnLoad(tempV1, true, solveCmd->dynamic, true);
-			elasticLT.populateFromSparseMat(elasticMat, constraints);
+			elasticLT.populateFromSparseMat(elasticMat, elasticConst);
 			elasticLT.ldlFactor();
 		}
 		thisEl = elements.getFirst();

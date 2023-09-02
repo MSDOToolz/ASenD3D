@@ -71,6 +71,12 @@ class Material {
 		double* getShearMod();
 
         double* getStiffMat();
+
+		double* getThermExp();
+
+		double* getConductivity();
+
+		double getSpecificHeat();
 		
 		Material* getNext();	
 		
@@ -215,6 +221,12 @@ class Section {
 		double* getStiffMat();
 
 		double* getMassMat();
+
+		double* getExpLoad();
+
+		double getConductivity();
+
+		double getSpecificHeat();
 		
 		Section* getNext();
 		

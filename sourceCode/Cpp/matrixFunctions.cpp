@@ -1167,6 +1167,7 @@ void transpose(Doub matT[], Doub mat[], int rowDim, int colDim) {
 		i4 = i1;
 		for (i2 = 0; i2 < colDim; i2++) {
 			matT[i4].setVal(mat[i3]);
+			i3++;
 			i4+= rowDim;
 		}
 	}

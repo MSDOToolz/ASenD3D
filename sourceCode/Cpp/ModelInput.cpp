@@ -669,9 +669,13 @@ void Model::readConstraintInput(string fileName) {
 			if(headings[0] == "constraints") {
 				if (headings[1] == "type" && dataLen == 1) {
 					newConst = new Constraint;
-					constraints.addConstraint(newConst);
-					i1 = allTypes.find(data[0]);
-					if (i1 < 0) {
+					if (data[0] == "displacement") {
+						elasticConst.addConstraint(newConst);
+					}
+					else if (data[0] == "thermal") {
+						thermalConst.addConstraint(newConst);
+					}
+					else {
 						errSt = "Error: " + data[0] + " is not a valid constraint type.  Allowable values are " + allTypes;
 						throw invalid_argument(errSt);
 					}
@@ -708,6 +712,7 @@ void Model::readLoadInput(string fileName) {
 	
 	int i1;
 	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
+	string elasticList = "nodalForce bodyForce gravitational centrifugal surfacePressure surfaceTraction";
 	Load *newLd = nullptr;
 	
 	inFile.open(fileName);
@@ -717,7 +722,13 @@ void Model::readLoadInput(string fileName) {
 			if(headings[0] == "loads") {
 				if(headings[1] == "type" && dataLen == 1) {
 					newLd = new Load(data[0]);
-					loads.addLoad(newLd);
+					i1 = elasticList.find(data[0]);
+					if (i1 > -1) {
+						elasticLoads.addLoad(newLd);
+					}
+					else {
+						thermalLoads.addLoad(newLd);
+					}
 				} else if(headings[1] == "activeTime" && dataLen > 0) {
 					doubInp[0] = stod(data[0]);
 					if(dataLen == 2) {

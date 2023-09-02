@@ -90,6 +90,32 @@ void Element::getNdAcc(Doub globAcc[], NdPt ndAr[]) {
 	return;
 }
 
+void Element::getNdTemp(Doub globTemp[], NdPt ndAr[]) {
+	int i1;
+	double temp;
+	Node* nPtr;
+
+	for (i1 = 0; i1 < numNds; i1++) {
+		nPtr = ndAr[nodes[i1]].ptr;
+		temp = nPtr->getTemperature();
+		globTemp[i1].setVal(temp);
+	}
+	return;
+}
+
+void Element::getNdTdot(Doub globTdot[], NdPt ndAr[]) {
+	int i1;
+	double tdot;
+	Node* nPtr;
+
+	for (i1 = 0; i1 < numNds; i1++) {
+		nPtr = ndAr[nodes[i1]].ptr;
+		tdot = nPtr->getTdot();
+		globTdot[i1].setVal(tdot);
+	}
+	return;
+}
+
 void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 	if(type == 4) {
 		nVec[0].setVal(1.0-spt[0]-spt[1]-spt[2]);
@@ -793,6 +819,8 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 	getNdDisp(pre.globDisp, ndAr);
 	getNdVel(pre.globVel, ndAr);
 	getNdAcc(pre.globAcc, ndAr);
+	getNdTemp(pre.globTemp, ndAr);
+	getNdTdot(pre.globTdot, ndAr);
 	if (dofPerNd == 6) {
 		correctOrient(pre.locOri, pre.globNds);
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, stat);
@@ -804,26 +832,50 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 					delete[] pre.layerThk;
 					delete[] pre.layerAng;
 					delete[] pre.layerQ;
+					delete[] pre.layerTE;
+					delete[] pre.layerE0;
+					delete[] pre.layerDen;
+					delete[] pre.layerTC;
+					delete[] pre.layerSH;
 				}
 				pre.layerZ = new Doub[numLay];
 				pre.layerThk = new Doub[numLay];
 				pre.layerAng = new Doub[numLay];
 				pre.layerQ = new Doub[9 * numLay];
+				pre.layerTE = new Doub[3 * numLay];
+				pre.layerE0 = new Doub[3 * numLay];
+				pre.layerDen = new Doub[numLay];
+				pre.layerTC = new Doub[9 * numLay];
+				pre.layerSH = new Doub[numLay];
 				pre.currentLayLen = numLay;
 			}
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
 			getLayerAngle(pre.layerAng, dvAr);
 			getLayerQ(pre.layerQ, dvAr);
+			getLayerThExp(pre.layerTE, dvAr);
+			getLayerEinit(pre.layerE0, dvAr);
+			getLayerDen(pre.layerDen, dvAr);
+			getLayerCond(pre.layerTC, dvAr);
+			getLayerSpecHeat(pre.layerSH, dvAr);
 			getABD(pre.Cmat, pre.layerThk, pre.layerZ, pre.layerQ, pre.layerAng);
-			getShellMass(pre.Mmat, pre.layerThk, pre.layerZ, dvAr);
+			getShellExpLoad(pre.thermExp, pre.Einit, pre.layerThk, pre.layerZ, pre.layerQ, pre.layerTE, pre.layerE0, pre.layerAng);
+			getShellMass(pre.Mmat, pre.layerThk, pre.layerZ, pre.layerDen, dvAr);
+			getShellCond(pre.TCmat, pre.layerThk, pre.layerAng, pre.layerTC, dvAr);
+			getShellSpecHeat(pre.SpecHeat, pre.layerThk, pre.layerSH, pre.layerDen);
 		}
 		else {
 			getBeamStiff(pre.Cmat, dvAr);
+			getBeamExpLoad(pre.thermExp, pre.Einit, dvAr);
 			getBeamMass(pre.Mmat, dvAr);
+			getBeamCond(pre.TCmat, dvAr);
+			getBeamSpecHeat(pre.SpecHeat, dvAr);
 		}
 	} else {
 		getSolidStiff(pre.Cmat, dvAr);
+		getThermalExp(pre.thermExp, pre.Einit, dvAr);
 		getDensity(pre.Mmat[0], 0, dvAr);
+		getConductivity(pre.TCmat, dvAr);
+		getSpecificHeat(pre.SpecHeat, dvAr);
 	}
 	matMul(pre.locNds, pre.locOri, pre.globNds, 3, 3, numNds);
 

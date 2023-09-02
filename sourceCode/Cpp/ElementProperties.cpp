@@ -233,6 +233,226 @@ void Element::getLayerAngle(Doub layAng[], DVPt dvAr[]) {
 	return;
 }
 
+void Element::getLayerThExp(Doub layThExp[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int layi;
+	double* matExp;
+	Doub tExpDV[6];
+	Material* thisMat;
+	Layer* thisLay = sectPtr->getFirstLayer();
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	int dvComp;
+	Doub tmp;
+	Doub dvVal;
+	
+	layi = 0;
+	i2 = 0;
+	while (thisLay) {
+		thisMat = thisLay->getMatPt();
+		matExp = thisMat->getThermExp();
+		for (i1 = 0; i1 < 6; i1++) {
+			tExpDV[i1].setVal(matExp[i1]);
+		}
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			if (thisDV->getCategory() == "thermalExp" && thisDV->getLayer() == layi) {
+				dvComp = thisDV->getComponent() - 1;
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				tExpDV[dvComp].add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+		layThExp[i2].setVal(tExpDV[0]);
+		i2++;
+		layThExp[i2].setVal(tExpDV[1]);
+		i2++;
+		layThExp[i2].setVal(tExpDV[3]);
+		i2++;
+		thisLay = thisLay->getNext();
+		layi++;
+	}
+	return;
+}
+
+void Element::getLayerEinit(Doub layEinit[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int layi;
+	Doub E0DV[6];
+	Material* thisMat;
+	Layer* thisLay = sectPtr->getFirstLayer();
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	int dvComp;
+	Doub tmp;
+	Doub dvVal;
+
+	layi = 0;
+	i2 = 0;
+	while (thisLay) {
+		thisMat = thisLay->getMatPt();
+		for (i1 = 0; i1 < 6; i1++) {
+			E0DV[i1].setVal(0.0);
+		}
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			if (thisDV->getCategory() == "initialStrain" && thisDV->getLayer() == layi) {
+				dvComp = thisDV->getComponent() - 1;
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				E0DV[dvComp].add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+		layEinit[i2].setVal(E0DV[0]);
+		i2++;
+		layEinit[i2].setVal(E0DV[1]);
+		i2++;
+		layEinit[i2].setVal(E0DV[3]);
+		i2++;
+		thisLay = thisLay->getNext();
+		layi++;
+	}
+	return;
+}
+
+void Element::getLayerDen(Doub layerDen[], DVPt dvAr[]) {
+	int layi;
+	Layer* thisLay = sectPtr->getFirstLayer();
+	double matDen;
+	Doub denDV;
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	Doub tmp;
+	Doub dvVal;
+
+	layi = 0;
+	while (thisLay) {
+		matDen = thisLay->getMatPt()->getDensity();
+		denDV.setVal(matDen);
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			if (thisDV->getCategory() == "density" && thisDV->getLayer() == layi) {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				denDV.add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+		layerDen[layi].setVal(denDV);
+		thisLay = thisLay->getNext();
+		layi++;
+	}
+
+	return;
+}
+
+void Element::getLayerCond(Doub layCond[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int layi;
+	Layer* thisLay = sectPtr->getFirstLayer();
+	double* matCond;
+	Doub condDV[6];
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	Doub tmp;
+	Doub dvVal;
+	int dvComp;
+
+	i1 = 0;
+	layi = 0;
+	while (thisLay) {
+		matCond = thisLay->getMatPt()->getConductivity();
+		for (i2 = 0; i2 < 6; i2++) {
+			condDV[i1].setVal(matCond[i2]);
+		}
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			if (thisDV->getCategory() == "thermalCond" && thisDV->getLayer() == layi) {
+				dvComp = thisDV->getComponent() - 1;
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				condDV[dvComp].add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+		layCond[i1].setVal(condDV[0]);
+		layCond[i1 + 1].setVal(condDV[3]);
+		layCond[i1 + 2].setVal(condDV[4]);
+		layCond[i1 + 3].setVal(condDV[3]);
+		layCond[i1 + 4].setVal(condDV[1]);
+		layCond[i1 + 5].setVal(condDV[5]);
+		layCond[i1 + 6].setVal(condDV[4]);
+		layCond[i1 + 7].setVal(condDV[5]);
+		layCond[i1 + 8].setVal(condDV[2]);
+		thisLay = thisLay->getNext();
+		i1 += 9;
+		layi++;
+	}
+
+	return;
+}
+
+void Element::getLayerSpecHeat(Doub laySH[], DVPt dvAr[]) {
+	int layi;
+	Layer* thisLay = sectPtr->getFirstLayer();
+	double matSH;
+	Doub shDV;
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	Doub tmp;
+	Doub dvVal;
+
+	layi = 0;
+	while (thisLay) {
+		matSH = thisLay->getMatPt()->getSpecificHeat();
+		shDV.setVal(matSH);
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			if (thisDV->getCategory() == "specHeat" && thisDV->getLayer() == layi) {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				shDV.add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+		laySH[layi].setVal(shDV);
+		thisLay = thisLay->getNext();
+		layi++;
+	}
+
+	return;
+}
+
 void Element::transformStrain(Doub stnNew[], Doub stnOrig[], Doub& angle) {
 	Doub angleRad;
 	Doub a11;
@@ -748,6 +968,253 @@ void Element::getBeamStiff(Doub Cmat[], DVPt dvAr[]) {
 	return;
 }
 
+void Element::getThermalExp(Doub thExp[], Doub Einit[], DVPt dvAr[]) {
+	int i1;
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	int dvComp;
+	Doub dvVal;
+	Doub tmp;
+	
+	double* matTExp = sectPtr->getMatPtr()->getThermExp();
+	for (i1 = 0; i1 < 6; i1++) {
+		thExp[i1].setVal(matTExp[i1]);
+		Einit[i1].setVal(0.0);
+	}
+
+	thisDVEnt = designVars.getFirst();
+	thisCEnt = dvCoef.getFirst();
+	while (thisDVEnt) {
+		thisDV = dvAr[thisDVEnt->value].ptr;
+		if (thisDV->getCategory() == "thermalExp") {
+			dvComp = thisDV->getComponent() - 1;
+			tmp.setVal(thisCEnt->value);
+			thisDV->getValue(dvVal);
+			dvVal.mult(tmp);
+			thExp[dvComp].add(dvVal);
+		}
+		else if (thisDV->getCategory() == "initialStrain") {
+			dvComp = thisDV->getComponent() - 1;
+			tmp.setVal(thisCEnt->value);
+			thisDV->getValue(dvVal);
+			dvVal.mult(tmp);
+			Einit[dvComp].add(dvVal);
+		}
+		thisDVEnt = thisDVEnt->next;
+		thisCEnt = thisCEnt->next;
+	}
+
+	return;
+}
+
+void Element::getShellExpLoad(Doub expLd[], Doub E0Ld[], Doub layThk[], Doub layZ[], Doub layQ[], Doub layThExp[], Doub layEinit[], Doub layAng[]) {
+	int i1;
+	int numLay;
+	int layi;
+	int qi;
+	int exi;
+	Doub sectQ[9];
+	Doub sectTE[3];
+	Doub sectE0[3];
+	Doub QTeProd[3];
+	Doub QE0Prod[3];
+	Doub zMin;
+	Doub zMax;
+	Doub tmp;
+	Doub tmp2;
+
+	for (i1 = 0; i1 < 6; i1++) {
+		expLd[i1].setVal(0.0);
+		E0Ld[i1].setVal(0.0);
+	}
+
+	numLay = sectPtr->getNumLayers();
+	qi = 0;
+	exi = 0;
+	for (layi = 0; layi < numLay; layi++) {
+		transformQ(sectQ, &layQ[qi], layAng[layi]);
+		transformStrain(sectTE, &layThExp[exi], layAng[layi]);
+		transformStrain(sectE0, &layEinit[exi], layAng[layi]);
+		matMul(QTeProd, sectQ, sectTE, 3, 3, 1);
+		matMul(QE0Prod, sectQ, sectE0, 3, 3, 1);
+		
+		for (i1 = 0; i1 < 3; i1++) {
+			tmp.setVal(QTeProd[i1]);
+			tmp.mult(layThk[layi]);
+			expLd[i1].add(tmp);
+			tmp.setVal(QE0Prod[i1]);
+			tmp.mult(layThk[layi]);
+			E0Ld[i1].add(tmp);
+		}
+
+		tmp.setVal(0.5);
+		tmp.mult(layThk[layi]);
+		zMin.setVal(layZ[layi]);
+		zMin.sub(tmp);
+		zMin.sqr();
+		zMax.setVal(layZ[layi]);
+		zMax.add(tmp);
+		zMax.sqr();
+		tmp.setVal(0.5);
+		tmp2.setVal(zMax);
+		tmp2.sub(zMin);
+		tmp.mult(tmp2); // tmp = 0.5*(zMax^2 - zMin^2)
+		for (i1 = 0; i1 < 3; i1++) {
+			tmp2.setVal(QTeProd[i1]);
+			tmp2.mult(tmp);
+			expLd[i1 + 3].add(tmp2);
+			tmp2.setVal(QE0Prod[i1]);
+			tmp2.mult(tmp);
+			E0Ld[i1 + 3].add(tmp2);
+		}
+		qi += 9;
+		exi += 3;
+	}
+	
+	return;
+}
+
+void Element::getBeamExpLoad(Doub expLd[], Doub E0Ld[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	IntListEnt* thisDV;
+	DoubListEnt* thisCoef;
+	DesignVariable* thisDVPt;
+	Doub dvVal;
+	string cat;
+	string catList;
+	Doub tmp;
+	Material* matPt;
+	int dvComp;
+	double* matMod;
+	Doub modDV[3];
+	double* matG;
+	Doub shrModDV[3];
+	double* matTE;
+	Doub teCoefDV[6];
+	Doub E0DV[6];
+	Doub areaDV;
+	double* sectI;
+	Doub IDV[5];
+	Doub Qmat[9];
+	Doub QTE[3];
+	Doub QE0[3];
+	Doub dedgu[18];
+	double* secExpLd = sectPtr->getExpLoad();
+	
+	if (secExpLd[0] > 0.0) {
+		for (i1 = 0; i1 < 6; i1++) {
+			expLd[i1].setVal(secExpLd[i1]);
+			E0Ld[i1].setVal(0.0);
+		}
+		thisDV = designVars.getFirst();
+		thisCoef = dvCoef.getFirst();
+		while (thisDV) {
+			thisDVPt = dvAr[thisDV->value].ptr;
+			cat = thisDVPt->getCategory();
+			if (cat == "thermalExp") {
+				dvComp = thisDVPt->getComponent() - 1;
+				tmp.setVal(thisCoef->value);
+				thisDVPt->getValue(dvVal);
+				dvVal.mult(tmp);
+				expLd[dvComp].add(dvVal);
+			}
+			else if (cat == "initialStrain") {
+				dvComp = thisDVPt->getComponent() - 1;
+				tmp.setVal(thisCoef->value);
+				thisDVPt->getValue(dvVal);
+				dvVal.mult(tmp);
+				E0Ld[dvComp].add(dvVal);
+			}
+			thisDV = thisDV->next;
+			thisCoef = thisCoef->next;
+		}
+	}
+	else {
+		matPt = sectPtr->getMatPtr();
+		matMod = matPt->getModulus();
+		matG = matPt->getShearMod();
+		matTE = matPt->getThermExp();
+		for (i1 = 0; i1 < 3; i1++) {
+			modDV[i1].setVal(matMod[i1]);
+			shrModDV[i1].setVal(matG[i1]);
+			teCoefDV[i1].setVal(matTE[i1]);
+			teCoefDV[i1 + 3].setVal(matTE[i1]);
+			E0DV[i1].setVal(0.0);
+			E0DV[i1 + 3].setVal(0.0);
+		}
+		areaDV.setVal(sectPtr->getArea());
+		sectI = sectPtr->getAreaMoment();
+		for (i1 = 0; i1 < 5; i1++) {
+			IDV[i1].setVal(sectI[i1]);
+		}
+		catList = "modulus shearModulus thermalExp initialStrain area areaMoment";
+		thisDV = designVars.getFirst();
+		thisCoef = dvCoef.getFirst();
+		while (thisDV) {
+			thisDVPt = dvAr[thisDV->value].ptr;
+			cat = thisDVPt->getCategory();
+			i2 = catList.find(cat);
+			if (i2 > -1) {
+				dvComp = thisDVPt->getComponent() - 1;
+				tmp.setVal(thisCoef->value);
+				thisDVPt->getValue(dvVal);
+				dvVal.mult(tmp);
+				if (cat == "modulus") {
+					modDV[dvComp].add(dvVal);
+				}
+				else if (cat == "shearModulus") {
+					shrModDV[dvComp].add(dvVal);
+				}
+				else if (cat == "thermalExp") {
+					teCoefDV[dvComp].add(dvVal);
+				}
+				else if (cat == "initialStrain") {
+					E0DV[dvComp].add(dvVal);
+				}
+				else if (cat == "area") {
+					areaDV.add(dvVal);
+				}
+				else if (cat == "areaMoment") {
+					IDV[dvComp].add(dvVal);
+				}
+			}
+			thisDV = thisDV->next;
+			thisCoef = thisCoef->next;
+		}
+		for (i1 = 1; i1 < 8; i1++) {
+			Qmat[i1].setVal(0.0);
+		}
+		Qmat[0].setVal(modDV[0]);
+		Qmat[4].setVal(shrModDV[0]);
+		Qmat[8].setVal(shrModDV[1]);
+		teCoefDV[1].setVal(teCoefDV[3]);
+		teCoefDV[2].setVal(teCoefDV[4]);
+		matMul(QTE, Qmat, teCoefDV, 3, 3, 1);
+		E0DV[1].setVal(E0DV[3]);
+		E0DV[2].setVal(E0DV[4]);
+		matMul(QE0, Qmat, E0DV, 3, 3, 1);
+		for (i1 = 0; i1 < 18; i1++) {
+			dedgu[i1].setVal(0.0);
+		}
+		dedgu[0].setVal(areaDV);
+		dedgu[4].setVal(areaDV);
+		dedgu[8].setVal(areaDV);
+		dedgu[10].setVal(IDV[0]);
+		dedgu[10].neg();
+		dedgu[11].setVal(IDV[1]);
+		dedgu[12].setVal(IDV[0]);
+		dedgu[15].setVal(IDV[1]);
+		dedgu[15].neg();
+
+		matMul(expLd, dedgu, QTE, 6, 3, 1);
+		matMul(E0Ld, dedgu, QE0, 6, 3, 1);
+	}
+
+	return;
+}
+
 void Element::getDensity(Doub& den, int layer, DVPt dvAr[]) {
 	int layi;
 	Layer* thisLay;
@@ -807,52 +1274,58 @@ void Element::getDensity(Doub& den, int layer, DVPt dvAr[]) {
 	return;
 }
 
-void Element::getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], DVPt dvAr[]) {
+void Element::getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], Doub layDen[], DVPt dvAr[]) {
 	int i1;
 	int layi;
-	Doub layDen;
-	DesignVariable* thisDV;
-	Doub dvVal;
-	DoubListEnt* coefEnt;
-	Doub coef;
-	IntListEnt* dvEnt;
+	Doub tmp;
+	Doub tmp2;
+	Doub zMin;
+	Doub zMin2;
+	Doub zMax;
+	Doub zMax2;
 
 	for (i1 = 0; i1 < 36; i1++) {
 		Mmat[i1].setVal(0.0);
 	}
 
-	Layer* thisLay = sectPtr->getFirstLayer();
-	layi = 0;
-	while (thisLay) {
-		layDen.setVal(thisLay->getMatPt()->getDensity());
-		dvEnt = designVars.getFirst();
-		coefEnt = dvCoef.getFirst();
-		while (dvEnt) {
-			thisDV = dvAr[dvEnt->value].ptr;
-			if (thisDV->getCategory() == "density" && thisDV->getLayer() == layi) {
-				coef.setVal(coefEnt->value);
-				thisDV->getValue(dvVal);
-				dvVal.mult(coef);
-				layDen.add(dvVal);
-			}
-			dvEnt = dvEnt->next;
-			coefEnt = coefEnt->next;
-		}
-		layDen.mult(layThk[layi]);
-		Mmat[0].add(layDen);
-		Mmat[7].add(layDen);
-		Mmat[14].add(layDen);
-		layDen.mult(layZ[layi]);
-		Mmat[4].add(layDen);
-		Mmat[24].add(layDen);
-		Mmat[9].sub(layDen);
-		Mmat[19].sub(layDen);
-		layDen.mult(layZ[layi]);
-		Mmat[21].add(layDen);
-		Mmat[28].add(layDen);
-		Mmat[35].add(layDen);
-		thisLay = thisLay->getNext();
-		layi++;
+	i1 = sectPtr->getNumLayers();
+	for (layi = 0; layi < i1; layi++) {
+		tmp.setVal(layDen[layi]);
+		tmp.mult(layThk[layi]);
+		Mmat[0].add(tmp);
+		Mmat[7].add(tmp);
+		Mmat[14].add(tmp);
+
+		tmp.setVal(0.5);
+		tmp.mult(layThk[layi]);
+		zMin.setVal(layZ[layi]);
+		zMin.sub(tmp);
+		zMin2.setVal(zMin);
+		zMin2.sqr();
+		zMax.setVal(layZ[layi]);
+		zMax.add(tmp);
+		zMax2.setVal(zMax);
+		zMax2.sqr();
+		tmp.setVal(zMax2);
+		tmp.sub(zMin2);  // tmp == zMax^2 - zMin^2
+		tmp2.setVal(0.5);
+		tmp2.mult(layDen[layi]);
+		tmp2.mult(tmp); // tmp2 = 0.5*rho*(zMax^2 - zMin^2)
+		Mmat[4].add(tmp2);
+		Mmat[24].add(tmp2);
+		Mmat[9].sub(tmp2);
+		Mmat[19].sub(tmp2);
+
+		zMax2.mult(zMax);
+		zMin2.mult(zMin);
+		tmp.setVal(zMax2);
+		tmp.sub(zMin2); // tmp == zMax^3 - zMin^3
+		tmp2.setVal(r_1o3);
+		tmp2.mult(layDen[layi]);
+		tmp2.mult(tmp);
+		Mmat[21].add(tmp2);
+		Mmat[28].add(tmp2);
+		Mmat[35].add(tmp2);
 	}
 
 	return;
@@ -991,6 +1464,266 @@ void Element::getBeamMass(Doub Mmat[], DVPt dvAr[]) {
 				i4 += 6;
 			}
 		}
+	}
+
+	return;
+}
+
+void Element::getConductivity(Doub tCond[], DVPt dvAr[]) {
+	int i1;
+	Material* matPt = sectPtr->getMatPtr();
+	double* secCond = matPt->getConductivity();
+	Doub condDV[6];
+	DesignVariable* thisDV;
+	IntListEnt* thisDVEnt = designVars.getFirst();
+	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	Doub temp;
+	Doub dvVal;
+	int dvComp;
+
+	for (i1 = 0; i1 < 6; i1++) {
+		condDV[i1].setVal(secCond[i1]);
+	}
+
+	while (thisDVEnt) {
+		thisDV = dvAr[thisDVEnt->value].ptr;
+		if (thisDV->getCategory() == "thermalCond") {
+			dvComp = thisDV->getComponent() - 1;
+			temp.setVal(thisCEnt->value);
+			thisDV->getValue(dvVal);
+			dvVal.mult(temp);
+			condDV[dvComp].add(dvVal);
+		}
+		thisDVEnt = thisDVEnt->next;
+		thisCEnt = thisCEnt->next;
+	}
+
+	tCond[0] = condDV[0];
+	tCond[1] = condDV[3];
+	tCond[2] = condDV[4];
+	tCond[3] = condDV[3];
+	tCond[4] = condDV[1];
+	tCond[5] = condDV[5];
+	tCond[6] = condDV[4];
+	tCond[7] = condDV[5];
+	tCond[8] = condDV[2];
+
+	return;
+}
+
+void Element::getShellCond(Doub tCond[], Doub layThk[], Doub layAng[], Doub layCond[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int numLay = sectPtr->getNumLayers();
+	double* matCond;
+	Doub condDV[6];
+	Doub layerMat[9];
+	Doub alMat[9];
+	Doub alT[9];
+	Doub tmp[9];
+
+	for (i1 = 0; i1 < 9; i1++) {
+		tCond[i1].setVal(0.0);
+		alMat[i1].setVal(0.0);
+	}
+	alMat[8].setVal(1.0);
+
+	for (i1 = 0; i1 < numLay; i1++) {
+		alMat[0].setVal(r_pio180);
+		alMat[0].mult(layAng[i1]);
+		alMat[0].cs();
+		alMat[4].setVal(alMat[0]);
+		alMat[3].setVal(r_pio180);
+		alMat[3].mult(layAng[i1]);
+		alMat[3].sn();
+		alMat[1].setVal(alMat[3]);
+		alMat[1].neg();
+		transpose(alT, alMat, 3, 3);
+		matMul(tmp, &layCond[9 * i1], alT, 3, 3, 3);
+		matMul(layerMat, alMat, tmp, 3, 3, 3);
+		for (i2 = 0; i2 < 9; i2++) {
+			layerMat[i2].mult(layThk[i1]);
+			tCond[i2].add(layerMat[i2]);
+		}
+	}
+
+	return;
+}
+
+void Element::getBeamCond(Doub tCond[], DVPt dvAr[]) {
+	int i1;
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	string cat;
+	Doub condDV;
+	Doub areaDV;
+	Doub tmp;
+	Doub dvVal;
+	double secCon = sectPtr->getConductivity();
+	double* matCon = sectPtr->getMatPtr()->getConductivity();
+	
+	if (secCon > 0.0) {
+		condDV.setVal(secCon);
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			if (thisDV->getCategory() == "thermCond") {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				condDV.add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+	}
+	else {
+		condDV.setVal(matCon[0]);
+		areaDV.setVal(sectPtr->getArea());
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			cat = thisDV->getCategory();
+			if (cat == "thermCond") {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				condDV.add(dvVal);
+			}
+			else if (cat == "area") {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				areaDV.add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+		condDV.mult(areaDV);
+	}
+
+	for (i1 = 1; i1 < 8; i1++) {
+		tCond[i1].setVal(0.0);
+	}
+
+	tCond[0].setVal(condDV);
+	tCond[4].setVal(condDV);
+	tCond[8].setVal(condDV);
+
+	return;
+}
+
+void Element::getSpecificHeat(Doub& specHeat, DVPt dvAr[]) {
+	int i1;
+	Material* matPt = sectPtr->getMatPtr();
+	double secSpecHeat = matPt->getSpecificHeat();
+	Doub specHeatDV;
+	DesignVariable* thisDV;
+	IntListEnt* thisDVEnt = designVars.getFirst();
+	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	Doub temp;
+	Doub dvVal;
+	int dvComp;
+
+	specHeat.setVal(secSpecHeat);
+
+	while (thisDVEnt) {
+		thisDV = dvAr[thisDVEnt->value].ptr;
+		if (thisDV->getCategory() == "specHeat") {
+			temp.setVal(thisCEnt->value);
+			thisDV->getValue(dvVal);
+			dvVal.mult(temp);
+			specHeat.add(dvVal);
+		}
+		thisDVEnt = thisDVEnt->next;
+		thisCEnt = thisCEnt->next;
+	}
+	
+	return;
+}
+
+void Element::getShellSpecHeat(Doub& specHeat, Doub layThk[], Doub laySH[], Doub layDen[]) {
+	int i1;
+	int numLay;
+	Doub tmp;
+
+	specHeat.setVal(0.0);
+	numLay = sectPtr->getNumLayers();
+	for (i1 = 0; i1 < numLay; i1++) {
+		tmp.setVal(layDen[i1]);
+		tmp.mult(laySH[i1]);
+		tmp.mult(layThk[i1]);
+		specHeat.add(tmp);
+	}
+
+	return;
+}
+
+void Element::getBeamSpecHeat(Doub& specHeat, DVPt dvAr[]) {
+	int i1;
+	IntListEnt* thisDVEnt;
+	DoubListEnt* thisCEnt;
+	DesignVariable* thisDV;
+	string cat;
+	Doub densityDV;
+	Doub areaDV;
+	Doub tmp;
+	Doub dvVal;
+	double secSH = sectPtr->getSpecificHeat();
+	double matSH = sectPtr->getMatPtr()->getSpecificHeat();
+	double matDen = sectPtr->getMatPtr()->getDensity();
+
+	if (secSH > 0.0) {
+		specHeat.setVal(secSH);
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			if (thisDV->getCategory() == "specHeat") {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				specHeat.add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+	}
+	else {
+		specHeat.setVal(matSH);
+		densityDV.setVal(matDen);
+		areaDV.setVal(sectPtr->getArea());
+		thisDVEnt = designVars.getFirst();
+		thisCEnt = dvCoef.getFirst();
+		while (thisDVEnt) {
+			thisDV = dvAr[thisDVEnt->value].ptr;
+			cat = thisDV->getCategory();
+			if (cat == "specHeatDV") {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				specHeat.add(dvVal);
+			}
+			else if (cat == "density") {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				densityDV.add(dvVal);
+			}
+			else if (cat == "area") {
+				tmp.setVal(thisCEnt->value);
+				thisDV->getValue(dvVal);
+				dvVal.mult(tmp);
+				areaDV.add(dvVal);
+			}
+			thisDVEnt = thisDVEnt->next;
+			thisCEnt = thisCEnt->next;
+		}
+		specHeat.mult(densityDV);
+		specHeat.mult(areaDV);
 	}
 
 	return;

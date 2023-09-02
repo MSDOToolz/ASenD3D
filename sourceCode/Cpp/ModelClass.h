@@ -29,8 +29,10 @@ class Model {
 		std::map<std::string, int> esMap;
 		SectionList sections;
 		MaterialList materials;
-		ConstraintList constraints;
-		LoadList loads;
+		ConstraintList elasticConst;
+		ConstraintList thermalConst;
+		LoadList elasticLoads;
+		LoadList thermalLoads;
 		DesVarList designVars;
 		DVPt *dVarArray;
 		Objective objective;
@@ -45,6 +47,9 @@ class Model {
 		SparseMat elasticMat;
 		LowerTriMat elasticLT;
 		bool elasticScaled;
+		SparseMat thermMat;
+		LowerTriMat thermLT;
+		bool thermScaled;
 		
 		double* tempV1;
 		double* tempV2;
@@ -67,6 +72,7 @@ class Model {
 		double* tdotAdj;
 
 		DiffDoub* dRudD;
+		DiffDoub* dRtdD;
 
 		double* dLdD;
 	
@@ -85,7 +91,7 @@ class Model {
 		
 		MaterialList* getMaterials();
 		
-		ConstraintList* getConstraints();
+		ConstraintList* getElasticConstraints();
 		
 		DesVarList* getDesignVars();
 		
@@ -132,6 +138,8 @@ class Model {
 		void buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool nLGeom);
 
 		void scaleElasticConst();
+
+		void scaleThermalConst();
 
 		void buildElasticConstLoad(double constLd[]);
 		
