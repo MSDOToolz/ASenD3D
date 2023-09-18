@@ -230,8 +230,8 @@ class ShellRegion:
             for i in range(0,numPts):
                 Nmat[i,0] = 0.25*(eta[i,0] - 1.0)*(eta[i,1] - 1.0)
                 Nmat[i,1] = -0.25*(eta[i,0] + 1.0)*(eta[i,1] - 1.0)
-                Nmat[i,2] = 0.25*(eta[0] + 1.0)*(eta[i,1] + 1.0)
-                Nmat[i,3] = -0.25*(eta[0] - 1.0)*(eta[i,1] + 1.0)
+                Nmat[i,2] = 0.25*(eta[i,0] + 1.0)*(eta[i,1] + 1.0)
+                Nmat[i,3] = -0.25*(eta[i,0] - 1.0)*(eta[i,1] + 1.0)
             XYZ = np.matmul(Nmat,self.keyPts)
         elif('quad2' == self.regType):
             r1 = - 1

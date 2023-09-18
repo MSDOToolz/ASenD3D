@@ -113,6 +113,8 @@ class Node {
 		void getDisp(Doub disp[]);
 		
 		void getElasticDVLoad(Doub ld[], DVPt dvAr[]);
+
+		void getThermalDVLoad(Doub& ld, DVPt dvAr[]);
 //end dup		
  
 //skip 
@@ -127,6 +129,7 @@ class Node {
 //end dup		
  
 //end skip 
+ 
  
 		
 		int getDofIndex(int dof);

@@ -528,6 +528,51 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	return;
 }
 
+void Model::buildThermalAppLoad(double appLd[], double time) {
+	// Construct loads from input file
+	int i1;
+	int numDof;
+	int dofInd;
+	Node* thisNd;
+	Load* thisLoad = thermalLoads.getFirst();
+	string ldType;
+	double actTime[2];
+	double ndLoad[6];
+	Doub ndDVLd;
+	Set* thisSet;
+	IntListEnt* thisEnt;
+
+	//Loads from model input file
+	while (thisLoad) {
+		ldType = thisLoad->getType();
+		thisLoad->getActTime(actTime);
+		if (time >= actTime[0] && time <= actTime[1]) {
+			if (ldType == "nodalHeatGen") {
+				thisLoad->getLoad(ndLoad);
+				thisSet = thisLoad->getNdSetPtr();
+				thisEnt = thisSet->getFirstEntry();
+				while (thisEnt) {
+					thisNd = nodeArray[thisEnt->value].ptr;
+					dofInd = thisNd->getSortedRank();
+					appLd[dofInd] += ndLoad[0];
+					thisEnt = thisEnt->next;
+				}
+			}
+		}
+		thisLoad = thisLoad->getNext();
+	}
+
+	// Design variable dependent loads.
+	thisNd = nodes.getFirst();
+	while (thisNd) {
+		thisNd->getThermalDVLoad(ndDVLd, dVarArray);
+		dofInd = thisNd->getSortedRank();
+		appLd[dofInd] += ndDVLd.val;
+		thisNd = thisNd->getNext();
+	}
+	return;
+}
+
 void Model::buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool nLGeom) {
 	int i1;
 	Element *thisEl;

@@ -134,6 +134,8 @@ class Model {
 		void analysisPrep(int blockDim);
 		
 		void buildElasticAppLoad(double appLd[], double time);
+
+		void buildThermalAppLoad(double appLd[], double time);
 		
 		void buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool nLGeom);
 

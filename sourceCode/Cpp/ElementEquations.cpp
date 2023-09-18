@@ -829,6 +829,17 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], bool getMatrix, bool nLGeom
 	DiffDoub tmp;
 	
 	totDof = numNds*dofPerNd + numIntDof;
+
+	i3 = 0;
+	for (i1 = 0; i1 < totDof; i1++) {
+		Rvec[i1].setVal(0.0);
+		if (getMatrix) {
+			for (i2 = 0; i2 < totDof; i2++) {
+				dRdu[i3] = 0.0;
+				i3++;
+			}
+		}
+	}
 	
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec,dNdx,detJ,pre.locNds,&intPts[3*i1]);
@@ -959,6 +970,8 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 		}
 	}
 
+	getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
 		detJwt.setVal(ipWt[i1]);
@@ -1054,6 +1067,89 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 	return;
 }
 
+void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int ndDof = numNds * dofPerNd;
+	DiffDoub tmp;
+	DiffDoub Rtmp[33];
+	double dRtmp[1089];
+
+	i3 = 0;
+	for (i1 = 0; i1 < ndDof; i1++) {
+		Rvec[i1].setVal(0.0);
+		if (getMatrix) {
+			for (i2 = 0; i2 < ndDof; i2++) {
+				dRdV[i3] = 0.0;
+				i3++;
+			}
+		}
+	}
+
+	if (cmd->rayDampCM > 0.0) {
+		tmp.setVal(cmd->rayDampCM);
+		for (i1 = 0; i1 < 36; i1++) {
+			pre.Mmat[i1].mult(tmp);
+		}
+		for (i1 = 0; i1 < ndDof; i1++) {
+			pre.globAcc[i1].setVal(pre.globVel[i1]);
+		}
+		getRum(Rtmp, dRtmp, getMatrix, true, pre, ndAr, dvAr);
+		for (i1 = 0; i1 < ndDof; i1++) {
+			Rvec[i1].add(Rtmp[i1]);
+		}
+		if (getMatrix) {
+			i3 = 0;
+			for (i1 = 0; i1 < ndDof; i1++) {
+				for (i2 = 0; i2 < ndDof; i2++) {
+					dRdV[i3] += dRtmp[i3];
+					i3++;
+				}
+			}
+		}
+	}
+	if (cmd->rayDampCK > 0.0) {
+		tmp.setVal(cmd->rayDampCK);
+		for (i1 = 0; i1 < 81; i1++) {
+			pre.Cmat[i1].mult(tmp);
+		}
+		i3 = 0;
+		i4 = 0;
+		for (i1 = 0; i1 < dofPerNd; i1++) {
+			for (i2 = 0; i2 < nDim; i2++) {
+				if (i2 >= numNds) {
+					pre.globDisp[i3].setVal(0.0);
+				}
+				else {
+					pre.globDisp[i3].setVal(pre.globVel[i4]);
+					i4++;
+				}
+				i3++;
+			}
+		}
+		getRuk(Rtmp, dRtmp, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
+		for (i1 = 0; i1 < ndDof; i1++) {
+			Rvec[i1].add(Rtmp[i1]);
+		}
+		if (getMatrix) {
+			i3 = 0;
+			i4 = 0;
+			for (i1 = 0; i1 < ndDof; i1++) {
+				for (i2 = 0; i2 < ndDof; i2++) {
+					dRdV[i3] += dRtmp[i4];
+					i3++;
+					i4++;
+				}
+				i3 += numIntDof;
+			}
+		}
+	}
+	return;
+}
+
+
 void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;
@@ -1069,37 +1165,39 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 	int totDof;
 	DiffDoub Rvec[33];
 	double dRdu[1089];
-	DiffDoub Rtmp[30];
-	double dRtmp[900];
+	DiffDoub Rtmp[33];
+	double dRtmp[1089];
 	double c1;
+	double c2;
 	DiffDoub tmp;
 	
 	ndDof = numNds*dofPerNd;
 	totDof = ndDof + numIntDof;
-	for (i1 = 0; i1 < totDof; i1++) {
-		Rvec[i1].setVal(0.0);
-		if(getMatrix) {
-			i3 = totDof*i1;
-			for (i2 = 0; i2 < totDof; i2++) {
-				dRdu[i3] = 0.0;
-				i3++;
+	
+	getRuk(Rvec, dRdu, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
+
+	if (numIntDof > 0) {
+		i2 = ndDof;
+		for (i1 = 0; i1 < numIntDof; i1++) {
+			internalRu[i1].setVal(Rvec[i2]);
+			i2++;
+		}
+		if (getMatrix) {
+			i4 = 0;
+			for (i1 = 0; i1 < totDof; i1++) {
+				i3 = i1 * totDof + ndDof;
+				for (i2 = ndDof; i2 < totDof; i2++) {
+					internalMat[i4] = dRdu[i3];
+					i3++;
+					i4++;
+				}
 			}
+			//Condense Matrix
+			condenseMat(dRdu);
 		}
 	}
 	
-	getRuk(Rvec, dRdu, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
-	
 	if(cmd->dynamic) {
-		i3 = 0;
-		for (i1 = 0; i1 < ndDof; i1++) {
-			Rtmp[i1].setVal(0.0);
-			if (getMatrix) {
-				for (i2 = 0; i2 < ndDof; i2++) {
-					dRtmp[i3] = 0.0;
-					i3++;
-				}
-			}
-		}
 		getRum(Rtmp, dRtmp, getMatrix, true, pre, ndAr, dvAr);
 		for (i1 = 0; i1 < ndDof; i1++) {
 			Rvec[i1].add(Rtmp[i1]);
@@ -1118,27 +1216,22 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 				i3 += numIntDof;
 			}
 		}
-
-	}
-	
-	if(numIntDof > 0) {
-		i2 = ndDof;
-		for (i1 = 0; i1 < numIntDof; i1++) {
-			internalRu[i1].setVal(Rvec[i2]);
-			i2++;
+		getRud(Rtmp, dRtmp, getMatrix, cmd, pre, ndAr, dvAr);
+		for (i1 = 0; i1 < ndDof; i1++) {
+			Rvec[i1].add(Rtmp[i1]);
 		}
-		if(getMatrix) {
+		if (getMatrix) {
+			c2 = cmd->timeStep * cmd->newmarkGamma;
+			i3 = 0;
 			i4 = 0;
-			for (i1 = 0; i1 < totDof; i1++) {
-				i3 = i1*totDof + ndDof;
-				for (i2 = ndDof; i2 < totDof; i2++) {
-					internalMat[i4] = dRdu[i3];
+			for (i1 = 0; i1 < ndDof; i1++) {
+				for (i2 = 0; i2 < ndDof; i2++) {
+					dRdu[i3] += c1 * c2 * dRtmp[i4];
 					i3++;
 					i4++;
 				}
+				i3 += numIntDof;
 			}
-			//Condense Matrix
-			condenseMat(dRdu);
 		}
 	}
 	
@@ -1165,7 +1258,162 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 	return;
 }
 
+void Element::getRtk(DiffDoub Rvec[], double dRdT[], bool getMatrix, DiffDoubStressPrereq& pre) {
+	int i1;
+	int i2;
+	int i3;
+	DiffDoub nVec[11];
+	DiffDoub dNdx[33];
+	DiffDoub dNT[33];
+	DiffDoub detJ;
+	DiffDoub tmp;
+	DiffDoub gradT[3];
+	DiffDoub qVec[3];
+	DiffDoub Rtmp[10];
+	DiffDoub dRtmp[100];
+
+	i3 = 0;
+	for (i1 = 0; i1 < numNds; i1++) {
+		Rvec[i1].setVal(0.0);
+		if (getMatrix) {
+			for (i2 = 0; i2 < numNds; i2++) {
+				dRdT[i3] = 0.0;
+				i3++;
+			}
+		}
+	}
+
+	for (i1 = 0; i1 < numIP; i1++) {
+		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
+		tmp.setVal(ipWt[i1]);
+		detJ.mult(tmp);
+		matMul(gradT, pre.globTemp, dNdx, 1, numNds, 3);
+		matMul(qVec, pre.TCmat, gradT, 3, 3, 1);
+		matMul(Rtmp, dNdx, qVec, numNds, 3, 1);
+		for (i2 = 0; i2 < numNds; i2++) {
+			Rtmp[i2].mult(detJ);
+			Rvec[i2].add(Rtmp[i2]);
+		}
+		if (getMatrix) {
+			transpose(dNT, dNdx, numNds,3);
+			matMul(pre.BMat, pre.TCmat, dNT, 3, 3, numNds);
+			matMul(dRtmp, dNdx, pre.BMat, numNds, 3, numNds);
+			i3 = numNds * numNds;
+			for (i2 = 0; i2 < i3; i2++) {
+				dRdT[i2] += dRtmp[i2].val*detJ.val;
+			}
+		}
+	}
+
+	return;
+}
+
+void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, DiffDoubStressPrereq& pre) {
+	int i1;
+	int i2;
+	int i3;
+	DiffDoub nVec[11];
+	DiffDoub dNdx[33];
+	DiffDoub detJ;
+	DiffDoub tmp;
+	DiffDoub ptTdot;
+	DiffDoub Rtmp[10];
+	DiffDoub dRtmp[100];
+
+	i3 = 0;
+	for (i1 = 0; i1 < numNds; i1++) {
+		Rvec[i1].setVal(0.0);
+		if (getMatrix) {
+			for (i2 = 0; i2 < numNds; i2++) {
+				dRdTdot[i3] = 0.0;
+				i3++;
+			}
+		}
+	}
+
+	if (dofPerNd == 3) {
+		pre.SpecHeat.mult(pre.Mmat[0]);
+	}
+
+	for (i1 = 0; i1 < numIP; i1++) {
+		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
+		tmp.setVal(ipWt[i1]);
+		detJ.mult(tmp);
+		ptTdot.setVal(0.0);
+		for (i2 = 0; i2 < numNds; i2++) {
+			tmp.setVal(nVec[i2]);
+			tmp.mult(pre.globTdot[i2]);
+			ptTdot.add(tmp);
+		}
+		for (i2 = 0; i2 < numNds; i2++) {
+			tmp.setVal(nVec[i2]);
+			tmp.mult(pre.SpecHeat);
+			tmp.mult(ptTdot);
+			tmp.mult(detJ);
+			Rvec[i2].add(tmp);
+		}
+		if (getMatrix) {
+			matMul(dRtmp,nVec,nVec,numNds,1,numNds);
+			i3 = numNds * numNds;
+			for (i2 = 0; i2 < i3; i2++) {
+				dRdTdot[i2] += dRtmp[i2].val * pre.SpecHeat.val * detJ.val;
+			}
+		}
+	}
+
+	if (dofPerNd == 3) {
+		pre.SpecHeat.dvd(pre.Mmat[0]);
+	}
+
+	return;
+}
+
+void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int globInd1;
+	int globInd2;
+	double c1 = 1.0/(cmd->timeStep*cmd->newmarkGamma);
+	DiffDoub Rvec[10];
+	double dRdT[100];
+	DiffDoub Rtmp[10];
+	double dRtmp[100];
+
+	getRtk(Rvec, dRdT, getMatrix, pre);
+
+	if (cmd->dynamic) {
+		getRtm(Rtmp, dRtmp, getMatrix, pre);
+		i3 = 0;
+		for (i1 = 0; i1 < numNds; i1++) {
+			Rvec[i1].add(Rtmp[i1]);
+			if (getMatrix) {
+				for (i2 = 0; i2 < numNds; i2++) {
+					dRdT[i3] += c1 * dRtmp[i3];
+					i3++;
+				}
+			}
+		}
+	}
+
+	i3 = 0;
+	for (i1 = 0; i1 < numNds; i1++) {
+		globInd1 = ndAr[nodes[i1]].ptr->getSortedRank();
+		globR[globInd1].add(Rvec[i1]);
+		if (getMatrix) {
+			for (i2 = 0; i2 < numNds; i2++) {
+				globInd2 = ndAr[nodes[i2]].ptr->getSortedRank();
+				globdRdT.addEntry(globInd1, globInd2, dRdT[i3]);
+				i3++;
+			}
+		}
+	}
+
+	return;
+}
+
 //end dup
  
 //end skip 
+ 
  

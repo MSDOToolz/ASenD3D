@@ -657,14 +657,24 @@ void DoubStressPrereq::destroy() {
 	globDisp = new DiffDoub[60];
 	globVel = new DiffDoub[30];
 	globAcc = new DiffDoub[30];
+	globTemp = new DiffDoub[10];
+	globTdot = new DiffDoub[10];
 	Cmat = new DiffDoub[81];
 	Mmat = new DiffDoub[36];
+	thermExp = new DiffDoub[6];
+	Einit = new DiffDoub[6];
+	TCmat = new DiffDoub[9];
 	BMat = new DiffDoub[288];
 	CBMat = new DiffDoub[288];
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
 	layerQ = nullptr;
+	layerTE = nullptr;
+	layerE0 = nullptr;
+	layerDen = nullptr;
+	layerTC = nullptr;
+	layerSH = nullptr;
 	currentLayLen = 0;
 	return;
 }
@@ -677,8 +687,13 @@ void DiffDoubStressPrereq::destroy() {
 	delete[] globDisp;
 	delete[] globVel;
 	delete[] globAcc;
+	delete[] globTemp;
+	delete[] globTdot;
 	delete[] Cmat;
 	delete[] Mmat;
+	delete[] thermExp;
+	delete[] Einit;
+	delete[] TCmat;
 	delete[] BMat;
 	delete[] CBMat;
 	if(layerZ) {
@@ -686,11 +701,21 @@ void DiffDoubStressPrereq::destroy() {
 	    delete[] layerThk;
 	    delete[] layerAng;
 	    delete[] layerQ;
+		delete[] layerTE;
+		delete[] layerE0;
+		delete[] layerDen;
+		delete[] layerTC;
+		delete[] layerSH;
 	}
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
 	layerQ = nullptr;
+	layerTE = nullptr;
+	layerE0 = nullptr;
+	layerDen = nullptr;
+	layerTC = nullptr;
+	layerSH = nullptr;
 	currentLayLen = 0;
 
 	return;
@@ -698,3 +723,4 @@ void DiffDoubStressPrereq::destroy() {
 //end dup 
  
 //end skip 
+ 

@@ -60,14 +60,26 @@ public:
 	DiffDoub* globDisp;// [60] ;
 	DiffDoub* globVel;
 	DiffDoub* globAcc;// [30];
+	DiffDoub* globTemp;
+	DiffDoub* globTdot;
 	DiffDoub* Cmat;// [81] ;
 	DiffDoub* Mmat;// [36];
+	DiffDoub* thermExp;
+	DiffDoub* Einit;
+	DiffDoub* TCmat;
+	DiffDoub SpecHeat;
 	DiffDoub* BMat;
 	DiffDoub* CBMat;
 	DiffDoub* layerZ;
 	DiffDoub* layerThk;
 	DiffDoub* layerAng;
 	DiffDoub* layerQ;
+	DiffDoub* layerTE;
+	DiffDoub* layerE0;
+	DiffDoub* layerDen;
+	DiffDoub* layerTC;
+	DiffDoub* layerSH;
+
 	int currentLayLen;
 
 	DiffDoubStressPrereq();
@@ -77,6 +89,7 @@ public:
 //end dup
  
 //end skip 
+ 
  
 
 class Element {
@@ -260,10 +273,6 @@ class Element {
 		void putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt ndAr[]);
 		
 //end dup
-
-		void getElVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]);
-
-		void addToGlobVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]);
  
 //skip 
  
@@ -277,6 +286,16 @@ class Element {
 
 		void getLayerAngle(DiffDoub layAng[], DVPt dvAr[]);
 
+		void getLayerThExp(DiffDoub layThExp[], DVPt dvAr[]);
+
+		void getLayerEinit(DiffDoub layEinit[], DVPt dvAr[]);
+
+		void getLayerDen(DiffDoub layerDen[], DVPt dvAr[]);
+
+		void getLayerCond(DiffDoub layCond[], DVPt dvAr[]);
+
+		void getLayerSpecHeat(DiffDoub laySH[], DVPt dvAr[]);
+
 		void transformStrain(DiffDoub stnNew[], DiffDoub stnOrig[], DiffDoub& angle);
 
 		void transformQ(DiffDoub qNew[], DiffDoub qOrig[], DiffDoub& angle);
@@ -287,11 +306,29 @@ class Element {
 
 		void getBeamStiff(DiffDoub Cmat[], DVPt dvAr[]);
 
+		void getThermalExp(DiffDoub thExp[], DiffDoub Einit[], DVPt dvAr[]);
+
+		void getShellExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layQ[], DiffDoub layThExp[], DiffDoub layEInit[], DiffDoub layAng[]);
+
+		void getBeamExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DVPt dvAr[]);
+
 		void getDensity(DiffDoub& den, int layer, DVPt dvAr[]);
 
-		void getShellMass(DiffDoub Mmat[], DiffDoub layThk[], DiffDoub layZ[], DVPt dvAr[]);
+		void getShellMass(DiffDoub Mmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layDen[], DVPt dvAr[]);
 
 		void getBeamMass(DiffDoub Mmat[], DVPt dvAr[]);
+
+		void getConductivity(DiffDoub tCond[], DVPt dvAr[]);
+
+		void getShellCond(DiffDoub tCond[], DiffDoub layThk[], DiffDoub layAng[], DiffDoub layCond[], DVPt dvAr[]);
+
+		void getBeamCond(DiffDoub tCond[], DVPt dvAr[]);
+
+		void getSpecificHeat(DiffDoub& specHeat, DVPt dvAr[]);
+
+		void getShellSpecHeat(DiffDoub& specHeat, DiffDoub layThk[], DiffDoub laySH[], DiffDoub layDen[]);
+
+		void getBeamSpecHeat(DiffDoub& specHeat, DVPt dvAr[]);
 
         void getNdCrds(DiffDoub xGlob[], NdPt ndAr[], DVPt dvAr[]);
 		
@@ -302,7 +339,13 @@ class Element {
 // Solution Fields
 		void getNdDisp(DiffDoub globDisp[], NdPt ndAr[]);
 
+		void getNdVel(DiffDoub globVel[], NdPt ndAr[]);
+
 		void getNdAcc(DiffDoub globAcc[], NdPt ndAr[]);
+
+		void getNdTemp(DiffDoub globTemp[], NdPt ndAr[]);
+
+		void getNdTdot(DiffDoub globTdot[], NdPt ndAr[]);
 
 		void evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]);
 		
@@ -329,6 +372,11 @@ class Element {
 //end dup
  
 //end skip 
+
+		void getElVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]);
+
+		void addToGlobVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]);
+ 
  
 		
 // Equations
@@ -364,11 +412,19 @@ class Element {
 
 		void getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		
+		void getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+
 		void getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		
+		void getRtk(DiffDoub Rvec[], double dRdT[], bool getMatrix, DiffDoubStressPrereq& pre);
+
+		void getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, DiffDoubStressPrereq& pre);
+
+		void getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]);
 //end dup
  
 //end skip 
+ 
  
 };
 

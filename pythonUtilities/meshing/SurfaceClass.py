@@ -41,7 +41,6 @@ class Surface():
         regi = 0
         for reg in self.shellRegions:
             regMesh = reg.createShellMesh()
-            allNds.extend(regMesh['nodes'])
             setList = list()
             eli = 0
             for el in regMesh['elements']:
@@ -55,12 +54,12 @@ class Surface():
             thisSet['name'] = self.regionNames[regi]
             thisSet['labels'] = setList
             elSetList.append(thisSet)
+            allNds.extend(regMesh['nodes'])
             numNds = len(allNds)
             numEls = len(allEls)
             regi = regi + 1
         mshi = 0
         for msh in self.meshes:
-            allNds.extend(msh['nodes'])
             setList = list()
             eli = 0
             for el in msh['elements']:
@@ -74,6 +73,7 @@ class Surface():
             thisSet['name'] = self.meshNames[mshi]
             thisSet['labels'] = setList
             elSetList.append(thisSet)
+            allNds.extend(msh['nodes'])
             numNds = len(allNds)
             numEls = len(allEls)
             mshi = mshi + 1
