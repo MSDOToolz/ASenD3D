@@ -471,6 +471,10 @@ double* Element::getIP() {
 	return intPts;
 }
 
+double* Element::getIntAdj() {
+	return internalAdj;
+}
+
 int Element::getNumLayers() {
 	return sectPtr->getNumLayers();
 }

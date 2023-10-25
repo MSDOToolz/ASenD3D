@@ -137,13 +137,17 @@ class Model {
 
 		void buildThermalAppLoad(double appLd[], double time);
 		
-		void buildElasticSolnLoad(double solnLd[], bool buildMat, bool dyn, bool nLGeom);
+		void buildElasticSolnLoad(double solnLd[], bool buildMat);
+
+		void buildThermalSolnLoad(double solnLd[], bool buildMat);
 
 		void scaleElasticConst();
 
 		void scaleThermalConst();
 
 		void buildElasticConstLoad(double constLd[]);
+
+		void buildThermalConstLoad(double constLd[]);
 		
 		void solveStep(JobCommand *cmd, double time, double appLdFact);
 		
@@ -160,6 +164,8 @@ class Model {
 		void augmentdLdU();
 
 		void solveForAdjoint();
+
+		void dRthermaldD(int dVarNum);
 
 		void dRelasticdD(int dVarNum);
 		

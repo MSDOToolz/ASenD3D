@@ -79,6 +79,11 @@ void Node::addToDisplacement(double delDisp[]) {
 	return;
 }
 
+void Node::addToTemperature(double delTemp) {
+	temperature += delTemp;
+	return;
+}
+
 void Node::setInitialDisp(double newDisp[]) {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
@@ -158,6 +163,13 @@ void Node::initializeDisp() {
 	return;
 }
 
+void Node::initializeTemp() {
+	prevTemp = initialTemp;
+	prevTdot = initialTdot;
+	temperature = initialTemp;
+	return;
+}
+
 void Node::updateVelAcc(double nmBeta, double nmGamma, double delT) {
 	double c1 = 1.0/(delT*delT*(nmBeta-nmGamma));
 	double c2 = delT*delT*(0.5 + nmBeta - nmGamma);
@@ -167,6 +179,13 @@ void Node::updateVelAcc(double nmBeta, double nmGamma, double delT) {
 		velocity[i1] = prevVel[i1] + delT*((1.0-nmGamma)*prevAcc[i1] + nmGamma*acceleration[i1]);
 	}
 	
+	return;
+}
+
+void Node::updateTdot(double nmGamma, double delT) {
+	double c1 = 1.0 / nmGamma;
+	double c2 = -1.0 / delT;
+	tempChangeRate = c1 * (c2 * (prevTemp - temperature) - (1.0 - nmGamma) * prevTdot);
 	return;
 }
 
@@ -180,6 +199,12 @@ void Node::advanceDisp() {
 	return;	
 }
 
+void Node::advanceTemp() {
+	prevTemp = temperature;
+	prevTdot = tempChangeRate;
+	return;
+}
+
 void Node::backstepDisp() {
 	int i1;
 	for (i1 = 0; i1 < numDof; i1++) {
@@ -187,6 +212,12 @@ void Node::backstepDisp() {
 		velocity[i1] = prevVel[i1];
 		acceleration[i1] = prevAcc[i1];
 	}
+	return;
+}
+
+void Node::backstepTemp() {
+	temperature = prevTemp;
+	tempChangeRate = prevTdot;
 	return;
 }
 

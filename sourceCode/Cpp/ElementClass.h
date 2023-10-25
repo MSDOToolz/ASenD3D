@@ -163,6 +163,8 @@ class Element {
 
 		double* getIP();
 
+		double* getIntAdj();
+
 		int getNumLayers();
 		
 		int* getNodes();
@@ -268,9 +270,13 @@ class Element {
 
 		void getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
 
-		void dStressStraindU(Doub dsdU[], Doub dedU[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
+		void dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
 
-		void putVecToGlobMat(SparseMat& qMat, Doub elQVec[], int matRow, NdPt ndAr[]);
+		void getFluxTGrad(Doub flux[], Doub tGrad[], double spt[], int layer, DoubStressPrereq& pre);
+
+		void dFluxTGraddT(Doub dFdT[], Doub dTG[], double spt[], int layer, DoubStressPrereq& pre);
+
+		void putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int matRow, NdPt ndAr[]);
 		
 //end dup
  
@@ -373,9 +379,9 @@ class Element {
  
 //end skip 
 
-		void getElVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]);
+		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
 
-		void addToGlobVec(double elVec[], double globVec[], bool intnl, NdPt ndAr[]);
+		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
  
  
 		
@@ -389,7 +395,7 @@ class Element {
 		double getIntAdjdRdD();
 
 //dup1
-        void getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+        void getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
 		void getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		

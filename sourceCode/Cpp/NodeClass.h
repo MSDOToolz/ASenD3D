@@ -48,6 +48,8 @@ class Node {
 		void setTemperature(double newTemp);
 		
 		void addToDisplacement(double delDisp[]);
+
+		void addToTemperature(double delTemp);
 		
 		void setInitialDisp(double newDisp[]);
 		
@@ -70,12 +72,20 @@ class Node {
 		void setPrevTdot(double newTdot);
 		
 		void initializeDisp();
+
+		void initializeTemp();
 		
 		void updateVelAcc(double nmBeta, double nmGamma, double delT);
+
+		void updateTdot(double nmGamma, double delT);
 		
 		void advanceDisp();
 
+		void advanceTemp();
+
 		void backstepDisp();
+
+		void backstepTemp();
 		
 		void addDesignVariable(int dIndex, double coef);
 		

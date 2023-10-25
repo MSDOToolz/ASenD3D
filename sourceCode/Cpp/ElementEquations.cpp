@@ -191,7 +191,7 @@ double Element::getIntAdjdRdD() {
 
 //dup1
 
-void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -208,6 +208,10 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Do
 	
 	Doub strain[6];
 	Doub stress[6];
+	Doub thrmStn[6];
+	Doub ipTemp;
+	Doub CTE[6];
+	Doub CTEN[90];
 	Doub ux[9];
 	Doub secDef[9];
 	Doub secFcMom[9];
@@ -217,12 +221,17 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Do
 	totDof = numNds*dofPerNd + numIntDof;
 
 	i3 = 0;
+	i4 = 0;
 	for (i1 = 0; i1 < totDof; i1++) {
 		Rvec[i1].setVal(0.0);
 		if (getMatrix) {
 			for (i2 = 0; i2 < totDof; i2++) {
 				dRdu[i3] = 0.0;
 				i3++;
+			}
+			for (i2 = 0; i2 < numNds; i2++) {
+				dRdT[i4] = 0.0;
+				i4++;
 			}
 		}
 	}
@@ -232,10 +241,26 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Do
 		dJwt.setVal(detJ);
 		tmp.setVal(ipWt[i1]);
 		dJwt.mult(tmp);
+		ipTemp.setVal(0.0);
+		for (i2 = 0; i2 < numNds; i2++) {
+			tmp.setVal(pre.globTemp[i2]);
+			tmp.mult(nVec[i2]);
+			ipTemp.add(tmp);
+		}
 		if(dofPerNd == 3) {
 			matMul(ux,pre.globDisp,dNdx,3,nDim,3);
 			getSolidStrain(strain,ux,dNdx,pre.locOri,-1,-1,nLGeom);
+			for (i2 = 0; i2 < 6; i2++) {
+				thrmStn[i2].setVal(pre.thermExp[i2]);
+				thrmStn[i2].mult(ipTemp);
+				strain[i2].sub(thrmStn[i2]);
+				strain[i2].sub(pre.Einit[i2]);
+			}
 			matMul(stress,pre.Cmat,strain,6,6,1);
+			if (getMatrix) {
+				matMul(CTE, pre.Cmat, pre.thermExp, 6, 6, 1);
+				matMul(CTEN, CTE, nVec, 6, 1, numNds);
+			}
 			for (i2 = 0; i2 < totDof; i2++) {
 				getSolidStrain(strain,ux,dNdx,pre.locOri,i2,-1,nLGeom);
 				i4 = i2;
@@ -266,6 +291,15 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Do
 		} else {
 			getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,-1,-1);
 			matMul(secFcMom,pre.Cmat,secDef,defDim,defDim,1);
+			for (i2 = 0; i2 < defDim; i2++) {
+				tmp.setVal(pre.thermExp[i2]);
+				tmp.mult(ipTemp);
+				tmp.add(pre.Einit[i2]);
+				secFcMom[i2].sub(tmp);
+			}
+			if (getMatrix) {
+				matMul(CTEN, pre.thermExp, nVec, defDim, 1, numNds);
+			}
 			for (i2 = 0; i2 < totDof; i2++) {
 				getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,i2,-1);
 				i4 = i2;
@@ -295,7 +329,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Do
 			}
 		}
 		if(getMatrix) {
-			matMul(pre.CBMat,pre.Cmat,pre.CBMat,defDim,defDim,totDof);
+			matMul(pre.CBMat,pre.Cmat,pre.BMat,defDim,defDim,totDof);
 			i3 = defDim*totDof;
 			for (i2 = 0; i2 < i3; i2++) {
 				pre.CBMat[i2].mult(dJwt);
@@ -309,6 +343,22 @@ void Element::getRuk(Doub Rvec[], double dRdu[], bool getMatrix, bool nLGeom, Do
 						dRdu[i5]+= pre.BMat[i6].val*pre.CBMat[i7].val;
 						i6+= totDof;
 						i7+= totDof;
+					}
+					i5++;
+				}
+			}
+			for (i2 = 0; i2 < defDim * numNds; i2++) {
+				CTEN[i2].mult(dJwt);
+			}
+			i5 = 0;
+			for (i2 = 0; i2 < totDof; i2++) {
+				for (i3 = 0; i3 < numNds; i3++) {
+					i6 = i2;
+					i7 = i3;
+					for (i4 = 0; i4 < defDim; i4++) {
+						dRdT[i5] -= pre.BMat[i6].val * CTEN[i7].val;
+						i6 += totDof;
+						i7 += numNds;
 					}
 					i5++;
 				}
@@ -462,6 +512,7 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 	Doub tmp;
 	Doub Rtmp[33];
 	double dRtmp[1089];
+	double dRdT[330];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -515,7 +566,7 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 				i3++;
 			}
 		}
-		getRuk(Rtmp, dRtmp, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
+		getRuk(Rtmp, dRtmp, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
 		for (i1 = 0; i1 < ndDof; i1++) {
 			Rvec[i1].add(Rtmp[i1]);
 		}
@@ -551,6 +602,7 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	int totDof;
 	Doub Rvec[33];
 	double dRdu[1089];
+	double dRdT[330];
 	Doub Rtmp[33];
 	double dRtmp[1089];
 	double c1;
@@ -560,7 +612,7 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	ndDof = numNds*dofPerNd;
 	totDof = ndDof + numIntDof;
 	
-	getRuk(Rvec, dRdu, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
+	getRuk(Rvec, dRdu, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
 
 	if (numIntDof > 0) {
 		i2 = ndDof;

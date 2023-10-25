@@ -1,5 +1,5 @@
 objectiveTerms:
-    - category: ## displacement, velocity, acceleration, temperature, tdot, stress, strain, strainEnergy, shellDef, shellFrcMom, beamDef, beamFrcMom, flux, tempGradient, mass, volume, massDisp
+    - category: ## displacement, velocity, acceleration, temperature, tdot, stress, strain, strainEnergy, shellDef, shellFrcMom, beamDef, beamFrcMom, flux, tempGradient, mass, volume
       operator: ## powerNorm, volumeIntegral, volumeAverage
       activeTime:
       component:
@@ -11,8 +11,6 @@ objectiveTerms:
       
       nodeSet: setName
       
-      targetValue: maxTensile, maxCompressive, maxShear, maxStrainEnergy
-      ## Or
       targetValue: (specified number)
       ## Or
       targetValue:
