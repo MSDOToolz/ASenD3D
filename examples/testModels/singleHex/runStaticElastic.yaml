@@ -1,0 +1,23 @@
+
+readModelInput:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
+
+solve: 
+    elastic: yes
+    thermal: no
+    nonlinearGeom: no
+    staticLoadTime: 10.5
+    dynamic: no
+    solverMethod: direct
+
+writeNodeResults:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/nodeResults.yaml
+    fields:
+        - displacement
+
+writeElementResults:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/elementResults.yaml
+    elementSet: all
+    fields:
+        - stress
+        - strain

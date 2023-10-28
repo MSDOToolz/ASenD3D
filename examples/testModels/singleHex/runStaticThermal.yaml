@@ -1,0 +1,17 @@
+
+readModelInput:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
+
+solve: 
+    elastic: no
+    thermal: yes
+    nonlinearGeom: no
+    staticLoadTime: 11.5
+    dynamic: no
+    solverMethod: direct
+
+writeNodeResults:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/nodeResults.yaml
+    fields:
+        - temperature
+

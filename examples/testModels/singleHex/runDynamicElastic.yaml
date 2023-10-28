@@ -1,0 +1,24 @@
+
+readModelInput:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
+
+solve: 
+    elastic: yes
+    thermal: no
+    nonlinearGeom: no
+    dynamic: yes
+    timeStep: 0.00573573
+    newmarkBeta: 0.25
+    newmarkGamma: 0.5
+    simPeriod: 0.114715
+    saveSolnHist: yes
+    solnHistDir: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/solnHist/
+    solverMethod: direct
+
+writeNodeResults:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/nodeResults.yaml
+    fields:
+        - displacement
+        - velocity
+    timeSteps:
+        - [0, 20]
