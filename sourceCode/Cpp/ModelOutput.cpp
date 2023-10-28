@@ -29,7 +29,8 @@ void Model::writeTimeStepSoln(int tStep) {
 	Node* thisNd = nodes.getFirst();
 	while (thisNd) {
 		if (solveCmd->thermal) {
-
+			outFile << thisNd->getPrevTemp() << "\n";
+			outFile << thisNd->getPrevTdot() << "\n";
 		}
 		if (solveCmd->elastic) {
 			dofPerNd = thisNd->getNumDof();
@@ -49,16 +50,18 @@ void Model::writeTimeStepSoln(int tStep) {
 		thisNd = thisNd->getNext();
 	}
 
-	Element* thisEl = elements.getFirst();
-	while (thisEl) {
-		numIntDof = thisEl->getNumIntDof();
-		if (numIntDof < 0) {
-			thisEl->getIntPrevDisp(elDat);
-			for (i1 = 0; i1 < numIntDof; i1++) {
-				outFile << elDat[i1] << "\n";
+	if (solveCmd->elastic) {
+		Element* thisEl = elements.getFirst();
+		while (thisEl) {
+			numIntDof = thisEl->getNumIntDof();
+			if (numIntDof > 0) {
+				thisEl->getIntPrevDisp(elDat);
+				for (i1 = 0; i1 < numIntDof; i1++) {
+					outFile << elDat[i1] << "\n";
+				}
 			}
+			thisEl = thisEl->getNext();
 		}
-		thisEl = thisEl->getNext();
 	}
 
 	outFile.close();
@@ -80,6 +83,16 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 		// Read the results from the time step file and store them in nodes
 		try {
 			readTimeStepSoln(timeStep);
+			ndPt = nodes.getFirst();
+			while (ndPt) {
+				if (solveCmd->thermal) {
+					ndPt->backstepTemp();
+				}
+				if (solveCmd->elastic) {
+					ndPt->backstepDisp();
+				}
+				ndPt = ndPt->getNext();
+			}
 		}
 		catch (...) {
 			cout << "Error: time step " << timeStep << " requested for node results is out of range, or solution history was not saved" << endl;
@@ -268,9 +281,8 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 
 	outFile.close();
 
-	if (stPre.layerZ) {
-		stPre.destroy();
-	}
+	stPre.destroy();
+
 
 	return;
 }

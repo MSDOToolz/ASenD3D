@@ -9,7 +9,7 @@ using namespace std;
 int main() {
 	int argc = 2;
 	string argv[2];
-	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/runJob1.yaml";
+	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/runDynamicElastic.yaml";
 
 // --------------------------------------
 

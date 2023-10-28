@@ -9,7 +9,7 @@ nodes:
     - [6, 0.5, 0.5, 0.5]
     - [7, -0.5, 0.5, 0.5]
 elements:
-    - type: brick8
+    - type: brickIM
       connectivity:
           - [0, 0, 1, 2, 3, 4, 5, 6, 7]
 sets:
@@ -20,16 +20,27 @@ sets:
               - 2
               - 5
               - 6
+        - name: lowerX
+          labels:
+              - 0
+              - 3
+              - 4
+              - 7
 sections:
     - type: solid
       material: myMat
       elementSet: all
 materials:
     - name: myMat
+      density: 1000.0
       elastic:
           E: 1000000
           nu: 0.0
           G: 500000
+      thermal:
+          conductivity: [5.0,5.0,5.0,0.0,0.0,0.0]
+          expansion: [0.000001,0.000001,0.000001,0.0,0.0,0.0]
+          specHeat: 1.0
 constraints:
     - type: displacement
       terms:
@@ -72,8 +83,24 @@ constraints:
           - nodeSet: 7
             dof: 1
             coef: 1.0
+      rhs: 0.0
+    - type: temperature
+      terms:
+          - nodeSet: lowerX
+            coef: 1.0
+      rhs: 0.0
 loads:
     - type: nodalForce
-      activeTime: [0.0,1.0]
+      activeTime: [10.0,11.0]
       load: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0]
       nodeSet: upperX
+    - type: nodalHeatGen
+      activeTime: [11.0,12.0]
+      load: 0.25
+      nodeSet: upperX
+initialState:
+    velocity: 1,2,5,6
+        - [1, 5.47723, 0.0, 0.0, 0.0, 0.0, 0.0]
+        - [2, 5.47723, 0.0, 0.0, 0.0, 0.0, 0.0]
+        - [5, 5.47723, 0.0, 0.0, 0.0, 0.0, 0.0]
+        - [6, 5.47723, 0.0, 0.0, 0.0, 0.0, 0.0]

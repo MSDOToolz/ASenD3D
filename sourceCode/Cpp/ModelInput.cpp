@@ -672,7 +672,7 @@ void Model::readConstraintInput(string fileName) {
 					if (data[0] == "displacement") {
 						elasticConst.addConstraint(newConst);
 					}
-					else if (data[0] == "thermal") {
+					else if (data[0] == "temperature") {
 						thermalConst.addConstraint(newConst);
 					}
 					else {
@@ -1010,7 +1010,10 @@ void Model::readTimeStepSoln(int tStep) {
 	Node* thisNd = nodes.getFirst();
 	while (thisNd) {
 		if (solveCmd->thermal) {
-
+			inFile >> ndDat[0];
+			thisNd->setPrevTemp(ndDat[0]);
+			inFile >> ndDat[0];
+			thisNd->setPrevTdot(ndDat[0]);
 		}
 		if (solveCmd->elastic) {
 			dofPerNd = thisNd->getNumDof();
@@ -1030,16 +1033,18 @@ void Model::readTimeStepSoln(int tStep) {
 		thisNd = thisNd->getNext();
 	}
 
-	Element* thisEl = elements.getFirst();
-	while (thisEl) {
-		numIntDof = thisEl->getNumIntDof();
-		if (numIntDof < 0) {
-			for (i1 = 0; i1 < numIntDof; i1++) {
-				inFile >> elDat[i1];
+	if (solveCmd->elastic) {
+		Element* thisEl = elements.getFirst();
+		while (thisEl) {
+			numIntDof = thisEl->getNumIntDof();
+			if (numIntDof > 0) {
+				for (i1 = 0; i1 < numIntDof; i1++) {
+					inFile >> elDat[i1];
+				}
+				thisEl->setIntPrevDisp(elDat);
 			}
-			thisEl->setIntPrevDisp(elDat);
+			thisEl = thisEl->getNext();
 		}
-		thisEl = thisEl->getNext();
 	}
 
 	inFile.close();

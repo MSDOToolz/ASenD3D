@@ -166,7 +166,7 @@ void ObjectiveTerm::allocateObj() {
 		}
 	}
 	if (optr == "volumeIntegral" || optr == "volumeAverage") {
-		tgtVec[1] = 0.0;
+		tgtVec[0] = 0.0;
 	}
 
 	return;

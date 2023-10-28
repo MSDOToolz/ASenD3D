@@ -576,7 +576,9 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 	int i1;
 	Element *thisEl;
+	cout << "declaring stress prereq" << endl;
 	DoubStressPrereq pre;
+	cout << "finished declaration" << endl;
 	
 	for (i1 = 0; i1 < elMatDim; i1++) {
 		tempD1[i1].setVal(0.0);
@@ -596,6 +598,9 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 	for (i1 = 0; i1 < elMatDim; i1++) {
 		solnLd[i1]-= tempD1[i1].val;
 	}
+
+	pre.destroy();
+	cout << "finished destroy" << endl;
 	
 	return;
 }
@@ -625,6 +630,8 @@ void Model::buildThermalSolnLoad(double solnLd[], bool buildMat) {
 	for (i1 = 0; i1 < numNodes; i1++) {
 		solnLd[i1] -= tempD1[i1].val;
 	}
+
+	pre.destroy();
 
 	return;
 }
@@ -1058,6 +1065,8 @@ void Model::augmentdLdU() {
 			dLdV[i1] += c4 * aAdj[i1] + vAdj[i1];
 		}
 	}
+	
+	pre.destroy();
 
 	return;
 }
@@ -1158,6 +1167,9 @@ void Model::solveForAdjoint() {
 			thermLT.ldlSolve(tAdj, dLdT);
 		}
 	}
+	
+	pre.destroy();
+	
 	return;
 }
 
@@ -1204,6 +1216,8 @@ void Model::dRthermaldD(int dVarNum) {
 	}
 
 	thisDV->setDiffVal(dvVal.val, 0.0);
+	
+	pre.destroy();
 	return;
 }
 
@@ -1252,6 +1266,8 @@ void Model::dRelasticdD(int dVarNum) {
 	}
 
 	thisDV->setDiffVal(dvVal.val, 0.0);
+	
+	pre.destroy();
 
 	return;
 }

@@ -84,8 +84,8 @@ void Model::executeJob() {
 			cout << "reading objective input: " << fileName << endl;
 			readObjectiveInput(fileName);
 		} else if (cmdStr == "solve") {
-			solve(thisCmd);
 			solveCmd = thisCmd;
+			solve(thisCmd);
 		} else if (cmdStr == "calcObjective") {
 			if (solveCmd->dynamic) {
 				if (timeStepsSaved == 0) {

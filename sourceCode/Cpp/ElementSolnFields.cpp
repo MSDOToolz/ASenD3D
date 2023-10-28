@@ -63,7 +63,7 @@ void Element::getNdVel(Doub globVel[], NdPt ndAr[]) {
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
 			globVel[i3].setVal(ndVel[i2]);
-			i3 += nDim;
+			i3 += numNds;
 		}
 	}
 
@@ -83,7 +83,7 @@ void Element::getNdAcc(Doub globAcc[], NdPt ndAr[]) {
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
 			globAcc[i3].setVal(ndAcc[i2]);
-			i3 += nDim;
+			i3 += numNds;
 		}
 	}
 
@@ -813,6 +813,7 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 
 void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]) {
 	int numLay;
+	cout << "getting stress prereq" << endl;
 	Doub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
 	getLocOri(pre.locOri, dvAr);
@@ -822,6 +823,7 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 	getNdTemp(pre.globTemp, ndAr);
 	getNdTdot(pre.globTdot, ndAr);
 	if (dofPerNd == 6) {
+		cout << "shell block" << endl;
 		correctOrient(pre.locOri, pre.globNds);
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, stat);
 		if (type != 2) {
@@ -871,6 +873,7 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 			getBeamSpecHeat(pre.SpecHeat, dvAr);
 		}
 	} else {
+		cout << "solid block" << endl;
 		getSolidStiff(pre.Cmat, dvAr);
 		getThermalExp(pre.thermExp, pre.Einit, dvAr);
 		getDensity(pre.Mmat[0], 0, dvAr);
@@ -2658,16 +2661,28 @@ void Element::getSolidStrain(DiffDoub strain[], DiffDoub ux[], DiffDoub dNdx[], 
 }
 
 void Element::getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre) {
+	int i1;
+	int i2;
 	DiffDoub nVec[11];
 	DiffDoub dNdx[33];
 	DiffDoub detJ;
 	DiffDoub ux[9];
 	DiffDoub secDef[9];
 	DiffDoub sectStrn[3];
+	DiffDoub adjStn[6];
 	DiffDoub tmp;
+	DiffDoub ipTemp;
+
+	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+
+	ipTemp.setVal(0.0);
+	for (i1 = 0; i1 < numNds; i1++) {
+		tmp.setVal(pre.globTemp[i1]);
+		tmp.mult(nVec[i1]);
+		ipTemp.add(tmp);
+	}
 
 	if (type == 41 || type == 3) {
-		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
 		
 		sectStrn[0].setVal(secDef[0]);
@@ -2688,7 +2703,16 @@ void Element::getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[]
 		tmp.setVal(pre.layerAng[layer]);
 		tmp.neg();
 		transformStrain(strain, sectStrn, tmp);
-		matMul(stress, &pre.layerQ[9 * layer], strain, 3, 3, 1);
+		i2 = 3 * layer;
+		for (i1 = 0; i1 < 3; i1++) {
+			tmp.setVal(pre.layerTE[i2]);
+			tmp.mult(ipTemp);
+			adjStn[i1].setVal(strain[i1]);
+			adjStn[i1].sub(tmp);
+			adjStn[i1].sub(pre.layerE0[i2]);
+			i2++;
+		}
+		matMul(stress, &pre.layerQ[9 * layer], adjStn, 3, 3, 1);
 
 		strain[3].setVal(strain[2]);
 		strain[2].setVal(0.0);
@@ -2701,16 +2725,21 @@ void Element::getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[]
 		stress[5].setVal(0.0);
 
 	} else if(type != 2) {
-		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		matMul(ux, pre.globDisp, dNdx, 3, nDim, 3);
 		getSolidStrain(strain, ux, dNdx, pre.locOri, -1, -1, nLGeom);
-		// rem: Add temperature dependence
-		matMul(stress, pre.Cmat, strain, 6, 6, 1);
+		for (i1 = 0; i1 < 6; i1++) {
+			tmp.setVal(pre.thermExp[i1]);
+			tmp.mult(ipTemp);
+			adjStn[i1].setVal(strain[i1]);
+			adjStn[i1].sub(tmp);
+			adjStn[i1].sub(pre.Einit[i1]);
+		}
+		matMul(stress, pre.Cmat, adjStn, 6, 6, 1);
 	}
 	return;
 }
 
-void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre) {
+void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
@@ -2722,9 +2751,21 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], double spt[], in
 	DiffDoub sectStrn[3];
 	DiffDoub dStrain[6];
 	DiffDoub dStress[6];
+	DiffDoub CTE[6];
+	DiffDoub CTEN[60];
 	DiffDoub tmp;
 
 	int totDof = numNds * dofPerNd + numIntDof;
+	i2 = 6 * totDof;
+	for (i1 = 0; i1 < i2; i1++) {
+		dsdU[i1].setVal(0.0);
+		dedU[i1].setVal(0.0);
+	}
+	i2 = 6 * numNds;
+	for (i1 = 0; i1 < i2; i1++) {
+		dsdT[i1].setVal(0.0);
+	}
+
 	if (type == 41 || type == 3) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		for (i1 = 0; i1 < totDof; i1++) {
@@ -2751,21 +2792,29 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], double spt[], in
 			matMul(dStress, &pre.layerQ[9 * layer], dStrain, 3, 3, 1);
 
 			dedU[i1].setVal(dStrain[0]);
-			dedU[totDof + i1].setVal(dStrain[1]);
-			dedU[3 * totDof + i1].setVal(dStrain[2]);
+			dedU[i1 + totDof].setVal(dStrain[1]);
+			dedU[i1 + 3 * totDof].setVal(dStrain[2]);
 
 			dsdU[i1].setVal(dStress[0]);
 			dsdU[totDof + i1].setVal(dStress[1]);
 			dsdU[3 * totDof + i1].setVal(dStress[2]);
 		}
-
+		matMul(CTE, &pre.layerQ[9 * layer], &pre.layerTE[3 * layer], 3, 3, 1);
+		CTE[0].neg();
+		CTE[1].neg();
+		CTE[2].neg();
+		matMul(CTEN, CTE, nVec, 3, 1, numNds);
+		for (i1 = 0; i1 < numNds; i1++) {
+			dsdT[i1].setVal(CTEN[i1]);
+			dsdT[i1 + numNds].setVal(CTEN[i1 + numNds]);
+			dsdT[i1 + 3 * numNds].setVal(CTEN[i1 + 2 * numNds]);
+		}
 	}
 	else if (type != 2) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		matMul(ux, pre.globDisp, dNdx, 3, nDim, 3);
 		for (i1 = 0; i1 < totDof; i1++) {
 			getSolidStrain(dStrain, ux, dNdx, pre.locOri, i1, -1, nLGeom);
-			// rem: Add temperature dependence
 			matMul(dStress, pre.Cmat, dStrain, 6, 6, 1);
 			i3 = i1;
 			for (i2 = 0; i2 < 6; i2++) {
@@ -2774,29 +2823,90 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], double spt[], in
 				i3 += totDof;
 			}
 		}
+		matMul(CTE, pre.Cmat, pre.thermExp, 6, 6, 1);
+		for (i1 = 0; i1 < 6; i1++) {
+			CTE[i1].neg();
+		}
+		matMul(dsdT, CTE, nVec, 6, 1, numNds);
 	}
 
 	return;
 }
 
-void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], int matRow, NdPt ndAr[]) {
+void Element::getFluxTGrad(DiffDoub flux[], DiffDoub tGrad[], double spt[], int layer, DiffDoubStressPrereq& pre) {
+	int i1;
+	DiffDoub nVec[11];
+	DiffDoub dNdx[33];
+	DiffDoub detJ;
+
+	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+	matMul(tGrad, pre.globTemp, dNdx, 1, numNds, 3);
+	if (type == 41 || type == 3) {
+		i1 = 9 * layer;
+		matMul(flux, &pre.layerTC[i1], tGrad, 3, 3, 1);
+	}
+	else {
+		matMul(flux, pre.TCmat, tGrad, 3, 3, 1);
+	}
+	flux[0].neg();
+	flux[1].neg();
+	flux[2].neg();
+
+	return;
+}
+
+void Element::dFluxTGraddT(DiffDoub dFdT[], DiffDoub dTG[], double spt[], int layer, DiffDoubStressPrereq& pre) {
+	int i1;
+	int i2;
+	DiffDoub nVec[11];
+	DiffDoub dNdx[33];
+	DiffDoub detJ;
+
+	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+	transpose(dTG, dNdx, numNds, 3);
+	if (type == 41 || type == 3) {
+		i1 = 9 * layer;
+		matMul(dFdT, &pre.layerTC[i1], dTG, 3, 3, numNds);
+	}
+	else {
+		matMul(dFdT, pre.TCmat, dTG, 3, 3, numNds);
+	}
+	i2 = 3 * numNds;
+	for (i1 = 0; i1 < i2; i1++) {
+		dFdT[i1].neg();
+	}
+
+	return;
+}
+
+void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm, int matRow, NdPt ndAr[]) {
 	int i1;
 	int ndDof = numNds*dofPerNd;
 	int totDof = ndDof + numIntDof;
 	int nd;
 	int dof;
 	int globInd;
-	for (i1 = 0; i1 < totDof; i1++) {
-		if (i1 < ndDof) {
-			nd = nodes[dofTable[2 * i1]];
-			dof = dofTable[2 * i1 + 1];
-			globInd = ndAr[nd].ptr->getDofIndex(dof);
+
+	if (forTherm) {
+		for (i1 = 0; i1 < numNds; i1++) {
+			nd = nodes[i1];
+			globInd = ndAr[i1].ptr->getSortedRank();
 			qMat.addEntry(matRow, globInd, elQVec[i1].val);
 		}
-		else {
-			dof = i1 - ndDof;
-			globInd = intDofIndex + dof;
-			qMat.addEntry(matRow, globInd, elQVec[i1].val);
+	}
+	else {
+		for (i1 = 0; i1 < totDof; i1++) {
+			if (i1 < ndDof) {
+				nd = nodes[dofTable[2 * i1]];
+				dof = dofTable[2 * i1 + 1];
+				globInd = ndAr[nd].ptr->getDofIndex(dof);
+				qMat.addEntry(matRow, globInd, elQVec[i1].val);
+			}
+			else {
+				dof = i1 - ndDof;
+				globInd = intDofIndex + dof;
+				qMat.addEntry(matRow, globInd, elQVec[i1].val);
+			}
 		}
 	}
 
@@ -2806,6 +2916,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], int matRow, Nd
 //end dup
  
 //end skip 
+ 
 
 void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {
 	int i1;

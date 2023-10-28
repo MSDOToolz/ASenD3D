@@ -485,9 +485,40 @@ void Node::getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]) {
 	return;
 }
 
+void Node::getThermalDVLoad(DiffDoub& ld, DVPt dvAr[]) {
+	int i1;
+	int dIndex;
+	IntListEnt* thisDV;
+	DoubListEnt* thisCoef;
+	DesignVariable* dPtr;
+	DiffDoub dVal;
+	DiffDoub coef;
+	string cat;
+	int comp;
+	
+	ld.setVal(0.0);
+	thisDV = dVars.getFirst();
+	thisCoef = coefs.getFirst();
+	while (thisDV) {
+		dIndex = thisDV->value;
+		dPtr = dvAr[dIndex].ptr;
+		dPtr->getValue(dVal);
+		cat = dPtr->getCategory();
+		if (cat == "thermalLoad") {
+			coef.setVal(thisCoef->value);
+			coef.mult(dVal);
+			ld.add(coef);
+		}
+		thisDV = thisDV->next;
+		thisCoef = thisCoef->next;
+	}
+	return;
+}
+
 //end dup
  
 //end skip 
+ 
  
  
 
