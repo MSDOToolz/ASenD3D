@@ -175,6 +175,8 @@ void Model::reorderNodes(int blockDim) {
 	dRudD = new DiffDoub[elMatDim];
 	dRtdD = new DiffDoub[i3];
 
+	elInD = new int[elements.getLength()];
+
 	i3 = designVars.getLength();
 	if (i3 > 0) {
 		dLdD = new double[i3];
@@ -482,6 +484,7 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	int numDof;
 	int dofInd;
 	Node *thisNd;
+	Element* thisEl;
 	Load *thisLoad = elasticLoads.getFirst();
 	string ldType;
 	double actTime[2];
@@ -489,6 +492,11 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	Doub ndDVLd[6];
 	Set *thisSet;
 	IntListEnt *thisEnt;
+	DoubStressPrereq pre;
+
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		tempD1[i1].setVal(0.0);
+	}
 
 	//Loads from model input file
 	while(thisLoad) {
@@ -509,8 +517,22 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 					thisEnt = thisEnt->next;
 				}
 			}
+			else {
+				thisSet = thisLoad->getElSetPtr();
+				thisEnt = thisSet->getFirstEntry();
+				while (thisEnt) {
+					thisEl = elementArray[thisEnt->value].ptr;
+					thisEl->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+					thisEl->getAppLoad(tempD1, thisLoad, pre, nodeArray, dVarArray);
+					thisEnt = thisEnt->next;
+				}
+			}
 		}
 		thisLoad = thisLoad->getNext();
+	}
+
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		appLd[0] += tempD1[i1].val;
 	}
 	
 	// Design variable dependent loads.
@@ -524,6 +546,8 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 		}
 		thisNd = thisNd->getNext();
 	}
+
+	pre.destroy();
 	
 	return;
 }
@@ -531,9 +555,11 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 void Model::buildThermalAppLoad(double appLd[], double time) {
 	// Construct loads from input file
 	int i1;
+	int totNodes;
 	int numDof;
 	int dofInd;
 	Node* thisNd;
+	Element* thisEl;
 	Load* thisLoad = thermalLoads.getFirst();
 	string ldType;
 	double actTime[2];
@@ -541,6 +567,12 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 	Doub ndDVLd;
 	Set* thisSet;
 	IntListEnt* thisEnt;
+	DoubStressPrereq pre;
+
+	totNodes = nodes.getLength();
+	for (i1 = 0; i1 < totNodes; i1++) {
+		tempD1[i1].setVal(0.0);
+	}
 
 	//Loads from model input file
 	while (thisLoad) {
@@ -558,8 +590,22 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 					thisEnt = thisEnt->next;
 				}
 			}
+			else {
+				thisSet = thisLoad->getElSetPtr();
+				thisEnt = thisSet->getFirstEntry();
+				while (thisEnt) {
+					thisEl = elementArray[thisEnt->value].ptr;
+					thisEl->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+					thisEl->getAppThermLoad(tempD1, thisLoad, pre, nodeArray, dVarArray);
+					thisEnt = thisEnt->next;
+				}
+			}
 		}
 		thisLoad = thisLoad->getNext();
+	}
+
+	for (i1 = 0; i1 < totNodes; i1++) {
+		appLd[i1] += tempD1[i1].val;
 	}
 
 	// Design variable dependent loads.
@@ -570,15 +616,16 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 		appLd[dofInd] += ndDVLd.val;
 		thisNd = thisNd->getNext();
 	}
+
+	pre.destroy();
+
 	return;
 }
 
 void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 	int i1;
 	Element *thisEl;
-	cout << "declaring stress prereq" << endl;
 	DoubStressPrereq pre;
-	cout << "finished declaration" << endl;
 	
 	for (i1 = 0; i1 < elMatDim; i1++) {
 		tempD1[i1].setVal(0.0);
@@ -600,7 +647,6 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 	}
 
 	pre.destroy();
-	cout << "finished destroy" << endl;
 	
 	return;
 }
@@ -1010,7 +1056,7 @@ void Model::augmentdLdU() {
 		thisEl = elements.getFirst();
 		while (thisEl) {
 			thisEl->getStressPrereq(pre, true, nodeArray, dVarArray);
-			thisEl->getRtm(Rvec, Mmat, true, pre);
+			thisEl->getRtm(Rvec, Mmat, true, true, pre);
 			thisEl->getElVec(elAdj, tAdj, true, false, nodeArray);
 			numNds = thisEl->getNumNds();
 			i3 = 0;
@@ -1183,6 +1229,7 @@ void Model::dRthermaldD(int dVarNum) {
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	Element* thisElPt;
+	Load* thisLd;
 
 	thisDV = dVarArray[dVarNum].ptr;
 	thisDV->getValue(dvVal);
@@ -1191,6 +1238,38 @@ void Model::dRthermaldD(int dVarNum) {
 	totNodes = nodes.getLength();
 	for (i1 = 0; i1 < totNodes; i1++) {
 		dRtdD[i1].setVal(0.0);
+	}
+
+	for (i1 = 0; i1 < elements.getLength(); i1++) {
+		elInD[i1] = 0;
+	}
+
+	thisEnt = thisDV->getFirstEl();
+	while (thisEnt) {
+		elInD[thisEnt->value] = 1;
+		thisEnt = thisEnt->next;
+	}
+	
+	// Applied contribution
+	thisLd = thermalLoads.getFirst();
+	while (thisLd) {
+		if (thisLd->getType() != "nodalHeatGen") {
+			thisEnt = thisLd->getElSetPtr()->getFirstEntry();
+			while (thisEnt) {
+				i1 = thisEnt->value;
+				if (elInD[i1]) {
+					thisElPt = elementArray[i1].ptr;
+					thisElPt->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+					thisElPt->getAppThermLoad(dRtdD, thisLd, pre, nodeArray, dVarArray);
+				}
+				thisEnt = thisEnt->next;
+			}
+		}
+		thisLd = thisLd->getNext();
+	}
+
+	for (i1 = 0; i1 < totNodes; i1++) {
+		dRtdD[i1].neg();
 	}
 
 	// Solution-dependent contribution of load
@@ -1230,6 +1309,7 @@ void Model::dRelasticdD(int dVarNum) {
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	Element* thisElPt;
+	Load* thisLd;
 
 	thisDV = dVarArray[dVarNum].ptr;
 	thisDV->getValue(dvVal);
@@ -1237,6 +1317,39 @@ void Model::dRelasticdD(int dVarNum) {
 
 	for (i1 = 0; i1 < elMatDim; i1++) {
 		dRudD[i1].setVal(0.0);
+	}
+
+	for (i1 = 0; i1 < elements.getLength(); i1++) {
+		elInD[i1] = 0;
+	}
+
+	thisEnt = thisDV->getFirstEl();
+	while (thisEnt) {
+		elInD[thisEnt->value] = 1;
+		thisEnt = thisEnt->next;
+	}
+	
+	// Applied contribution
+
+	thisLd = elasticLoads.getFirst();
+	while (thisLd) {
+		if (thisLd->getType() != "nodalForce") {
+			thisEnt = thisLd->getElSetPtr()->getFirstEntry();
+			while (thisEnt) {
+				i1 = thisEnt->value;
+				if (elInD[i1] > 0) {
+					thisElPt = elementArray[i1].ptr;
+					thisElPt->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+					thisElPt->getAppLoad(dRudD, thisLd, pre, nodeArray, dVarArray);
+				}
+				thisEnt = thisEnt->next;
+			}
+		}
+		thisLd = thisLd->getNext();
+	}
+
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		dRudD[i1].neg();
 	}
 
 	// Solution-dependent contribution of load

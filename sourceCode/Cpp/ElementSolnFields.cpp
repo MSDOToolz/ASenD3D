@@ -813,7 +813,6 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 
 void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]) {
 	int numLay;
-	cout << "getting stress prereq" << endl;
 	Doub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
 	getLocOri(pre.locOri, dvAr);
@@ -823,7 +822,6 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 	getNdTemp(pre.globTemp, ndAr);
 	getNdTdot(pre.globTdot, ndAr);
 	if (dofPerNd == 6) {
-		cout << "shell block" << endl;
 		correctOrient(pre.locOri, pre.globNds);
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, stat);
 		if (type != 2) {
@@ -873,7 +871,6 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 			getBeamSpecHeat(pre.SpecHeat, dvAr);
 		}
 	} else {
-		cout << "solid block" << endl;
 		getSolidStiff(pre.Cmat, dvAr);
 		getThermalExp(pre.thermExp, pre.Einit, dvAr);
 		getDensity(pre.Mmat[0], 0, dvAr);

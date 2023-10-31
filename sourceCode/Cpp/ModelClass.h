@@ -74,6 +74,8 @@ class Model {
 		DiffDoub* dRudD;
 		DiffDoub* dRtdD;
 
+		int* elInD;
+
 		double* dLdD;
 	
 	public:

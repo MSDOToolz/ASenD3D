@@ -1,5 +1,8 @@
 #ifndef FACE
 #define FACE
+#include "DiffDoubClass.h"
+#include "NodeClass.h"
+#include "DesignVariableClass.h"
 
 class Face {
 	private:
@@ -21,12 +24,20 @@ class Face {
 		void sortedNodes(int srtNds[]);
 		
 		int getNumNds();
+
+		int* getLocNds();
 		
 		bool onSurface();
 		
 		int getLowNd();
 		
 		Face* getNext();
+
+		//dup1
+
+		void getAreaNormal(Doub& area, Doub norm[], NdPt ndAr[], DVPt dvAr[]);
+
+		//end dup
 		
 		void destroy();
 };

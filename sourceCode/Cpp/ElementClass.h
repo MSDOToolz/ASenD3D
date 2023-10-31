@@ -7,6 +7,7 @@
 #include "SectionClass.h"
 #include "matrixFunctions.h"
 #include "FaceClass.h"
+#include "LoadClass.h"
 #include "JobClass.h"
 
 //dup1
@@ -411,9 +412,14 @@ class Element {
 		
 		void getRtk(Doub Rvec[], double dRdT[], bool getMatrix, DoubStressPrereq& pre);
 
-		void getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, DoubStressPrereq& pre);
+		void getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DoubStressPrereq& pre);
 
 		void getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]);
+
+		void getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+
+		void getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+
 //end dup
  
 //skip 

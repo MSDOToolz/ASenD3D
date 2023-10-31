@@ -577,7 +577,6 @@ void ElementList::destroy() {
 
 //dup1
  DoubStressPrereq::DoubStressPrereq() {
-	cout << "calling stressPrereq constructor" << endl;
 	globNds = new Doub[30];
 	locNds = new Doub[30];
 	locOri = new Doub[9];
@@ -609,7 +608,6 @@ void ElementList::destroy() {
 
 void DoubStressPrereq::destroy() {
 	int i1;
-	cout << "destroying stressPrereq" << endl;
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;

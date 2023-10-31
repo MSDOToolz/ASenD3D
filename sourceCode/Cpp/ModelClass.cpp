@@ -188,6 +188,8 @@ void Model::destroy() {
 		delete[] tAdj;
 		delete[] tdotAdj;
 		delete[] dRudD;
+		delete[] dRtdD;
+		delete[] elInD;
 	}
 
 	if (dLdD) {

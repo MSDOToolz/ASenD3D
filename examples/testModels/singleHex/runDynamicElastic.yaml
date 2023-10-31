@@ -1,6 +1,9 @@
 
 readModelInput:
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
+    
+readInitialState:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/initialDisp.yaml
 
 solve: 
     elastic: yes

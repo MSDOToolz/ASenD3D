@@ -1,4 +1,8 @@
 #include "FaceClass.h"
+#include "DiffDoubClass.h"
+#include "NodeClass.h"
+#include "DesignVariableClass.h"
+#include "matrixFunctions.h"
 
 using namespace std;
 
@@ -53,6 +57,10 @@ int Face::getNumNds() {
 	return numNds;
 }
 
+int* Face::getLocNds() {
+	return locNodes;
+}
+
 bool Face::onSurface() {
 	return onSurf;
 }
@@ -71,6 +79,64 @@ int Face::getLowNd() {
 Face* Face::getNext() {
 	return next;
 }
+
+//dup 1
+
+void Face::getAreaNormal(Doub& area, Doub norm[], NdPt ndAr[], DVPt dvAr[]) {
+	Doub v1[3];
+	Doub v2[3];
+	Doub tmpV[3];
+	Doub tmp;
+
+	if (numNds == 4) {
+		ndAr[globNodes[2]].ptr->getCrd(v1, dvAr);
+		ndAr[globNodes[0]].ptr->getCrd(tmpV, dvAr);
+		v1[0].sub(tmpV[0]);
+		v1[1].sub(tmpV[1]);
+		v1[2].sub(tmpV[2]);
+		ndAr[globNodes[3]].ptr->getCrd(v2, dvAr);
+		ndAr[globNodes[1]].ptr->getCrd(tmpV, dvAr);
+		v2[0].sub(tmpV[0]);
+		v2[1].sub(tmpV[1]);
+		v2[2].sub(tmpV[2]);
+	}
+	else {
+		ndAr[globNodes[1]].ptr->getCrd(v1, dvAr);
+		ndAr[globNodes[0]].ptr->getCrd(tmpV, dvAr);
+		v1[0].sub(tmpV[0]);
+		v1[1].sub(tmpV[1]);
+		v1[2].sub(tmpV[2]);
+		ndAr[globNodes[2]].ptr->getCrd(v2, dvAr);
+		ndAr[globNodes[0]].ptr->getCrd(tmpV, dvAr);
+		v2[0].sub(tmpV[0]);
+		v2[1].sub(tmpV[1]);
+		v2[2].sub(tmpV[2]);
+	}
+
+	crossProd(norm, v1, v2);
+	area.setVal(norm[0]);
+	area.sqr();
+	tmp.setVal(norm[1]);
+	tmp.sqr();
+	area.add(tmp);
+	tmp.setVal(norm[2]);
+	tmp.sqr();
+	area.add(tmp);
+	area.sqt();
+
+	tmp.setVal(1.0);
+	tmp.dvd(area);
+	norm[0].mult(tmp);
+	norm[1].mult(tmp);
+	norm[2].mult(tmp);
+
+	tmp.setVal(0.5);
+	area.mult(tmp);
+
+	return;
+}
+
+//end dup
 
 void Face::destroy() {
 	delete[] locNodes;

@@ -1,12 +1,15 @@
 
 readModelInput:
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
+    
+readLoads:
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/staticLoads.yaml
 
 solve: 
     elastic: yes
     thermal: no
     nonlinearGeom: no
-    staticLoadTime: 10.5
+    staticLoadTime: 0.5
     dynamic: no
     solverMethod: direct
 
