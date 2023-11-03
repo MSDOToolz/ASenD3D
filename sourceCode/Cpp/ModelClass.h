@@ -43,6 +43,7 @@ class Model {
 		bool anPrepRun;
 		int timeStepsSaved;
 		JobCommand* solveCmd;
+		JobCommand* modalCmd;
 		
 		SparseMat elasticMat;
 		LowerTriMat elasticLT;
@@ -50,6 +51,11 @@ class Model {
 		SparseMat thermMat;
 		LowerTriMat thermLT;
 		bool thermScaled;
+
+		double* eigVecs;
+		double* eigVals;
+		double* diagMass;
+		double* loadFact;
 		
 		double* tempV1;
 		double* tempV2;
@@ -121,6 +127,8 @@ class Model {
 		
 		void readDesVarValues(std::string fileName);
 
+		void readNodeResults(std::string fileName);
+
 		void readTimeStepSoln(int tStep);
 		
 		// Analysis
@@ -155,13 +163,13 @@ class Model {
 		
 		void solve(JobCommand *cmd);
 		
-		void eigenSolve();
+		void eigenSolve(JobCommand* cmd);
 
-		void backupElastic();
+	/*	void backupElastic();
 
-		void restoreElastic();
+		void restoreElastic();*/
 
-		void setSolutionVec();
+		void setSolnToMode(std::string field, int mode, double maxVal);
 
 		void augmentdLdU();
 
@@ -180,6 +188,8 @@ class Model {
 		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
 
 		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, int timeStep);
+
+		void writeModalResults(std::string fileName, bool writeModes);
 
 		void writeObjective(std::string fileName, StringList& includeFields, bool writeGrad);
 		

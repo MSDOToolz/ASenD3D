@@ -685,7 +685,8 @@ void DoubStressPrereq::destroy() {
 }
 
 void DiffDoubStressPrereq::destroy() {
-	delete[] globNds; 
+	int i1;
+	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;
 	delete[] instOri;
@@ -728,5 +729,6 @@ void DiffDoubStressPrereq::destroy() {
 //end dup 
  
 //end skip 
+ 
  
  

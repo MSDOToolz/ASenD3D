@@ -70,6 +70,7 @@ void Model::writeTimeStepSoln(int tStep) {
 
 void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields, int timeStep) {
 	int i1;
+	int globInd;
 	Set* setPt;
 	string errStr;
 	string thisField;
@@ -125,12 +126,40 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 		outFile << "    " << thisField << ":\n";
 		// -----------------
 		// Calculate reaction force if necessary
+		if (thisField == "reactionForce") {
+			buildElasticSolnLoad(tempV1, false);
+			thisEnt = setPt->getFirstEntry();
+			while (thisEnt) {
+				ndLabel = thisEnt->value;
+				ndPt = nodeArray[ndLabel].ptr;
+				outFile << "        - [" << ndLabel;
+				ndof = ndPt->getNumDof();
+				for (i1 = 0; i1 < ndof; i1++) {
+					globInd = ndPt->getDofIndex(i1);
+					outFile << ", " << -tempV1[globInd];
+				}
+				outFile << "]\n";
+				thisEnt = thisEnt->next;
+			}
+		}
+		else if (thisField == "reactionHeatGen") {
+			buildThermalSolnLoad(tempV1, false);
+			thisEnt = setPt->getFirstEntry();
+			while (thisEnt) {
+				ndLabel = thisEnt->value;
+				ndPt = nodeArray[ndLabel].ptr;
+				outFile << "        - [" << ndLabel;
+				globInd = ndPt->getSortedRank();
+				outFile << ", " << -tempV1[globInd] << "\n";
+				thisEnt = thisEnt->next;
+			}
+		}
         // ------------------		
 		thisEnt = setPt->getFirstEntry();
 		while(thisEnt) {
 			ndLabel = thisEnt->value;
 			ndPt = nodeArray[ndLabel].ptr;
-			outFile << "        - [" << ndLabel << ", ";
+			outFile << "        - [" << ndLabel;
 			if(thisField == "displacement") {
 				ndPt->getDisp(ndDat);
 				outFile << ndDat[0];
@@ -157,10 +186,10 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 				outFile << "]\n";
 			} else if(thisField == "temperature") {
 				ndDat[0] = ndPt->getTemperature();
-				outFile << ndDat[0] << "]\n";
+				outFile << ", " << ndDat[0] << "]\n";
 			} else if(thisField == "tdot") {
 				ndDat[0] = ndPt->getTdot();
-				outFile << ndDat[0] << "]\n";
+				outFile << ", " << ndDat[0] << "]\n";
 			}
 			thisEnt = thisEnt->next;
 		}
@@ -189,6 +218,10 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	Doub strain[6];
 	Doub stress[6];
 	double SEDen;
+	Doub def[9];
+	Doub frcMom[9];
+	Doub tGrad[3];
+	Doub flux[3];
 	string fieldList;
 	DoubStressPrereq stPre;
 
@@ -231,10 +264,29 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 		if (i2 > -1) {
 			outFile << "    ##  - [element label, integration pt, layer, S11, S22, S33, S12, S13, S23]\n";
 		}
+		fieldList = "strainEnergyDen";
+		i2 = fieldList.find(thisField);
+		if (i2 > -1) {
+			outFile << "    ##  - [element label, integration pt, layer, strain energy]\n";
+		}
+		fieldList = "sectionDef sectionFrcMom";
+		i2 = fieldList.find(thisField);
+		if (i2 > -1) {
+			outFile << "    ## for shells:  - [element label, integration pt, S11, S22, S12, K11, K22, K12]\n";
+			outFile << "    ## for beams:  - [element label, integration pt, S11, S12, S13, K11, K12, K13]\n";
+		}
+		if (thisField == "heatFlux") {
+			outFile << "    ##  - [element label, integration pt, layer, f1, f2, f3]\n";
+		}
+		if (thisField == "tempGradient") {
+			outFile << "    ##  - [element label, integration pt, layer, dT/dx, dT/dy, dT/dz]\n";
+		}
+
 		thisEnt = setPt->getFirstEntry();
 		while (thisEnt) {
 			elLabel = thisEnt->value;
 			elPt = elementArray[elLabel].ptr;
+			
 			fieldList = "stress strain strainEnergyDen";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
@@ -274,6 +326,61 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 					}
 				}
 			}
+
+			fieldList = "sectionDef sectionFrcMom";
+			if (i2 > -1) {
+				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+				numIP = elPt->getNumIP();
+				intPts = elPt->getIP();
+				for (i1 = 0; i1 < numIP; i1++) {
+					type = elPt->getType();
+					//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
+					elPt->getDefFrcMom(def, frcMom, &intPts[3 * i1], stPre);
+					outFile << "        - [" << elLabel << ", ";
+					if (thisField == "sectionDef") {
+						outFile << i1 << ", " << def[0].val;
+						for (i3 = 1; i3 < 6; i3++) {
+							outFile << ", " << def[i3].val;
+						}
+						outFile << "]\n";
+					}
+					else if (thisField == "sectionFrcMom") {
+						outFile << i1 << ", " << frcMom[0].val;
+						for (i3 = 1; i3 < 6; i3++) {
+							outFile << ", " << frcMom[i3].val;
+						}
+						outFile << "]\n";
+					}
+				}
+			}
+
+			fieldList = "tempGradient heatFlux";
+			if (i2 > -1) {
+				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+				numIP = elPt->getNumIP();
+				intPts = elPt->getIP();
+				for (i1 = 0; i1 < numIP; i1++) {
+					type = elPt->getType();
+					if (type == 3 || type == 41) {
+						numLay = elPt->getNumLayers();
+					}
+					else {
+						numLay = 1;
+					}
+					for (i2 = 0; i2 < numLay; i2++) {
+						//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
+						elPt->getFluxTGrad(flux, tGrad, &intPts[3 * i1], i2, stPre);
+						outFile << "        - [" << elLabel << ", " << i1 << ", " << i2 << ", ";
+						if (thisField == "tempGradient") {
+							outFile << tGrad[0].val << ", " << tGrad[1].val << ", " << tGrad[2].val << "]\n";
+						}
+						else if (thisField == "heatFlux") {
+							outFile << flux[0].val << ", " << flux[1].val << ", " << flux[2].val << "]\n";
+						}
+					}
+				}
+			}
+
 			thisEnt = thisEnt->next;
 		}
 		strPt = strPt->next;
@@ -283,6 +390,61 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 
 	stPre.destroy();
 
+
+	return;
+}
+
+void Model::writeModalResults(string fileName, bool writeModes) {
+	int i1;
+	int i2;
+	int i3;
+	int nd;
+	int dofPerNd;
+	int globInd;
+	int nMds = modalCmd->numModes;
+	Node* thisNd;
+
+	ofstream outFile;
+	outFile.open(fileName);
+	outFile << setprecision(12);
+
+	outFile << "modalResults:\n";
+	outFile << "    eigenValues:\n";
+	for (i1 = 0; i1 < nMds; i1++) {
+		outFile << "      - " << eigVals[i1] << "\n";
+	}
+	if (modalCmd->type == "buckling") {
+		outFile << "    loadFactors:\n";
+	}
+	else {
+		outFile << "    frequencies:\n";
+	}
+	for (i1 = 0; i1 < nMds; i1++) {
+		outFile << "      - " << loadFact[i1] << "\n";
+	}
+
+	if (modalCmd->writeModes) {
+		outFile << "    modes:\n";
+		for (i1 = 0; i1 < nMds; i1++) {
+			outFile << "      - mode: " << i1 << "\n";
+			outFile << "        displacement:\n";
+			thisNd = nodes.getFirst();
+			while (thisNd) {
+				nd = thisNd->getLabel();
+				outFile << "          - [" << nd;
+				dofPerNd = thisNd->getNumDof();
+				for (i2 = 0; i2 < dofPerNd; i2++) {
+					globInd = thisNd->getDofIndex(i2);
+					i3 = i1 * elMatDim + globInd;
+					outFile << ", " << eigVecs[i3];
+				}
+				outFile << "]\n";
+				thisNd = thisNd->getNext();
+			}
+		}
+	}
+
+	outFile.close();
 
 	return;
 }

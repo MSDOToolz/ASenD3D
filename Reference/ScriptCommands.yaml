@@ -1,23 +1,23 @@
 ## AStrO Commands
+jobCommands:
+  - command: readModelInput  X
+    fileName:
+  - command: readLoads X
+    fileName:
+  - command: readConstraints X
+    fileName:
+  - command: readInitialState  X
+    fileName:
+  - command: readDesignVarInput X
+    fileName:
+  - command: readDesignVarValues X
+    fileName:
+  - command: readObjectiveInput X
+    fileName:
+  - command: readNodeResults X
+    fileName:
 
-readModelInput: X
-    fileName:
-readLoads: X
-    fileName:
-readConstraints: X
-    fileName:
-readInitialState: X 
-    fileName:
-readDesignVarInput: X
-    fileName:
-readDesignVarValues: X
-    fileName:
-readObjectiveInput: X
-    fileName:
-readNodeResults: X
-    fileName:
-
-solve: X
+  - command: solve X
     elastic: yes
     thermal: no
     nonlinearGeom: no
@@ -34,20 +34,21 @@ solve: X
     solverBandwidth:
     solverBlockDim:
 
-modalAnalysis: X
+  - command: modalAnalysis X
     type: buckling
     numModes: 10
+    solverMethod: 
     
-setSolnToMode: X
+  - command: setSolnToMode X
     solnField: displacement, velocity, acceleration
     mode:
     maxAmplitude:
 
-calcObjective: X
+  - command: calcObjective X
     
-calcObjGradient: X
+  - command: calcObjGradient X
 
-writeNodeResults: X
+  - command: writeNodeResults X
     fileName:
     nodeSet:
     fields:
@@ -66,7 +67,7 @@ writeNodeResults: X
         - 7
         - [10,100,10]
 
-writeElementResults: X
+  - command: writeElementResults X
     fileName:
     elementSet: 
     fields:
@@ -75,10 +76,8 @@ writeElementResults: X
         - strainEnergyDen
         - heatFlux
         - tempGradient
-        - shellDeformation
-        - shellForceMoment
-        - beamDeformation
-        - beamForceMoment
+        - sectionDef
+        - sectionFrcMom
     timeSteps: all
     ## or
     timeSteps:
@@ -87,25 +86,15 @@ writeElementResults: X
         - 7
         - [10,100,10]
         
-writeModalResults: X
+  - command: writeModalResults X
     fileName:
     writeModes: yes
 
-writeDesignVarValues: X
-    fileName:
-    include:
-        - category
-        - component
-        - layer
-        - nodeSet
-        - elementSet
-        - activeTime
-
-writeNodeCoordinates: X
+  - command: writeNodeCoordinates
     fileName:
     nodeSet:
         
-writeElementProperties: X
+  - command: writeElementProperties
     fileName:
     elementSet:
     properties:
@@ -113,7 +102,7 @@ writeElementProperties: X
         - modulus
         ...
 
-writeObjective: X
+  - command: writeObjective X
     fileName:
     include:
         - category

@@ -121,12 +121,11 @@ void Model::readJob(string fileName) {
 	if(inFile) {
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
-			if(headings[0] != prevLdHd) {
+			if(headings[1] == "command" && dataLen == 1) {
 				newCmd = new JobCommand();
-				newCmd->cmdString = headings[0];
+				newCmd->cmdString = data[0];
 				job.addCommand(newCmd);
-			}
-			if(headings[1] == "fileName" && dataLen == 1) {
+			} else if(headings[1] == "fileName" && dataLen == 1) {
 				newCmd->fileName = data[0];
 			} else if(headings[1] == "dynamic" && dataLen == 1) {
 				if(data[0] == "yes") {
@@ -992,6 +991,62 @@ void Model::readDesVarValues(string fileName) {
 	} else {
 		string errSt = "Error: could not open design variable value input file: " + fileName;
 		throw invalid_argument(errSt);		
+	}
+	
+	return;
+}
+
+void Model::readNodeResults(string fileName) {
+	int i1;
+	int i2;
+	int nd;
+	double ndDat[6];
+	Node* thisNd;
+	ifstream inFile;
+	string fileLine;
+	string headings[4] = { "","","","" };
+	int hdLdSpace[4] = { 0,0,0,0 };
+	string data[11];
+	int dataLen;
+	string dispFields = "displacement velocity acceleration";
+
+	inFile.open(fileName);
+	if (inFile) {
+		while (!inFile.eof()) {
+			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			if (headings[0] == "nodeResults" && dataLen > 1) {
+				nd = stoi(data[0]);
+				thisNd = nodeArray[nd].ptr;
+				i2 = dispFields.find(headings[1]);
+				if (i2 > -1) {
+					for (i1 = 0; i1 < thisNd->getNumDof(); i1++) {
+						ndDat[i1] = stod(data[i1 + 1]);
+					}
+					if (headings[1] == "displacement") {
+						thisNd->setDisplacement(ndDat);
+					}
+					else if (headings[1] == "velocity") {
+						thisNd->setVelocity(ndDat);
+					}
+					else {
+						thisNd->setAcceleration(ndDat);
+					}
+				}
+				else {
+					ndDat[0] = stod(data[1]);
+					if (headings[1] == "temperature") {
+						thisNd->setTemperature(ndDat[0]);
+					}
+					else {
+						thisNd->setTdot(ndDat[0]);
+					}
+				}
+			}
+		}
+	}
+	else {
+		string errSt = "Error: could not open node result input file: " + fileName;
+		throw invalid_argument(errSt);
 	}
 	
 	return;

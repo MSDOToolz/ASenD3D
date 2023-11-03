@@ -45,7 +45,13 @@ class Node {
 		
 		void setDisplacement(double newDisp[]);
 
+		void setVelocity(double newVel[]);
+
+		void setAcceleration(double newAcc[]);
+
 		void setTemperature(double newTemp);
+
+		void setTdot(double newTdot);
 		
 		void addToDisplacement(double delDisp[]);
 
@@ -141,6 +147,7 @@ class Node {
 //end dup		
  
 //end skip 
+ 
  
  
  

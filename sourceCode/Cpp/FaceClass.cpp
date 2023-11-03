@@ -80,7 +80,7 @@ Face* Face::getNext() {
 	return next;
 }
 
-//dup 1
+//dup1
 
 void Face::getAreaNormal(Doub& area, Doub norm[], NdPt ndAr[], DVPt dvAr[]) {
 	Doub v1[3];
@@ -137,6 +137,69 @@ void Face::getAreaNormal(Doub& area, Doub norm[], NdPt ndAr[], DVPt dvAr[]) {
 }
 
 //end dup
+ 
+//skip 
+ 
+//DiffDoub versions: 
+//dup1
+
+void Face::getAreaNormal(DiffDoub& area, DiffDoub norm[], NdPt ndAr[], DVPt dvAr[]) {
+	DiffDoub v1[3];
+	DiffDoub v2[3];
+	DiffDoub tmpV[3];
+	DiffDoub tmp;
+
+	if (numNds == 4) {
+		ndAr[globNodes[2]].ptr->getCrd(v1, dvAr);
+		ndAr[globNodes[0]].ptr->getCrd(tmpV, dvAr);
+		v1[0].sub(tmpV[0]);
+		v1[1].sub(tmpV[1]);
+		v1[2].sub(tmpV[2]);
+		ndAr[globNodes[3]].ptr->getCrd(v2, dvAr);
+		ndAr[globNodes[1]].ptr->getCrd(tmpV, dvAr);
+		v2[0].sub(tmpV[0]);
+		v2[1].sub(tmpV[1]);
+		v2[2].sub(tmpV[2]);
+	}
+	else {
+		ndAr[globNodes[1]].ptr->getCrd(v1, dvAr);
+		ndAr[globNodes[0]].ptr->getCrd(tmpV, dvAr);
+		v1[0].sub(tmpV[0]);
+		v1[1].sub(tmpV[1]);
+		v1[2].sub(tmpV[2]);
+		ndAr[globNodes[2]].ptr->getCrd(v2, dvAr);
+		ndAr[globNodes[0]].ptr->getCrd(tmpV, dvAr);
+		v2[0].sub(tmpV[0]);
+		v2[1].sub(tmpV[1]);
+		v2[2].sub(tmpV[2]);
+	}
+
+	crossProd(norm, v1, v2);
+	area.setVal(norm[0]);
+	area.sqr();
+	tmp.setVal(norm[1]);
+	tmp.sqr();
+	area.add(tmp);
+	tmp.setVal(norm[2]);
+	tmp.sqr();
+	area.add(tmp);
+	area.sqt();
+
+	tmp.setVal(1.0);
+	tmp.dvd(area);
+	norm[0].mult(tmp);
+	norm[1].mult(tmp);
+	norm[2].mult(tmp);
+
+	tmp.setVal(0.5);
+	area.mult(tmp);
+
+	return;
+}
+
+//end dup
+ 
+//end skip 
 
 void Face::destroy() {
 	delete[] locNodes;

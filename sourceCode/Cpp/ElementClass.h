@@ -93,6 +93,7 @@ public:
  
  
  
+ 
 
 class Element {
 	private:
@@ -274,6 +275,10 @@ class Element {
 
 		void dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
 
+		void getDefFrcMom(Doub def[], Doub frcMom[], double spt[], DoubStressPrereq& pre);
+
+		void dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], DoubStressPrereq& pre);
+
 		void getFluxTGrad(Doub flux[], Doub tGrad[], double spt[], int layer, DoubStressPrereq& pre);
 
 		void dFluxTGraddT(Doub dFdT[], Doub dTG[], double spt[], int layer, DoubStressPrereq& pre);
@@ -385,6 +390,7 @@ class Element {
  
 //end skip 
  
+ 
 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
 
@@ -436,12 +442,18 @@ class Element {
 		
 		void getRtk(DiffDoub Rvec[], double dRdT[], bool getMatrix, DiffDoubStressPrereq& pre);
 
-		void getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, DiffDoubStressPrereq& pre);
+		void getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoubStressPrereq& pre);
 
 		void getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]);
+
+		void getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+
+		void getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+
 //end dup
  
 //end skip 
+ 
  
  
  

@@ -18,6 +18,10 @@ Model::Model() {
 	timeStepsSaved = 0;
 	elasticScaled = false;
 	thermScaled = false;
+	eigVecs = nullptr;
+	eigVals = nullptr;
+	diagMass = nullptr;
+	modalCmd = nullptr;
 	return;
 }
 
@@ -54,14 +58,18 @@ DesVarList* Model::getDesignVars() {
 }
 
 void Model::executeJob() {
+	int i1;
 	int i2;
 	int numTsteps;
+	double time;
 	IntListEnt* thisEnt;
 	JobCommand *thisCmd = job.getFirst();
+	Node* thisNd;
 	string cmdStr;
 	string fileName;
 	string exten;
 	string fullFname;
+
 	while(thisCmd) {
 		cmdStr = thisCmd->cmdString;
 		fileName = thisCmd->fileName;
@@ -83,24 +91,58 @@ void Model::executeJob() {
 		} else if(cmdStr == "readObjectiveInput") {
 			cout << "reading objective input: " << fileName << endl;
 			readObjectiveInput(fileName);
-		} else if (cmdStr == "solve") {
+		}
+		else if (cmdStr == "readDesignVarValues") {
+			readDesVarValues(fileName);
+		}
+		else if (cmdStr == "readNodeResults") {
+			readNodeResults(thisCmd->fileName);
+		}
+		else if (cmdStr == "solve") {
 			solveCmd = thisCmd;
 			solve(thisCmd);
-		} else if (cmdStr == "calcObjective") {
+		}
+		else if (cmdStr == "modalAnalysis") {
+			modalCmd = thisCmd;
+			eigenSolve(thisCmd);
+		}
+		else if (cmdStr == "setSolnToMode") {
+			setSolnToMode(thisCmd->solnField, thisCmd->mode, thisCmd->maxAmplitude);
+		}
+		else if (cmdStr == "calcObjective") {
 			if (solveCmd->dynamic) {
 				if (timeStepsSaved == 0) {
 					cout << "Warning: dynamic analysis was run but time history was not saved." << endl;
 					cout << "         The objective can only be computed based on the final state." << endl;
 					objective.clearValues();
-					objective.calculateTerms(thisCmd->simPeriod, thisCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+					objective.calculateTerms(solveCmd->simPeriod, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 				}
 				else {
-					// rem: finish for time integration
+					objective.clearValues();
+					readTimeStepSoln(timeStepsSaved);
+					i1 = timeStepsSaved - 1;
+					time = solveCmd->timeStep * timeStepsSaved;
+					while (i1 >= 0) {
+						thisNd = nodes.getFirst();
+						while (thisNd) {
+							if (solveCmd->elastic) {
+								thisNd->backstepDisp();
+							}
+							if (solveCmd->thermal) {
+								thisNd->backstepTemp();
+							}
+							thisNd = thisNd->getNext();
+						}
+						readTimeStepSoln(i1);
+						objective.calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+						i1--;
+						time -= solveCmd->timeStep;
+					}
 				}
 			}
 			else {
 				objective.clearValues();
-				objective.calculateTerms(thisCmd->staticLoadTime, thisCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+				objective.calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 			}
 		}
 		else if (cmdStr == "calcObjGradient") {
@@ -137,7 +179,11 @@ void Model::executeJob() {
 					writeElementResults(thisCmd->fileName, thisCmd->elementSet, thisCmd->fields, -1);
 				}
 			}
-		} else if (cmdStr == "writeObjective") {
+		}
+		else if (cmdStr == "writeModalResults") {
+			writeModalResults(thisCmd->fileName, thisCmd->writeModes);
+		}
+		else if (cmdStr == "writeObjective") {
 			writeObjective(thisCmd->fileName, thisCmd->objInclude, thisCmd->writeGradient);
 		}
 		
@@ -168,6 +214,13 @@ void Model::destroy() {
 
 	elasticMat.destroy();
 	elasticLT.destroy();
+
+	if (eigVecs) {
+		delete[] eigVecs;
+		delete[] eigVals;
+		delete[] loadFact;
+		delete[] diagMass;
+	}
 
 	if (tempV1) {
 		delete[] tempV1;

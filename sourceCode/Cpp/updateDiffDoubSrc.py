@@ -1,10 +1,12 @@
 import os
 
-fileNames = ['ElementClass.cpp','ElementClass.h',
-             'ElementEquations.cpp','ElementProperties.cpp',
-             'ElementSolnFields.cpp','FaceClass.h',
-             'FaceClass.cpp','matrixFunctions.cpp',
-             'matrixFunctions.h','NodeClass.cpp','NodeClass.h']
+# fileNames = ['ElementClass.cpp','ElementClass.h',
+#              'ElementEquations.cpp','ElementProperties.cpp',
+#              'ElementSolnFields.cpp','FaceClass.h',
+#              'FaceClass.cpp','matrixFunctions.cpp',
+#              'matrixFunctions.h','NodeClass.cpp','NodeClass.h']
+
+fileNames = ['FaceClass.cpp']
 
 ##fileNames = ['matrixFunctions.cpp','matrixFunctions.h']
 

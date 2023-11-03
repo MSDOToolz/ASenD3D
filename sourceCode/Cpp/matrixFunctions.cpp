@@ -727,10 +727,11 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 			mag+= tmp*tmp;
 		}
 		mag = 1.0/sqrt(mag);
-		i4 = i1;
+		i4 = i1 * matDim;
 		for (i3 = 0; i3 < matDim; i3++) {
+			//i4 = i1 * matDim + i3;
 			eVecs[i4] = mag*tVec2[i3];
-			i4+= numPairs;
+			i4++;
 		}
 		eVals[i1] = 1.0/coefVals[i2];
 	}
@@ -1122,6 +1123,7 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -1920,6 +1922,7 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
  
  
  
+ 
 
 //dup1
 void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
@@ -2117,5 +2120,6 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 //end dup  
  
 //end skip 
+ 
  
  

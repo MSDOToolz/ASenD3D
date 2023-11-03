@@ -1,11 +1,11 @@
-
-readModelInput:
+jobCommands:
+  - command: readModelInput
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
     
-readLoads:
+  - command: readLoads
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/staticLoads.yaml
 
-solve: 
+  - command: solve 
     elastic: yes
     thermal: no
     nonlinearGeom: no
@@ -13,12 +13,12 @@ solve:
     dynamic: no
     solverMethod: direct
 
-writeNodeResults:
+  - command: writeNodeResults
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/nodeResults.yaml
     fields:
         - displacement
 
-writeElementResults:
+  - command: writeElementResults
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/elementResults.yaml
     elementSet: all
     fields:

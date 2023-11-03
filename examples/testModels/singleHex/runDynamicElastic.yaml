@@ -1,11 +1,11 @@
-
-readModelInput:
+jobCommands:
+  - command: readModelInput
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
     
-readInitialState:
+  - command: readInitialState
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/initialDisp.yaml
 
-solve: 
+  - command: solve
     elastic: yes
     thermal: no
     nonlinearGeom: no
@@ -18,7 +18,7 @@ solve:
     solnHistDir: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/solnHist/
     solverMethod: direct
 
-writeNodeResults:
+  - command: writeNodeResults
     fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/nodeResults.yaml
     fields:
         - displacement

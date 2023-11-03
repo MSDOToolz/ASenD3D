@@ -387,6 +387,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 
 	int i1;
 	int fi;
+	int numLay;
 	int tgtLen;
 	double tgtVal;
 	allocateObj();
@@ -400,10 +401,13 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 	Doub strain[6];
 	Doub stress[6];
 	double seDen;
+	Doub def[9];
+	Doub frcMom[9];
 	Doub flux[3];
 	Doub tGrad[3];
 	Doub eVol;
 	Doub eDen;
+	Doub tmp;
 
 	string catList = "displacement velocity acceleration temperature tdot";
 	fi = catList.find(category);
@@ -552,6 +556,90 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 			}
 		}
 	}
+
+	catList = "sectionDef sectionFrcMom";
+	fi = catList.find(category);
+	if (fi > -1) {
+		if (!elSetPtr) {
+			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
+			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
+			throw runtime_error(errStr);
+		}
+		thisEnt = elSetPtr->getFirstEntry();
+		qInd = 0;
+		while (thisEnt) {
+			thisEl = elAr[thisEnt->value].ptr;
+			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
+			thisEl->getDefFrcMom(def, frcMom, spt, stPre);
+			if (category == "sectionDef") {
+				qVec[qInd] = def[component - 1].val;
+			}
+			else if (category == "sectionFrcMom") {
+				qVec[qInd] = frcMom[component - 1].val;
+			}
+			if (optr == "volumeIntegral" || optr == "volumeAverage") {
+				numLay = thisEl->getNumLayers();
+				if (numLay > 1) {
+					eVol.setVal(0.0);
+					for (i1 = 0; i1 < numLay; i1++) {
+						thisEl->getVolume(tmp, stPre, i1);
+						eVol.add(tmp);
+					}
+				}
+				else {
+					thisEl->getVolume(eVol, stPre, 0);
+				}
+				elVolVec[qInd] = eVol.val;
+			}
+			thisEnt = thisEnt->next;
+			qInd++;
+		}
+		if (optr == "powerNorm") {
+			tgtLen = tgtVals.getLength();
+			if (tgtLen == 0) {
+				for (i1 = 0; i1 < qLen; i1++) {
+					tgtVec[i1] = 0.0;
+				}
+			}
+			else if (tgtLen == 1) {
+				tgtVal = tgtVals.getFirst()->value;
+				for (i1 = 0; i1 < qLen; i1++) {
+					tgtVec[i1] = tgtVal;
+				}
+			}
+			else {
+				thisDb = tgtVals.getFirst();
+				qInd = 0;
+				while (thisDb) {
+					tgtVec[qInd] = thisDb->value;
+					thisDb = thisDb->next;
+					qInd++;
+				}
+			}
+			stPre.destroy();
+			value += getPowerNorm();
+			return;
+		}
+		if (optr == "volumeIntegral" || optr == "volumeAverage") {
+			if (tgtVals.getLength() == 0) {
+				tgtVec[0] = 0.0;
+			}
+			else {
+				tgtVec[0] = tgtVals.getFirst()->value;
+			}
+			if (optr == "volumeIntegral") {
+				stPre.destroy();
+				value += getVolIntegral();
+				return;
+			}
+			else {
+				stPre.destroy();
+				value += getVolAverage();
+				return;
+			}
+		}
+	}
 	
 	catList = "flux tempGradient";
 	fi = catList.find(category);
@@ -685,11 +773,13 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	double spt[3] = { 0.0,0.0,0.0 };
 	Doub strain[6];
 	Doub stress[6];
-	Doub dsdU[198];
-	Doub dedU[198];
-	Doub dsdT[60];
+	Doub dsdU[288];
+	Doub dedU[288];
+	Doub dsdT[90];
 	Doub dseDendU[33];
 	Doub dseDendT[10];
+	Doub def[9];
+	Doub frcMom[9];
 	Doub flux[3];
 	Doub tGrad[3];
 	Doub dFdT[30];
@@ -753,6 +843,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			}
 		}
 	}
+
 	catList = "stress strain strainEnergyDen";
 	fi = catList.find(category);
 	if (fi > -1) {
@@ -828,6 +919,61 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		}
 	}
 	
+	catList = "sectionDef sectionFrcMom";
+	fi = catList.find(category);
+	if (fi > -1) {
+		if (!elSetPtr) {
+			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
+			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
+			throw runtime_error(errStr);
+		}
+		thisEnt = elSetPtr->getFirstEntry();
+		qInd = 0;
+		while (thisEnt) {
+			thisEl = elAr[thisEnt->value].ptr;
+			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
+			//thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
+			thisEl->getDefFrcMom(def, frcMom, spt, stPre);
+			thisEl->dDefFrcMomdU(dedU, dsdU, dsdT, spt, stPre);
+			elNumNds = thisEl->getNumNds();
+			elDofPerNd = thisEl->getDofPerNd();
+			elNumIntDof = thisEl->getNumIntDof();
+			elTotDof = elNumNds * elDofPerNd + elNumIntDof;
+			i1 = elTotDof * (component - 1);
+			i2 = elNumNds * (component - 1);
+			if (category == "sectionFrcMom") {
+				thisEl->putVecToGlobMat(dQdU, &dsdU[i1], false, qInd, ndAr);
+				thisEl->putVecToGlobMat(dQdT, &dsdT[i2], true, qInd, ndAr);
+			}
+			else if (category == "sectionDef") {
+				thisEl->putVecToGlobMat(dQdU, &dedU[i1], false, qInd, ndAr);
+			}
+			thisEnt = thisEnt->next;
+			qInd++;
+		}
+		if (optr == "powerNorm") {
+			for (i1 = 0; i1 < qLen; i1++) {
+				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			}
+			stPre.destroy();
+			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+			return;
+		}
+		if (optr == "volumeIntegral" || optr == "volumeAverage") {
+			if (optr == "volumeIntegral") {
+				stPre.destroy();
+				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				return;
+			}
+			else {
+				stPre.destroy();
+				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				return;
+			}
+		}
+	}
+
 	catList = "flux tempGradient";
 	fi = catList.find(category);
 	if (fi > -1) {
@@ -887,6 +1033,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 	}
 
 	int i1;
+	int numLay;
 	int fi;
 	IntListEnt* thisEnt;
 	IntListEnt* thisDVEnt;
@@ -900,10 +1047,13 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 	DiffDoub strain[6];
 	DiffDoub stress[6];
 	double seDen;
+	DiffDoub def[9];
+	DiffDoub frcMom[9];
 	DiffDoub flux[3];
 	DiffDoub tGrad[3];
 	DiffDoub eVol;
 	DiffDoub eDen;
+	DiffDoub tmp;
 
 
 	string catList = "stress strain strainEnergyDen";
@@ -942,6 +1092,75 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
 					thisEl->getVolume(eVol, stPre, layer);
+					dVdD.addEntry(qInd, dvi, eVol.dval);
+				}
+				thisDV->setDiffVal(dvVal.val, 0.0);
+				thisDVEnt = thisDVEnt->next;
+			}
+			thisEnt = thisEnt->next;
+			qInd++;
+		}
+		if (optr == "powerNorm") {
+			for (i1 = 0; i1 < qLen; i1++) {
+				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			}
+			stPre.destroy();
+			dPowerNormdD(dLdD);
+			return;
+		}
+		if (optr == "volumeIntegral" || optr == "volumeAverage") {
+			if (optr == "volumeIntegral") {
+				stPre.destroy();
+				dVolIntegraldD(dLdD);
+				return;
+			}
+			else {
+				stPre.destroy();
+				dVolAveragedD(dLdD);
+				return;
+			}
+		}
+	}
+
+	string catList = "sectionDef sectionFrcMom";
+	fi = catList.find(category);
+	if (fi > -1) {
+		if (!elSetPtr) {
+			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
+			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
+			throw runtime_error(errStr);
+		}
+		thisEnt = elSetPtr->getFirstEntry();
+		qInd = 0;
+		while (thisEnt) {
+			thisEl = elAr[thisEnt->value].ptr;
+			thisDVEnt = thisEl->getFirstCompDV();
+			while (thisDVEnt) {
+				dvi = thisDVEnt->value;
+				thisDV = dvAr[dvi].ptr;
+				thisDV->getValue(dvVal);
+				thisDV->setDiffVal(dvVal.val, 1.0);
+				thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+				//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
+				thisEl->getDefFrcMom(def, frcMom, spt, stPre);
+				if (category == "sectionFrcMom") {
+					dQdD.addEntry(qInd, dvi, frcMom[component - 1].dval);
+				}
+				else if (category == "sectionDef") {
+					dQdD.addEntry(qInd, dvi, def[component - 1].dval);
+				}
+				if (optr == "volumeIntegral" || optr == "volumeAverage") {
+					numLay = thisEl->getNumLayers();
+					if (numLay > 1) {
+						eVol.setVal(0.0);
+						for (i1 = 0; i1 < numLay; i1++) {
+							thisEl->getVolume(tmp, stPre, i1);
+							eVol.add(tmp);
+						}
+					}
+					else {
+						thisEl->getVolume(eVol, stPre, 0);
+					}
 					dVdD.addEntry(qInd, dvi, eVol.dval);
 				}
 				thisDV->setDiffVal(dvVal.val, 0.0);

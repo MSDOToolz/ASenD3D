@@ -959,60 +959,237 @@ void Model::solve(JobCommand *cmd) {
 	return;
 }
 
-void Model::backupElastic() {
+void Model::eigenSolve(JobCommand* cmd) {
 	int i1;
 	int i2;
-	int numIntDof;
-	Node* thisNd = nodes.getFirst();
-	i1 = 0;
-	i2 = 0;
-	double zeros[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-	while (thisNd) {
-		thisNd->getPrevDisp(&tempV1[i1]);
-		thisNd->getPrevVel(&tempV2[i1]);
-		thisNd->getPrevAcc(&tempV3[i1]);
-		tempV4[i2] = thisNd->getTemperature();
-		thisNd->getDisp(&tempV5[i1]);
-		thisNd->setPrevDisp(zeros);
-		thisNd->setPrevVel(zeros);
-		thisNd->setPrevAcc(zeros);
-		thisNd->setTemperature(zeros[0]);
-		thisNd->setDisplacement(zeros);
-		thisNd = thisNd->getNext();
-		i1 += thisNd->getNumDof();
-		i2++;
+	int i3;
+	Element* thisEl;
+	Node* thisNd;
+	Doub Rvec[33];
+	double Rv2[33];
+	double dRdA[2];
+	double zeros[9] = {0.0, 0.0, 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0};
+	double vKv;
+	DoubStressPrereq pre;
+
+	if (!anPrepRun) {
+		analysisPrep(cmd->solverBlockDim);
+	}
+	if (!eigVecs) {
+		i1 = cmd->numModes;
+		eigVals = new double[i1];
+		loadFact = new double[i1];
+		i1 *= elMatDim;
+		eigVecs = new double[i1];
+		diagMass = new double[elMatDim];
+	}
+	if (cmd->type == "buckling") {
+		for (i1 = 0; i1 < elMatDim; i1++) {
+			diagMass[i1] = 1.0;
+		}
+	}
+	else {
+		for (i1 = 0; i1 < elMatDim; i1++) {
+			diagMass[i1] = 0.0;
+		}
+		thisEl = elements.getFirst();
+		while (thisEl) {
+			thisEl->getStressPrereq(pre, true, nodeArray, dVarArray);
+			i2 = thisEl->getNumNds() * thisEl->getDofPerNd();
+			for (i1 = 0; i1 < i2; i1++) {
+				pre.globAcc[i1].setVal(1.0);
+			}
+			thisEl->getRum(Rvec, dRdA, false, true, pre, nodeArray, dVarArray);
+			for (i1 = 0; i1 < i2; i1++) {
+				Rv2[i1] = Rvec[i1].val;
+			}
+			thisEl->addToGlobVec(Rv2, diagMass, false, false, nodeArray);
+			thisEl = thisEl->getNext();
+		}
+	}
+	cmd->nonlinearGeom = solveCmd->nonlinearGeom;
+	cmd->dynamic = solveCmd->dynamic;
+	solveCmd->nonlinearGeom = true;
+	solveCmd->dynamic = false;
+	buildElasticSolnLoad(tempV1, true);
+	if (cmd->solverMethod == "direct") {
+		elasticLT.populateFromSparseMat(elasticMat, elasticConst);
+		elasticLT.ldlFactor();
+		eigenSparseDirect(eigVals, eigVecs, cmd->numModes, elasticLT, diagMass, elMatDim);
+	}
+	else {
+
 	}
 
-	Element* thisEl = elements.getFirst();
-	i1 = 0;
-	while (thisEl) {
-		numIntDof = thisEl->getNumIntDof();
-		if (numIntDof > 0) {
-			thisEl->getIntDisp(&tempV6[i1]);
-			i1 += numIntDof;
+	if (cmd->type == "buckling") {
+		writeTimeStepSoln(-1);
+		thisNd = nodes.getFirst();
+		while (thisNd) {
+			thisNd->advanceDisp();
+			thisNd->setDisplacement(zeros);
+			thisNd = thisNd->getNext();
 		}
-		thisEl = thisEl->getNext();
+		thisEl = elements.getFirst();
+		while (thisEl) {
+			thisEl->advanceIntDisp();
+			thisEl->setIntDisp(zeros);
+			thisEl = thisEl->getNext();
+		}
+		buildElasticSolnLoad(tempV1, true);
+		i2 = 0;
+		for (i1 = 0; i1 < cmd->numModes; i1++) {
+			elasticMat.vectorMultiply(tempV1, &eigVecs[i2],false);
+			vKv = 0.0;
+			for (i3 = 0; i3 < elMatDim; i3++) {
+				vKv += eigVecs[i2 + i3] * tempV1[i3];
+			}
+			try {
+				loadFact[i1] = vKv / (vKv - eigVals[i1]);
+			}
+			catch (...) {
+				loadFact[i1] = 1.0e+100;
+			}
+			i2 += elMatDim;
+		}
+		thisNd = nodes.getFirst();
+		while (thisNd) {
+			thisNd->backstepDisp();
+			thisNd = thisNd->getNext();
+		}
+		thisEl = elements.getFirst();
+		while (thisEl) {
+			thisEl->backstepIntDisp();
+			thisEl = thisEl->getNext();
+		}
+		readTimeStepSoln(-1);
 	}
+	else {
+		for (i1 = 0; cmd->numModes; i1++) {
+			try {
+				loadFact[i1] = 0.159154943091895335 * sqrt(eigVals[i1]);
+			}
+			catch (...) {
+				loadFact[i1] = -1.0;
+			}
+		}
+	}
+
+	solveCmd->nonlinearGeom = cmd->nonlinearGeom;
+	solveCmd->dynamic = cmd->dynamic;
+
+	pre.destroy();
+
 	return;
 }
 
-void Model::restoreElastic() {
+//void Model::backupElastic() {
+//	int i1;
+//	int i2;
+//	int numIntDof;
+//	Node* thisNd = nodes.getFirst();
+//	i1 = 0;
+//	i2 = 0;
+//	double zeros[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+//	while (thisNd) {
+//		thisNd->getPrevDisp(&tempV1[i1]);
+//		thisNd->getPrevVel(&tempV2[i1]);
+//		thisNd->getPrevAcc(&tempV3[i1]);
+//		tempV4[i2] = thisNd->getTemperature();
+//		thisNd->getDisp(&tempV5[i1]);
+//		thisNd->setPrevDisp(zeros);
+//		thisNd->setPrevVel(zeros);
+//		thisNd->setPrevAcc(zeros);
+//		thisNd->setTemperature(zeros[0]);
+//		thisNd->setDisplacement(zeros);
+//		thisNd = thisNd->getNext();
+//		i1 += thisNd->getNumDof();
+//		i2++;
+//	}
+//
+//	Element* thisEl = elements.getFirst();
+//	i1 = 0;
+//	while (thisEl) {
+//		numIntDof = thisEl->getNumIntDof();
+//		if (numIntDof > 0) {
+//			thisEl->getIntDisp(&tempV6[i1]);
+//			i1 += numIntDof;
+//		}
+//		thisEl = thisEl->getNext();
+//	}
+//	return;
+//}
+//
+//void Model::restoreElastic() {
+//	int i1;
+//	int i2;
+//	Node* thisNd = nodes.getFirst();
+//	i1 = 0;
+//	i2 = 0;
+//	double zeros[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+//	while (thisNd) {
+//		thisNd->setPrevDisp(&tempV1[i1]);
+//		thisNd->setPrevVel(&tempV2[i1]);
+//		thisNd->setPrevAcc(&tempV3[i1]);
+//		thisNd->setTemperature(tempV4[i2]);
+//		thisNd->setDisplacement(&tempV5[i1]);
+//		thisNd = thisNd->getNext();
+//		i1 += thisNd->getNumDof();
+//		i2++;
+//	}
+//	return;
+//}
+
+void Model::setSolnToMode(string field, int mode, double maxVal) {
 	int i1;
 	int i2;
-	Node* thisNd = nodes.getFirst();
-	i1 = 0;
-	i2 = 0;
-	double zeros[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-	while (thisNd) {
-		thisNd->setPrevDisp(&tempV1[i1]);
-		thisNd->setPrevVel(&tempV2[i1]);
-		thisNd->setPrevAcc(&tempV3[i1]);
-		thisNd->setTemperature(tempV4[i2]);
-		thisNd->setDisplacement(&tempV5[i1]);
-		thisNd = thisNd->getNext();
-		i1 += thisNd->getNumDof();
+	int modeSt;
+	int nDof;
+	int globInd;
+	string dispFields = "displacement velocity acceleration";
+	string erStr;
+	Node* thisNd;
+	double ndDat[6];
+	double scaleFact;
+	double abVal;
+	
+	modeSt = mode * elMatDim;
+	i2 = modeSt;
+	scaleFact = 0.0;
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		abVal = abs(eigVecs[i2]);
+		if (abVal > scaleFact) {
+			scaleFact = abVal;
+		}
 		i2++;
 	}
+	scaleFact = maxVal / scaleFact;
+
+	i1 = dispFields.find(field);
+	if (i1 > -1) {
+		thisNd = nodes.getFirst();
+		while (thisNd) {
+			nDof = thisNd->getNumDof();
+			for (i2 = 0; i2 < nDof; i2++) {
+				globInd = thisNd->getDofIndex(i2);
+				ndDat[i2] = scaleFact * eigVecs[modeSt + globInd];
+			}
+			if (field == "displacement") {
+				thisNd->setDisplacement(ndDat);
+			}
+			else if (field == "velocity") {
+				thisNd->setVelocity(ndDat);
+			}
+			else {
+				thisNd->setAcceleration(ndDat);
+			}
+			thisNd = thisNd->getNext();
+		}
+	}
+	else {
+		erStr = "Warning: " + field + " is not a valid field to set to a mode. Aborting setSolnToMode()";
+		cout << erStr << endl;
+	}
+
 	return;
 }
 

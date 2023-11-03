@@ -38,6 +38,17 @@ class Face {
 		void getAreaNormal(Doub& area, Doub norm[], NdPt ndAr[], DVPt dvAr[]);
 
 		//end dup
+ 
+//skip 
+ 
+//DiffDoub versions: 
+		//dup1
+
+		void getAreaNormal(DiffDoub& area, DiffDoub norm[], NdPt ndAr[], DVPt dvAr[]);
+
+		//end dup
+ 
+//end skip 
 		
 		void destroy();
 };

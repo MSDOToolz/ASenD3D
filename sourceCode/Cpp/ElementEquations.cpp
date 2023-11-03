@@ -1399,7 +1399,9 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 		}
 	}
 
-	getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+	if (dofPerNd == 6) {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+	}
 
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
@@ -1739,7 +1741,7 @@ void Element::getRtk(DiffDoub Rvec[], double dRdT[], bool getMatrix, DiffDoubStr
 	return;
 }
 
-void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, DiffDoubStressPrereq& pre) {
+void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoubStressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
@@ -1750,6 +1752,7 @@ void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, DiffDoub
 	DiffDoub ptTdot;
 	DiffDoub Rtmp[10];
 	DiffDoub dRtmp[100];
+	DiffDoub saveCp;
 
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -1762,7 +1765,11 @@ void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, DiffDoub
 		}
 	}
 
-	if (dofPerNd == 3) {
+	if (!actualProps) {
+		saveCp.setVal(pre.SpecHeat);
+		pre.SpecHeat.setVal(1.0);
+	}
+	else if (dofPerNd == 3) {
 		pre.SpecHeat.mult(pre.Mmat[0]);
 	}
 
@@ -1792,7 +1799,10 @@ void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, DiffDoub
 		}
 	}
 
-	if (dofPerNd == 3) {
+	if (!actualProps) {
+		pre.SpecHeat.setVal(saveCp);
+	}
+	else if (dofPerNd == 3) {
 		pre.SpecHeat.dvd(pre.Mmat[0]);
 	}
 
@@ -1814,7 +1824,7 @@ void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCo
 	getRtk(Rvec, dRdT, getMatrix, pre);
 
 	if (cmd->dynamic) {
-		getRtm(Rtmp, dRtmp, getMatrix, pre);
+		getRtm(Rtmp, dRtmp, getMatrix, true, pre);
 		i3 = 0;
 		for (i1 = 0; i1 < numNds; i1++) {
 			Rvec[i1].add(Rtmp[i1]);
@@ -1843,9 +1853,326 @@ void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCo
 	return;
 }
 
+void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int globInd;
+	int nd;
+	int dof;
+	int ndDof = numNds*dofPerNd;
+	int numLay = sectPtr->getNumLayers();
+	string ldType = ldPt->getType();
+	double ldLoad[6];
+	double ldCent[3];
+	double ldAxis[3];
+	double ldAngVel;
+	double ldNorm[3];
+	double dRdA[2];
+	Face* fcPt;
+	int* fcLocNd;
+	DiffDoub elAppLd[30];
+	DiffDoub totNdF[6];
+	DiffDoub inpMag;
+	DiffDoub vecMag;
+	DiffDoub elVol;
+	DiffDoub scFact;
+	DiffDoub elCent[3];
+	DiffDoub centToEl[3];
+	DiffDoub axToEl[3];
+	DiffDoub angVel2;
+	DiffDoub fcArea;
+	DiffDoub fcNorm[3];
+	DiffDoub trac[3];
+	DiffDoub dp;
+	DiffDoub tmp;
+
+	for (i1 = 0; i1 < ndDof; i1++) {
+		pre.globAcc[i1].setVal(0.0);
+	}
+
+	if (ldType == "bodyForce") {
+		ldPt->getLoad(ldLoad);
+		i2 = 0;
+		for (i1 = 0; i1 < ndDof; i1++) {
+			nd = dofTable[i2];
+			dof = dofTable[i2 + 1];
+			i3 = dof * numNds + nd;
+			pre.globAcc[i3].setVal(ldLoad[dof]);
+			i2 += 2;
+		}
+		getRum(elAppLd, dRdA, false, false, pre, ndAr, dvAr);
+		i2 = 0;
+		for (i1 = 0; i1 < ndDof; i1++) {
+			dof = dofTable[i2 + 1];
+			totNdF[dof].add(elAppLd[i1]);
+			i2 += 2;
+		}
+		for (i1 = 0; i1 < dofPerNd; i1++) {
+			tmp.setVal(ldLoad[i1]);
+			tmp.sqr();
+			inpMag.add(tmp);
+			tmp.setVal(totNdF[i1]);
+			tmp.sqr();
+			vecMag.add(tmp);
+		}
+		inpMag.sqt();
+		vecMag.sqt();
+		if (type == 41 || type == 3) {
+			elVol.setVal(0.0);
+			for (i1 = 0; i1 < numLay; i1++) {
+				getVolume(tmp, pre, i1);
+				elVol.add(tmp);
+			}
+		}
+		else {
+			getVolume(elVol, pre, 0);
+		}
+		scFact.setVal(inpMag);
+		scFact.mult(elVol);
+		scFact.dvd(vecMag);
+		for (i1 = 0; i1 < ndDof; i1++) {
+			elAppLd[i1].mult(scFact);
+		}
+	}
+	else if (ldType == "gravitational") {
+		ldPt->getLoad(ldLoad);
+		i2 = 0;
+		for (i1 = 0; i1 < ndDof; i1++) {
+			nd = dofTable[i2];
+			dof = dofTable[i2 + 1];
+			i3 = dof * numNds + nd;
+			if (dof < 3) {
+				pre.globAcc[i3].setVal(ldLoad[dof]);
+			}
+			i2 += 2;
+		}
+		getRum(elAppLd, dRdA, false, true, pre, ndAr, dvAr);
+	}
+	else if (ldType == "centrifugal") {
+		ldPt->getCenter(ldCent);
+		ldPt->getAxis(ldAxis);
+		ldAngVel = ldPt->getAngVel();
+		angVel2.setVal(ldAngVel);
+		angVel2.sqr();
+		i3 = 0;
+		tmp.setVal(1.0/numNds);
+		dp.setVal(0.0);
+		for (i1 = 0; i1 < 3; i1++) {
+			for (i2 = 0; i2 < numNds; i2++) {
+				elCent[i1].add(pre.globNds[i3]);
+				i3++;
+			}
+			elCent[i1].mult(tmp);
+			centToEl[i1].setVal(elCent[i1]);
+			tmp.setVal(ldCent[i1]);
+			centToEl[i1].sub(tmp);
+			tmp.setVal(ldAxis[i1]);
+			tmp.mult(centToEl[i1]);
+			dp.add(tmp);
+		}
+		for (i1 = 0; i1 < 3; i1++) {
+			axToEl[i1].setVal(centToEl[i1]);
+			tmp.setVal(ldAxis[i1]);
+			tmp.mult(dp);
+			axToEl[i1].sub(tmp);
+			axToEl[i1].mult(angVel2);
+		}
+		i2 = 0;
+		for (i1 = 0; i1 < ndDof; i1++) {
+			nd = dofTable[i2];
+			dof = dofTable[i2 + 1];
+			i3 = dof * numNds + nd;
+			if (dof < 3) {
+				pre.globAcc[i3].setVal(axToEl[dof]);
+			}
+			i2 += 2;
+		}
+		getRum(elAppLd, dRdA, false, true, pre, ndAr, dvAr);
+	}
+	else if (ldType == "surfaceTraction" || ldType == "surfacePressure") {
+		ldPt->getNormDir(ldNorm);
+		ldPt->getLoad(ldLoad);
+		fcPt = faces.getFirst();
+		while (fcPt) {
+			if (fcPt->onSurface()) {
+				fcPt->getAreaNormal(fcArea, fcNorm, ndAr, dvAr);
+				dp.setVal(0.0);
+				for (i1 = 0; i1 < 3; i1++) {
+					tmp.setVal(ldNorm[i1]);
+					tmp.mult(fcNorm[i1]);
+					dp.add(tmp);
+				}
+				tmp.setVal(r_pio180* ldPt->getNormTol());
+				tmp.cs();
+				if (dp.val > tmp.val) {
+					if (ldType == "surfacePressure") {
+						for (i1 = 0; i1 < 3; i1++) {
+							trac[i1].setVal(ldLoad[0]);
+							trac[i1].mult(fcNorm[i1]);
+							trac[i1].neg();
+						}
+					}
+					else {
+						for (i1 = 0; i1 < 3; i1++) {
+							trac[i1].setVal(ldLoad[i1]);
+						}
+					}
+					i2 = fcPt->getNumNds();
+					fcLocNd = fcPt->getLocNds();
+					for (i1 = 0; i1 < i2; i1++) {
+						i4 = fcLocNd[i1];
+						for (i3 = 0; i3 < 3; i3++) {
+							//i4 = i3 * numNds + fcLocNd[i1];
+							pre.globAcc[i4].setVal(ldLoad[i3]);
+							i4 += numNds;
+						}
+					}
+					getRum(elAppLd, dRdA, false, false, pre, ndAr, dvAr);
+					i2 = 0;
+					for (i1 = 0; i1 < ndDof; i1++) {
+						nd = dofTable[i2];
+						dof = dofTable[i2 + 1];
+						totNdF[dof].add(elAppLd[i1]);
+						i2 += 2;
+					}
+					inpMag.setVal(0.0);
+					vecMag.setVal(0.0);
+					for (i1 = 0; i1 < 3; i1++) {
+						tmp.setVal(totNdF[i1]);
+						tmp.sqr();
+						vecMag.add(tmp);
+						tmp.setVal(ldLoad[i1]);
+						tmp.sqr();
+						inpMag.add(tmp);
+					}
+					inpMag.sqt();
+					vecMag.sqt();
+					tmp.setVal(fcArea);
+					tmp.mult(inpMag);
+					tmp.dvd(vecMag);
+					for (i1 = 0; i1 < ndDof; i1++) {
+						elAppLd[i1].mult(tmp);
+					}
+				}
+			}
+			fcPt = fcPt->getNext();
+		}
+	}
+
+	i2 = 0;
+	for (i1 = 0; i1 < ndDof; i1++) {
+		nd = nodes[dofTable[i2]];
+		dof = dofTable[i2 + 1];
+		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		AppLd[globInd].add(elAppLd[i1]);
+		i2 += 2;
+	}
+
+	return;
+}
+
+void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int globInd;
+	int numLay = sectPtr->getNumLayers();
+	string ldType = ldPt->getType();
+	double ldLoad[6];
+	double ldNorm[3];
+	DiffDoub elAppLd[10];
+	double dRdT[2];
+	Face* fcPt;
+	int fcNumNds;
+	int* fcLocNds;
+	DiffDoub fcArea;
+	DiffDoub fcNorm[3];
+	DiffDoub totHG;
+	DiffDoub elVol;
+	DiffDoub dp;
+	DiffDoub tmp;
+
+	for (i1 = 0; i1 < numNds; i1++) {
+		pre.globTdot[i1].setVal(0.0);
+	}
+
+	ldPt->getLoad(ldLoad);
+	if (ldType == "bodyHeatGen") {
+		for (i1 = 0; i1 < numNds; i1++) {
+			pre.globTdot[i1].setVal(ldLoad[0]);
+		}
+		getRtm(elAppLd, dRdT,false,false,pre);
+		totHG.setVal(0.0);
+		for (i1 = 0; i1 < numNds; i1++) {
+			totHG.add(elAppLd[i1]);
+		}
+		if (numLay > 0) {
+			elVol.setVal(0.0);
+			for (i1 = 0; i1 < numLay; i1++) {
+				getVolume(tmp, pre, i1);
+				elVol.add(tmp);
+			}
+		}
+		else {
+			getVolume(elVol, pre, 0);
+		}
+		tmp.setVal(ldLoad[0]);
+		tmp.mult(elVol);
+		tmp.dvd(totHG);
+		for (i1 = 0; i1 < numNds; i1++) {
+			elAppLd[i1].mult(tmp);
+		}
+	}
+	else if (ldType == "surfaceFlux") {
+		fcPt = faces.getFirst();
+		while (fcPt) {
+			if (fcPt->onSurface()) {
+				ldPt->getNormDir(ldNorm);
+				fcPt->getAreaNormal(fcArea, fcNorm, ndAr, dvAr);
+				for (i1 = 0; i1 < 3; i1++) {
+					tmp.setVal(ldNorm[i1]);
+					tmp.mult(fcNorm[i1]);
+					dp.add(tmp);
+				}
+				tmp.setVal(r_pio180 * ldPt->getNormTol());
+				tmp.cs();
+				if (dp.val > tmp.val) {
+					fcNumNds = fcPt->getNumNds();
+					fcLocNds = fcPt->getLocNds();
+					for (i1 = 0; i1 < fcNumNds; i1++) {
+						i2 = fcLocNds[i1];
+						pre.globTdot[i2].setVal(ldLoad[0]);
+					}
+					getRtm(elAppLd, dRdT, false, false, pre);
+					totHG.setVal(0.0);
+					for (i1 = 0; i1 < numNds; i1++) {
+						totHG.add(elAppLd[i1]);
+					}
+					tmp.setVal(ldLoad[0]);
+					tmp.mult(fcArea);
+					tmp.dvd(totHG);
+					for (i1 = 0; i1 < numNds; i1++) {
+						elAppLd[i1].mult(tmp);
+					}
+				}
+			}
+			fcPt = fcPt->getNext();
+		}
+	}
+
+	for (i1 = 0; i1 < numNds; i1++) {
+		globInd = ndAr[nodes[i1]].ptr->getSortedRank();
+		AppLd[globInd].add(elAppLd[i1]);
+	}
+
+	return;
+}
+
 //end dup
  
 //end skip 
+ 
  
  
  

@@ -1380,6 +1380,66 @@ void Element::dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[
 	return;
 }
 
+void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], DoubStressPrereq& pre) {
+	int i1;
+	Doub nVec[11];
+	Doub dNdx[33];
+	Doub detJ;
+	Doub ptTemp;
+	Doub tmp;
+
+	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
+
+	ptTemp.setVal(0.0);
+	for (i1 = 0; i1 < numNds; i1++) {
+		tmp.setVal(pre.globTemp[i1]);
+		tmp.mult(nVec[i1]);
+		ptTemp.add(tmp);
+	}
+
+	matMul(frcMom, pre.Cmat, def, defDim, defDim, 1);
+
+	for (i1 = 0; i1 < 6; i1++) {
+		frcMom[i1].sub(pre.Einit[i1]);
+		tmp.setVal(ptTemp);
+		tmp.mult(pre.thermExp[i1]);
+		frcMom[i1].sub(tmp);
+	}
+
+	return;
+}
+
+void Element::dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], DoubStressPrereq& pre) {
+	int i1;
+	int i2;
+	int i3;
+	int totDof;
+	Doub nVec[11];
+	Doub dNdx[33];
+	Doub detJ;
+	Doub ptTemp;
+	Doub tmp;
+	Doub def[9];
+
+	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+	totDof = numNds * dofPerNd + numIntDof;
+	for (i1 = 0; i1 < totDof; i1++) {
+		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i1, -1);
+		i2 = i1;
+		for (i3 = 0; i3 < defDim; i3++) {
+			dDefdU[i2].setVal(def[i3]);
+			i2 += totDof;
+		}
+	}
+
+	matMul(dFrcMomdU, pre.Cmat, dDefdU, defDim, defDim, totDof);
+
+	matMul(dFrcMomdT, pre.thermExp, nVec, 6, 1, numNds);
+
+	return;
+}
+
 void Element::getFluxTGrad(Doub flux[], Doub tGrad[], double spt[], int layer, DoubStressPrereq& pre) {
 	int i1;
 	Doub nVec[11];
@@ -1513,7 +1573,7 @@ void Element::getNdVel(DiffDoub globVel[], NdPt ndAr[]) {
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
 			globVel[i3].setVal(ndVel[i2]);
-			i3 += nDim;
+			i3 += numNds;
 		}
 	}
 
@@ -1533,7 +1593,7 @@ void Element::getNdAcc(DiffDoub globAcc[], NdPt ndAr[]) {
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
 			globAcc[i3].setVal(ndAcc[i2]);
-			i3 += nDim;
+			i3 += numNds;
 		}
 	}
 
@@ -2913,6 +2973,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
+ 
  
 
 void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {

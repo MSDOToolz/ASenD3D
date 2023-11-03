@@ -66,8 +66,29 @@ void Node::setDisplacement(double newDisp[]) {
 	return;
 }
 
+void Node::setVelocity(double newVel[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		velocity[i1] = newVel[i1];
+	}
+	return;
+}
+
+void Node::setAcceleration(double newAcc[]) {
+	int i1;
+	for (i1 = 0; i1 < numDof; i1++) {
+		acceleration[i1] = newAcc[i1];
+	}
+	return;
+}
+
 void Node::setTemperature(double newTemp) {
 	temperature = newTemp;
+	return;
+}
+
+void Node::setTdot(double newTdot) {
+	tempChangeRate = newTdot;
 	return;
 }
 
@@ -518,6 +539,7 @@ void Node::getThermalDVLoad(DiffDoub& ld, DVPt dvAr[]) {
 //end dup
  
 //end skip 
+ 
  
  
  
