@@ -165,6 +165,11 @@ class Section {
 		double expLoadCoef[6];
 		double conductivity;
 		double specHeat;
+		double massPerEl;
+		double potCoef;
+		double potExp;
+		double dampCoef;
+		double dampExp;
 		Section *nextSection;
 		
 	public:
@@ -197,6 +202,16 @@ class Section {
 		void setConductivity(double newCond);
 		
 		void setSpecHeat(double specHeat);
+
+		void setMassPerEl(double newMass);
+
+		void setPotCoef(double newCoef);
+
+		void setPotExp(double newExp);
+
+		void setDampCoef(double newCoef);
+
+		void setDampExp(double newExp);
 		
 		std::string getElset();
 		
@@ -227,6 +242,16 @@ class Section {
 		double getConductivity();
 
 		double getSpecificHeat();
+
+		double getMassPerEl();
+
+		double getPotCoef();
+
+		double getPotExp();
+
+		double getDampCoef();
+
+		double getDampExp();
 		
 		Section* getNext();
 		

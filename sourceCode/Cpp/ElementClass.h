@@ -39,6 +39,9 @@ public:
 	Doub* layerDen;
 	Doub* layerTC;
 	Doub* layerSH;
+	Doub* frcFldCoef;
+	Doub* frcFldExp;
+	Doub massPerEl;
 
 	int currentLayLen;
 
@@ -90,10 +93,6 @@ public:
 //end dup
  
 //end skip 
- 
- 
- 
- 
 
 class Element {
 	private:
@@ -244,6 +243,10 @@ class Element {
 		
 		void correctOrient(Doub locOri[], Doub xGlob[]);
 
+		void getFrcFldConst(Doub coef[], Doub exp[], DVPt dvAr[]);
+
+		void getMassPerEl(Doub& massPerEl, DVPt dvAr[]);
+
 // Solution Fields
 		void getNdDisp(Doub globDisp[], NdPt ndAr[]);
 
@@ -380,6 +383,10 @@ class Element {
 
 		void dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre);
 
+		void getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], DiffDoubStressPrereq& pre);
+
+		void dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], DiffDoubStressPrereq& pre);
+
 		void getFluxTGrad(DiffDoub flux[], DiffDoub tGrad[], double spt[], int layer, DiffDoubStressPrereq& pre);
 
 		void dFluxTGraddT(DiffDoub dFdT[], DiffDoub dTG[], double spt[], int layer, DiffDoubStressPrereq& pre);
@@ -390,8 +397,6 @@ class Element {
  
 //end skip 
  
- 
-
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
@@ -421,6 +426,8 @@ class Element {
 		void getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DoubStressPrereq& pre);
 
 		void getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]);
+
+		void getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]);
 
 		void getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
@@ -453,9 +460,6 @@ class Element {
 //end dup
  
 //end skip 
- 
- 
- 
  
 };
 

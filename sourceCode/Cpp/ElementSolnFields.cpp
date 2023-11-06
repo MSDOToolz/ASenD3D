@@ -870,7 +870,14 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 			getBeamCond(pre.TCmat, dvAr);
 			getBeamSpecHeat(pre.SpecHeat, dvAr);
 		}
-	} else {
+	}
+	else if (type == 21) {
+		getFrcFldConst(pre.frcFldCoef, pre.frcFldExp, dvAr);
+	}
+	else if (type == 1) {
+		getMassPerEl(pre.massPerEl, dvAr);
+	}
+	else {
 		getSolidStiff(pre.Cmat, dvAr);
 		getThermalExp(pre.thermExp, pre.Einit, dvAr);
 		getDensity(pre.Mmat[0], 0, dvAr);
@@ -2890,6 +2897,66 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[],
 	return;
 }
 
+void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], DiffDoubStressPrereq& pre) {
+	int i1;
+	DiffDoub nVec[11];
+	DiffDoub dNdx[33];
+	DiffDoub detJ;
+	DiffDoub ptTemp;
+	DiffDoub tmp;
+
+	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
+
+	ptTemp.setVal(0.0);
+	for (i1 = 0; i1 < numNds; i1++) {
+		tmp.setVal(pre.globTemp[i1]);
+		tmp.mult(nVec[i1]);
+		ptTemp.add(tmp);
+	}
+
+	matMul(frcMom, pre.Cmat, def, defDim, defDim, 1);
+
+	for (i1 = 0; i1 < 6; i1++) {
+		frcMom[i1].sub(pre.Einit[i1]);
+		tmp.setVal(ptTemp);
+		tmp.mult(pre.thermExp[i1]);
+		frcMom[i1].sub(tmp);
+	}
+
+	return;
+}
+
+void Element::dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], DiffDoubStressPrereq& pre) {
+	int i1;
+	int i2;
+	int i3;
+	int totDof;
+	DiffDoub nVec[11];
+	DiffDoub dNdx[33];
+	DiffDoub detJ;
+	DiffDoub ptTemp;
+	DiffDoub tmp;
+	DiffDoub def[9];
+
+	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
+	totDof = numNds * dofPerNd + numIntDof;
+	for (i1 = 0; i1 < totDof; i1++) {
+		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i1, -1);
+		i2 = i1;
+		for (i3 = 0; i3 < defDim; i3++) {
+			dDefdU[i2].setVal(def[i3]);
+			i2 += totDof;
+		}
+	}
+
+	matMul(dFrcMomdU, pre.Cmat, dDefdU, defDim, defDim, totDof);
+
+	matMul(dFrcMomdT, pre.thermExp, nVec, 6, 1, numNds);
+
+	return;
+}
+
 void Element::getFluxTGrad(DiffDoub flux[], DiffDoub tGrad[], double spt[], int layer, DiffDoubStressPrereq& pre) {
 	int i1;
 	DiffDoub nVec[11];
@@ -2973,8 +3040,6 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
- 
- 
 
 void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {
 	int i1;

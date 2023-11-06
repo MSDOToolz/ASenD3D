@@ -298,7 +298,14 @@ void Model::readModelInput(string fileName) {
 						elType = 41;
 					} else if(data[0] == "beam2") {
 						elType = 2;
-					} else {
+					}
+					else if (data[0] == "frcFld") {
+						elType = 21;
+					}
+					else if (data[0] == "mass") {
+						elType = 1;
+					}
+					else {
 						string errSt = "Error: unrecognized element type, " + data[0];
 						throw invalid_argument(errSt);
 					}
@@ -423,7 +430,27 @@ void Model::readModelInput(string fileName) {
 					} else if(headings[2] == "specHeat" && dataLen == 1) {
 						newSec->setSpecHeat(stod(data[0]));
 					}
-				} else if(headings[1] == "elementSet" && dataLen == 1) {
+				}
+				else if (headings[1] == "potField") {
+					if (headings[2] == "coef" && dataLen == 1) {
+						newSec->setPotCoef(stod(data[0]));
+					}
+					else if (headings[2] == "exp" && dataLen == 1) {
+						newSec->setPotExp(stod(data[0]));
+					}
+				}
+				else if (headings[1] == "dampField") {
+					if (headings[2] == "coef" && dataLen == 1) {
+						newSec->setDampCoef(stod(data[0]));
+					}
+					else if (headings[2] == "exp" && dataLen == 1) {
+						newSec->setDampExp(stod(data[0]));
+					}
+				}
+				else if (headings[1] == "massPerEl" && dataLen == 1) {
+					newSec->setMassPerEl(stod(data[0]));
+				}
+				else if(headings[1] == "elementSet" && dataLen == 1) {
 					newSec->setElset(data[0]);
 				}
 			} else if(headings[0] == "materials") {

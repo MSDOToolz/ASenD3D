@@ -34,7 +34,7 @@ sets:
               - [1, 10] # one thru 10...
               - [20, 30] # 20 thru 30...
 sections:
-    - type: # solid, shell, beam, nonLinField
+    - type: # solid, shell, beam, forceField, mass
       material: (material name)
       orientation: [x1, x2, x3, xy1, xy2, xy3]
       layup:
@@ -61,12 +61,13 @@ sections:
           expLoadCoef: [eL1, ... eL6]
           conductivity: [k1]
           specHeat:
-      posField:
-          coeff:
+      potField:
+          coef:
           exp:
-      velField:
-          coeff:
+      dampField:
+          coef:
           exp:
+      massPerEl:
       elementSet: setName
 materials:
     - name:

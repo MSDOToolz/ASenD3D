@@ -1890,6 +1890,71 @@ void Element::correctOrient(Doub locOri[], Doub xGlob[]) {
 	return;
 }
 
+void Element::getFrcFldConst(Doub coef[], Doub exp[], DVPt dvAr[]) {
+	DesignVariable* thisDV;
+	IntListEnt* thisEnt;
+	DoubListEnt* thisCoef;
+	Doub dvVal;
+	Doub tmp;
+	string cat;
+
+	coef[0].setVal(sectPtr->getPotCoef());
+	coef[1].setVal(sectPtr->getDampCoef());
+	exp[0].setVal(sectPtr->getPotExp());
+	exp[1].setVal(sectPtr->getDampExp());
+
+	thisEnt = designVars.getFirst();
+	thisCoef = dvCoef.getFirst();
+	while (thisEnt) {
+		thisDV = dvAr[thisEnt->value].ptr;
+		cat = thisDV->getCategory();
+		if (cat == "potFldCoef") {
+			thisDV->getValue(dvVal);
+			tmp.setVal(thisCoef->value);
+			dvVal.mult(tmp);
+			coef[0].add(dvVal);
+		}
+		else if (cat == "dampFldCoef") {
+			thisDV->getValue(dvVal);
+			tmp.setVal(thisCoef->value);
+			dvVal.mult(tmp);
+			coef[1].add(dvVal);
+		}
+		thisEnt = thisEnt->next;
+		thisCoef = thisCoef->next;
+	}
+
+	return;
+}
+
+void Element::getMassPerEl(Doub& massPerEl, DVPt dvAr[]) {
+	DesignVariable* thisDV;
+	IntListEnt* thisEnt;
+	DoubListEnt* thisCoef;
+	Doub dvVal;
+	Doub tmp;
+	string cat;
+
+	massPerEl.setVal(sectPtr->getMassPerEl());
+
+	thisEnt = designVars.getFirst();
+	thisCoef = dvCoef.getFirst();
+	while (thisEnt) {
+		thisDV = dvAr[thisEnt->value].ptr;
+		cat = thisDV->getCategory();
+		if (cat == "massPerEl") {
+			thisDV->getValue(dvVal);
+			tmp.setVal(thisCoef->value);
+			dvVal.mult(tmp);
+			massPerEl.add(dvVal);
+		}
+		thisEnt = thisEnt->next;
+		thisCoef = thisCoef->next;
+	}
+
+	return;
+}
+
 //end dup
  
 //skip 
@@ -3772,7 +3837,3 @@ void Element::correctOrient(DiffDoub locOri[], DiffDoub xGlob[]) {
 //end dup
  
 //end skip 
- 
- 
- 
- 

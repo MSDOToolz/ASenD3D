@@ -203,13 +203,37 @@ Element::Element(int newType) {
 		dofTable[26] = 2;
 		dofTable[27] = 2;
 	}
+	else if (type == 21) { //Force field
+		numNds = 2;
+		dofPerNd = 3;
+		numIntDof = 0;
+		nDim = 2;
+		defDim = 0;
+		numIP = 0;
+		nodes = new int[numNds];
+		dofTable = new int[12];
+		intPts = new double[1];
+		ipWt = new double[1];
+	}
+	else if (type == 1) { // Mass
+		numNds = 1;
+		dofPerNd = 3;
+		numIntDof = 0;
+		nDim = 1;
+		defDim = 0;
+		numIP = 0;
+		nodes = new int[numNds];
+		dofTable = new int[6];
+		intPts = new double[1];
+		intPts = new double[1];
+	}
 	
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
 		for (i2 = 0; i2 < dofPerNd; i2++) {
-			dofTable[2*i3] = i1;
-			dofTable[2*i3+1] = i2;
-			i3++;
+			dofTable[i3] = i1;
+			dofTable[i3+1] = i2;
+			i3+= 2;
 		}
 	}
 	
@@ -602,6 +626,8 @@ void ElementList::destroy() {
 	layerDen = nullptr;
 	layerTC = nullptr;
 	layerSH = nullptr;
+	frcFldCoef = new Doub[2];
+	frcFldExp = new Doub[2];
 	currentLayLen = 0;
 	return;
 }
@@ -644,6 +670,8 @@ void DoubStressPrereq::destroy() {
 	layerDen = nullptr;
 	layerTC = nullptr;
 	layerSH = nullptr;
+	delete[] frcFldCoef;
+	delete[] frcFldExp;
 	currentLayLen = 0;
 
 	return;
@@ -729,6 +757,3 @@ void DiffDoubStressPrereq::destroy() {
 //end dup 
  
 //end skip 
- 
- 
- 

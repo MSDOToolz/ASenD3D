@@ -43,7 +43,9 @@ void Model::reorderNodes(int blockDim) {
 		elNodes = thisEl->getNodes();
 		for (i1 = 0; i1 < elNumNds; i1++) {
 			nd1 = elNodes[i1];
-			nodeArray[nd1].ptr->setNumDof(elDofPerNd);
+			if (elDofPerNd > 3) {
+				nodeArray[nd1].ptr->setNumDof(elDofPerNd);
+			}
 			for (i2 = i1+1; i2 < elNumNds; i2++) {
 				nd2 = elNodes[i2];
 				nodalConn[nd1].addIfAbsent(nd2);

@@ -1,7 +1,7 @@
 ## Template for design Variable input file
 
 designVariables:
-    - category: ## density, massMat, modulus, shearModulus, poissonRatio, stiffnessMat, thermalCond, thermalExp, specHeat, initialStrain, orientation, nodeCoord, elasticLoad, thermalLoad, thickness, angle, zOffset, area, areaMoment, polarMoment
+    - category: ## density, massMat, modulus, shearModulus, poissonRatio, stiffnessMat, thermalCond, thermalExp, specHeat, initialStrain, orientation, nodeCoord, elasticLoad, thermalLoad, thickness, angle, zOffset, area, areaMoment, polarMoment, potFldCoef, dampFldCoef, massPerEl
       layer: 1
       component: 1
       activeTime: start

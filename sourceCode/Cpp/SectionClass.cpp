@@ -317,6 +317,10 @@ Section::Section(string newType) {
 	}
 	conductivity = 0.0;
 	specHeat = 0.0;
+	potCoef = 0.0;
+	potExp = 1.0;
+	dampCoef = 0.0;
+	dampCoef = 1.0;
 	matPtr = nullptr;
 	nextSection = nullptr;
 	return;
@@ -424,6 +428,31 @@ void Section::setSpecHeat(double specHeat) {
 	return;
 }
 
+void Section::setMassPerEl(double newMass) {
+	massPerEl = newMass;
+	return;
+}
+
+void Section::setPotCoef(double newCoef) {
+	potCoef = newCoef;
+	return;
+}
+
+void Section::setPotExp(double newExp) {
+	potExp = newExp;
+	return;
+}
+
+void Section::setDampCoef(double newCoef) {
+	dampCoef = newCoef;
+	return;
+}
+
+void Section::setDampExp(double newExp) {
+	dampExp = newExp;
+	return;
+}
+
 string Section::getElset() {
 	return elSetName;
 }
@@ -482,6 +511,26 @@ double Section::getConductivity() {
 
 double Section::getSpecificHeat() {
 	return specHeat;
+}
+
+double Section::getMassPerEl() {
+	return massPerEl;
+}
+
+double Section::getPotCoef() {
+	return potCoef;
+}
+
+double Section::getPotExp() {
+	return potExp;
+}
+
+double Section::getDampCoef() {
+	return dampCoef;
+}
+
+double Section::getDampExp() {
+	return dampExp;
 }
 
 Section* Section::getNext() {

@@ -148,10 +148,6 @@ class Node {
  
 //end skip 
  
- 
- 
- 
-		
 		int getDofIndex(int dof);
 
 		int getSortedRank();

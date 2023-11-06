@@ -49,7 +49,7 @@ class Face {
 		//end dup
  
 //end skip 
-		
+ 
 		void destroy();
 };
 

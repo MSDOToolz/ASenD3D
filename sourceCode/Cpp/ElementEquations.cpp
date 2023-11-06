@@ -236,6 +236,10 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 			}
 		}
 	}
+
+	if (type == 1 || type == 21) {
+		return;
+	}
 	
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec,dNdx,detJ,pre.locNds,&intPts[3*i1]);
@@ -407,6 +411,22 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 		}
 	}
 
+	if (type == 1) {
+		i2 = 0;
+		for (i1 = 0; i1 < 3; i1++) {
+			Rvec[i1].setVal(pre.globAcc[i1]);
+			Rvec[i1].mult(pre.massPerEl);
+			if (getMatrix) {
+				dRdA[i2] = pre.massPerEl.val;
+				i2 += 4;
+			}
+		}
+		return;
+	}
+	else if (type == 21) {
+		return;
+	}
+
 	if (dofPerNd == 6) {
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
 	}
@@ -528,6 +548,10 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 		}
 	}
 
+	if (type == 1 || type == 21) {
+		return;
+	}
+
 	if (cmd->rayDampCM > 0.0) {
 		tmp.setVal(cmd->rayDampCM);
 		for (i1 = 0; i1 < 36; i1++) {
@@ -595,6 +619,7 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	int i2;
 	int i3;
 	int i4;
+	int i5;
 	int nd;
 	int nd2;
 	int dof;
@@ -614,8 +639,26 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	
 	ndDof = numNds*dofPerNd;
 	totDof = ndDof + numIntDof;
+
+	for (i1 = 0; i1 < totDof; i1++) {
+		Rvec[i1].setVal(0.0);
+		if (getMatrix && i1 < ndDof) {
+			i3 = i1 * totDof;
+			for (i2 = 0; i2 < totDof; i2++) {
+				dRdu[i3] = 0.0;
+				i3++;
+			}
+		}
+	}
+
+	if (type == 21) {
+		getRuFrcFld(globR, globdRdu, getMatrix, cmd, pre, ndAr);
+		return;
+	}
 	
-	getRuk(Rvec, dRdu, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
+	if (type != 1) {
+		getRuk(Rvec, dRdu, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
+	}
 
 	if (numIntDof > 0) {
 		i2 = ndDof;
@@ -657,43 +700,46 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 				i3 += numIntDof;
 			}
 		}
-		getRud(Rtmp, dRtmp, getMatrix, cmd, pre, ndAr, dvAr);
-		for (i1 = 0; i1 < ndDof; i1++) {
-			Rvec[i1].add(Rtmp[i1]);
-		}
-		if (getMatrix) {
-			c2 = cmd->timeStep * cmd->newmarkGamma;
-			i3 = 0;
-			i4 = 0;
+		if (type != 1) {
+			getRud(Rtmp, dRtmp, getMatrix, cmd, pre, ndAr, dvAr);
 			for (i1 = 0; i1 < ndDof; i1++) {
-				for (i2 = 0; i2 < ndDof; i2++) {
-					dRdu[i3] += c1 * c2 * dRtmp[i4];
-					i3++;
-					i4++;
+				Rvec[i1].add(Rtmp[i1]);
+			}
+			if (getMatrix) {
+				c2 = cmd->timeStep * cmd->newmarkGamma;
+				i3 = 0;
+				i4 = 0;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					for (i2 = 0; i2 < ndDof; i2++) {
+						dRdu[i3] += c1 * c2 * dRtmp[i4];
+						i3++;
+						i4++;
+					}
+					i3 += numIntDof;
 				}
-				i3 += numIntDof;
 			}
 		}
 	}
 	
-	for (i1 = 0; i1 < totDof; i1++) {
-		nd = dofTable[2*i1];
-		dof = dofTable[2*i1+1];
-		if(nd < numNds) {
-			nd = nodes[nd];
-			globInd = ndAr[nd].ptr->getDofIndex(dof);
-			globR[globInd].add(Rvec[i1]);
-			if(getMatrix) {
-				i3 = i1*totDof;
-				for (i2 = 0; i2 < ndDof; i2++) {
-					nd2 = nodes[dofTable[2*i2]];
-					dof2 = dofTable[2*i2+1];
-					globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
-					globdRdu.addEntry(globInd, globInd2, dRdu[i3]);
-					i3++;
-				}
+	i4 = 0;
+	for (i1 = 0; i1 < ndDof; i1++) {
+		nd = nodes[dofTable[i4]];
+		dof = dofTable[i4+1];
+		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globR[globInd].add(Rvec[i1]);
+		if(getMatrix) {
+			i3 = i1*totDof;
+			i5 = 0;
+			for (i2 = 0; i2 < ndDof; i2++) {
+				nd2 = nodes[dofTable[i5]];
+				dof2 = dofTable[i5+1];
+				globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
+				globdRdu.addEntry(globInd, globInd2, dRdu[i3]);
+				i3++;
+				i5 += 2;
 			}
 		}
+		i4+= 2;
 	}
 	
 	return;
@@ -856,6 +902,189 @@ void Element::getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobComman
 				i3++;
 			}
 		}
+	}
+
+	return;
+}
+
+void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int ndDof = 6;
+	int totDof = 6;
+	int nd;
+	int nd2;
+	int dof;
+	int dof2;
+	int globInd;
+	int globInd2;
+	Doub Rvec[6];
+	double dRdU[36];
+	Doub dVec[3];
+	Doub dist;
+	Doub dvVec[3];
+	Doub dDvecdU[18];
+	Doub dDistdU[6];
+	Doub fN1[3];
+	Doub dfN1dU[18];
+	Doub dtoP;
+	Doub dtoP1;
+	Doub dtoP2;
+	Doub tmp;
+	Doub tmp2;
+
+	// Potential force
+	for (i1 = 0; i1 < 3; i1++) {
+		i2 = i1 * 2 + 1;
+		tmp.setVal(pre.globNds[i2]);
+		tmp.add(pre.globDisp[i2]);
+		i2 -= 1;
+		tmp.sub(pre.globNds[i2]);
+		tmp.sub(pre.globDisp[i2]);
+		dVec[i1].setVal(tmp);
+	}
+
+	dist.setVal(dVec[0]);
+	dist.sqr();
+	tmp.setVal(dVec[1]);
+	tmp.sqr();
+	dist.add(tmp);
+	tmp.setVal(dVec[2]);
+	tmp.sqr();
+	dist.add(tmp);
+	dist.sqt();
+
+	dDvecdU[0].setVal(-1.0);
+	dDvecdU[3].setVal(1.0);
+	dDvecdU[7].setVal(-1.0);
+	dDvecdU[10].setVal(1.0);
+	dDvecdU[14].setVal(-1.0);
+	dDvecdU[17].setVal(1.0);
+
+	matMul(dDistdU, dVec, dDvecdU, 1, 3, 6);
+	tmp.setVal(1.0);
+	tmp.dvd(dist);
+	for (i1 = 0; i1 < 6; i1++) {
+		dDistdU[i1].mult(tmp);
+	}
+
+	dtoP.setVal(dist);
+	i1 = 1;
+	while (i1 < pre.frcFldExp[0].val) {
+		dtoP.mult(dist);
+		i1++;
+	}
+	dtoP1.setVal(dtoP);
+	dtoP1.mult(dist);
+	dtoP2.setVal(dtoP1);
+	dtoP2.mult(dist);
+
+	tmp.setVal(pre.frcFldCoef[0]);
+	tmp.dvd(dtoP1);
+	for (i1 = 0; i1 < 3; i1++) {
+		fN1[i1].setVal(dVec[i1]);
+		fN1[i1].mult(tmp);
+	}
+
+	matMul(dfN1dU, dVec, dDistdU, 3, 1, 6);
+	tmp.setVal(1.0);
+	tmp.add(pre.frcFldExp[0]);
+	tmp.neg();
+	tmp.mult(pre.frcFldCoef[0]);
+	tmp.dvd(dtoP2);
+	for (i1 = 0; i1 < 18; i1++) {
+		dfN1dU[i1].mult(tmp);
+	}
+
+	tmp.setVal(pre.frcFldCoef[0]);
+	tmp.dvd(dtoP1);
+	for (i1 = 0; i1 < 18; i1++) {
+		tmp2.setVal(tmp);
+		tmp2.mult(dDvecdU[i1]);
+		dfN1dU[i1].add(tmp2);
+	}
+
+	for (i1 = 0; i1 < 3; i1++) {
+		Rvec[i1].setVal(fN1[i1]);
+		Rvec[i1].neg();
+		Rvec[i1 + 3].setVal(fN1[i1]);
+	}
+
+	for (i1 = 0; i1 < 18; i1++) {
+		dRdU[i1] = -dfN1dU[i1].val;
+		dRdU[i1 + 18] = dfN1dU[i1].val;
+	}
+
+	// Damping force
+
+	for (i1 = 0; i1 < 3; i1++) {
+		i2 = i1 * 2 + 1;
+		tmp.setVal(pre.globVel[i2]);
+		i2 -= 1;
+		tmp.sub(pre.globVel[i2]);
+		dvVec[i1].setVal(tmp);
+	}
+
+	tmp.setVal(pre.frcFldCoef[1]);
+	tmp.dvd(dtoP);
+
+	for (i1 = 0; i1 < 3; i1++) {
+		fN1[i1].setVal(tmp);
+		fN1[i1].mult(dvVec[i1]);
+	}
+
+	matMul(dfN1dU, dvVec, dDistdU, 3, 1, 6);
+
+	tmp2.setVal(pre.frcFldCoef[1]);
+	tmp2.mult(pre.frcFldExp[1]);
+	tmp2.neg();
+	tmp2.dvd(dtoP1);
+
+	for (i1 = 0; i1 < 18; i1++) {
+		dfN1dU[i1].mult(tmp2);
+	}
+
+	tmp2.setVal(-cmd->newmarkGamma / (cmd->timeStep * (cmd->newmarkBeta - cmd->newmarkGamma)));
+	tmp.mult(tmp2);
+
+	for (i1 = 0; i1 < 18; i1++) {
+		tmp2.setVal(tmp);
+		tmp2.mult(dDvecdU[i1]);
+		dfN1dU[i1].add(tmp2);
+	}
+
+	for (i1 = 0; i1 < 3; i1++) {
+		Rvec[i1].sub(fN1[i1]);
+		Rvec[i1 + 3].add(fN1[i1]);
+	}
+
+	for (i1 = 0; i1 < 18; i1++) {
+		dRdU[i1] -= dfN1dU[i1].val;
+		dRdU[i1 + 18] += dfN1dU[i1].val;
+	}
+
+	i4 = 0;
+	for (i1 = 0; i1 < ndDof; i1++) {
+		nd = nodes[dofTable[i4]];
+		dof = dofTable[i4 + 1];
+		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globR[globInd].add(Rvec[i1]);
+		if (getMatrix) {
+			i3 = i1 * totDof;
+			i5 = 0;
+			for (i2 = 0; i2 < ndDof; i2++) {
+				nd2 = nodes[dofTable[i5]];
+				dof2 = dofTable[i5 + 1];
+				globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
+				globdRdu.addEntry(globInd, globInd2, dRdU[i3]);
+				i3++;
+				i5 += 2;
+			}
+		}
+		i4 += 2;
 	}
 
 	return;
@@ -2172,7 +2401,3 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
- 
- 
- 
- 
