@@ -1851,11 +1851,26 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 	int i2;
 	int i3;
 	int i4;
+	int i5;
+	int i6;
+	int i7;
+	int nd;
+	int dof;
 	int ndDof = numNds * dofPerNd;
 	DiffDoub tmp;
 	DiffDoub Rtmp[33];
 	double dRtmp[1089];
 	double dRdT[330];
+	bool dNonZero;
+	DiffDoub nVec[11];
+	DiffDoub dNdx[33];
+	DiffDoub detJ;
+	DiffDoub wtDetJ;
+	DiffDoub strain[6];
+	DiffDoub secDef[9];
+	DiffDoub ux[9];
+	DiffDoub Bvel[9];
+	DiffDoub DBvel[9];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -1930,6 +1945,90 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 			}
 		}
 	}
+
+	// Material damping
+	dNonZero = false;
+	i1 = 0;
+	while (!dNonZero && i1 < 36) {
+		if (pre.Dmat[i1].val > 0.0) {
+			dNonZero = true;
+		}
+		i1++;
+	}
+
+	if (dNonZero) {
+		for (i1 = 0; i1 < numIP; i1++) {
+			getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[i1 * 3]);
+			wtDetJ.setVal(ipWt[i1]);
+			wtDetJ.mult(detJ);
+			if (dofPerNd == 3) {
+				matMul(ux, pre.globDisp, dNdx, 3, nDim, 3);
+				for (i2 = 0; i2 < ndDof; i2++) {
+					getSolidStrain(strain, ux, dNdx, pre.locOri, i2, -1, cmd->nonlinearGeom);
+					i4 = i2;
+					for (i3 = 0; i3 < 6; i3++) {
+						//i4 = i3 * ndDof + i2;
+						pre.BMat[i4].setVal(strain[i3]);
+						i4 += ndDof;
+					}
+				}
+			}
+			else {
+				for (i2 = 0; i2 < ndDof; i2++) {
+					getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i2, -1);
+					i4 = i2;
+					for (i3 = 0; i3 < 6; i3++) {
+						pre.BMat[i4].setVal(secDef[i3]);
+						i4 += ndDof;
+					}
+				}
+			}
+			i5 = 0;
+			for (i2 = 0; i2 < 6; i2++) {
+				Bvel[i2].setVal(0.0);
+				i4 = 0;
+				for (i3 = 0; i3 < ndDof; i3++) {
+					nd = dofTable[i4];
+					dof = dofTable[i4 + 1];
+					tmp.setVal(pre.BMat[i5]);
+					tmp.mult(pre.globVel[dof * numNds + nd]);
+					Bvel[i2].add(tmp);
+					i4 += 2;
+					i5++;
+				}
+			}
+			matMul(DBvel, pre.Dmat, Bvel, defDim, defDim, 1);
+			matMul(Rtmp, DBvel, pre.BMat, 1, defDim, ndDof);
+			for (i2 = 0; i2 < ndDof; i2++) {
+				Rtmp[i2].mult(wtDetJ);
+				Rvec[i2].add(Rtmp[i2]);
+			}
+			if (getMatrix) {
+				matMul(pre.CBMat, pre.Dmat, pre.BMat, defDim, defDim, ndDof);
+				i3 = ndDof * defDim;
+				for (i2 = 0; i2 < i3; i2++) {
+					pre.CBMat[i2].mult(wtDetJ);
+				}
+				i5 = 0;
+				for (i2 = 0; i2 < ndDof; i2++) {
+					for (i3 = 0; i3 < ndDof; i3++) {
+						i6 = i2;
+						i7 = i3;
+						for (i4 = 0; i4 < 6; i4++) {
+							//i5 = i2 * ndDof + i3;
+							//i6 = i4 * ndDof + i2;
+							//i7 = i4 * ndDof + i3;
+							dRdV[i5] += pre.BMat[i6].val * pre.CBMat[i7].val;
+							i6 += ndDof;
+							i7 += ndDof;
+						}
+						i5++;
+					}
+				}
+			}
+		}
+	}
+
 	return;
 }
 
@@ -2729,4 +2828,5 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
+ 
  

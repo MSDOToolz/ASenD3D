@@ -70,6 +70,7 @@ public:
 	DiffDoub* globTdot;
 	DiffDoub* Cmat;// [81] ;
 	DiffDoub* Mmat;// [36];
+	DiffDoub* Dmat;
 	DiffDoub* thermExp;
 	DiffDoub* Einit;
 	DiffDoub* TCmat;
@@ -80,6 +81,7 @@ public:
 	DiffDoub* layerThk;
 	DiffDoub* layerAng;
 	DiffDoub* layerQ;
+	DiffDoub* layerD;
 	DiffDoub* layerTE;
 	DiffDoub* layerE0;
 	DiffDoub* layerDen;
@@ -98,6 +100,7 @@ public:
 //end dup
  
 //end skip 
+ 
  
 
 class Element {
@@ -314,6 +317,8 @@ class Element {
 
 		void getLayerQ(DiffDoub layQ[], DVPt dvAr[]);
 
+		void getLayerD(DiffDoub layD[], DVPt dvAr[]);
+
 		void getLayerAngle(DiffDoub layAng[], DVPt dvAr[]);
 
 		void getLayerThExp(DiffDoub layThExp[], DVPt dvAr[]);
@@ -347,6 +352,12 @@ class Element {
 		void getShellMass(DiffDoub Mmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layDen[], DVPt dvAr[]);
 
 		void getBeamMass(DiffDoub Mmat[], DVPt dvAr[]);
+
+		void getSolidDamp(DiffDoub Dmat[], DVPt dvAr[]);
+
+		void getShellDamp(DiffDoub Dmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layD[], DiffDoub layAng[]);
+
+		void getBeamDamp(DiffDoub Dmat[], DVPt dvAr[]);
 
 		void getConductivity(DiffDoub tCond[], DVPt dvAr[]);
 
@@ -416,6 +427,7 @@ class Element {
 //end skip 
  
  
+ 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
@@ -481,6 +493,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
  
 };

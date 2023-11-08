@@ -2355,6 +2355,7 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[],
 					delete[] pre.layerThk;
 					delete[] pre.layerAng;
 					delete[] pre.layerQ;
+					delete[] pre.layerD;
 					delete[] pre.layerTE;
 					delete[] pre.layerE0;
 					delete[] pre.layerDen;
@@ -2365,6 +2366,7 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[],
 				pre.layerThk = new DiffDoub[numLay];
 				pre.layerAng = new DiffDoub[numLay];
 				pre.layerQ = new DiffDoub[9 * numLay];
+				pre.layerD = new DiffDoub[9 * numLay];
 				pre.layerTE = new DiffDoub[3 * numLay];
 				pre.layerE0 = new DiffDoub[3 * numLay];
 				pre.layerDen = new DiffDoub[numLay];
@@ -2375,12 +2377,14 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[],
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
 			getLayerAngle(pre.layerAng, dvAr);
 			getLayerQ(pre.layerQ, dvAr);
+			getLayerD(pre.layerD, dvAr);
 			getLayerThExp(pre.layerTE, dvAr);
 			getLayerEinit(pre.layerE0, dvAr);
 			getLayerDen(pre.layerDen, dvAr);
 			getLayerCond(pre.layerTC, dvAr);
 			getLayerSpecHeat(pre.layerSH, dvAr);
 			getABD(pre.Cmat, pre.layerThk, pre.layerZ, pre.layerQ, pre.layerAng);
+			getShellDamp(pre.Dmat, pre.layerThk, pre.layerZ, pre.layerD, pre.layerAng);
 			getShellExpLoad(pre.thermExp, pre.Einit, pre.layerThk, pre.layerZ, pre.layerQ, pre.layerTE, pre.layerE0, pre.layerAng);
 			getShellMass(pre.Mmat, pre.layerThk, pre.layerZ, pre.layerDen, dvAr);
 			getShellCond(pre.TCmat, pre.layerThk, pre.layerAng, pre.layerTC, dvAr);
@@ -2388,6 +2392,7 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[],
 		}
 		else {
 			getBeamStiff(pre.Cmat, dvAr);
+			getBeamDamp(pre.Dmat, dvAr);
 			getBeamExpLoad(pre.thermExp, pre.Einit, dvAr);
 			getBeamMass(pre.Mmat, dvAr);
 			getBeamCond(pre.TCmat, dvAr);
@@ -2402,6 +2407,7 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[],
 	}
 	else {
 		getSolidStiff(pre.Cmat, dvAr);
+		getSolidDamp(pre.Dmat, dvAr);
 		getThermalExp(pre.thermExp, pre.Einit, dvAr);
 		getDensity(pre.Mmat[0], 0, dvAr);
 		getConductivity(pre.TCmat, dvAr);
@@ -3053,6 +3059,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
+ 
  
 
 void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {

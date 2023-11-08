@@ -2412,6 +2412,82 @@ void Element::getLayerQ(DiffDoub layQ[], DVPt dvAr[]) {
 	return;
 }
 
+void Element::getLayerD(DiffDoub layD[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int i6;
+	int layi;
+	int dvInd;
+	int dvComp;
+	Material* matPt;
+	Layer* thisLay;
+	double* dampMat;
+	DiffDoub dampMatDV[36];
+	DiffDoub dvVal;
+	DiffDoub coef;
+	IntListEnt* thisDV;
+	DoubListEnt* thisCoef;
+	DesignVariable* thisDVpt;
+	string dvCat;
+
+	i2 = 0;
+	layi = 0;
+	thisLay = sectPtr->getFirstLayer();
+	while (thisLay) {
+		matPt = thisLay->getMatPt();
+		dampMat = matPt->getDamping();
+		for (i1 = 0; i1 < 36; i1++) {
+			dampMatDV[i1].setVal(dampMat[i1]);
+		}
+		thisDV = designVars.getFirst();
+		thisCoef = dvCoef.getFirst();
+		while (thisDV) {
+			dvInd = thisDV->value;
+			thisDVpt = dvAr[dvInd].ptr;
+			if (thisDVpt->getLayer() == layi) {
+				dvCat = thisDVpt->getCategory();
+				if (dvCat == "dampingMat") {
+					dvComp = thisDVpt->getComponent();
+					coef.setVal(thisCoef->value);
+					thisDVpt->getValue(dvVal);
+					dvVal.mult(coef);
+					dampMatDV[dvComp].add(dvVal);
+				}
+			}
+			thisDV = thisDV->next;
+			thisCoef = thisCoef->next;
+		}
+
+		for (i3 = 1; i3 < 6; i3++) {
+			i5 = 6 * i1; // Lower tri term
+			i6 = i1; // Upper tri term
+			for (i4 = 0; i4 < i3; i4++) {
+				dampMatDV[i5].setVal(dampMatDV[i6]);
+				i5++;
+				i6 += 6;
+			}
+		}
+
+		layD[i2].setVal(dampMatDV[0]);
+		layD[i2 + 1].setVal(dampMatDV[1]);
+		layD[i2 + 2].setVal(dampMatDV[3]);
+		layD[i2 + 3].setVal(dampMatDV[6]);
+		layD[i2 + 4].setVal(dampMatDV[7]);
+		layD[i2 + 5].setVal(dampMatDV[9]);
+		layD[i2 + 6].setVal(dampMatDV[18]);
+		layD[i2 + 7].setVal(dampMatDV[19]);
+		layD[i2 + 8].setVal(dampMatDV[21]);
+
+		thisLay = thisLay->getNext();
+		layi++;
+		i2 += 9;
+	}
+	return;
+}
+
 void Element::getLayerAngle(DiffDoub layAng[], DVPt dvAr[]) {
 	int i2;
 	int layi;
@@ -3692,6 +3768,209 @@ void Element::getBeamMass(DiffDoub Mmat[], DVPt dvAr[]) {
 	return;
 }
 
+void Element::getSolidDamp(DiffDoub Dmat[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	DesignVariable* thisDV;
+	IntListEnt* thisDVEnt = designVars.getFirst();
+	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	DiffDoub temp;
+	DiffDoub dvVal;
+	int dvComp;
+	double* matDamp = sectPtr->getMatPtr()->getDamping();
+
+	for (i1 = 0; i1 < 36; i1++) {
+		Dmat[i1].setVal(matDamp[i1]);
+	}
+
+	while (thisDVEnt) {
+		thisDV = dvAr[thisDVEnt->value].ptr;
+		if (thisDV->getCategory() == "dampingMat") {
+			thisDV->getValue(dvVal);
+			dvComp = thisDV->getComponent();
+			temp.setVal(thisCEnt->value);
+			dvVal.mult(temp);
+			Dmat[dvComp].add(dvVal);
+		}
+		thisDVEnt = thisDVEnt->next;
+		thisCEnt = thisCEnt->next;
+	}
+
+	for (i1 = 1; i1 < 6; i1++) {
+		i3 = 6 * i1; // Lower tri term
+		i4 = i1; // Upper tri term
+		for (i2 = 0; i2 < i1; i2++) {
+			Dmat[i3].setVal(Dmat[i4]);
+			i3++;
+			i4 += 6;
+		}
+	}
+
+	return;
+}
+
+void Element::getShellDamp(DiffDoub Dmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layD[], DiffDoub layAng[]) {
+	getABD(Dmat, layThk, layZ, layD, layAng);
+	Dmat[60].setVal(0.0);
+	Dmat[70].setVal(0.0);
+	Dmat[80].setVal(0.0);
+	return;
+}
+
+void Element::getBeamDamp(DiffDoub Dmat[], DVPt dvAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int dvInd;
+	int dvComp;
+	Material* matPt;
+	double* dampMat;
+	double* areaMom;
+	DiffDoub DmatDV[36];
+	DiffDoub areaDV;
+	DiffDoub IDV[5];
+	DiffDoub JDV;
+	DiffDoub dvVal;
+	DiffDoub coef;
+	DiffDoub xVec[6];
+	DiffDoub bVec[6];
+	IntListEnt* thisDV;
+	DoubListEnt* thisCoef;
+	DesignVariable* thisDVpt;
+	string dvCat;
+
+	matPt = sectPtr->getMatPtr();
+	dampMat = sectPtr->getDampMat();
+	if (dampMat[0] > 0.0) {
+		for (i1 = 0; i1 < 36; i1++) {
+			Dmat[i1].setVal(dampMat[i1]);
+		}
+		thisDV = designVars.getFirst();
+		thisCoef = dvCoef.getFirst();
+		while (thisDV) {
+			dvInd = thisDV->value;
+			thisDVpt = dvAr[dvInd].ptr;
+			if (thisDVpt->getCategory() == "dampingMat") {
+				dvComp = thisDVpt->getComponent();
+				coef.setVal(thisCoef->value);
+				thisDVpt->getValue(dvVal);
+				dvVal.mult(coef);
+				Dmat[dvComp].add(dvVal);
+			}
+			thisDV = thisDV->next;
+			thisCoef = thisCoef->next;
+		}
+		for (i1 = 1; i1 < 6; i1++) {
+			i4 = 6 * i1;
+			i5 = i1;
+			for (i2 = 0; i2 < i1; i2++) {
+				Cmat[i4].setVal(Cmat[i5]);
+				i4++;
+				i5 += 6;
+			}
+		}
+	}
+	else {
+		dampMat = matPt->getDamping();
+		for (i1 = 0; i1 < 36; i1++) {
+			DmatDV[i1].setVal(dampMat[i1]);
+		}
+		areaDV.setVal(sectPtr->getArea());
+		areaMom = sectPtr->getAreaMoment();
+		for (i1 = 0; i1 < 5; i1++) {
+			IDV[i1].setVal(areaMom[i1]);
+		}
+		JDV.setVal(sectPtr->getPolarMoment());
+		thisDV = designVars.getFirst();
+		thisCoef = dvCoef.getFirst();
+		while (thisDV) {
+			dvInd = thisDV->value;
+			thisDVpt = dvAr[dvInd].ptr;
+			if (thisDVpt->getCategory() == "dampingMat") {
+				dvComp = thisDVpt->getComponent();
+				coef.setVal(thisCoef->value);
+				thisDVpt->getValue(dvVal);
+				dvVal.mult(coef);
+				DmatDV[dvComp].add(dvVal);
+			}
+			else if (thisDVpt->getCategory() == "area") {
+				dvComp = thisDVpt->getComponent();
+				coef.setVal(thisCoef->value);
+				thisDVpt->getValue(dvVal);
+				dvVal.mult(coef);
+				areaDV.add(dvVal);
+			}
+			else if (thisDVpt->getCategory() == "areaMoment") {
+				dvComp = thisDVpt->getComponent();
+				coef.setVal(thisCoef->value);
+				thisDVpt->getValue(dvVal);
+				dvVal.mult(coef);
+				IDV[dvComp - 1].add(dvVal);
+			}
+			else if (thisDVpt->getCategory() == "polarMoment") {
+				dvComp = thisDVpt->getComponent();
+				coef.setVal(thisCoef->value);
+				thisDVpt->getValue(dvVal);
+				dvVal.mult(coef);
+				JDV.add(dvVal);
+			}
+			thisDV = thisDV->next;
+			thisCoef = thisCoef->next;
+		}
+
+		for (i1 = 0; i1 < 6; i1++) {
+			i3 = 7 * i1;
+			for (i2 = i1; i2 < 6; i2++) {
+				Cmat[i3].setVal(0.0);
+				i3++;
+			}
+		}
+
+		Cmat[0].setVal(DmatDV[0]);
+		Cmat[0].mult(areaDV);
+		Cmat[4].setVal(DmatDV[0]);
+		Cmat[4].mult(IDV[0]);
+		Cmat[5].setVal(DmatDV[0]);
+		Cmat[5].neg();
+		Cmat[5].mult(IDV[1]);
+		Cmat[7].setVal(DmatDV[21]);
+		Cmat[7].mult(areaDV);
+		Cmat[9].setVal(DmatDV[21]);
+		Cmat[9].neg();
+		Cmat[9].mult(IDV[0]);
+		Cmat[14].setVal(DmatDV[28]); // 28
+		Cmat[14].mult(areaDV);
+		Cmat[15].setVal(DmatDV[35]); // 35
+		Cmat[15].mult(IDV[1]);
+		Cmat[21].setVal(DmatDV[21]); // 21
+		Cmat[21].mult(JDV);
+		Cmat[28].setVal(DmatDV[0]);
+		Cmat[28].mult(IDV[2]);
+		Cmat[29].setVal(DmatDV[0]);
+		Cmat[29].neg();
+		Cmat[29].mult(IDV[4]);
+		Cmat[35].setVal(DmatDV[0]);
+		Cmat[35].mult(IDV[3]);
+
+		for (i1 = 1; i1 < 6; i1++) {
+			i3 = 6 * i1;
+			i4 = i1;
+			for (i2 = 0; i2 < i1; i2++) {
+				Cmat[i3].setVal(Cmat[i4]);
+				i3++;
+				i4 += 6;
+			}
+		}
+	}
+
+
+	return;
+}
+
 void Element::getConductivity(DiffDoub tCond[], DVPt dvAr[]) {
 	int i1;
 	Material* matPt = sectPtr->getMatPtr();
@@ -4181,4 +4460,5 @@ void Element::getMassPerEl(DiffDoub& massPerEl, DVPt dvAr[]) {
 //end dup
  
 //end skip 
+ 
  
