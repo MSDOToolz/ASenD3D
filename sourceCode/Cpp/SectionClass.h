@@ -13,6 +13,7 @@ class Material {
 		double conductivity[6];
 		double expansion[6];
 		double specHeat;
+		double damping[36];
 		double maxTenStress[3];
 		double maxCompStress[3];
 		double maxShearStress[3];
@@ -41,6 +42,8 @@ class Material {
 		void setExpansion(double newExp[]);
 		
 		void setSpecHeat(double newSpecHeat);
+
+		void setDamping(int row, int col, double val);
 		
 		void setMaxTenStress(double newMaxStr[]);
 		
@@ -77,6 +80,8 @@ class Material {
 		double* getConductivity();
 
 		double getSpecificHeat();
+
+		double* getDamping();
 		
 		Material* getNext();	
 		
@@ -162,6 +167,7 @@ class Section {
 		double polarMoment;
 		double stiffness[36];
 		double mass[36];
+		double damping[36];
 		double expLoadCoef[6];
 		double conductivity;
 		double specHeat;
@@ -196,6 +202,8 @@ class Section {
 		void setStiffness(int row, int col, double val);
 		
 		void setMass(int row, int col, double val);
+
+		void setDamping(int row, int col, double val);
 		
 		void setExpLd(double newExpLd[]);
 		
@@ -236,6 +244,8 @@ class Section {
 		double* getStiffMat();
 
 		double* getMassMat();
+
+		double* getDampMat();
 
 		double* getExpLoad();
 

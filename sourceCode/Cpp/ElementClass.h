@@ -24,6 +24,7 @@ public:
 	Doub* globTdot;
 	Doub* Cmat;// [81] ;
 	Doub* Mmat;// [36];
+	Doub* Dmat;
 	Doub* thermExp;
 	Doub* Einit;
 	Doub* TCmat;
@@ -34,6 +35,7 @@ public:
 	Doub* layerThk;
 	Doub* layerAng;
 	Doub* layerQ;
+	Doub* layerD;
 	Doub* layerTE;
 	Doub* layerE0;
 	Doub* layerDen;
@@ -83,6 +85,9 @@ public:
 	DiffDoub* layerDen;
 	DiffDoub* layerTC;
 	DiffDoub* layerSH;
+	DiffDoub* frcFldCoef;
+	DiffDoub* frcFldExp;
+	DiffDoub massPerEl;
 
 	int currentLayLen;
 
@@ -93,6 +98,7 @@ public:
 //end dup
  
 //end skip 
+ 
 
 class Element {
 	private:
@@ -191,6 +197,8 @@ class Element {
 
 		void getLayerQ(Doub layQ[], DVPt dvAr[]);
 
+		void getLayerD(Doub layD[], DVPt dvAr[]);
+
 		void getLayerAngle(Doub layAng[], DVPt dvAr[]);
 
 		void getLayerThExp(Doub layThExp[], DVPt dvAr[]);
@@ -224,6 +232,12 @@ class Element {
 		void getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], Doub layDen[], DVPt dvAr[]);
 
 		void getBeamMass(Doub Mmat[], DVPt dvAr[]);
+
+		void getSolidDamp(Doub Dmat[], DVPt dvAr[]);
+
+		void getShellDamp(Doub Dmat[], Doub layThk[], Doub layZ[], Doub layD[], Doub layAng[]);
+
+		void getBeamDamp(Doub Dmat[], DVPt dvAr[]);
 
 		void getConductivity(Doub tCond[], DVPt dvAr[]);
 
@@ -352,6 +366,10 @@ class Element {
 		
 		void correctOrient(DiffDoub locOri[], DiffDoub xGlob[]);
 
+		void getFrcFldConst(DiffDoub coef[], DiffDoub exp[], DVPt dvAr[]);
+
+		void getMassPerEl(DiffDoub& massPerEl, DVPt dvAr[]);
+
 // Solution Fields
 		void getNdDisp(DiffDoub globDisp[], NdPt ndAr[]);
 
@@ -396,6 +414,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
 
@@ -453,6 +472,8 @@ class Element {
 
 		void getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]);
 
+		void getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]);
+
 		void getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
 		void getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
@@ -460,6 +481,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
 };
 

@@ -58,6 +58,7 @@ sections:
           mass:
              # - [i, j, val]
              # - [i, j, val]
+          damping:
           expLoadCoef: [eL1, ... eL6]
           conductivity: [k1]
           specHeat:
@@ -87,6 +88,7 @@ materials:
           conductivity: [k1,k2,k3,k12,k13,k23]
           expansion: [e11,e22,e33,e12,e13,e23]
           specHeat:
+      damping:
       failure:
           maxStress:
               tensile: [s11,s22,s33]

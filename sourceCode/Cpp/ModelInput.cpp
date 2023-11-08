@@ -420,7 +420,14 @@ void Model::readModelInput(string fileName) {
 						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
 						newSec->setMass(intInp[0],intInp[1],doubInp[0]);
-					} else if(headings[2] == "expLoadCoef" && dataLen == 6) {
+					}
+					else if (headings[2] == "damping" && dataLen == 3) {
+						intInp[0] = stoi(data[0]) - 1;
+						intInp[1] = stoi(data[1]) - 1;
+						doubInp[0] = stod(data[2]);
+						newSec->setDamping(intInp[0], intInp[1], doubInp[0]);
+					}
+					else if (headings[2] == "expLoadCoef" && dataLen == 6) {
 						for(i1 = 0; i1 < 6; i1++) {
 							doubInp[i1] = stod(data[i1]);
 						}
@@ -510,7 +517,14 @@ void Model::readModelInput(string fileName) {
 					} else if (headings[2] == "specHeat" && dataLen == 1) {
 						newMat->setSpecHeat(stod(data[0]));
 					}
-				} else if(headings[1] == "failure") {
+				}
+				else if (headings[1] == "damping" && dataLen == 3) {
+					intInp[0] = stoi(data[0]) - 1;
+					intInp[1] = stoi(data[1]) - 1;
+					doubInp[0] = stod(data[2]);
+					newMat->setDamping(intInp[0], intInp[1], doubInp[0]);
+				}
+				else if (headings[1] == "failure") {
 					if(headings[2] == "maxStress") {
 						if(headings[3] == "tensile" && dataLen > 0) {
 							doubInp[0] = stod(data[0]);

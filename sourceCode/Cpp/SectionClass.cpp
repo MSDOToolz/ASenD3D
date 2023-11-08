@@ -11,6 +11,7 @@ Material::Material(string newName) {
 	int i1;
 	for(i1 = 0; i1 < 36; i1++) {
 		stiffness[i1] = 0.0;
+		damping[i1] = 0.0;
 	}
 	return;
 }
@@ -69,6 +70,12 @@ void Material::setExpansion(double newExp[]) {
 
 void Material::setSpecHeat(double newSpecHeat) {
 	specHeat = newSpecHeat;
+	return;
+}
+
+void Material::setDamping(int row, int col, double val) {
+	damping[6 * row + col] = val;
+	damping[6 * row + col] = val;
 	return;
 }
 
@@ -163,6 +170,10 @@ double* Material::getConductivity() {
 
 double Material::getSpecificHeat() {
 	return specHeat;
+}
+
+double* Material::getDamping() {
+	return &damping[0];
 }
 
 Material* Material::getNext() {
@@ -300,6 +311,7 @@ Section::Section(string newType) {
 	for (i1 = 0; i1 < 36; i1++) {
 		stiffness[i1] = 0.0;
 		mass[i1] = 0.0;
+		damping[i1] = 0.0;
 	}
 	for (i1 = 1; i1 < 8; i1++) {
 		orientation[i1] = 0.0;
@@ -408,6 +420,12 @@ void Section::setMass(int row, int col, double val) {
 	return;
 }
 
+void Section::setDamping(int row, int col, double val) {
+	damping[(6 * row + col)] = val;
+	damping[(6 * col + row)] = val;
+	return;
+}
+
 void Section::setExpLd(double newExpLd[]) {
 	expLoadCoef[0] = newExpLd[0];
 	expLoadCoef[1] = newExpLd[1];
@@ -499,6 +517,10 @@ double* Section::getStiffMat() {
 
 double* Section::getMassMat() {
 	return &mass[0];
+}
+
+double* Section::getDampMat() {
+	return &damping[0];
 }
 
 double* Section::getExpLoad() {
