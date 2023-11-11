@@ -1,15 +1,10 @@
 ## AStrO Model Input File Template
 nodes:
-    #- label: 0
-    #  coordinates: []
-    ##- [label, x, y, z]
+    - [label, x, y, z]
 elements:
     - type:
       connectivity:
           - [label, n1, n2, n3]
-    #  label:
-    #  nodes: []
-          ##- [label, n1, n2, n3 ..]
 sets:
     node:
         - name:
@@ -101,15 +96,6 @@ materials:
           maxStrainEnergy: (value)
           maxMises: (value)
 constraints:
-    matrix:
-        - [eqn, node, dof, coef]
-    rhs:
-        - r1
-        - r2
-        
-##  Alternative constraints
-
-constraints:
     - type: displacement, temperature
       terms:
           #- [ndSet,dof,coef]
@@ -119,30 +105,6 @@ constraints:
       rhs:
 
 ##
-loads:
-    - type:  nodal, bodyForce, gravitational, centrifugal, surfacePressure, surfaceTraction, bodyHeatGen, surfaceFlux
-      activeTime: [start, end]
-      ##or
-      activeTime: start
-      setLoads:
-          ## nodal
-          - [nd,fx,fy,fz,mx,my,mz,Q]
-          ## bodyForce
-          - [el,fx,fy,fz,mx,my,mz,Q]
-          ## gravitational
-          - [el,ax,ay,az]
-          ## centrifugal
-          - [el,cx,cy,cz,rax,ray,raz,omega]
-          ## surfacePressure
-          - [el,nx,ny,nz,thetaTol,p]
-          ## surfaceTraction
-          - [el,nx,ny,nz,thetaTol,tx,ty,tz]
-          ## bodyHeatGen
-          - [el,Q]
-          ## surfaceFlux
-          - [el,nx,ny,nz,thetaTol,f]
-          
-## Alternative loads
 
 loads:
     - type: nodalForce, bodyForce, gravitational, centrifugal, surfacePressure, surfaceTraction, nodalHeatGen, bodyHeatGen, surfaceFlux
@@ -167,9 +129,3 @@ initialState:
     temperature:
         - [nd, T]
     tdot:
-        
-## or
-
-initialState:
-    - node: (label)
-      displacement: [Ux,Uy,Yz,Rx,Ry,Rz]
