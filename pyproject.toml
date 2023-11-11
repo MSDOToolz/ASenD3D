@@ -3,7 +3,7 @@
 name = "ASenD3D"
 description = "Dynamic systems modeling and sensitivity analysis tool"
 readme = "README.md"
-version = "1.0.0"
+version = "1.0"
 authors = [
   { name = "Evan Anderson", email = "evanski4life@gmail.com" },
 ]
