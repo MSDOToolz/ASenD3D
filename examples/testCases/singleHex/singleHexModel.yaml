@@ -1,0 +1,91 @@
+## Model of a single hex element
+nodes:
+    - [0, -0.5, -0.5, -0.5]
+    - [1, 0.5, -0.5, -0.5]
+    - [2, 0.5, 0.5, -0.5]
+    - [3, -0.5, 0.5, -0.5]
+    - [4, -0.5, -0.5, 0.5]
+    - [5, 0.5, -0.5, 0.5]
+    - [6, 0.5, 0.5, 0.5]
+    - [7, -0.5, 0.5, 0.5]
+elements:
+    - type: brickIM
+      connectivity:
+          - [0, 0, 1, 2, 3, 4, 5, 6, 7]
+sets:
+    node:
+        - name: upperX
+          labels:
+              - 1
+              - 2
+              - 5
+              - 6
+        - name: lowerX
+          labels:
+              - 0
+              - 3
+              - 4
+              - 7
+sections:
+    - type: solid
+      material: myMat
+      elementSet: all
+materials:
+    - name: myMat
+      density: 1000.0
+      elastic:
+          E: 1000000
+          nu: 0.0
+          G: 500000
+      thermal:
+          conductivity: [5.0,5.0,5.0,0.0,0.0,0.0]
+          expansion: [0.000001,0.000001,0.000001,0.0,0.0,0.0]
+          specHeat: 1.0
+constraints:
+    - type: displacement
+      terms:
+          - nodeSet: 0
+            dof: 1
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 0
+            dof: 2
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 0
+            dof: 3
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 3
+            dof: 1
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 3
+            dof: 3
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 4
+            dof: 1
+            coef: 1.0
+      rhs: 0.0
+    - type: displacement
+      terms:
+          - nodeSet: 7
+            dof: 1
+            coef: 1.0
+      rhs: 0.0
+    - type: temperature
+      terms:
+          - nodeSet: lowerX
+            coef: 1.0
+      rhs: 0.0

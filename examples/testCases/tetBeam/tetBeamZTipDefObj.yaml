@@ -1,0 +1,9 @@
+objectiveTerms:
+    - category: displacement
+      operator: powerNorm
+      activeTime: 0.0
+      component: 3
+      coefficient: 0.25
+      exponent: 1.0
+      nodeSet: tipUpperEdge
+      targetValue: 0.0

@@ -1,0 +1,47 @@
+E = 1000000
+L = 10
+h = 0.1
+b = 1.0
+I = (1/12)*b*h^3 = 1/12000
+rho = 1.0
+
+Solution validation cases:
+
+- test 1: tip deflection for (Fz = 2) on tip = FL^3/3EI = 8
+    dwdh = -FL^3bt^2/12EI^2 = -240
+	dwdE = -FL^3/(3E^2I) = -0.000008
+	dwdL = FL^2/EI = 2.4
+
+- test 2: tip deflection for distributed load (P = F/A = 0.1) = PbL^4/8EI = 3PL^4/2Eh^3 = 1.5
+    dwdh = -9PL^4/2Eh^4 = -45
+	dwdE = -3PL^4/2E^2h^3 = -1.5e-6
+	dwdL = 6PL^3/Eh^3 = 0.6
+
+- test 3: tip deflection for gravitational distributed load (g = 1.0) = rho*b*h*g*L^4/8EI = 3*rho*g*L^4/2Eh^2 = 1.5
+    dwdh = -3*rho*g*L^4/Eh^3 = -30
+	dwdE = -3*rho*g*L^4/2E^2h^2 = -1.5e-6
+	dwdL = 6*rho*g*L^3/Eh^2 = 0.6
+	dwdrho = 3*g*L^4/2Eh^2 = 1.5
+	
+- test 4: tip deflection for (Fx = 2) on tip = FL/Ebh = 2e-4
+    tip deflection:
+	  dudh = -(FL/Eb)t^-2 = -2e-3
+	  dudE = -(FL/bh)E^-2 = -2e-10
+	  dudL = F/Ebh = 2e-5
+	
+	strain energy = 0.5*(F*u) = (F^2)*L/2Ebt = 2e-4
+	  dSEdh = -((F^2)*L/2Eb)t^-2 = -2e-3
+	  dSEdE = -((F^2)*L/2bh)E^-2 = -2e-10
+	  dSEdL = (F^2)/2Ebh = 2e-5
+
+- test 5: x-tip deflection for centrifugal load (omega = 1) = rho*omega^2*L^3/(3*E) = 3.3333e-4
+    dudE = -rho*omega^2*L^3/3E^2 = -3.33333e-10
+	dudL = rho*omega^2*L^2/E = 1.0e-4
+	dudrho = omega^2*L^3/3E = 3.33333e-4
+
+- test 6: moment for 45 degree arc deflection = EIw'' = 6.54498469
+    tip deflection for arc moment = [-0.99684, 0.0, 3.729232]
+
+- test 7: critical buckling load in x compression = pi^2EI/4L^2 = 2.056176
+
+- test 8: 1st mode natural frequency, unloaded = (0.56/L^2)(EI/m)^0.5 = 0.16165804304147693 Hz (1.0157274408256 rad/sec), period = 6.1858969784969 sec

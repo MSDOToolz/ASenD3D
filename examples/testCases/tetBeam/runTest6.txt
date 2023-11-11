@@ -1,0 +1,16 @@
+*readModelInput:
+    fileName: examples/testModels/tetBeam/tetBeamModelInput.yaml
+
+*solve:
+    elastic: yes
+	thermal: no
+    nonLinearGeom: yes
+	staticLoadTime: 5.5
+	loadRampSteps: 10
+	dynamic: no
+	solverMethod: direct
+
+*writeNodeResults:
+    fileName: examples/testModels/tetBeam/out/test6Disp.yaml
+	fields:
+	    - displacement

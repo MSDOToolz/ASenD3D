@@ -1,0 +1,26 @@
+jobCommands:
+  - command: readModelInput
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/singleHexModel.yaml
+    
+  - command: readLoads
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/staticLoads.yaml
+
+  - command: solve
+    elastic: no
+    thermal: yes
+    nonlinearGeom: no
+    dynamic: yes
+    timeStep: 10
+    newmarkBeta: 0.25
+    newmarkGamma: 0.5
+    simPeriod: 200
+    saveSolnHist: yes
+    solnHistDir: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/solnHist/
+    solverMethod: direct
+
+  - command: writeNodeResults
+    fileName: C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/Results/nodeResults.yaml
+    fields:
+        - temperature
+    timeSteps:
+        - [0, 20]

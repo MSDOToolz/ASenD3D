@@ -1,0 +1,10 @@
+# Design variables for single hex element 
+designVariables:
+    - category: modulus ## density, massMat, modulus, shearModulus, poissonRatio, stiffnessMat, thermalCond, thermalExp, specHeat, orientation, nodeCoord, elasticLoad, thermalLoad, thickness, angle, zOffset, area, areaMoment, polarMoment
+      component: 1
+      elementSet: all
+      coefficients: 1.0
+    - category: nodeCoord
+      component: 1
+      nodeSet: upperX
+      coefficients: 1.0

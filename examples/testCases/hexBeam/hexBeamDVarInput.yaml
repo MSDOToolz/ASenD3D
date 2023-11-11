@@ -1,0 +1,16 @@
+designVariables:
+    - category: nodeCoord
+      component: 3
+      nodeSet: upperZFace
+      coefficients: 1.0
+    - category: modulus
+      component: 1
+      elementSet: allEls
+      coefficients: 1.0
+    - category: nodeCoord
+      component: 1
+      nodeSet: wholeTip
+      coefficients: 1.0
+    - category: density
+      elementSet: allEls
+      coefficients: 1.0

@@ -1,0 +1,23 @@
+
+[project]
+name = "ASenD3D"
+description = "Dynamic systems modeling and sensitivity analysis tool"
+readme = "README.md"
+version = "1.0.0"
+authors = [
+  { name = "Evan Anderson", email = "evanski4life@gmail.com" },
+]
+maintainers = [
+  { name = "Evan Anderson", email = "evanski4life@gmail.com" },
+]
+
+dependencies = [
+    "numpy", 
+    "scipy", 
+    "pyyaml", 
+    "plotly", 
+    ]
+
+
+[project.urls]
+Homepage = "https://github.com/MSDOToolz/ASenD3D"
