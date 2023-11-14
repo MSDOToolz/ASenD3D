@@ -14,7 +14,7 @@ class Material:
     def setDensity(self,density):
         self.matData['density'] = density
         
-    def setOrthotripic(self,E1,E2,E3,nu12,nu13,nu23,G12,G13,G23):
+    def setOrthotropic(self,E1,E2,E3,nu12,nu13,nu23,G12,G13,G23):
         elastic = dict()
         elastic['E'] = str([E1,E2,E3])
         elastic['nu'] = str([nu12,nu13,nu23])

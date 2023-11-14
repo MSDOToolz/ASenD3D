@@ -1,14 +1,15 @@
 import numpy as np
 import os
-##from ruamel.yaml import YAML
 import yaml
-from Section import Section
-from Material import Material
-from Constraint import Constraint
+from asendUtils.model.Section import Section
+from asendUtils.model.Material import Material
+from asendUtils.model.Constraint import Constraint
+from asendUtils.syst.pathTools import *
 
 class Model():
 
     def __init__(self):
+        self.fileName = ""
         self.modelData = dict()
         self.modelData['nodes'] = list()
         self.modelData['elements'] = list()
@@ -169,23 +170,29 @@ class Model():
            loads.append(newLd)
            self.modelData['loads'] = loads       
             
-    def addNodalForce(self,nodeSet,stTime=0.0,endTime=1e+100,F=[0.0,0.0,0.0],M=[0.0,0.0,0.0]):
+    def addNodalForce(self,nodeSet,F,M,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'nodalForce'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = str(F.extend(M))
+        ld = list()
+        ld.extend(F)
+        ld.extend(M)
+        newLd['load'] = str(ld)
         newLd['nodeSet'] = nodeSet
         self.addAnyLoad(newLd) 
             
-    def addBodyForce(self,elementSet,stTime=0.0,endTime=1e+100,F=[0.0,0.0,0.0],M=[0.0,0.0,0.0]):
+    def addBodyForce(self,elementSet,F,M,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'bodyForce'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = str(F.extend(M))
+        ld = list()
+        ld.extend(F)
+        ld.extend(M)
+        newLd['load'] = str(ld)
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)    
             
-    def addGravityForce(self,elementSet,stTime=0.0,endTime=1e+100,G=[0.0,0.0,0.0]):
+    def addGravityForce(self,elementSet,G,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'gravitational'
         newLd['activeTime'] = str([stTime,endTime])
@@ -193,7 +200,7 @@ class Model():
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addCentifugalForce(self,elementSet,stTime=0.0,endTime=1e+100,center=[0.0,0.0,0.0],axis=[1.0,0.0,0.0],angularVelocity=1.0):
+    def addCentifugalForce(self,elementSet,center,axis,angularVelocity,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'centrifugal'
         newLd['activeTime'] = str([stTime,endTime])
@@ -203,7 +210,7 @@ class Model():
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfaceTraction(self,elementSet,stTime=0.0,endTime=1e+100,T=[0.0,0.0,0.0],normDir=[1.0,1.0,1.0],normTol=5.0):
+    def addSurfaceTraction(self,elementSet,T,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'surfaceTraction'
         newLd['activeTime'] = str([stTime,endTime])
@@ -213,7 +220,7 @@ class Model():
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfacePressure(self,elementSet,stTime=0.0,endTime=1e+100,P=0.0,normDir=[1.0,1.0,1.0],normTol=5.0):
+    def addSurfacePressure(self,elementSet,P,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'surfacePressure'
         newLd['activeTime'] = str([stTime,endTime])
@@ -239,7 +246,7 @@ class Model():
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfaceFlux(self,elementSet,stTime=0.0,endTime=1e+100,flux=0.0,normDir=[1.0,1.0,1.0],normTol=5.0):
+    def addSurfaceFlux(self,elementSet,flux,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'surfaceFlux'
         newLd['activeTime'] = str([stTime,endTime])
@@ -265,7 +272,7 @@ class Model():
             self.modelData['initialState'] = initialState
         
     def writeModelInput(self,fileName):
-        #yamlReader = YAML() ## or YAML(typ='safe'), default is 'rt' for round trip
+        self.fileName = makeAbsolute(fileName)
 
         outFile = open('temp.yaml','w')
         yaml.dump(self.modelData,stream=outFile,sort_keys=False)

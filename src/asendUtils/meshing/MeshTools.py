@@ -1,8 +1,8 @@
 import numpy as np
 import plotly.graph_objects as go
-from SpatialGridList2D import *
-from SpatialGridList3D import *
-from ElementUtils import *
+from asendUtils.meshing.SpatialGridList2D import *
+from asendUtils.meshing.SpatialGridList3D import *
+from asendUtils.meshing.ElementUtils import *
 
 def getDirectionCosines(xDir,xyDir):
     mag = np.linalg.norm(xDir)
@@ -197,9 +197,9 @@ def getNodeSetInXYZRange(meshData,setName,xRange=[-1e+100,1e+100],yRange=[-1e+10
     labs = list()
     i = 0
     for nd in meshData['nodes']:
-        if(nd[0] >= xRange[0] and nd[0] <= xRange[0]):
-            if(nd[1] >= yRange[0] and nd[1] <= yRange[0]):
-                if(nd[2] >= zRange[0] and nd[2] <= zRange[0]):
+        if(nd[0] >= xRange[0] and nd[0] <= xRange[1]):
+            if(nd[1] >= yRange[0] and nd[1] <= yRange[1]):
+                if(nd[2] >= zRange[0] and nd[2] <= zRange[1]):
                     labs.append(i)
         i = i + 1
     newSet['labels'] = labs

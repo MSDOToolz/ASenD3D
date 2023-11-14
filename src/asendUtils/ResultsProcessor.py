@@ -1,6 +1,6 @@
 #from ruamel.yaml import YAML
 import yaml
-import plotly.graph_objects as go
+from asendUtils.visualization.plotlyUtils import *
 
 class ResultsProcessor:
 
@@ -50,7 +50,7 @@ class ResultsProcessor:
         self.objectiveData = yaml.safe_load(inFile)
         inFile.close()
 
-    def plotNodeResults(self,field,component=1):
+    def plotNodeResults(self,field,component=1,deformed=False):
         xLst = []
         yLst = []
         zLst = []
@@ -58,12 +58,12 @@ class ResultsProcessor:
             xLst.append(nd[1])
             yLst.append(nd[2])
             zLst.append(nd[3])
-        value = []
+        values = []
         minVal = 10000000000000
         maxVal = -minVal
         for nd in self.nodeData[field]:
             val = nd[component]
-            value.append(val)
+            values.append(val)
             if(val < minVal):
                 minVal = val
             elif(val > maxVal):
@@ -177,22 +177,4 @@ class ResultsProcessor:
                     v2.append(n2)
                     v3.append(n3)
         cbTitle = field + str(component)
-        fig = go.Figure(data=[
-            go.Mesh3d(
-                x=xLst,
-                y=yLst,
-                z=zLst,
-                colorbar_title = cbTitle,
-                colorscale=[[0.0, 'blue'],
-                            [0.5, 'yellow'],
-                            [1.0, 'red']],
-                intensity=value,
-                i=v1,
-                j=v2,
-                k=v3,
-                name='',
-                showscale=True
-            )
-        ])
-
-        fig.show()
+        plotMeshSolution(xLst,yLst,zLst,)

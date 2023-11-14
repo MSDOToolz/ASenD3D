@@ -1,6 +1,6 @@
 import numpy as np
-import MeshTools as mt
-from Segment2D import *
+import asendUtils.meshing.MeshTools as mt
+from asendUtils.meshing.Segment2D import *
 
 class Boundary2D():
 

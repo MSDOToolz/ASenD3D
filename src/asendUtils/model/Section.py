@@ -14,7 +14,7 @@ class Section:
     def setMaterial(self,matName):
         self.secData['material'] = matName
         
-    def setOrientation(self,xDir=[1.0,0.0,0.0],xyVec=[0.0,1.0,0.0]):
+    def setOrientation(self,xDir,xyVec):
         oriLst = xDir.extend(xyVec)
         self.secData['orientation'] = str(oriLst)
         

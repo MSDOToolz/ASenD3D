@@ -1,6 +1,6 @@
 import numpy as np
-import MeshTools as mt
-from ShellRegion import *
+import asendUtils.meshing.MeshTools as mt
+from asendUtils.meshing.ShellRegion import *
 
 class Surface():
 

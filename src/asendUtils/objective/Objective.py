@@ -1,15 +1,17 @@
 import os
 import yaml
+from asendUtils.syst.pathTools import *
 
 class Objective():
 
     def __init__(self):
+        self.fileName = ''
         self.objData = dict()
         self.objData['objectiveTerms'] = list()
         self.categories = 'displacement velocity acceleration temperature tDot stress strain strainEnergy shellDef shellFrcMom beamDef beamFrcMom flux tempGradient mass volume massDisp'
         self.operators = 'powerNorm volumeIntegral volumeAverage'
         
-    def addObjectiveTerm(self,category,operator='powerNorm',component=1,layer=-1,elementSet='',nodeSet='',activeTime=0.0,coefficient=1.0,exponent=2.0,targetValue=[]):
+    def addObjectiveTerm(self,category,operator='powerNorm',component=1,layer=-1,elementSet='',nodeSet='',stTime=0.0,endTime=1e+100,coefficient=1.0,exponent=2.0,targetValue=0.0):
         newTerm = dict()
         if(category in self.categories):
             newTerm['category'] = category
@@ -30,20 +32,15 @@ class Objective():
             newTerm['elementSet'] = elementSet
         if(nodeSet != ''):
             newTerm['nodeSet'] = nodeSet
-        newTerm['activeTime'] = str(activeTime)
+        newTerm['activeTime'] = str([stTime,endTime])
         newTerm['coefficient'] = coefficient
         newTerm['exponent'] = exponent
-        try:
-            tvl = len(targetValue)
-            if(tvl == 0):
-                newTerm['targetValue'] = 0.0
-            else:
-                newTerm['targetValue'] = targetValue
-        except:
-            newTerm['targetValue'] = targetValue
+        newTerm['targetValue'] = targetValue
         self.objData['objectiveTerms'].append(newTerm)
         
     def writeInput(self,fileName):
+        self.fileName = makeAbsolute(fileName)
+        
         outFile = open('temp.yaml','w')
         yaml.dump(self.objData,stream=outFile,sort_keys=False)
         outFile.close()

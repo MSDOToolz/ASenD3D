@@ -1,14 +1,16 @@
 import os
 import yaml
+from asendUtils.syst.pathTools import *
 
 class DesignVariables():
     
     def __init__(self):
+        self.fileName = ''
         self.desVarData = dict()
         self.desVarData['designVariables'] = list()
         self.categories = 'density massMat modulus shearModulus poissonRatio stiffnessMat thermalCond thermalExp specHeat orientation nodeCoord elasticLoad thermalLoad thickness angle zOffset area areaMoment polarMoment'
         
-    def addDesignVariable(self,category,component=1,layer=-1,nodeSet='',elementSet='',activeTime=0.0,coefficients=[]):
+    def addDesignVariable(self,category,component=1,layer=-1,nodeSet='',elementSet='',activeTime=0.0,coefficients=1.0):
         newVar = dict()
         if(category in self.categories):
             newVar['category'] = category
@@ -24,15 +26,12 @@ class DesignVariables():
         if(elementSet != ''):
             newVar['elementSet'] = elementSet
         newVar['activeTime'] = str(activeTime)
-        try:
-            lc = len(coefficients)
-            if(lc > 0):
-                newVar['coefficients'] = coefficients
-        except:
-            newVar['coefficients'] = coefficients
+        newVar['coefficients'] = coefficients
         self.desVarData['designVariables'].append(newVar)
         
     def writeInput(self,fileName):
+        self.fileName = makeAbsolute(fileName)
+        
         outFile = open('temp.yaml','w')
         yaml.dump(self.desVarData,stream=outFile,sort_keys=False)
         outFile.close()

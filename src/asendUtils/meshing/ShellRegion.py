@@ -1,8 +1,8 @@
 from scipy import interpolate
-from Segment2D import *
-from Boundary2D import *
-from Mesh2D import *
-import MeshTools as mt
+from asendUtils.meshing.Segment2D import *
+from asendUtils.meshing.Boundary2D import *
+from asendUtils.meshing.Mesh2D import *
+import asendUtils.meshing.MeshTools as mt
 
 class ShellRegion: 
     """

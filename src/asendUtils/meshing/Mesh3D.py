@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import interpolate
-from SpatialGridList3D import *
+from asendUtils.meshing.SpatialGridList3D import *
 
 class Mesh3D():
 
