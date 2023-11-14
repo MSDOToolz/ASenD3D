@@ -5,7 +5,9 @@ Created on Fri Nov 10 09:18:03 2023
 @author: evans
 """
 
+import os
 import sys
+import subprocess
 import platform
 from datetime import datetime
 import yaml
@@ -146,23 +148,12 @@ class ASenDJob:
             dt = dt.replace(' ','_')
             fn = 'ASenDJob_' + dt
             self.writeJobInput(fn)
-        rt = getRootPath()
-        envFile = rt + 'env/environment.yaml'
-        inFile = open(envFile,'r')
-        envData = yaml.safe_load(inFile)
-        inFile.close()
-        if(solverPath != 'default'):
-            envData['solverpath'] = solverPath
-            outFile = open(envFile,'w')
-            yaml.dump(envData,outFile,sort_keys=False)
-            outFile.close()
-        if(envData['platform'] == 'Windows'):
-            cmdLn = 'start ' + envData['solverpath'] + ' ' + self.fileName
-        elif(envData['platform'] == 'Linux'):
-            cmdLn = './' + envData['solverpath'] + ' ' + self.fileName
+        slvPth = getSolverPath()
+        if(not os.path.exists(slvPth)):
+            errSt = 'Error: solver path ' + slvPth + 'does not exist. Double check and reset with asendUtils.syst.pathTools.setSolverPath()'
+            raise Exception(errStr)
         try:
-            os.system(cmdLn)
+            subprocess.run([slvPth,self.fileName])
         except:
-            errSt = 'Error: problem executing job: ' + self.fileName + '.\n'
-            errSt = errSt + 'Check to make sure the path to the solver, ' + envData['solverpath'] + ' is correct.'
+            errSt = 'Error: problem executing job: ' + self.fileName + '.  Could not complete analysis.\n'
             raise Exception(errSt)

@@ -7,4 +7,3 @@ Created on Wed Nov  8 09:55:29 2023
 
 from asendUtils.InputConverter import *
 from asendUtils.ResultsProcessor import *
-from asendUtils.getRootPath import *
