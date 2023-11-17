@@ -8,7 +8,7 @@ class DesignVariables():
         self.fileName = ''
         self.desVarData = dict()
         self.desVarData['designVariables'] = list()
-        self.categories = 'density massMat modulus shearModulus poissonRatio stiffnessMat thermalCond thermalExp specHeat orientation nodeCoord elasticLoad thermalLoad thickness angle zOffset area areaMoment polarMoment'
+        self.categories = 'density massMat modulus shearModulus poissonRatio stiffnessMat thermalCond thermalExp specHeat initialStrain orientation nodeCoord elasticLoad thermalLoad thickness angle zOffset area areaMoment polarMoment dampingMat potFldCoef dampFldCoef massPerEl'
         
     def addDesignVariable(self,category,component=1,layer=-1,nodeSet='',elementSet='',activeTime=0.0,coefficients=1.0):
         newVar = dict()

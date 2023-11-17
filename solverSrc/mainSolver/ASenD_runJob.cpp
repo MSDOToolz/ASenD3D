@@ -4,12 +4,12 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+//int main(int argc, char* argv[]) {
 // ------------------------------------
-//int main() {
-//	int argc = 2;
-//	string argv[2];
-//	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testModels/singleHex/runStaticElastic.yaml";
+int main() {
+	int argc = 2;
+	string argv[2];
+	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/singleShell/dynamicElastic/dynamicElasticJob.yaml";
 
 // --------------------------------------
 

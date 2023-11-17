@@ -65,6 +65,7 @@ void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
+	int i4;
 	int stRow;
 	int endRow;
 	int endCol;
@@ -100,15 +101,17 @@ void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	}
 	
 	solveqRxEqb(xVec,internalMat,bVec,numIntDof,stRow,endRow,0,endCol,0);
+	i3 = 0;
+	i4 = 0;
 	for (i1 = 0; i1 < stRow; i1++) {
-		nd = nodes[dofTable[2*i1]];
-		dof = dofTable[2*i1+1];
+		nd = nodes[dofTable[i4]];
+		dof = dofTable[i4+1];
 		glbInd = ndAr[nd].ptr->getDofIndex(dof);
-		i3 = i1*numIntDof;
 		for (i2 = 0; i2 < numIntDof; i2++) {
 			extVec[glbInd]+= internalMat[i3]*xVec[i2];
 			i3++;
 		}
+		i4 += 2;
 	}		
 	
 	return;
@@ -296,14 +299,14 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 		} else {
 			getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,-1,-1);
 			matMul(secFcMom,pre.Cmat,secDef,defDim,defDim,1);
-			for (i2 = 0; i2 < defDim; i2++) {
+			for (i2 = 0; i2 < 6; i2++) {
 				tmp.setVal(pre.thermExp[i2]);
 				tmp.mult(ipTemp);
 				tmp.add(pre.Einit[i2]);
 				secFcMom[i2].sub(tmp);
 			}
 			if (getMatrix) {
-				matMul(CTEN, pre.thermExp, nVec, defDim, 1, numNds);
+				matMul(CTEN, pre.thermExp, nVec, 6, 1, numNds);
 			}
 			for (i2 = 0; i2 < totDof; i2++) {
 				getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,i2,-1);
@@ -352,7 +355,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 					i5++;
 				}
 			}
-			for (i2 = 0; i2 < defDim * numNds; i2++) {
+			for (i2 = 0; i2 < 6 * numNds; i2++) {
 				CTEN[i2].mult(dJwt);
 			}
 			i5 = 0;
@@ -360,7 +363,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 				for (i3 = 0; i3 < numNds; i3++) {
 					i6 = i2;
 					i7 = i3;
-					for (i4 = 0; i4 < defDim; i4++) {
+					for (i4 = 0; i4 < 6; i4++) {
 						dRdT[i5] -= pre.BMat[i6].val * CTEN[i7].val;
 						i6 += totDof;
 						i7 += numNds;
@@ -382,6 +385,8 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 	int i5;
 	int i6;
 	int i7;
+	int i8;
+	int i9;
 	int nd1;
 	int dof1;
 	int nd2;
@@ -399,6 +404,8 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 	Doub tmp61[6];
 	Doub tmp62[6];
 	Doub detJwt;
+
+	Doub Rtmp[30];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -431,67 +438,76 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
 	}
 
+
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
 		detJwt.setVal(ipWt[i1]);
 		detJwt.mult(detJ);
 		if (dofPerNd == 6) {
 			// Build matrix [dU^I/dU^g] * {N}
-			for (i2 = 0; i2 < 6; i2++) {
-				tmp61[i2].setVal(0.0);
-			}
-			i5 = 0;
+			i7 = 0;
 			for (i2 = 0; i2 < ndDof; i2++) {
-				nd1 = dofTable[2 * i2];
-				dof1 = dofTable[2 * i2 + 1];
-				i6 = dof1 * numNds + nd1;  // Index in the acceleration matrix
+				nd1 = dofTable[i7];
+				dof1 = dofTable[i7 + 1];
 				getInstDisp(instDisp, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, i2, -1);
-				i4 = nd1;
+				i6 = 0;
+				i5 = i2;
 				for (i3 = 0; i3 < 6; i3++) {
-					tmp.setVal(instDisp[i4]);
-					tmp.mult(nVec[nd1]);
-					pre.BMat[i5].setVal(tmp);
+					pre.BMat[i5].setVal(0.0);
+					for (i4 = 0; i4 < numNds; i4++) {
+						tmp.setVal(nVec[i4]);
+						tmp.mult(instDisp[i6]);
+						pre.BMat[i5].add(tmp);
+						i6++;
+					}
+					i5 += ndDof;
+				}
+				i7 += 2;
+			}
+			// tmp61 = BMat*{Acc}
+			i5 = 0;
+			for (i2 = 0; i2 < 6; i2++) {
+				i4 = 0;
+				tmp61[i2].setVal(0.0);
+				for (i3 = 0; i3 < ndDof; i3++) {
+					nd1 = dofTable[i4];
+					dof1 = dofTable[i4 + 1];
+					i6 = dof1 * numNds + nd1;
+					tmp.setVal(pre.BMat[i5]);
 					tmp.mult(pre.globAcc[i6]);
-					tmp61[i3].add(tmp);
-					i4 += nDim;
+					tmp61[i2].add(tmp);
+					i4 += 2;
 					i5++;
 				}
 			}
-			// Multiply by [M]
+			// tmp62 = [M][B]{A}
 			matMul(tmp62, pre.Mmat, tmp61, 6, 6, 1);
+			matMul(Rtmp, tmp62, pre.BMat, 1, 6, ndDof);
 			// Update Rvec
-			i4 = 0;
 			for (i2 = 0; i2 < ndDof; i2++) {
-				for (i3 = 0; i3 < 6; i3++) {
-					tmp.setVal(pre.BMat[i4]);
-					tmp.mult(tmp62[i3]);
-					tmp.mult(detJwt);
-					Rvec[i2].add(tmp);
-					i4++;
-				}
+				tmp.setVal(Rtmp[i2]);
+				tmp.mult(detJwt);
+				Rvec[i2].add(tmp);
 			}
 			if (getMatrix) {
-				matMul(pre.CBMat, pre.BMat, pre.Mmat, ndDof, 6, 6);
-				i4 = 0;
-				for (i2 = 0; i2 < ndDof; i2++) {
-					for (i3 = 0; i3 < ndDof; i3++) {
-						pre.CBMat[i4].mult(detJwt);
-					}
+				matMul(pre.CBMat, pre.Mmat, pre.BMat, 6, 6, ndDof);
+				i4 = 6 * ndDof;
+				for (i2 = 0; i2 < i4; i2++) {
+					pre.CBMat[i2].mult(detJwt);
 				}
 				i5 = 0;
-				i6 = 0;
 				for (i2 = 0; i2 < ndDof; i2++) {
 					i7 = 0;
 					for (i3 = 0; i3 < ndDof; i3++) {
+						i6 = i2;
+						i7 = i3;
 						for (i4 = 0; i4 < 6; i4++) {
 							dRdA[i5] += pre.CBMat[i6].val * pre.BMat[i7].val;
-							i6++;
-							i7++;
+							i6 += ndDof;
+							i7 += ndDof;
 						}
-						i6 -= 6;
 						i5++;
 					}
-					i6 += 6;
 				}
 			}
 		}
@@ -1616,14 +1632,14 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 		} else {
 			getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,-1,-1);
 			matMul(secFcMom,pre.Cmat,secDef,defDim,defDim,1);
-			for (i2 = 0; i2 < defDim; i2++) {
+			for (i2 = 0; i2 < 6; i2++) {
 				tmp.setVal(pre.thermExp[i2]);
 				tmp.mult(ipTemp);
 				tmp.add(pre.Einit[i2]);
 				secFcMom[i2].sub(tmp);
 			}
 			if (getMatrix) {
-				matMul(CTEN, pre.thermExp, nVec, defDim, 1, numNds);
+				matMul(CTEN, pre.thermExp, nVec, 6, 1, numNds);
 			}
 			for (i2 = 0; i2 < totDof; i2++) {
 				getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,i2,-1);
@@ -1672,7 +1688,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 					i5++;
 				}
 			}
-			for (i2 = 0; i2 < defDim * numNds; i2++) {
+			for (i2 = 0; i2 < 6 * numNds; i2++) {
 				CTEN[i2].mult(dJwt);
 			}
 			i5 = 0;
@@ -1680,7 +1696,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 				for (i3 = 0; i3 < numNds; i3++) {
 					i6 = i2;
 					i7 = i3;
-					for (i4 = 0; i4 < defDim; i4++) {
+					for (i4 = 0; i4 < 6; i4++) {
 						dRdT[i5] -= pre.BMat[i6].val * CTEN[i7].val;
 						i6 += totDof;
 						i7 += numNds;
@@ -1702,6 +1718,8 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 	int i5;
 	int i6;
 	int i7;
+	int i8;
+	int i9;
 	int nd1;
 	int dof1;
 	int nd2;
@@ -1719,6 +1737,8 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 	DiffDoub tmp61[6];
 	DiffDoub tmp62[6];
 	DiffDoub detJwt;
+
+	DiffDoub Rtmp[30];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -1751,67 +1771,76 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
 	}
 
+
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
 		detJwt.setVal(ipWt[i1]);
 		detJwt.mult(detJ);
 		if (dofPerNd == 6) {
 			// Build matrix [dU^I/dU^g] * {N}
-			for (i2 = 0; i2 < 6; i2++) {
-				tmp61[i2].setVal(0.0);
-			}
-			i5 = 0;
+			i7 = 0;
 			for (i2 = 0; i2 < ndDof; i2++) {
-				nd1 = dofTable[2 * i2];
-				dof1 = dofTable[2 * i2 + 1];
-				i6 = dof1 * numNds + nd1;  // Index in the acceleration matrix
+				nd1 = dofTable[i7];
+				dof1 = dofTable[i7 + 1];
 				getInstDisp(instDisp, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, i2, -1);
-				i4 = nd1;
+				i6 = 0;
+				i5 = i2;
 				for (i3 = 0; i3 < 6; i3++) {
-					tmp.setVal(instDisp[i4]);
-					tmp.mult(nVec[nd1]);
-					pre.BMat[i5].setVal(tmp);
+					pre.BMat[i5].setVal(0.0);
+					for (i4 = 0; i4 < numNds; i4++) {
+						tmp.setVal(nVec[i4]);
+						tmp.mult(instDisp[i6]);
+						pre.BMat[i5].add(tmp);
+						i6++;
+					}
+					i5 += ndDof;
+				}
+				i7 += 2;
+			}
+			// tmp61 = BMat*{Acc}
+			i5 = 0;
+			for (i2 = 0; i2 < 6; i2++) {
+				i4 = 0;
+				tmp61[i2].setVal(0.0);
+				for (i3 = 0; i3 < ndDof; i3++) {
+					nd1 = dofTable[i4];
+					dof1 = dofTable[i4 + 1];
+					i6 = dof1 * numNds + nd1;
+					tmp.setVal(pre.BMat[i5]);
 					tmp.mult(pre.globAcc[i6]);
-					tmp61[i3].add(tmp);
-					i4 += nDim;
+					tmp61[i2].add(tmp);
+					i4 += 2;
 					i5++;
 				}
 			}
-			// Multiply by [M]
+			// tmp62 = [M][B]{A}
 			matMul(tmp62, pre.Mmat, tmp61, 6, 6, 1);
+			matMul(Rtmp, tmp62, pre.BMat, 1, 6, ndDof);
 			// Update Rvec
-			i4 = 0;
 			for (i2 = 0; i2 < ndDof; i2++) {
-				for (i3 = 0; i3 < 6; i3++) {
-					tmp.setVal(pre.BMat[i4]);
-					tmp.mult(tmp62[i3]);
-					tmp.mult(detJwt);
-					Rvec[i2].add(tmp);
-					i4++;
-				}
+				tmp.setVal(Rtmp[i2]);
+				tmp.mult(detJwt);
+				Rvec[i2].add(tmp);
 			}
 			if (getMatrix) {
-				matMul(pre.CBMat, pre.BMat, pre.Mmat, ndDof, 6, 6);
-				i4 = 0;
-				for (i2 = 0; i2 < ndDof; i2++) {
-					for (i3 = 0; i3 < ndDof; i3++) {
-						pre.CBMat[i4].mult(detJwt);
-					}
+				matMul(pre.CBMat, pre.Mmat, pre.BMat, 6, 6, ndDof);
+				i4 = 6 * ndDof;
+				for (i2 = 0; i2 < i4; i2++) {
+					pre.CBMat[i2].mult(detJwt);
 				}
 				i5 = 0;
-				i6 = 0;
 				for (i2 = 0; i2 < ndDof; i2++) {
 					i7 = 0;
 					for (i3 = 0; i3 < ndDof; i3++) {
+						i6 = i2;
+						i7 = i3;
 						for (i4 = 0; i4 < 6; i4++) {
 							dRdA[i5] += pre.CBMat[i6].val * pre.BMat[i7].val;
-							i6++;
-							i7++;
+							i6 += ndDof;
+							i7 += ndDof;
 						}
-						i6 -= 6;
 						i5++;
 					}
-					i6 += 6;
 				}
 			}
 		}
@@ -2828,5 +2857,7 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
+ 
+ 
  
  

@@ -1122,7 +1122,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 		}
 	}
 
-	string catList = "sectionDef sectionFrcMom";
+	catList = "sectionDef sectionFrcMom";
 	fi = catList.find(category);
 	if (fi > -1) {
 		if (!elSetPtr) {

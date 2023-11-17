@@ -11,10 +11,7 @@ from asendUtils.meshing.MeshTools import *
 from asendUtils.model.Model import Model
 from asendUtils.model.Section import Section
 from asendUtils.model.Material import Material
-from asendUtils.model.Constraint import Constraint
 
-
-testCases = ['staticElastic','staticThermal','dynamicElastic','dynamicThermal']
 
 ## Build model geometry
 
@@ -26,11 +23,9 @@ kp = [[0.0,0.0,0.0],
 ne = [1,1,1,1]
 surf.addShellRegion('quad1',kp,ne,elType='quad',meshMethod='structured')
 surfMesh = surf.getSurfaceMesh()
-print(surfMesh)
 
 block = Mesh3D(surfMesh['nodes'],surfMesh['elements'])
 blkMesh = block.createSweptMesh('inDirection',1,sweepDistance=1.0,axis=[0.0,0.0,1.0])
-print(blkMesh)
 
 blkMesh = getNodeSetInXYZRange(blkMesh,'xMin',xRange=[-0.1,0.1])
 blkMesh = getNodeSetInXYZRange(blkMesh,'xMax',xRange=[0.9,1.1])
@@ -52,22 +47,6 @@ blkMat.setOrthotropic(E1=1000000.0,E2=1000000.0,E3=1000000.0,nu12=0.0,nu13=0.0,n
 blkMat.setDensity(1000.0)
 
 myMod.addMaterial(blkMat)
-
-## Define constraints
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 1, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
-
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 2, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
-
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 3, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
 
 ## Write Input file
 

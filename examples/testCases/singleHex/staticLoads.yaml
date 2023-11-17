@@ -1,9 +1,0 @@
-loads:
-    - type: nodalForce
-      activeTime: [0.0,1.0]
-      load: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0]
-      nodeSet: upperX
-    - type: nodalHeatGen
-      activeTime: 1.0
-      load: 0.25
-      nodeSet: upperX

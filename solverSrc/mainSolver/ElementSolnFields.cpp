@@ -941,6 +941,13 @@ void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], 
 	Doub rx[9];
 	Doub rot[3];
 	Doub tmp;
+
+	if (dofPerNd != 6) {
+		for (i1 = 0; i1 < 9; i1++) {
+			secDef[i1].setVal(0.0);
+		}
+		return;
+	}
 	
 	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, dv1, dv2);
 	
@@ -1400,6 +1407,13 @@ void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], DoubStressPr
 	Doub detJ;
 	Doub ptTemp;
 	Doub tmp;
+
+	if (dofPerNd != 6) {
+		for (i1 = 0; i1 < 9; i1++) {
+			def[i1].setVal(0.0);
+		}
+		return;
+	}
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
@@ -2464,6 +2478,13 @@ void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub in
 	DiffDoub rx[9];
 	DiffDoub rot[3];
 	DiffDoub tmp;
+
+	if (dofPerNd != 6) {
+		for (i1 = 0; i1 < 9; i1++) {
+			secDef[i1].setVal(0.0);
+		}
+		return;
+	}
 	
 	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, dv1, dv2);
 	
@@ -2924,6 +2945,13 @@ void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], Diff
 	DiffDoub ptTemp;
 	DiffDoub tmp;
 
+	if (dofPerNd != 6) {
+		for (i1 = 0; i1 < 9; i1++) {
+			def[i1].setVal(0.0);
+		}
+		return;
+	}
+
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
 
@@ -3059,6 +3087,8 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
+ 
+ 
  
  
 

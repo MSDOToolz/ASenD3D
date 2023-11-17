@@ -26,9 +26,27 @@ class ASenDJob:
         newCmd['fileName'] = makeAbsolute(fileName)
         self.jobData['jobCommands'].append(newCmd)
         
+    def readConstraints(self,fileName):
+        newCmd = dict()
+        newCmd['command'] = 'readConstraints'
+        newCmd['fileName'] = makeAbsolute(fileName)
+        self.jobData['jobCommands'].append(newCmd)
+        
     def readLoads(self,fileName):
         newCmd = dict()
         newCmd['command'] = 'readLoads'
+        newCmd['fileName'] = makeAbsolute(fileName)
+        self.jobData['jobCommands'].append(newCmd)
+        
+    def readInitialState(self,fileName):
+        newCmd = dict()
+        newCmd['command'] = 'readInitialState'
+        newCmd['fileName'] = makeAbsolute(fileName)
+        self.jobData['jobCommands'].append(newCmd)
+        
+    def readNodeResults(self,fileName):
+        newCmd = dict()
+        newCmd['command'] = 'readNodeResults'
         newCmd['fileName'] = makeAbsolute(fileName)
         self.jobData['jobCommands'].append(newCmd)
         
@@ -38,16 +56,22 @@ class ASenDJob:
         newCmd['fileName'] = makeAbsolute(fileName)
         self.jobData['jobCommands'].append(newCmd)
         
+    def readDesignVarValues(self,fileName):
+        newCmd = dict()
+        newCmd['command'] = 'readDesignVarValues'
+        newCmd['fileName'] = makeAbsolute(fileName)
+        self.jobData['jobCommands'].append(newCmd)
+        
     def readObjectiveInput(self,fileName):
         newCmd = dict()
-        newCmd['command'] = 'readObectiveInput'
+        newCmd['command'] = 'readObjectiveInput'
         newCmd['fileName'] = makeAbsolute(fileName)
         self.jobData['jobCommands'].append(newCmd)
         
     def solve(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
               simPeriod=1.0,saveSolnHist=False,solnHistDir='',solverMethod='direct',
-              solverBandwidth=1e+10,solverBlockDim=1e+10):
+              solverBandwidth=2000000000,solverBlockDim=2000000000):
         newCmd = dict()
         newCmd['command'] = 'solve'
         if(not elastic):
@@ -59,7 +83,7 @@ class ASenDJob:
         newCmd['staticLoadTime'] = staticLoadTime
         newCmd['loadRampSteps'] = loadRampSteps
         if(dynamic):
-            newCmd['dynamic'] = 'yes'
+            newCmd['dynamic'] = "yes"
         newCmd['timeStep'] = timeStep
         newCmd['newmarkBeta'] = newmarkBeta
         newCmd['newmarkGamma'] = newmarkGamma
@@ -91,10 +115,12 @@ class ASenDJob:
     def calcObjective(self):
         newCmd = dict()
         newCmd['command'] = 'calcObjective'
+        self.jobData['jobCommands'].append(newCmd)
         
     def calcObjGradient(self):
         newCmd = dict()
         newCmd['command'] = 'calcObjGradient'
+        self.jobData['jobCommands'].append(newCmd)
         
     def writeNodeResults(self,fileName,fields,timeSteps=None,nodeSet='all'):
         newCmd = dict()
@@ -132,13 +158,29 @@ class ASenDJob:
             newCmd['include'] = include
         if(not writeGradient):
             newCmd['writeGradient'] = 'no'
+        self.jobData['jobCommands'].append(newCmd)
     
     def writeJobInput(self,fileName):
         self.fileName = makeAbsolute(fileName)
         
-        outFile = open(self.fileName,'w')
+        outFile = open('temp.yaml','w')
         yaml.dump(self.jobData,stream=outFile,sort_keys=False)
         outFile.close()
+        
+        inFile = open('temp.yaml','r')
+        outFile = open(self.fileName,'w')
+
+        fLine = inFile.readline()
+        while(fLine != ''):
+            newSt = fLine.replace("'","")
+            newSt = newSt.replace('"','')
+            outFile.write(newSt)
+            fLine = inFile.readline()
+
+        inFile.close()
+        outFile.close()
+        
+        os.remove('temp.yaml')
         
     def executeJob(self,solverPath='default'):
         if(self.fileName == ''):
@@ -148,12 +190,26 @@ class ASenDJob:
             dt = dt.replace(' ','_')
             fn = 'ASenDJob_' + dt
             self.writeJobInput(fn)
-        slvPth = getSolverPath()
+        if(solverPath != 'default'):
+            slvPth = makeAbsolute(solverPath)
+            setSolverPath(slvPth)
+        else:
+            slvPth = getSolverPath()
         if(not os.path.exists(slvPth)):
             errSt = 'Error: solver path ' + slvPth + 'does not exist. Double check and reset with asendUtils.syst.pathTools.setSolverPath()'
             raise Exception(errStr)
         try:
-            subprocess.run([slvPth,self.fileName])
+            procRes = subprocess.run([slvPth,self.fileName],capture_output=True,text=True)
+            ptStr = 'Job: ' + self.fileName
+            print(ptStr)
+            ptStr = 'return code: ' + str(procRes.returncode)
+            print(ptStr)
+            lfName = self.fileName.split('.')[0] + '.log'
+            ptStr = 'see log file, ' + lfName + ' for details.'
+            print(ptStr)
+            outFile = open(lfName,'w')
+            outFile.write(procRes.stdout)
+            outFile.close()
         except:
             errSt = 'Error: problem executing job: ' + self.fileName + '.  Could not complete analysis.\n'
             raise Exception(errSt)

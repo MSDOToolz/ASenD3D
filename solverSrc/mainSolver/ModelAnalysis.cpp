@@ -1319,6 +1319,11 @@ void Model::solveForAdjoint() {
 
 	objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 
+	cout << "dLdU:" << endl;
+	for (i1 = 0; i1 < totGlobDof; i1++) {
+		cout << dLdU[i1] << endl;
+	}
+
 	if (solveCmd->elastic) {
 		if (solveCmd->dynamic) {
 			c1 = solveCmd->timeStep * solveCmd->newmarkGamma;
@@ -1640,9 +1645,27 @@ void Model::getObjGradient() {
 	}
 	else {
 		objective.calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+		for (i2 = 0; i2 < nodes.getLength(); i2++) {
+			dLdT[i2] = 0.0;
+			dLdTdot[i2] = 0.0;
+		}
+		for (i2 = 0; i2 < elMatDim; i2++) {
+			dLdA[i2] = 0.0;
+			dLdV[i2] = 0.0;
+		}
+		for (i2 = 0; i2 < totGlobDof; i2++) {
+			dLdU[i2] = 0.0;
+		}
 		solveForAdjoint();
+		cout << "adjoint:" << endl;
+		for (i1 = 0; i1 < elMatDim; i1++) {
+			cout << uAdj[i1] << endl;
+		}
 		objective.calculatedLdD(dLdD, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+		//
+		cout << "partial dLdD:" << endl;
 		for (i1 = 0; i1 < numDV; i1++) {
+			cout << dLdD[i1] << endl;
 			if (solveCmd->thermal) {
 				dRthermaldD(i1);
 				for (i3 = 0; i3 < nodes.getLength(); i3++) {
@@ -1651,7 +1674,9 @@ void Model::getObjGradient() {
 			}
 			if (solveCmd->elastic) {
 				dRelasticdD(i1);
+				cout << "dRdD: " << i1 << endl;
 				for (i2 = 0; i2 < elMatDim; i2++) {
+					cout << dRudD[i2].dval << endl;
 					dLdD[i1] -= uAdj[i2] * dRudD[i2].dval;
 				}
 				thisEl = elements.getFirst();

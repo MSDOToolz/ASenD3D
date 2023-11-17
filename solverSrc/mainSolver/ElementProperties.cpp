@@ -1645,7 +1645,7 @@ void Element::getBeamDamp(Doub Dmat[], DVPt dvAr[]) {
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				Cmat[i4].setVal(Cmat[i5]);
+				Dmat[i4].setVal(Dmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -1702,42 +1702,42 @@ void Element::getBeamDamp(Doub Dmat[], DVPt dvAr[]) {
 		for (i1 = 0; i1 < 6; i1++) {
 			i3 = 7 * i1;
 			for (i2 = i1; i2 < 6; i2++) {
-				Cmat[i3].setVal(0.0);
+				Dmat[i3].setVal(0.0);
 				i3++;
 			}
 		}
 
-		Cmat[0].setVal(DmatDV[0]);
-		Cmat[0].mult(areaDV);
-		Cmat[4].setVal(DmatDV[0]);
-		Cmat[4].mult(IDV[0]);
-		Cmat[5].setVal(DmatDV[0]);
-		Cmat[5].neg();
-		Cmat[5].mult(IDV[1]);
-		Cmat[7].setVal(DmatDV[21]);
-		Cmat[7].mult(areaDV);
-		Cmat[9].setVal(DmatDV[21]);
-		Cmat[9].neg();
-		Cmat[9].mult(IDV[0]);
-		Cmat[14].setVal(DmatDV[28]); // 28
-		Cmat[14].mult(areaDV);
-		Cmat[15].setVal(DmatDV[35]); // 35
-		Cmat[15].mult(IDV[1]);
-		Cmat[21].setVal(DmatDV[21]); // 21
-		Cmat[21].mult(JDV);
-		Cmat[28].setVal(DmatDV[0]);
-		Cmat[28].mult(IDV[2]);
-		Cmat[29].setVal(DmatDV[0]);
-		Cmat[29].neg();
-		Cmat[29].mult(IDV[4]);
-		Cmat[35].setVal(DmatDV[0]);
-		Cmat[35].mult(IDV[3]);
+		Dmat[0].setVal(DmatDV[0]);
+		Dmat[0].mult(areaDV);
+		Dmat[4].setVal(DmatDV[0]);
+		Dmat[4].mult(IDV[0]);
+		Dmat[5].setVal(DmatDV[0]);
+		Dmat[5].neg();
+		Dmat[5].mult(IDV[1]);
+		Dmat[7].setVal(DmatDV[21]);
+		Dmat[7].mult(areaDV);
+		Dmat[9].setVal(DmatDV[21]);
+		Dmat[9].neg();
+		Dmat[9].mult(IDV[0]);
+		Dmat[14].setVal(DmatDV[28]); // 28
+		Dmat[14].mult(areaDV);
+		Dmat[15].setVal(DmatDV[35]); // 35
+		Dmat[15].mult(IDV[1]);
+		Dmat[21].setVal(DmatDV[21]); // 21
+		Dmat[21].mult(JDV);
+		Dmat[28].setVal(DmatDV[0]);
+		Dmat[28].mult(IDV[2]);
+		Dmat[29].setVal(DmatDV[0]);
+		Dmat[29].neg();
+		Dmat[29].mult(IDV[4]);
+		Dmat[35].setVal(DmatDV[0]);
+		Dmat[35].mult(IDV[3]);
 
 		for (i1 = 1; i1 < 6; i1++) {
 			i3 = 6 * i1;
 			i4 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				Cmat[i3].setVal(Cmat[i4]);
+				Dmat[i3].setVal(Dmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -2151,6 +2151,9 @@ void Element::correctOrient(Doub locOri[], Doub xGlob[]) {
 		tmp.sqr();
 		magCp.add(tmp);
 		magCp.sqt();
+		if (magCp.val < 1e-12) {
+			return;
+		}
 		
 		theta.setVal(magCp);
 		theta.dvd(magv3);
@@ -3868,7 +3871,7 @@ void Element::getBeamDamp(DiffDoub Dmat[], DVPt dvAr[]) {
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				Cmat[i4].setVal(Cmat[i5]);
+				Dmat[i4].setVal(Dmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -3925,42 +3928,42 @@ void Element::getBeamDamp(DiffDoub Dmat[], DVPt dvAr[]) {
 		for (i1 = 0; i1 < 6; i1++) {
 			i3 = 7 * i1;
 			for (i2 = i1; i2 < 6; i2++) {
-				Cmat[i3].setVal(0.0);
+				Dmat[i3].setVal(0.0);
 				i3++;
 			}
 		}
 
-		Cmat[0].setVal(DmatDV[0]);
-		Cmat[0].mult(areaDV);
-		Cmat[4].setVal(DmatDV[0]);
-		Cmat[4].mult(IDV[0]);
-		Cmat[5].setVal(DmatDV[0]);
-		Cmat[5].neg();
-		Cmat[5].mult(IDV[1]);
-		Cmat[7].setVal(DmatDV[21]);
-		Cmat[7].mult(areaDV);
-		Cmat[9].setVal(DmatDV[21]);
-		Cmat[9].neg();
-		Cmat[9].mult(IDV[0]);
-		Cmat[14].setVal(DmatDV[28]); // 28
-		Cmat[14].mult(areaDV);
-		Cmat[15].setVal(DmatDV[35]); // 35
-		Cmat[15].mult(IDV[1]);
-		Cmat[21].setVal(DmatDV[21]); // 21
-		Cmat[21].mult(JDV);
-		Cmat[28].setVal(DmatDV[0]);
-		Cmat[28].mult(IDV[2]);
-		Cmat[29].setVal(DmatDV[0]);
-		Cmat[29].neg();
-		Cmat[29].mult(IDV[4]);
-		Cmat[35].setVal(DmatDV[0]);
-		Cmat[35].mult(IDV[3]);
+		Dmat[0].setVal(DmatDV[0]);
+		Dmat[0].mult(areaDV);
+		Dmat[4].setVal(DmatDV[0]);
+		Dmat[4].mult(IDV[0]);
+		Dmat[5].setVal(DmatDV[0]);
+		Dmat[5].neg();
+		Dmat[5].mult(IDV[1]);
+		Dmat[7].setVal(DmatDV[21]);
+		Dmat[7].mult(areaDV);
+		Dmat[9].setVal(DmatDV[21]);
+		Dmat[9].neg();
+		Dmat[9].mult(IDV[0]);
+		Dmat[14].setVal(DmatDV[28]); // 28
+		Dmat[14].mult(areaDV);
+		Dmat[15].setVal(DmatDV[35]); // 35
+		Dmat[15].mult(IDV[1]);
+		Dmat[21].setVal(DmatDV[21]); // 21
+		Dmat[21].mult(JDV);
+		Dmat[28].setVal(DmatDV[0]);
+		Dmat[28].mult(IDV[2]);
+		Dmat[29].setVal(DmatDV[0]);
+		Dmat[29].neg();
+		Dmat[29].mult(IDV[4]);
+		Dmat[35].setVal(DmatDV[0]);
+		Dmat[35].mult(IDV[3]);
 
 		for (i1 = 1; i1 < 6; i1++) {
 			i3 = 6 * i1;
 			i4 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				Cmat[i3].setVal(Cmat[i4]);
+				Dmat[i3].setVal(Dmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -4374,6 +4377,9 @@ void Element::correctOrient(DiffDoub locOri[], DiffDoub xGlob[]) {
 		tmp.sqr();
 		magCp.add(tmp);
 		magCp.sqt();
+		if (magCp.val < 1e-12) {
+			return;
+		}
 		
 		theta.setVal(magCp);
 		theta.dvd(magv3);
@@ -4460,5 +4466,7 @@ void Element::getMassPerEl(DiffDoub& massPerEl, DVPt dvAr[]) {
 //end dup
  
 //end skip 
+ 
+ 
  
  

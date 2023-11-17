@@ -203,6 +203,8 @@ void Face::getAreaNormal(DiffDoub& area, DiffDoub norm[], NdPt ndAr[], DVPt dvAr
  
  
  
+ 
+ 
 void Face::destroy() {
 	delete[] locNodes;
 	delete[] globNodes;

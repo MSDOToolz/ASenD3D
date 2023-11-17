@@ -154,44 +154,46 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 				thisEnt = thisEnt->next;
 			}
 		}
-        // ------------------		
-		thisEnt = setPt->getFirstEntry();
-		while(thisEnt) {
-			ndLabel = thisEnt->value;
-			ndPt = nodeArray[ndLabel].ptr;
-			outFile << "        - [" << ndLabel;
-			if(thisField == "displacement") {
-				ndPt->getDisp(ndDat);
-				outFile << ndDat[0];
-				ndof = ndPt->getNumDof();
-				for (i1 = 1; i1 < ndof; i1++) {
-					outFile << ", " << ndDat[i1];
+		else {
+			thisEnt = setPt->getFirstEntry();
+			while (thisEnt) {
+				ndLabel = thisEnt->value;
+				ndPt = nodeArray[ndLabel].ptr;
+				outFile << "        - [" << ndLabel;
+				if (thisField == "displacement") {
+					ndPt->getDisp(ndDat);
+					ndof = ndPt->getNumDof();
+					for (i1 = 0; i1 < ndof; i1++) {
+						outFile << ", " << ndDat[i1];
+					}
+					outFile << "]\n";
 				}
-				outFile << "]\n";
-			} else if(thisField == "velocity") {
-				ndPt->getVel(ndDat);
-				outFile << ndDat[0];
-				ndof = ndPt->getNumDof();
-				for (i1 = 1; i1 < ndof; i1++) {
-					outFile << ", " << ndDat[i1];
+				else if (thisField == "velocity") {
+					ndPt->getVel(ndDat);
+					ndof = ndPt->getNumDof();
+					for (i1 = 0; i1 < ndof; i1++) {
+						outFile << ", " << ndDat[i1];
+					}
+					outFile << "]\n";
 				}
-				outFile << "]\n";
-			} else if(thisField == "acceleration") {
-				ndPt->getAcc(ndDat);
-				outFile << ndDat[0];
-				ndof = ndPt->getNumDof();
-				for (i1 = 1; i1 < ndof; i1++) {
-					outFile << ", " << ndDat[i1];
+				else if (thisField == "acceleration") {
+					ndPt->getAcc(ndDat);
+					ndof = ndPt->getNumDof();
+					for (i1 = 0; i1 < ndof; i1++) {
+						outFile << ", " << ndDat[i1];
+					}
+					outFile << "]\n";
 				}
-				outFile << "]\n";
-			} else if(thisField == "temperature") {
-				ndDat[0] = ndPt->getTemperature();
-				outFile << ", " << ndDat[0] << "]\n";
-			} else if(thisField == "tdot") {
-				ndDat[0] = ndPt->getTdot();
-				outFile << ", " << ndDat[0] << "]\n";
+				else if (thisField == "temperature") {
+					ndDat[0] = ndPt->getTemperature();
+					outFile << ", " << ndDat[0] << "]\n";
+				}
+				else if (thisField == "tdot") {
+					ndDat[0] = ndPt->getTdot();
+					outFile << ", " << ndDat[0] << "]\n";
+				}
+				thisEnt = thisEnt->next;
 			}
-			thisEnt = thisEnt->next;
 		}
 		strPt = strPt->next;
 	}
@@ -328,7 +330,8 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			}
 
 			fieldList = "sectionDef sectionFrcMom";
-			if (i2 > -1) {
+			i2 = fieldList.find(thisField);
+			if (i2 > -1 && elPt->getDofPerNd() == 6) {
 				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
 				intPts = elPt->getIP();
@@ -355,6 +358,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			}
 
 			fieldList = "tempGradient heatFlux";
+			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
 				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
