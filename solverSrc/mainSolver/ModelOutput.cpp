@@ -21,7 +21,7 @@ void Model::writeTimeStepSoln(int tStep) {
 	int numIntDof;
 	double ndDat[6];
 	double elDat[9];
-	string fullFile = solveCmd->fileName + "solnTStep" + to_string(tStep) + ".out";
+	string fullFile = solveCmd->fileName + "/solnTStep" + to_string(tStep) + ".out";
 	ofstream outFile;
 	outFile.open(fullFile);
 	outFile << setprecision(15);

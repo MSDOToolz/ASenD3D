@@ -19,6 +19,11 @@ setSolverPath(solveDir)
 ## Compile the core solver
 # print('compiling core solver...')
 # CC = 'g++'
+
+# binDir = thisDir + '/bin'
+# if(not os.path.exists(binDir)):
+#     os.mkdir(binDir)
+
 # srcDir = thisDir + '/solverSrc/mainSolver'
 # os.chdir(srcDir)
 

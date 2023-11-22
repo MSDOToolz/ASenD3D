@@ -775,6 +775,19 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 		getRuk(Rvec, dRdu, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
 	}
 
+	////
+	//ofstream test;
+	//test.open("C:/Users/evans/ASenDHome/stiffnessMatrix.txt");
+	//for (i1 = 0; i1 < totDof; i1++) {
+	//	for (i2 = 0; i2 < totDof; i2++) {
+	//		i3 = i1 * totDof + i2;
+	//		test << dRdu[i3] << "\t";
+	//	}
+	//	test << "\n";
+	//}
+	//test.close();
+	////
+
 	if (numIntDof > 0) {
 		i2 = ndDof;
 		for (i1 = 0; i1 < numIntDof; i1++) {
@@ -795,6 +808,18 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 			condenseMat(dRdu);
 		}
 	}
+
+	//
+	/*test.open("C:/Users/evans/ASenDHome/stiffnessMatrix.txt");
+	for (i1 = 0; i1 < ndDof; i1++) {
+		for (i2 = 0; i2 < ndDof; i2++) {
+			i3 = i1 * totDof + i2;
+			test << dRdu[i3] << "\t";
+		}
+		test << "\n";
+	}
+	test.close();*/
+	//
 	
 	if(cmd->dynamic) {
 		getRum(Rtmp, dRtmp, getMatrix, true, pre, ndAr, dvAr);
@@ -1224,6 +1249,8 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 	double dRdA[2];
 	Face* fcPt;
 	int* fcLocNd;
+	int fcNumNds;
+	bool ndInFace;
 	Doub elAppLd[30];
 	Doub totNdF[6];
 	Doub inpMag;
@@ -1371,13 +1398,13 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 							trac[i1].setVal(ldLoad[i1]);
 						}
 					}
-					i2 = fcPt->getNumNds();
+					fcNumNds = fcPt->getNumNds();
 					fcLocNd = fcPt->getLocNds();
-					for (i1 = 0; i1 < i2; i1++) {
+					for (i1 = 0; i1 < fcNumNds; i1++) {
 						i4 = fcLocNd[i1];
 						for (i3 = 0; i3 < 3; i3++) {
 							//i4 = i3 * numNds + fcLocNd[i1];
-							pre.globAcc[i4].setVal(ldLoad[i3]);
+							pre.globAcc[i4].setVal(trac[i3]);
 							i4 += numNds;
 						}
 					}
@@ -1386,6 +1413,15 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 					for (i1 = 0; i1 < ndDof; i1++) {
 						nd = dofTable[i2];
 						dof = dofTable[i2 + 1];
+						ndInFace = false;
+						for (i3 = 0; i3 < fcNumNds; i3++) {
+							if (fcLocNd[i3] == nd) {
+								ndInFace = true;
+							}
+						}
+						if (!ndInFace) {
+							elAppLd[i1].setVal(0.0);
+						}
 						totNdF[dof].add(elAppLd[i1]);
 						i2 += 2;
 					}
@@ -1395,7 +1431,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 						tmp.setVal(totNdF[i1]);
 						tmp.sqr();
 						vecMag.add(tmp);
-						tmp.setVal(ldLoad[i1]);
+						tmp.setVal(trac[i1]);
 						tmp.sqr();
 						inpMag.add(tmp);
 					}
@@ -1438,6 +1474,7 @@ void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, N
 	Face* fcPt;
 	int fcNumNds;
 	int* fcLocNds;
+	bool ndInFace;
 	Doub fcArea;
 	Doub fcNorm[3];
 	Doub totHG;
@@ -1499,6 +1536,15 @@ void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, N
 					getRtm(elAppLd, dRdT, false, false, pre);
 					totHG.setVal(0.0);
 					for (i1 = 0; i1 < numNds; i1++) {
+						ndInFace = false;
+						for (i2 = 0; i2 < fcNumNds; i2++) {
+							if (fcLocNds[i2] == i1) {
+								ndInFace = true;
+							}
+						}
+						if (!ndInFace) {
+							elAppLd[i1].setVal(0.0);
+						}
 						totHG.add(elAppLd[i1]);
 					}
 					tmp.setVal(ldLoad[0]);
@@ -2557,6 +2603,8 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 	double dRdA[2];
 	Face* fcPt;
 	int* fcLocNd;
+	int fcNumNds;
+	bool ndInFace;
 	DiffDoub elAppLd[30];
 	DiffDoub totNdF[6];
 	DiffDoub inpMag;
@@ -2704,13 +2752,13 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 							trac[i1].setVal(ldLoad[i1]);
 						}
 					}
-					i2 = fcPt->getNumNds();
+					fcNumNds = fcPt->getNumNds();
 					fcLocNd = fcPt->getLocNds();
-					for (i1 = 0; i1 < i2; i1++) {
+					for (i1 = 0; i1 < fcNumNds; i1++) {
 						i4 = fcLocNd[i1];
 						for (i3 = 0; i3 < 3; i3++) {
 							//i4 = i3 * numNds + fcLocNd[i1];
-							pre.globAcc[i4].setVal(ldLoad[i3]);
+							pre.globAcc[i4].setVal(trac[i3]);
 							i4 += numNds;
 						}
 					}
@@ -2719,6 +2767,15 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 					for (i1 = 0; i1 < ndDof; i1++) {
 						nd = dofTable[i2];
 						dof = dofTable[i2 + 1];
+						ndInFace = false;
+						for (i3 = 0; i3 < fcNumNds; i3++) {
+							if (fcLocNd[i3] == nd) {
+								ndInFace = true;
+							}
+						}
+						if (!ndInFace) {
+							elAppLd[i1].setVal(0.0);
+						}
 						totNdF[dof].add(elAppLd[i1]);
 						i2 += 2;
 					}
@@ -2728,7 +2785,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 						tmp.setVal(totNdF[i1]);
 						tmp.sqr();
 						vecMag.add(tmp);
-						tmp.setVal(ldLoad[i1]);
+						tmp.setVal(trac[i1]);
 						tmp.sqr();
 						inpMag.add(tmp);
 					}
@@ -2771,6 +2828,7 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 	Face* fcPt;
 	int fcNumNds;
 	int* fcLocNds;
+	bool ndInFace;
 	DiffDoub fcArea;
 	DiffDoub fcNorm[3];
 	DiffDoub totHG;
@@ -2832,6 +2890,15 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 					getRtm(elAppLd, dRdT, false, false, pre);
 					totHG.setVal(0.0);
 					for (i1 = 0; i1 < numNds; i1++) {
+						ndInFace = false;
+						for (i2 = 0; i2 < fcNumNds; i2++) {
+							if (fcLocNds[i2] == i1) {
+								ndInFace = true;
+							}
+						}
+						if (!ndInFace) {
+							elAppLd[i1].setVal(0.0);
+						}
 						totHG.add(elAppLd[i1]);
 					}
 					tmp.setVal(ldLoad[0]);
@@ -2857,6 +2924,7 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
+ 
  
  
  

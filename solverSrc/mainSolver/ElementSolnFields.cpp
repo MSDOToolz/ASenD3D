@@ -498,6 +498,24 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 			}
 		}
 	}
+
+	////
+	//ofstream test;
+	//test.open("C:/Users/evans/ASenDHome/instOri.txt");
+	//i4 = 0;
+	//for (i1 = 0; i1 < 80; i1++) {
+	//	for (i2 = 0; i2 < 3; i2++) {
+	//		for (i3 = 0; i3 < 3; i3++) {
+	//			test << instOriMat[i4].val << "\t";
+	//			i4++;
+	//		}
+	//		test << "\n";
+	//	}
+	//	test << "\n";
+	//}
+	//test.close();
+	//
+
 	return;
 }
 
@@ -807,6 +825,7 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 			instDisp[i2].add(tmp);
 		}
 	}
+
 	
 	return;
 }
@@ -3087,6 +3106,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
+ 
  
  
  

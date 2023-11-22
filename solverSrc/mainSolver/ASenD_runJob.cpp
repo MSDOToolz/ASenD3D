@@ -9,7 +9,7 @@ using namespace std;
 int main() {
 	int argc = 2;
 	string argv[2];
-	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/singleShell/dynamicElastic/dynamicElasticJob.yaml";
+	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/shellBeam/transverseTipLoading/job.yaml";
 
 // --------------------------------------
 

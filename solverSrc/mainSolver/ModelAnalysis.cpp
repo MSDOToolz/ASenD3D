@@ -791,7 +791,9 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				tempV2[i1] = 0.0;
 			}
 			buildElasticAppLoad(tempV1,time);
+			//cout << "AppLd: " << endl;
 			for (i1 = 0; i1 < elMatDim; i1++) {
+				//cout << tempV1[i1] << endl;
 				tempV1[i1] *= appLdFact;
 			}
 			buildElasticSolnLoad(tempV1,cmd->nonlinearGeom);
@@ -812,6 +814,14 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 					elasticLT.ldlFactor();
 				}
 				elasticLT.ldlSolve(tempV2,tempV1);
+				for (i1 = 0; i1 < elMatDim; i1++) {
+					tempV3[i1] = 0.0;
+				}
+				elasticMat.vectorMultiply(tempV3, tempV2, false);
+				//cout << "tempV3:" << endl;
+				//for (i1 = 0; i1 < elMatDim; i1++) {
+				//	cout << tempV3[i1] << endl;
+				//}
 			}
 			thisNd = nodes.getFirst();
 			while(thisNd) {
@@ -1319,11 +1329,6 @@ void Model::solveForAdjoint() {
 
 	objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 
-	cout << "dLdU:" << endl;
-	for (i1 = 0; i1 < totGlobDof; i1++) {
-		cout << dLdU[i1] << endl;
-	}
-
 	if (solveCmd->elastic) {
 		if (solveCmd->dynamic) {
 			c1 = solveCmd->timeStep * solveCmd->newmarkGamma;
@@ -1657,15 +1662,9 @@ void Model::getObjGradient() {
 			dLdU[i2] = 0.0;
 		}
 		solveForAdjoint();
-		cout << "adjoint:" << endl;
-		for (i1 = 0; i1 < elMatDim; i1++) {
-			cout << uAdj[i1] << endl;
-		}
 		objective.calculatedLdD(dLdD, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 		//
-		cout << "partial dLdD:" << endl;
 		for (i1 = 0; i1 < numDV; i1++) {
-			cout << dLdD[i1] << endl;
 			if (solveCmd->thermal) {
 				dRthermaldD(i1);
 				for (i3 = 0; i3 < nodes.getLength(); i3++) {
@@ -1674,9 +1673,7 @@ void Model::getObjGradient() {
 			}
 			if (solveCmd->elastic) {
 				dRelasticdD(i1);
-				cout << "dRdD: " << i1 << endl;
 				for (i2 = 0; i2 < elMatDim; i2++) {
-					cout << dRudD[i2].dval << endl;
 					dLdD[i1] -= uAdj[i2] * dRudD[i2].dval;
 				}
 				thisEl = elements.getFirst();

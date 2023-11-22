@@ -55,7 +55,7 @@ myMod.writeModelInput('staticElastic/elasticConstraints.yaml')
 ## Define loads
 
 myMod = Model()
-myMod.addNodalForce('xMax',F=[0.5,0.0,0.0],M=[0.0,0.0,0.0])
+myMod.addNodalForce('xMax',F=[0.0,0.0,0.0],M=[0.0,-1.0,0.0])
 
 ## Write Load file
 myMod.writeModelInput('staticElastic/staticNodalLoads.yaml')
@@ -88,4 +88,4 @@ myJob.writeObjective('staticElastic/results/objectiveResults.yaml')
 
 myJob.writeJobInput('staticElastic/staticElasticJob.yaml')
 
-myJob.executeJob()
+#myJob.executeJob()

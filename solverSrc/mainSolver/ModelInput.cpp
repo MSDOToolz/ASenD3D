@@ -1099,7 +1099,7 @@ void Model::readTimeStepSoln(int tStep) {
 	int numIntDof;
 	double ndDat[6];
 	double elDat[9];
-	string fullFile = solveCmd->fileName + "solnTStep" + to_string(tStep) + ".out";
+	string fullFile = solveCmd->fileName + "/solnTStep" + to_string(tStep) + ".out";
 	ifstream inFile;
 	inFile.open(fullFile);
 
