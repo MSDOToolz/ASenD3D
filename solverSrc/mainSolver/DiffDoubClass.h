@@ -12,6 +12,8 @@ class Doub {
 		bool diffType();
 		
 		void setVal(double inp);
+
+		void setVal(double inp, double dinp);
 		
 		void setVal(Doub& inp);
 		

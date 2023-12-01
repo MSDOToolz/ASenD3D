@@ -17,6 +17,12 @@ void Doub::setVal(double inp) {
 	return;
 }
 
+void Doub::setVal(double inp, double dinp) {
+	val = inp;
+	dval = dinp;
+	return;
+}
+
 void Doub::setVal(Doub& inp) {
 	val = inp.val;
 	return;

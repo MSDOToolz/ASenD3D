@@ -105,6 +105,10 @@ public:
  
  
  
+ 
+ 
+ 
+ 
 
 class Element {
 	private:
@@ -282,15 +286,15 @@ class Element {
 		
 		void getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], double spt[]);
 		
-		void getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool stat);
+		void getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int stat);
 		
-		void getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], int dv1, int dv2);
+		void getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], bool nLGeom, int dv1, int dv2);
 
-		void getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]);
+		void getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
 		void getVolume(Doub& vol, DoubStressPrereq& pre, int layer);
 		
-		void getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], int dv1, int dv2);
+		void getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], bool nLGeom, int dv1, int dv2);
 		
 		void getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[], int dv1, int dv2, bool nLGeom);
 
@@ -298,9 +302,9 @@ class Element {
 
 		void dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
 
-		void getDefFrcMom(Doub def[], Doub frcMom[], double spt[], DoubStressPrereq& pre);
+		void getDefFrcMom(Doub def[], Doub frcMom[], double spt[], bool nLGeom, DoubStressPrereq& pre);
 
-		void dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], DoubStressPrereq& pre);
+		void dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], bool nLGeom, DoubStressPrereq& pre);
 
 		void getFluxTGrad(Doub flux[], Doub tGrad[], double spt[], int layer, DoubStressPrereq& pre);
 
@@ -399,15 +403,15 @@ class Element {
 		
 		void getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDoub locNds[], double spt[]);
 		
-		void getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], bool stat);
+		void getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], int stat);
 		
-		void getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], int dv1, int dv2);
+		void getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], bool nLGeom, int dv1, int dv2);
 
-		void getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]);
+		void getStressPrereq(DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
 		void getVolume(DiffDoub& vol, DiffDoubStressPrereq& pre, int layer);
 		
-		void getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], DiffDoub dNdx[], DiffDoub nVec[], int dv1, int dv2);
+		void getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], DiffDoub dNdx[], DiffDoub nVec[], bool nLGeom, int dv1, int dv2);
 		
 		void getSolidStrain(DiffDoub strain[], DiffDoub ux[], DiffDoub dNdx[], DiffDoub locOri[], int dv1, int dv2, bool nLGeom);
 
@@ -415,9 +419,9 @@ class Element {
 
 		void dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre);
 
-		void getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], DiffDoubStressPrereq& pre);
+		void getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre);
 
-		void dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], DiffDoubStressPrereq& pre);
+		void dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre);
 
 		void getFluxTGrad(DiffDoub flux[], DiffDoub tGrad[], double spt[], int layer, DiffDoubStressPrereq& pre);
 
@@ -428,6 +432,10 @@ class Element {
 //end dup
  
 //end skip 
+ 
+ 
+ 
+ 
  
  
  
@@ -452,7 +460,7 @@ class Element {
 //dup1
         void getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
-		void getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+		void getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		
 		void getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
@@ -466,7 +474,7 @@ class Element {
 
 		void getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]);
 
-		void getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+		void getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
 		void getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
@@ -478,7 +486,7 @@ class Element {
 //dup1
         void getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
-		void getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+		void getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 		
 		void getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
@@ -492,13 +500,17 @@ class Element {
 
 		void getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]);
 
-		void getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
+		void getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
 		void getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]);
 
 //end dup
  
 //end skip 
+ 
+ 
+ 
+ 
  
  
  

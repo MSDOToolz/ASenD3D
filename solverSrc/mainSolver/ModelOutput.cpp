@@ -292,7 +292,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "stress strain strainEnergyDen";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
-				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+				elPt->getStressPrereq(stPre, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
 				intPts = elPt->getIP();
 				for (i1 = 0; i1 < numIP; i1++) {
@@ -332,13 +332,13 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "sectionDef sectionFrcMom";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1 && elPt->getDofPerNd() == 6) {
-				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+				elPt->getStressPrereq(stPre, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
 				intPts = elPt->getIP();
 				for (i1 = 0; i1 < numIP; i1++) {
 					type = elPt->getType();
 					//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
-					elPt->getDefFrcMom(def, frcMom, &intPts[3 * i1], stPre);
+					elPt->getDefFrcMom(def, frcMom, &intPts[3 * i1], solveCmd->nonlinearGeom, stPre);
 					outFile << "        - [" << elLabel << ", ";
 					if (thisField == "sectionDef") {
 						outFile << i1 << ", " << def[0].val;
@@ -360,7 +360,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "tempGradient heatFlux";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
-				elPt->getStressPrereq(stPre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+				elPt->getStressPrereq(stPre, nodeArray, dVarArray);
 				numIP = elPt->getNumIP();
 				intPts = elPt->getIP();
 				for (i1 = 0; i1 < numIP; i1++) {

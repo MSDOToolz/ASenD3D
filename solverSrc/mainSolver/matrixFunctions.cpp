@@ -1129,6 +1129,10 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
  
  
  
+ 
+ 
+ 
+ 
 //dup2
 void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
@@ -1926,6 +1930,10 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
  
  
  
+ 
+ 
+ 
+ 
 //dup1
 void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
@@ -2014,8 +2022,9 @@ void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
 		}
 		rotateOrient(d2InstOri, d2LocOri, d2Rot);
 		for (i1 = 0; i1 < 9; i1++) {
-			param = d2InstOri[i1].dv12;
-			instOri[i1].setVal(param);
+			param = d2InstOri[i1].dv2;
+			param2 = d2InstOri[i1].dv12;
+			instOri[i1].setVal(param,param2);
 		}
 	}
 	return;
@@ -2112,8 +2121,9 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 		}
 		rotateOrient(d2InstOri, d2LocOri, d2Rot);
 		for (i1 = 0; i1 < 9; i1++) {
-			param = d2InstOri[i1].dv12;
-			instOri[i1].setVal(param);
+			param = d2InstOri[i1].dv2;
+			param2 = d2InstOri[i1].dv12;
+			instOri[i1].setVal(param,param2);
 		}
 	}
 	return;
@@ -2122,6 +2132,10 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 //end dup  
  
 //end skip 
+ 
+ 
+ 
+ 
  
  
  

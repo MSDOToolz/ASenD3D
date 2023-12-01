@@ -874,7 +874,7 @@ void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub 
 	}
 
 	tmp.setVal(1.0);
-	tmp.mult(Cmat[50]);
+	tmp.mult(Cmat[20]);
 	Cmat[60].setVal(tmp);
 	Cmat[70].setVal(tmp);
 	Cmat[80].setVal(tmp);
@@ -3101,9 +3101,11 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 		}
 	}
 
-	Cmat[60].setVal(Cmat[20]);
-	Cmat[70].setVal(Cmat[20]);
-	Cmat[80].setVal(Cmat[20]);
+	tmp.setVal(1.0);
+	tmp.mult(Cmat[20]);
+	Cmat[60].setVal(tmp);
+	Cmat[70].setVal(tmp);
+	Cmat[80].setVal(tmp);
 
 	return;
 }
@@ -4468,6 +4470,10 @@ void Element::getMassPerEl(DiffDoub& massPerEl, DVPt dvAr[]) {
 //end dup
  
 //end skip 
+ 
+ 
+ 
+ 
  
  
  

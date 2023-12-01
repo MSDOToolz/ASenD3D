@@ -524,8 +524,8 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 				thisEnt = thisSet->getFirstEntry();
 				while (thisEnt) {
 					thisEl = elementArray[thisEnt->value].ptr;
-					thisEl->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
-					thisEl->getAppLoad(tempD1, thisLoad, pre, nodeArray, dVarArray);
+					thisEl->getStressPrereq(pre, nodeArray, dVarArray);
+					thisEl->getAppLoad(tempD1, thisLoad, solveCmd->nonlinearGeom, pre, nodeArray, dVarArray);
 					thisEnt = thisEnt->next;
 				}
 			}
@@ -597,7 +597,7 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 				thisEnt = thisSet->getFirstEntry();
 				while (thisEnt) {
 					thisEl = elementArray[thisEnt->value].ptr;
-					thisEl->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+					thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 					thisEl->getAppThermLoad(tempD1, thisLoad, pre, nodeArray, dVarArray);
 					thisEnt = thisEnt->next;
 				}
@@ -639,7 +639,7 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 	
 	thisEl = elements.getFirst();
 	while(thisEl) {
-		thisEl->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+		thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 		thisEl->getRu(tempD1, elasticMat, buildMat, solveCmd, pre, nodeArray, dVarArray);
 		thisEl = thisEl->getNext();
 	}
@@ -670,7 +670,7 @@ void Model::buildThermalSolnLoad(double solnLd[], bool buildMat) {
 
 	thisEl = elements.getFirst();
 	while (thisEl) {
-		thisEl->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+		thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 		thisEl->getRt(tempD1, thermMat, buildMat, solveCmd, pre, nodeArray);
 		thisEl = thisEl->getNext();
 	}
@@ -791,9 +791,7 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				tempV2[i1] = 0.0;
 			}
 			buildElasticAppLoad(tempV1,time);
-			//cout << "AppLd: " << endl;
 			for (i1 = 0; i1 < elMatDim; i1++) {
-				//cout << tempV1[i1] << endl;
 				tempV1[i1] *= appLdFact;
 			}
 			buildElasticSolnLoad(tempV1,cmd->nonlinearGeom);
@@ -814,14 +812,6 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 					elasticLT.ldlFactor();
 				}
 				elasticLT.ldlSolve(tempV2,tempV1);
-				for (i1 = 0; i1 < elMatDim; i1++) {
-					tempV3[i1] = 0.0;
-				}
-				elasticMat.vectorMultiply(tempV3, tempV2, false);
-				//cout << "tempV3:" << endl;
-				//for (i1 = 0; i1 < elMatDim; i1++) {
-				//	cout << tempV3[i1] << endl;
-				//}
 			}
 			thisNd = nodes.getFirst();
 			while(thisNd) {
@@ -1006,12 +996,12 @@ void Model::eigenSolve(JobCommand* cmd) {
 		}
 		thisEl = elements.getFirst();
 		while (thisEl) {
-			thisEl->getStressPrereq(pre, true, nodeArray, dVarArray);
+			thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 			i2 = thisEl->getNumNds() * thisEl->getDofPerNd();
 			for (i1 = 0; i1 < i2; i1++) {
 				pre.globAcc[i1].setVal(1.0);
 			}
-			thisEl->getRum(Rvec, dRdA, false, true, pre, nodeArray, dVarArray);
+			thisEl->getRum(Rvec, dRdA, false, true, solveCmd->nonlinearGeom, pre, nodeArray, dVarArray);
 			for (i1 = 0; i1 < i2; i1++) {
 				Rv2[i1] = Rvec[i1].val;
 			}
@@ -1244,7 +1234,7 @@ void Model::augmentdLdU() {
 	if (solveCmd->thermal) {
 		thisEl = elements.getFirst();
 		while (thisEl) {
-			thisEl->getStressPrereq(pre, true, nodeArray, dVarArray);
+			thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 			thisEl->getRtm(Rvec, Mmat, true, true, pre);
 			thisEl->getElVec(elAdj, tAdj, true, false, nodeArray);
 			numNds = thisEl->getNumNds();
@@ -1272,8 +1262,8 @@ void Model::augmentdLdU() {
 	if (solveCmd->elastic) {
 		thisEl = elements.getFirst();
 		while (thisEl) {
-			thisEl->getStressPrereq(pre, true, nodeArray, dVarArray);
-			thisEl->getRum(Rvec, Mmat, true, true, pre, nodeArray, dVarArray);
+			thisEl->getStressPrereq(pre, nodeArray, dVarArray);
+			thisEl->getRum(Rvec, Mmat, true, true, solveCmd->nonlinearGeom, pre, nodeArray, dVarArray);
 			thisEl->getRud(Rvec, Dmat, true, solveCmd, pre, nodeArray, dVarArray);
 			thisEl->getElVec(elAdj, uAdj, false, false, nodeArray);
 			ndDof = thisEl->getNumNds() * thisEl->getDofPerNd();
@@ -1328,7 +1318,12 @@ void Model::solveForAdjoint() {
 	double* intAdj;
 
 	objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
-
+    //
+	cout << "dLdU:" << endl;
+	for (i1 = 0; i1 < totGlobDof; i1++) {
+		cout << dLdU[i1] << endl;
+	}
+	//
 	if (solveCmd->elastic) {
 		if (solveCmd->dynamic) {
 			c1 = solveCmd->timeStep * solveCmd->newmarkGamma;
@@ -1365,7 +1360,7 @@ void Model::solveForAdjoint() {
 		if (solveCmd->elastic) {
 			thisEl = elements.getFirst();
 			while (thisEl) {
-				thisEl->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+				thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 				thisEl->getRuk(Rvec, dRdU, dRdT, true, solveCmd->nonlinearGeom, pre, nodeArray, dVarArray);
 				thisEl->getElVec(elAdj, uAdj, false, false, nodeArray);
 				elNumNds = thisEl->getNumNds();
@@ -1448,7 +1443,7 @@ void Model::dRthermaldD(int dVarNum) {
 				i1 = thisEnt->value;
 				if (elInD[i1]) {
 					thisElPt = elementArray[i1].ptr;
-					thisElPt->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+					thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
 					thisElPt->getAppThermLoad(dRtdD, thisLd, pre, nodeArray, dVarArray);
 				}
 				thisEnt = thisEnt->next;
@@ -1465,7 +1460,7 @@ void Model::dRthermaldD(int dVarNum) {
 	thisEnt = thisDV->getFirstEl();
 	while (thisEnt) {
 		thisElPt = elementArray[thisEnt->value].ptr;
-		thisElPt->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+		thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
 		thisElPt->getRt(dRtdD,thermMat,false,solveCmd,pre,nodeArray);
 		thisEnt = thisEnt->next;
 	}
@@ -1528,8 +1523,8 @@ void Model::dRelasticdD(int dVarNum) {
 				i1 = thisEnt->value;
 				if (elInD[i1] > 0) {
 					thisElPt = elementArray[i1].ptr;
-					thisElPt->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
-					thisElPt->getAppLoad(dRudD, thisLd, pre, nodeArray, dVarArray);
+					thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
+					thisElPt->getAppLoad(dRudD, thisLd, solveCmd->nonlinearGeom, pre, nodeArray, dVarArray);
 				}
 				thisEnt = thisEnt->next;
 			}
@@ -1545,7 +1540,7 @@ void Model::dRelasticdD(int dVarNum) {
 	thisEnt = thisDV->getFirstEl();
 	while (thisEnt) {
 		thisElPt = elementArray[thisEnt->value].ptr;
-		thisElPt->getStressPrereq(pre, !solveCmd->nonlinearGeom, nodeArray, dVarArray);
+		thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
 		thisElPt->getRu(dRudD, elasticMat, false, solveCmd, pre, nodeArray, dVarArray);
 		thisEnt = thisEnt->next;
 	}
@@ -1662,7 +1657,18 @@ void Model::getObjGradient() {
 			dLdU[i2] = 0.0;
 		}
 		solveForAdjoint();
+		//
+		cout << "Adjoint:" << endl;
+		for (i1 = 0; i1 < elMatDim; i1++) {
+			cout << uAdj[i1] << endl;
+		}
+		//
 		objective.calculatedLdD(dLdD, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+		//
+		cout << "dLdD:" << endl;
+		for (i1 = 0; i1 < numDV; i1++) {
+			cout << dLdD[i1] << endl;
+		}
 		//
 		for (i1 = 0; i1 < numDV; i1++) {
 			if (solveCmd->thermal) {
@@ -1673,8 +1679,10 @@ void Model::getObjGradient() {
 			}
 			if (solveCmd->elastic) {
 				dRelasticdD(i1);
+				cout << "dRdD:" << endl;
 				for (i2 = 0; i2 < elMatDim; i2++) {
 					dLdD[i1] -= uAdj[i2] * dRudD[i2].dval;
+					cout << dRudD[i2].dval << endl;
 				}
 				thisEl = elements.getFirst();
 				while (thisEl) {

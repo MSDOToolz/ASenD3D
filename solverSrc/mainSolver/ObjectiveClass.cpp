@@ -492,7 +492,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value].ptr;
-			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			if (category == "stress") {
 				qVec[qInd] = stress[component - 1].val;
@@ -569,9 +569,9 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value].ptr;
-			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-			thisEl->getDefFrcMom(def, frcMom, spt, stPre);
+			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, stPre);
 			if (category == "sectionDef") {
 				qVec[qInd] = def[component - 1].val;
 			}
@@ -653,7 +653,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value].ptr;
-			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
 			if (category == "flux") {
 				qVec[qInd] = flux[component - 1].val;
@@ -726,7 +726,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value].ptr;
-			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getVolume(eVol,stPre,layer);
 			elVolVec[qInd] = eVol.val;
 			if (category == "volume") {
@@ -856,7 +856,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value].ptr;
-			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
 			elNumNds = thisEl->getNumNds();
@@ -931,11 +931,11 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value].ptr;
-			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			//thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
-			thisEl->getDefFrcMom(def, frcMom, spt, stPre);
-			thisEl->dDefFrcMomdU(dedU, dsdU, dsdT, spt, stPre);
+			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, stPre);
+			thisEl->dDefFrcMomdU(dedU, dsdU, dsdT, spt, nLGeom, stPre);
 			elNumNds = thisEl->getNumNds();
 			elDofPerNd = thisEl->getDofPerNd();
 			elNumIntDof = thisEl->getNumIntDof();
@@ -986,7 +986,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value].ptr;
-			thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
 			thisEl->dFluxTGraddT(dFdT, dTGdT, spt, layer, stPre);
 			elNumNds = thisEl->getNumNds();
@@ -1074,7 +1074,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 				thisDV = dvAr[dvi].ptr;
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+				thisEl->getStressPrereq(stPre, ndAr, dvAr);
 				thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 				if (category == "stress") {
 					dQdD.addEntry(qInd, dvi, stress[component - 1].dval);
@@ -1140,9 +1140,9 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 				thisDV = dvAr[dvi].ptr;
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+				thisEl->getStressPrereq(stPre, ndAr, dvAr);
 				//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-				thisEl->getDefFrcMom(def, frcMom, spt, stPre);
+				thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, stPre);
 				if (category == "sectionFrcMom") {
 					dQdD.addEntry(qInd, dvi, frcMom[component - 1].dval);
 				}
@@ -1209,7 +1209,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 				thisDV = dvAr[dvi].ptr;
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+				thisEl->getStressPrereq(stPre, ndAr, dvAr);
 				thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
 				if (category == "flux") {
 					dQdD.addEntry(qInd, dvi, flux[component - 1].dval);
@@ -1267,7 +1267,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 				thisDV = dvAr[dvi].ptr;
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, !nLGeom, ndAr, dvAr);
+				thisEl->getStressPrereq(stPre, ndAr, dvAr);
 				thisEl->getVolume(eVol, stPre, layer);
 				dVdD.addEntry(qInd, dvi, eVol.dval);
 				if(category == "mass") {

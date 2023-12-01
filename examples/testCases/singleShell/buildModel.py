@@ -16,15 +16,15 @@ from asendUtils.model.Material import Material
 ## Build model geometry
 
 surf = Surface()
-kp = [[0.0,0.0,0.0],
-      [1.0,0.0,0.0],
+kp = [[-1.0,-1.0,0.0],
+      [1.0,-1.0,0.0],
       [1.0,1.0,0.0],
-      [0.0,1.0,0.0]]
+      [-1.0,1.0,0.0]]
 ne = [1,1,1,1]
 surf.addShellRegion('quad1',kp,ne,elType='quad',meshMethod='structured')
 surfMesh = surf.getSurfaceMesh()
 
-surfMesh = getNodeSetInXYZRange(surfMesh,'xMin',xRange=[-0.1,0.1])
+surfMesh = getNodeSetInXYZRange(surfMesh,'xMin',xRange=[-1.1,-0.9])
 surfMesh = getNodeSetInXYZRange(surfMesh,'xMax',xRange=[0.9,1.1])
 
 ## Create model and add in mesh
@@ -36,7 +36,7 @@ shSec = Section('shell')
 shSec.setElementSet('all')
 shSec.setOrientation(xDir=[1.0,0.0,0.0],xyVec=[0.0,1.0,0.0])
 shSec.setZOffset(0.0)
-shSec.addLayer(material='myMat',thickness=1.0,angle=0.0)
+shSec.addLayer(material='myMat',thickness=0.1,angle=0.0)
 
 myMod.addSection(shSec)
 

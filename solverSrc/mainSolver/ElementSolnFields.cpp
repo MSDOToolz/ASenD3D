@@ -364,7 +364,10 @@ void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], dou
 	return;
 }
 
-void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool stat) {
+void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int stat) {
+	// stat = 0: linear geometry, element ori = locOri
+	// stat = 1: nonlinear geometry, element ori from nodal theta, no derivatives, 1st order diff for nodes
+	// stat = 2: nonlinear geometry, 2nd order diff for Doub version, 1st order for DiffDoub version
 	Doub rot[3];
 	Doub nnds;
 	Doub one;
@@ -381,31 +384,47 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 	}
 	bool isDiff = locOri[0].diffType();
 	
-	nnds.setVal(0.0);
-	one.setVal(1.0);
-	rot[0].setVal(0.0);
-	rot[1].setVal(0.0);
-	rot[2].setVal(0.0);
-	i2 = 3*nDim;
-	for (i1 = 0; i1 < numNds; i1++) {
-		rot[0].add(globDisp[i2]);
-		rot[1].add(globDisp[i2+nDim]);
-		rot[2].add(globDisp[i2+2*nDim]);
-		nnds.add(one);
-		i2++;
+	if (stat > 0) {
+		nnds.setVal(0.0);
+		one.setVal(1.0);
+		rot[0].setVal(0.0);
+		rot[1].setVal(0.0);
+		rot[2].setVal(0.0);
+		i2 = 3 * nDim;
+		for (i1 = 0; i1 < numNds; i1++) {
+			rot[0].add(globDisp[i2]);
+			rot[1].add(globDisp[i2 + nDim]);
+			rot[2].add(globDisp[i2 + 2 * nDim]);
+			nnds.add(one);
+			i2++;
+		}
+		rot[0].dvd(nnds);
+		rot[1].dvd(nnds);
+		rot[2].dvd(nnds);
 	}
-	rot[0].dvd(nnds);
-	rot[1].dvd(nnds);
-	rot[2].dvd(nnds);
 	
-	if(stat) {
-		dOridThet(&instOriMat[0],locOri,rot,0,0);
+	if(stat < 2) {
+		if (stat == 0) {
+			for (i1 = 0; i1 < 9; i1++) {
+				instOriMat[i1].setVal(locOri[i1]);
+			}
+		}
+		else {
+			dOridThet(&instOriMat[0], locOri, rot, 0, 0);
+		}
 		for (i1 = 1; i1 <= numNds; i1++) {
 			i2 = 3*nDim + i1 - 1;
 			rot[0].setVal(globDisp[i2]);
 			rot[1].setVal(globDisp[i2+nDim]);
 			rot[2].setVal(globDisp[i2+2*nDim]);
-			for (i2 = 0; i2 < 4; i2++) {
+			stIndex = 144 * i1;
+			dOridThet(&instOriMat[stIndex], locOri, rot, 0, 0);
+			if (stat == 0) {
+				rot[0].setVal(0.0);
+				rot[1].setVal(0.0);
+				rot[2].setVal(0.0);
+			}
+			for (i2 = 1; i2 < 4; i2++) {
 				stIndex = 144*i1 + 36*i2;
 				dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
 				i3 = stIndex;
@@ -499,27 +518,10 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], bool
 		}
 	}
 
-	////
-	//ofstream test;
-	//test.open("C:/Users/evans/ASenDHome/instOri.txt");
-	//i4 = 0;
-	//for (i1 = 0; i1 < 80; i1++) {
-	//	for (i2 = 0; i2 < 3; i2++) {
-	//		for (i3 = 0; i3 < 3; i3++) {
-	//			test << instOriMat[i4].val << "\t";
-	//			i4++;
-	//		}
-	//		test << "\n";
-	//	}
-	//	test << "\n";
-	//}
-	//test.close();
-	//
-
 	return;
 }
 
-void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], int dv1, int dv2) {
+void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -544,285 +546,360 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 		instDisp[i1].setVal(0.0);
 	}
 	
-	if(dv1 + dv2 == -2) {
-		for (i1 = 0; i1 < 3; i1++) {
-			for (i2 = 0; i2 < numNds; i2++) {
-				i4 = i1*nDim + i2;
-				i5 = i2;
-				i6 = i2;
-				i7 = i1*3;
-				for (i3 = 0; i3 < 3; i3++) {
-					tmp.setVal(globDisp[i5]);
-					tmp.add(xGlob[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp2.setVal(locOri[i7]);
-					tmp2.mult(xGlob[i6]);
-					tmp.sub(tmp2);
-					instDisp[i4].add(tmp);
-					i5+= nDim;
-					i6+= numNds;
-					i7++;
+	if (!nLGeom) {
+		if (dv1 + dv2 == -2) {
+			i7 = 3 * nDim;
+			for (i1 = 0; i1 < 3; i1++) {
+				i4 = i1 * nDim;
+				for (i2 = 0; i2 < numNds; i2++) {
+					i5 = i1 * 3;
+					i6 = i2;
+					for (i3 = 0; i3 < 3; i3++) {
+						//i4 = i1 * nDim + i2;
+						//i5 = i1 * 3 + i3;
+						//i6 = i3 * nDim + i2;
+						tmp.setVal(locOri[i5]);
+						tmp.mult(globDisp[i6]);
+						instDisp[i4].add(tmp);
+						tmp.setVal(locOri[i5]);
+						tmp.mult(globDisp[i6 + i7]);
+						instDisp[i4 + i7].add(tmp);
+						i5++;
+						i6 += nDim;
+					}
+					i4++;
+				}
+			}
+			i2 = 2 * numNds * dofPerNd;
+			for (i1 = 0; i1 < numIntDof; i1++) {
+				nd = dofTable[i2];
+				dof = dofTable[i2 + 1];
+				i3 = dof * nDim + nd;
+				instDisp[i3].setVal(globDisp[i3]);
+				i2 += 2;
+			}
+		}
+		else if ((dv1+1)*(dv2+1) == 0) {
+			dv1 = dv1 + dv2 + 1;
+			nd = dofTable[2 * dv1];
+			dof = dofTable[2 * dv1 + 1];
+			if (dof < 3) {
+				if (nd < numNds) {
+					i2 = nd;
+					i3 = dof;
+					for (i1 = 0; i1 < 3; i1++) {
+						//i2 = i1 * nDim + nd;
+						//i3 = i1 * 3 + dof;
+						instDisp[i2].setVal(locOri[i3]);
+						i2 += nDim;
+						i3 += 3;
+					}
+				}
+				else {
+					i1 = dof * nDim + nd;
+					instDisp[i1].setVal(1.0);
+				}
+			}
+			else {
+				i2 = 3 * nDim + nd;
+				i3 = dof - 3;
+				for (i1 = 0; i1 < 3; i1++) {
+					//i2 = (i1 + 3) * nDim + nd;
+					//i3 = i1 * 3 + (dof - 3);
+					instDisp[i2].setVal(locOri[i3]);
+					i2 += nDim;
+					i3 += 3;
 				}
 			}
 		}
-		
-		i2 = numNds*dofPerNd;
-		i3 = i2 + numIntDof;
-		for (i1 = i2; i1 < i3; i1++) {
-			i4 = dofTable[2*i1];
-			i5 = dofTable[2*i1+1];
-			i6 = i5*nDim + i4;
-			instDisp[i6].setVal(globDisp[i6]);
-		}
-		
-		for (i1 = 0; i1 < numNds; i1++) {
-			i3 = 3*nDim + i1; // indexes of thetax, y and z for node i1
-			i4 = 4*nDim + i1;
-			i5 = 5*nDim + i1;
-			ndOInd = 144*(i1+1);
-			for (i2 = 0; i2 < 3; i2++) {
-				i6 = ndOInd + 3 + i2;
-				i7 = 6 + i2;
-				tmp.setVal(instOriMat[i6]);
-				tmp.mult(instOriMat[i7]);
-				instDisp[i3].add(tmp);
-				i6 = ndOInd + 6 + i2;
-				i7 = i2;
-				tmp.setVal(instOriMat[i6]);
-				tmp.mult(instOriMat[i7]);
-				instDisp[i4].add(tmp);
-				i6 = ndOInd + i2;
-				i7 = 3 + i2;
-				tmp.setVal(instOriMat[i6]);
-				tmp.mult(instOriMat[i7]);
-				instDisp[i5].add(tmp);
-			}				
-		}
-	} else if((dv1+1)*(dv2+1) == 0) {
-		dv1 = dv1 + dv2 + 1;
-		nd = dofTable[2*dv1];
-		dof = dofTable[2*dv1+1];
-		if(dof < 3) {
-			if(nd < numNds) {
-				i1 = nd; // Index in instDisp
-				i2 = dof; //Index in instOriMat
-				instDisp[i1].setVal(instOriMat[i2]);
-				i1 = nDim + nd;
-				i2 = 3 + dof;
-				instDisp[i1].setVal(instOriMat[i2]);
-				i1 = 2*nDim + nd;
-				i2 = 6 + dof;
-				instDisp[i1].setVal(instOriMat[i2]);
-			} else {
-				i1 = dof*nDim + nd;
-				instDisp[i1].setVal(1.0);
-			}
-		} else { // dof is rotation
-		    nnInv.setVal(1.0/numNds);
-			dofOInd = 36*(dof-2);
-		    for (i1 = 0; i1 < 3; i1++) {
+	}
+	else {
+		if (dv1 + dv2 == -2) {
+			for (i1 = 0; i1 < 3; i1++) {
 				for (i2 = 0; i2 < numNds; i2++) {
-					i4 = i1*nDim + i2;
+					i4 = i1 * nDim + i2;
 					i5 = i2;
 					i6 = i2;
-					i7 = dofOInd + i1*3;
+					i7 = i1 * 3;
 					for (i3 = 0; i3 < 3; i3++) {
 						tmp.setVal(globDisp[i5]);
 						tmp.add(xGlob[i6]);
 						tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
+						tmp2.setVal(locOri[i7]);
+						tmp2.mult(xGlob[i6]);
+						tmp.sub(tmp2);
 						instDisp[i4].add(tmp);
-						i5+= nDim;
-						i6+= numNds;
+						i5 += nDim;
+						i6 += numNds;
 						i7++;
 					}
 				}
 			}
-			
+
+			i2 = numNds * dofPerNd;
+			i3 = i2 + numIntDof;
+			for (i1 = i2; i1 < i3; i1++) {
+				i4 = dofTable[2 * i1];
+				i5 = dofTable[2 * i1 + 1];
+				i6 = i5 * nDim + i4;
+				instDisp[i6].setVal(globDisp[i6]);
+			}
+
 			for (i1 = 0; i1 < numNds; i1++) {
-				i3 = 3*nDim + i1; // indexes of thetax, y and z for node i1
-				i4 = 4*nDim + i1;
-				i5 = 5*nDim + i1;
-				ndOInd = 144*(i1+1);
+				i3 = 3 * nDim + i1; // indexes of thetax, y and z for node i1
+				i4 = 4 * nDim + i1;
+				i5 = 5 * nDim + i1;
+				ndOInd = 144 * (i1 + 1);
 				for (i2 = 0; i2 < 3; i2++) {
 					i6 = ndOInd + 3 + i2;
-					i7 = dofOInd + 6 + i2;
+					i7 = 6 + i2;
 					tmp.setVal(instOriMat[i6]);
 					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv);
 					instDisp[i3].add(tmp);
 					i6 = ndOInd + 6 + i2;
-					i7 = dofOInd + i2;
+					i7 = i2;
 					tmp.setVal(instOriMat[i6]);
 					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv);
 					instDisp[i4].add(tmp);
 					i6 = ndOInd + i2;
-					i7 = dofOInd + 3 + i2;
+					i7 = 3 + i2;
 					tmp.setVal(instOriMat[i6]);
 					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv);
 					instDisp[i5].add(tmp);
-					if(i1 == nd) {
-						i6 = ndOInd + dofOInd + 3 + i2;
-						i7 = 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dofOInd + 6 + i2;
-						i7 = i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dofOInd + i2;
-						i7 = 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i5].add(tmp);
-					}
-				}				
+				}
 			}
 		}
-	} else {
-		nd = dofTable[2*dv1];
-		dof = dofTable[2*dv1+1];
-		nd2 = dofTable[2*dv2];
-		dof2 = dofTable[2*dv2+1];
-		nnInv.setVal(1.0/numNds);
-		nnInv2.setVal(nnInv);
-		nnInv2.sqr();
-		if(dof > 2 && dof2 > 2) {
-			for (i1 = 0; i1 < 3; i1++) {
-				dofOInd = 36*(dof-2) + 9*(dof2-2) + 3*i1;
-				for (i2 = 0; i2 < numNds; i2++) {
-					i4 = nDim*i1 + i2;
-					i5 = i2;
-					i6 = i2;
-					i7 = dofOInd;
-					for (i3 = 0; i3 < 3; i3++) {
-						tmp.setVal(globDisp[i5]);
-						tmp.add(xGlob[i6]);
+		else if ((dv1 + 1) * (dv2 + 1) == 0) {
+			dv1 = dv1 + dv2 + 1;
+			nd = dofTable[2 * dv1];
+			dof = dofTable[2 * dv1 + 1];
+			if (dof < 3) {
+				if (nd < numNds) {
+					i1 = nd; // Index in instDisp
+					i2 = dof; //Index in instOriMat
+					instDisp[i1].setVal(instOriMat[i2]);
+					i1 = nDim + nd;
+					i2 = 3 + dof;
+					instDisp[i1].setVal(instOriMat[i2]);
+					i1 = 2 * nDim + nd;
+					i2 = 6 + dof;
+					instDisp[i1].setVal(instOriMat[i2]);
+				}
+				else {
+					i1 = dof * nDim + nd;
+					instDisp[i1].setVal(1.0);
+				}
+			}
+			else { // dof is rotation
+				nnInv.setVal(1.0 / numNds);
+				dofOInd = 36 * (dof - 2);
+				for (i1 = 0; i1 < 3; i1++) {
+					for (i2 = 0; i2 < numNds; i2++) {
+						i4 = i1 * nDim + i2;
+						i5 = i2;
+						i6 = i2;
+						i7 = dofOInd + i1 * 3;
+						for (i3 = 0; i3 < 3; i3++) {
+							tmp.setVal(globDisp[i5]);
+							tmp.add(xGlob[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i4].add(tmp);
+							i5 += nDim;
+							i6 += numNds;
+							i7++;
+						}
+					}
+				}
+
+				for (i1 = 0; i1 < numNds; i1++) {
+					i3 = 3 * nDim + i1; // indexes of thetax, y and z for node i1
+					i4 = 4 * nDim + i1;
+					i5 = 5 * nDim + i1;
+					ndOInd = 144 * (i1 + 1);
+					for (i2 = 0; i2 < 3; i2++) {
+						i6 = ndOInd + 3 + i2;
+						i7 = dofOInd + 6 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv);
+						instDisp[i3].add(tmp);
+						i6 = ndOInd + 6 + i2;
+						i7 = dofOInd + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv);
+						instDisp[i4].add(tmp);
+						i6 = ndOInd + i2;
+						i7 = dofOInd + 3 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv);
+						instDisp[i5].add(tmp);
+						if (i1 == nd) {
+							i6 = ndOInd + dofOInd + 3 + i2;
+							i7 = 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dofOInd + 6 + i2;
+							i7 = i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dofOInd + i2;
+							i7 = 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i5].add(tmp);
+						}
+					}
+				}
+			}
+		}
+		else {
+			nd = dofTable[2 * dv1];
+			dof = dofTable[2 * dv1 + 1];
+			nd2 = dofTable[2 * dv2];
+			dof2 = dofTable[2 * dv2 + 1];
+			nnInv.setVal(1.0 / numNds);
+			nnInv2.setVal(nnInv);
+			nnInv2.sqr();
+			if (dof > 2 && dof2 > 2) {
+				for (i1 = 0; i1 < 3; i1++) {
+					dofOInd = 36 * (dof - 2) + 9 * (dof2 - 2) + 3 * i1;
+					for (i2 = 0; i2 < numNds; i2++) {
+						i4 = nDim * i1 + i2;
+						i5 = i2;
+						i6 = i2;
+						i7 = dofOInd;
+						for (i3 = 0; i3 < 3; i3++) {
+							tmp.setVal(globDisp[i5]);
+							tmp.add(xGlob[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv2);
+							instDisp[i4].add(tmp);
+							i5 += nDim;
+							i6 += numNds;
+							i7++;
+						}
+					}
+				}
+
+				dofOInd = 36 * (dof - 2);
+				dof2OInd = 9 * (dof2 - 2);
+				for (i1 = 0; i1 < numNds; i1++) {
+					i3 = 3 * nDim + i1; // indexes of thetax, y and z for node i1
+					i4 = 4 * nDim + i1;
+					i5 = 5 * nDim + i1;
+					ndOInd = 144 * (i1 + 1);
+					for (i2 = 0; i2 < 3; i2++) {
+						i6 = ndOInd + 3 + i2;
+						i7 = dofOInd + dof2OInd + 6 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv2);
+						instDisp[i3].add(tmp);
+						i6 = ndOInd + 6 + i2;
+						i7 = dofOInd + dof2OInd + i2;
+						tmp.setVal(instOriMat[i6]);
 						tmp.mult(instOriMat[i7]);
 						tmp.mult(nnInv2);
 						instDisp[i4].add(tmp);
-						i5+= nDim;
-						i6+= numNds;
-						i7++;
+						i6 = ndOInd + i2;
+						i7 = dofOInd + dof2OInd + 3 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv2);
+						instDisp[i5].add(tmp);
+						if (i1 == nd) {
+							i6 = ndOInd + dofOInd + 3 + i2;
+							i7 = dof2OInd + 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dofOInd + 6 + i2;
+							i7 = dof2OInd + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dofOInd + i2;
+							i7 = dof2OInd + 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i5].add(tmp);
+						}
+						if (i1 == nd2) {
+							i6 = ndOInd + dof2OInd + 3 + i2;
+							i7 = dofOInd + 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dof2OInd + 6 + i2;
+							i7 = dofOInd + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dof2OInd + i2;
+							i7 = dofOInd + 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i5].add(tmp);
+						}
+						if (i1 == nd && i1 == nd2) {
+							i6 = ndOInd + dofOInd + dof2OInd + 3 + i2;
+							i7 = 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dofOInd + dof2OInd + 6 + i2;
+							i7 = i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dofOInd + dof2OInd + i2;
+							i7 = 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i5].add(tmp);
+						}
 					}
 				}
 			}
-			
-			dofOInd = 36*(dof-2);
-			dof2OInd = 9*(dof2-2);
-			for (i1 = 0; i1 < numNds; i1++) {
-				i3 = 3*nDim + i1; // indexes of thetax, y and z for node i1
-				i4 = 4*nDim + i1;
-				i5 = 5*nDim + i1;
-				ndOInd = 144*(i1+1);
-				for (i2 = 0; i2 < 3; i2++) {
-					i6 = ndOInd + 3 + i2;
-					i7 = dofOInd + dof2OInd + 6 + i2;
-					tmp.setVal(instOriMat[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv2);
-					instDisp[i3].add(tmp);
-					i6 = ndOInd + 6 + i2;
-					i7 = dofOInd + dof2OInd + i2;
-					tmp.setVal(instOriMat[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv2);
-					instDisp[i4].add(tmp);
-					i6 = ndOInd + i2;
-					i7 = dofOInd + dof2OInd + 3 + i2;
-					tmp.setVal(instOriMat[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv2);
-					instDisp[i5].add(tmp);
-					if(i1 == nd) {
-						i6 = ndOInd + dofOInd + 3 + i2;
-						i7 = dof2OInd + 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dofOInd + 6 + i2;
-						i7 = dof2OInd + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dofOInd + i2;
-						i7 = dof2OInd + 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i5].add(tmp);
-					}
-					if(i1 == nd2) {
-						i6 = ndOInd + dof2OInd + 3 + i2;
-						i7 = dofOInd + 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dof2OInd + 6 + i2;
-						i7 = dofOInd + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dof2OInd + i2;
-						i7 = dofOInd + 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i5].add(tmp);
-					}
-					if(i1 == nd && i1 == nd2) {
-						i6 = ndOInd + dofOInd + dof2OInd + 3 + i2;
-						i7 = 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dofOInd + dof2OInd + 6 + i2;
-						i7 = i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dofOInd + dof2OInd + i2;
-						i7 = 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i5].add(tmp);
-					}
-				}				
+			else if (dof < 3 && dof2 < 3) {
+				return;
 			}
-		} else if(dof < 3 && dof2 < 3) {
-			return;
-		} else {
-			if(dof > 2) {
-				i1 = dof;
-				dof = dof2;
-				dof2 = i1;
-				i1 = nd;
-				nd = nd2;
-				nd2 = i1;
+			else {
+				if (dof > 2) {
+					i1 = dof;
+					dof = dof2;
+					dof2 = i1;
+					i1 = nd;
+					nd = nd2;
+					nd2 = i1;
+				}
+				i1 = 36 * (dof2 - 2) + dof;
+				tmp.setVal(instOriMat[i1]);
+				tmp.mult(nnInv);
+				i2 = nd;
+				instDisp[i2].add(tmp);
+				i1 = 36 * (dof2 - 2) + 3 + dof;
+				tmp.setVal(instOriMat[i1]);
+				tmp.mult(nnInv);
+				i2 = nDim + nd;
+				instDisp[i2].add(tmp);
+				i1 = 36 * (dof2 - 2) + 6 + dof;
+				tmp.setVal(instOriMat[i1]);
+				tmp.mult(nnInv);
+				i2 = 2 * nDim + nd;
+				instDisp[i2].add(tmp);
 			}
-			i1 = 36*(dof2-2) + dof;
-			tmp.setVal(instOriMat[i1]);
-			tmp.mult(nnInv);
-			i2 = nd;
-			instDisp[i2].add(tmp);
-			i1 = 36*(dof2-2) + 3 + dof;
-			tmp.setVal(instOriMat[i1]);
-			tmp.mult(nnInv);
-			i2 = nDim + nd;
-			instDisp[i2].add(tmp);
-			i1 = 36*(dof2-2) + 6 + dof;
-			tmp.setVal(instOriMat[i1]);
-			tmp.mult(nnInv);
-			i2 = 2*nDim + nd;
-			instDisp[i2].add(tmp);
 		}
 	}
 
@@ -830,7 +907,7 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 	return;
 }
 
-void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int numLay;
 	Doub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
@@ -842,7 +919,6 @@ void Element::getStressPrereq(DoubStressPrereq& pre, bool stat, NdPt ndAr[], DVP
 	getNdTdot(pre.globTdot, ndAr);
 	if (dofPerNd == 6) {
 		correctOrient(pre.locOri, pre.globNds);
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, stat);
 		if (type != 2) {
 			numLay = sectPtr->getNumLayers();
 			if (numLay > pre.currentLayLen) {
@@ -943,7 +1019,7 @@ void Element::getVolume(Doub& vol, DoubStressPrereq& pre, int layer) {
 	return;
 }
 
-void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], int dv1, int dv2) {
+void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -968,7 +1044,7 @@ void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], 
 		return;
 	}
 	
-	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, dv1, dv2);
+	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, nLGeom, dv1, dv2);
 	
 	if(dv1 + dv2 == -2) {
 		matMul(ux,instDisp,dNdx,3,nDim,3);
@@ -1002,6 +1078,7 @@ void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], 
 					i6 = i2;
 					i7 = nDim*(i1+3);
 					ux[i4].setVal(0.0);
+					rx[i4].setVal(0.0);
 					for (i3 = 0; i3 < numNds; i3++) {
 						tmp.setVal(instDisp[i5]);
 						tmp.mult(dNdx[i6]);
@@ -1269,7 +1346,14 @@ void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int la
 	}
 
 	if (type == 41 || type == 3) {
-		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
+		if (nLGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
+
+		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
 		
 		sectStrn[0].setVal(secDef[0]);
 		tmp.setVal(pre.layerZ[layer]);
@@ -1353,9 +1437,16 @@ void Element::dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[
 	}
 
 	if (type == 41 || type == 3) {
+		if (nLGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
+
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		for (i1 = 0; i1 < totDof; i1++) {
-			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i1, -1);
+			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
 
 			sectStrn[0].setVal(secDef[0]);
 			tmp.setVal(pre.layerZ[layer]);
@@ -1419,7 +1510,7 @@ void Element::dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[
 	return;
 }
 
-void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], DoubStressPrereq& pre) {
+void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], bool nLGeom, DoubStressPrereq& pre) {
 	int i1;
 	Doub nVec[11];
 	Doub dNdx[33];
@@ -1434,8 +1525,15 @@ void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], DoubStressPr
 		return;
 	}
 
+	if (nLGeom) {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+	}
+	else {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+	}
+
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
-	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
+	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
 
 	ptTemp.setVal(0.0);
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -1456,7 +1554,7 @@ void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], DoubStressPr
 	return;
 }
 
-void Element::dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], DoubStressPrereq& pre) {
+void Element::dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], bool nLGeom, DoubStressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
@@ -1468,10 +1566,18 @@ void Element::dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], do
 	Doub tmp;
 	Doub def[9];
 
+	if (nLGeom) {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+	}
+	else {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+	}
+
+
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	totDof = numNds * dofPerNd + numIntDof;
 	for (i1 = 0; i1 < totDof; i1++) {
-		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i1, -1);
+		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
 		i2 = i1;
 		for (i3 = 0; i3 < defDim; i3++) {
 			dDefdU[i2].setVal(def[i3]);
@@ -1920,7 +2026,10 @@ void Element::getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDo
 	return;
 }
 
-void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], bool stat) {
+void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], int stat) {
+	// stat = 0: linear geometry, element ori = locOri
+	// stat = 1: nonlinear geometry, element ori from nodal theta, no derivatives, 1st order diff for nodes
+	// stat = 2: nonlinear geometry, 2nd order diff for DiffDoub version, 1st order for DiffDoub version
 	DiffDoub rot[3];
 	DiffDoub nnds;
 	DiffDoub one;
@@ -1937,31 +2046,47 @@ void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub glob
 	}
 	bool isDiff = locOri[0].diffType();
 	
-	nnds.setVal(0.0);
-	one.setVal(1.0);
-	rot[0].setVal(0.0);
-	rot[1].setVal(0.0);
-	rot[2].setVal(0.0);
-	i2 = 3*nDim;
-	for (i1 = 0; i1 < numNds; i1++) {
-		rot[0].add(globDisp[i2]);
-		rot[1].add(globDisp[i2+nDim]);
-		rot[2].add(globDisp[i2+2*nDim]);
-		nnds.add(one);
-		i2++;
+	if (stat > 0) {
+		nnds.setVal(0.0);
+		one.setVal(1.0);
+		rot[0].setVal(0.0);
+		rot[1].setVal(0.0);
+		rot[2].setVal(0.0);
+		i2 = 3 * nDim;
+		for (i1 = 0; i1 < numNds; i1++) {
+			rot[0].add(globDisp[i2]);
+			rot[1].add(globDisp[i2 + nDim]);
+			rot[2].add(globDisp[i2 + 2 * nDim]);
+			nnds.add(one);
+			i2++;
+		}
+		rot[0].dvd(nnds);
+		rot[1].dvd(nnds);
+		rot[2].dvd(nnds);
 	}
-	rot[0].dvd(nnds);
-	rot[1].dvd(nnds);
-	rot[2].dvd(nnds);
 	
-	if(stat) {
-		dOridThet(&instOriMat[0],locOri,rot,0,0);
+	if(stat < 2) {
+		if (stat == 0) {
+			for (i1 = 0; i1 < 9; i1++) {
+				instOriMat[i1].setVal(locOri[i1]);
+			}
+		}
+		else {
+			dOridThet(&instOriMat[0], locOri, rot, 0, 0);
+		}
 		for (i1 = 1; i1 <= numNds; i1++) {
 			i2 = 3*nDim + i1 - 1;
 			rot[0].setVal(globDisp[i2]);
 			rot[1].setVal(globDisp[i2+nDim]);
 			rot[2].setVal(globDisp[i2+2*nDim]);
-			for (i2 = 0; i2 < 4; i2++) {
+			stIndex = 144 * i1;
+			dOridThet(&instOriMat[stIndex], locOri, rot, 0, 0);
+			if (stat == 0) {
+				rot[0].setVal(0.0);
+				rot[1].setVal(0.0);
+				rot[2].setVal(0.0);
+			}
+			for (i2 = 1; i2 < 4; i2++) {
 				stIndex = 144*i1 + 36*i2;
 				dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
 				i3 = stIndex;
@@ -2054,10 +2179,11 @@ void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub glob
 			}
 		}
 	}
+
 	return;
 }
 
-void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], int dv1, int dv2) {
+void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -2082,292 +2208,368 @@ void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub ins
 		instDisp[i1].setVal(0.0);
 	}
 	
-	if(dv1 + dv2 == -2) {
-		for (i1 = 0; i1 < 3; i1++) {
-			for (i2 = 0; i2 < numNds; i2++) {
-				i4 = i1*nDim + i2;
-				i5 = i2;
-				i6 = i2;
-				i7 = i1*3;
-				for (i3 = 0; i3 < 3; i3++) {
-					tmp.setVal(globDisp[i5]);
-					tmp.add(xGlob[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp2.setVal(locOri[i7]);
-					tmp2.mult(xGlob[i6]);
-					tmp.sub(tmp2);
-					instDisp[i4].add(tmp);
-					i5+= nDim;
-					i6+= numNds;
-					i7++;
+	if (!nLGeom) {
+		if (dv1 + dv2 == -2) {
+			i7 = 3 * nDim;
+			for (i1 = 0; i1 < 3; i1++) {
+				i4 = i1 * nDim;
+				for (i2 = 0; i2 < numNds; i2++) {
+					i5 = i1 * 3;
+					i6 = i2;
+					for (i3 = 0; i3 < 3; i3++) {
+						//i4 = i1 * nDim + i2;
+						//i5 = i1 * 3 + i3;
+						//i6 = i3 * nDim + i2;
+						tmp.setVal(locOri[i5]);
+						tmp.mult(globDisp[i6]);
+						instDisp[i4].add(tmp);
+						tmp.setVal(locOri[i5]);
+						tmp.mult(globDisp[i6 + i7]);
+						instDisp[i4 + i7].add(tmp);
+						i5++;
+						i6 += nDim;
+					}
+					i4++;
+				}
+			}
+			i2 = 2 * numNds * dofPerNd;
+			for (i1 = 0; i1 < numIntDof; i1++) {
+				nd = dofTable[i2];
+				dof = dofTable[i2 + 1];
+				i3 = dof * nDim + nd;
+				instDisp[i3].setVal(globDisp[i3]);
+				i2 += 2;
+			}
+		}
+		else if ((dv1+1)*(dv2+1) == 0) {
+			dv1 = dv1 + dv2 + 1;
+			nd = dofTable[2 * dv1];
+			dof = dofTable[2 * dv1 + 1];
+			if (dof < 3) {
+				if (nd < numNds) {
+					i2 = nd;
+					i3 = dof;
+					for (i1 = 0; i1 < 3; i1++) {
+						//i2 = i1 * nDim + nd;
+						//i3 = i1 * 3 + dof;
+						instDisp[i2].setVal(locOri[i3]);
+						i2 += nDim;
+						i3 += 3;
+					}
+				}
+				else {
+					i1 = dof * nDim + nd;
+					instDisp[i1].setVal(1.0);
+				}
+			}
+			else {
+				i2 = 3 * nDim + nd;
+				i3 = dof - 3;
+				for (i1 = 0; i1 < 3; i1++) {
+					//i2 = (i1 + 3) * nDim + nd;
+					//i3 = i1 * 3 + (dof - 3);
+					instDisp[i2].setVal(locOri[i3]);
+					i2 += nDim;
+					i3 += 3;
 				}
 			}
 		}
-		
-		i2 = numNds*dofPerNd;
-		i3 = i2 + numIntDof;
-		for (i1 = i2; i1 < i3; i1++) {
-			i4 = dofTable[2*i1];
-			i5 = dofTable[2*i1+1];
-			i6 = i5*nDim + i4;
-			instDisp[i6].setVal(globDisp[i6]);
-		}
-		
-		for (i1 = 0; i1 < numNds; i1++) {
-			i3 = 3*nDim + i1; // indexes of thetax, y and z for node i1
-			i4 = 4*nDim + i1;
-			i5 = 5*nDim + i1;
-			ndOInd = 144*(i1+1);
-			for (i2 = 0; i2 < 3; i2++) {
-				i6 = ndOInd + 3 + i2;
-				i7 = 6 + i2;
-				tmp.setVal(instOriMat[i6]);
-				tmp.mult(instOriMat[i7]);
-				instDisp[i3].add(tmp);
-				i6 = ndOInd + 6 + i2;
-				i7 = i2;
-				tmp.setVal(instOriMat[i6]);
-				tmp.mult(instOriMat[i7]);
-				instDisp[i4].add(tmp);
-				i6 = ndOInd + i2;
-				i7 = 3 + i2;
-				tmp.setVal(instOriMat[i6]);
-				tmp.mult(instOriMat[i7]);
-				instDisp[i5].add(tmp);
-			}				
-		}
-	} else if((dv1+1)*(dv2+1) == 0) {
-		dv1 = dv1 + dv2 + 1;
-		nd = dofTable[2*dv1];
-		dof = dofTable[2*dv1+1];
-		if(dof < 3) {
-			if(nd < numNds) {
-				i1 = nd; // Index in instDisp
-				i2 = dof; //Index in instOriMat
-				instDisp[i1].setVal(instOriMat[i2]);
-				i1 = nDim + nd;
-				i2 = 3 + dof;
-				instDisp[i1].setVal(instOriMat[i2]);
-				i1 = 2*nDim + nd;
-				i2 = 6 + dof;
-				instDisp[i1].setVal(instOriMat[i2]);
-			} else {
-				i1 = dof*nDim + nd;
-				instDisp[i1].setVal(1.0);
-			}
-		} else { // dof is rotation
-		    nnInv.setVal(1.0/numNds);
-			dofOInd = 36*(dof-2);
-		    for (i1 = 0; i1 < 3; i1++) {
+	}
+	else {
+		if (dv1 + dv2 == -2) {
+			for (i1 = 0; i1 < 3; i1++) {
 				for (i2 = 0; i2 < numNds; i2++) {
-					i4 = i1*nDim + i2;
+					i4 = i1 * nDim + i2;
 					i5 = i2;
 					i6 = i2;
-					i7 = dofOInd + i1*3;
+					i7 = i1 * 3;
 					for (i3 = 0; i3 < 3; i3++) {
 						tmp.setVal(globDisp[i5]);
 						tmp.add(xGlob[i6]);
 						tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
+						tmp2.setVal(locOri[i7]);
+						tmp2.mult(xGlob[i6]);
+						tmp.sub(tmp2);
 						instDisp[i4].add(tmp);
-						i5+= nDim;
-						i6+= numNds;
+						i5 += nDim;
+						i6 += numNds;
 						i7++;
 					}
 				}
 			}
-			
+
+			i2 = numNds * dofPerNd;
+			i3 = i2 + numIntDof;
+			for (i1 = i2; i1 < i3; i1++) {
+				i4 = dofTable[2 * i1];
+				i5 = dofTable[2 * i1 + 1];
+				i6 = i5 * nDim + i4;
+				instDisp[i6].setVal(globDisp[i6]);
+			}
+
 			for (i1 = 0; i1 < numNds; i1++) {
-				i3 = 3*nDim + i1; // indexes of thetax, y and z for node i1
-				i4 = 4*nDim + i1;
-				i5 = 5*nDim + i1;
-				ndOInd = 144*(i1+1);
+				i3 = 3 * nDim + i1; // indexes of thetax, y and z for node i1
+				i4 = 4 * nDim + i1;
+				i5 = 5 * nDim + i1;
+				ndOInd = 144 * (i1 + 1);
 				for (i2 = 0; i2 < 3; i2++) {
 					i6 = ndOInd + 3 + i2;
-					i7 = dofOInd + 6 + i2;
+					i7 = 6 + i2;
 					tmp.setVal(instOriMat[i6]);
 					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv);
 					instDisp[i3].add(tmp);
 					i6 = ndOInd + 6 + i2;
-					i7 = dofOInd + i2;
+					i7 = i2;
 					tmp.setVal(instOriMat[i6]);
 					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv);
 					instDisp[i4].add(tmp);
 					i6 = ndOInd + i2;
-					i7 = dofOInd + 3 + i2;
+					i7 = 3 + i2;
 					tmp.setVal(instOriMat[i6]);
 					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv);
 					instDisp[i5].add(tmp);
-					if(i1 == nd) {
-						i6 = ndOInd + dofOInd + 3 + i2;
-						i7 = 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dofOInd + 6 + i2;
-						i7 = i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dofOInd + i2;
-						i7 = 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i5].add(tmp);
-					}
-				}				
+				}
 			}
 		}
-	} else {
-		nd = dofTable[2*dv1];
-		dof = dofTable[2*dv1+1];
-		nd2 = dofTable[2*dv2];
-		dof2 = dofTable[2*dv2+1];
-		nnInv.setVal(1.0/numNds);
-		nnInv2.setVal(nnInv);
-		nnInv2.sqr();
-		if(dof > 2 && dof2 > 2) {
-			for (i1 = 0; i1 < 3; i1++) {
-				dofOInd = 36*(dof-2) + 9*(dof2-2) + 3*i1;
-				for (i2 = 0; i2 < numNds; i2++) {
-					i4 = nDim*i1 + i2;
-					i5 = i2;
-					i6 = i2;
-					i7 = dofOInd;
-					for (i3 = 0; i3 < 3; i3++) {
-						tmp.setVal(globDisp[i5]);
-						tmp.add(xGlob[i6]);
+		else if ((dv1 + 1) * (dv2 + 1) == 0) {
+			dv1 = dv1 + dv2 + 1;
+			nd = dofTable[2 * dv1];
+			dof = dofTable[2 * dv1 + 1];
+			if (dof < 3) {
+				if (nd < numNds) {
+					i1 = nd; // Index in instDisp
+					i2 = dof; //Index in instOriMat
+					instDisp[i1].setVal(instOriMat[i2]);
+					i1 = nDim + nd;
+					i2 = 3 + dof;
+					instDisp[i1].setVal(instOriMat[i2]);
+					i1 = 2 * nDim + nd;
+					i2 = 6 + dof;
+					instDisp[i1].setVal(instOriMat[i2]);
+				}
+				else {
+					i1 = dof * nDim + nd;
+					instDisp[i1].setVal(1.0);
+				}
+			}
+			else { // dof is rotation
+				nnInv.setVal(1.0 / numNds);
+				dofOInd = 36 * (dof - 2);
+				for (i1 = 0; i1 < 3; i1++) {
+					for (i2 = 0; i2 < numNds; i2++) {
+						i4 = i1 * nDim + i2;
+						i5 = i2;
+						i6 = i2;
+						i7 = dofOInd + i1 * 3;
+						for (i3 = 0; i3 < 3; i3++) {
+							tmp.setVal(globDisp[i5]);
+							tmp.add(xGlob[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i4].add(tmp);
+							i5 += nDim;
+							i6 += numNds;
+							i7++;
+						}
+					}
+				}
+
+				for (i1 = 0; i1 < numNds; i1++) {
+					i3 = 3 * nDim + i1; // indexes of thetax, y and z for node i1
+					i4 = 4 * nDim + i1;
+					i5 = 5 * nDim + i1;
+					ndOInd = 144 * (i1 + 1);
+					for (i2 = 0; i2 < 3; i2++) {
+						i6 = ndOInd + 3 + i2;
+						i7 = dofOInd + 6 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv);
+						instDisp[i3].add(tmp);
+						i6 = ndOInd + 6 + i2;
+						i7 = dofOInd + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv);
+						instDisp[i4].add(tmp);
+						i6 = ndOInd + i2;
+						i7 = dofOInd + 3 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv);
+						instDisp[i5].add(tmp);
+						if (i1 == nd) {
+							i6 = ndOInd + dofOInd + 3 + i2;
+							i7 = 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dofOInd + 6 + i2;
+							i7 = i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dofOInd + i2;
+							i7 = 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i5].add(tmp);
+						}
+					}
+				}
+			}
+		}
+		else {
+			nd = dofTable[2 * dv1];
+			dof = dofTable[2 * dv1 + 1];
+			nd2 = dofTable[2 * dv2];
+			dof2 = dofTable[2 * dv2 + 1];
+			nnInv.setVal(1.0 / numNds);
+			nnInv2.setVal(nnInv);
+			nnInv2.sqr();
+			if (dof > 2 && dof2 > 2) {
+				for (i1 = 0; i1 < 3; i1++) {
+					dofOInd = 36 * (dof - 2) + 9 * (dof2 - 2) + 3 * i1;
+					for (i2 = 0; i2 < numNds; i2++) {
+						i4 = nDim * i1 + i2;
+						i5 = i2;
+						i6 = i2;
+						i7 = dofOInd;
+						for (i3 = 0; i3 < 3; i3++) {
+							tmp.setVal(globDisp[i5]);
+							tmp.add(xGlob[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv2);
+							instDisp[i4].add(tmp);
+							i5 += nDim;
+							i6 += numNds;
+							i7++;
+						}
+					}
+				}
+
+				dofOInd = 36 * (dof - 2);
+				dof2OInd = 9 * (dof2 - 2);
+				for (i1 = 0; i1 < numNds; i1++) {
+					i3 = 3 * nDim + i1; // indexes of thetax, y and z for node i1
+					i4 = 4 * nDim + i1;
+					i5 = 5 * nDim + i1;
+					ndOInd = 144 * (i1 + 1);
+					for (i2 = 0; i2 < 3; i2++) {
+						i6 = ndOInd + 3 + i2;
+						i7 = dofOInd + dof2OInd + 6 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv2);
+						instDisp[i3].add(tmp);
+						i6 = ndOInd + 6 + i2;
+						i7 = dofOInd + dof2OInd + i2;
+						tmp.setVal(instOriMat[i6]);
 						tmp.mult(instOriMat[i7]);
 						tmp.mult(nnInv2);
 						instDisp[i4].add(tmp);
-						i5+= nDim;
-						i6+= numNds;
-						i7++;
+						i6 = ndOInd + i2;
+						i7 = dofOInd + dof2OInd + 3 + i2;
+						tmp.setVal(instOriMat[i6]);
+						tmp.mult(instOriMat[i7]);
+						tmp.mult(nnInv2);
+						instDisp[i5].add(tmp);
+						if (i1 == nd) {
+							i6 = ndOInd + dofOInd + 3 + i2;
+							i7 = dof2OInd + 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dofOInd + 6 + i2;
+							i7 = dof2OInd + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dofOInd + i2;
+							i7 = dof2OInd + 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i5].add(tmp);
+						}
+						if (i1 == nd2) {
+							i6 = ndOInd + dof2OInd + 3 + i2;
+							i7 = dofOInd + 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dof2OInd + 6 + i2;
+							i7 = dofOInd + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dof2OInd + i2;
+							i7 = dofOInd + 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							tmp.mult(nnInv);
+							instDisp[i5].add(tmp);
+						}
+						if (i1 == nd && i1 == nd2) {
+							i6 = ndOInd + dofOInd + dof2OInd + 3 + i2;
+							i7 = 6 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i3].add(tmp);
+							i6 = ndOInd + dofOInd + dof2OInd + 6 + i2;
+							i7 = i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i4].add(tmp);
+							i6 = ndOInd + dofOInd + dof2OInd + i2;
+							i7 = 3 + i2;
+							tmp.setVal(instOriMat[i6]);
+							tmp.mult(instOriMat[i7]);
+							instDisp[i5].add(tmp);
+						}
 					}
 				}
 			}
-			
-			dofOInd = 36*(dof-2);
-			dof2OInd = 9*(dof2-2);
-			for (i1 = 0; i1 < numNds; i1++) {
-				i3 = 3*nDim + i1; // indexes of thetax, y and z for node i1
-				i4 = 4*nDim + i1;
-				i5 = 5*nDim + i1;
-				ndOInd = 144*(i1+1);
-				for (i2 = 0; i2 < 3; i2++) {
-					i6 = ndOInd + 3 + i2;
-					i7 = dofOInd + dof2OInd + 6 + i2;
-					tmp.setVal(instOriMat[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv2);
-					instDisp[i3].add(tmp);
-					i6 = ndOInd + 6 + i2;
-					i7 = dofOInd + dof2OInd + i2;
-					tmp.setVal(instOriMat[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv2);
-					instDisp[i4].add(tmp);
-					i6 = ndOInd + i2;
-					i7 = dofOInd + dof2OInd + 3 + i2;
-					tmp.setVal(instOriMat[i6]);
-					tmp.mult(instOriMat[i7]);
-					tmp.mult(nnInv2);
-					instDisp[i5].add(tmp);
-					if(i1 == nd) {
-						i6 = ndOInd + dofOInd + 3 + i2;
-						i7 = dof2OInd + 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dofOInd + 6 + i2;
-						i7 = dof2OInd + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dofOInd + i2;
-						i7 = dof2OInd + 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i5].add(tmp);
-					}
-					if(i1 == nd2) {
-						i6 = ndOInd + dof2OInd + 3 + i2;
-						i7 = dofOInd + 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dof2OInd + 6 + i2;
-						i7 = dofOInd + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dof2OInd + i2;
-						i7 = dofOInd + 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-						tmp.mult(nnInv);
-					    instDisp[i5].add(tmp);
-					}
-					if(i1 == nd && i1 == nd2) {
-						i6 = ndOInd + dofOInd + dof2OInd + 3 + i2;
-						i7 = 6 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i3].add(tmp);
-						i6 = ndOInd + dofOInd + dof2OInd + 6 + i2;
-						i7 = i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i4].add(tmp);
-						i6 = ndOInd + dofOInd + dof2OInd + i2;
-						i7 = 3 + i2;
-						tmp.setVal(instOriMat[i6]);
-					    tmp.mult(instOriMat[i7]);
-					    instDisp[i5].add(tmp);
-					}
-				}				
+			else if (dof < 3 && dof2 < 3) {
+				return;
 			}
-		} else if(dof < 3 && dof2 < 3) {
-			return;
-		} else {
-			if(dof > 2) {
-				i1 = dof;
-				dof = dof2;
-				dof2 = i1;
-				i1 = nd;
-				nd = nd2;
-				nd2 = i1;
+			else {
+				if (dof > 2) {
+					i1 = dof;
+					dof = dof2;
+					dof2 = i1;
+					i1 = nd;
+					nd = nd2;
+					nd2 = i1;
+				}
+				i1 = 36 * (dof2 - 2) + dof;
+				tmp.setVal(instOriMat[i1]);
+				tmp.mult(nnInv);
+				i2 = nd;
+				instDisp[i2].add(tmp);
+				i1 = 36 * (dof2 - 2) + 3 + dof;
+				tmp.setVal(instOriMat[i1]);
+				tmp.mult(nnInv);
+				i2 = nDim + nd;
+				instDisp[i2].add(tmp);
+				i1 = 36 * (dof2 - 2) + 6 + dof;
+				tmp.setVal(instOriMat[i1]);
+				tmp.mult(nnInv);
+				i2 = 2 * nDim + nd;
+				instDisp[i2].add(tmp);
 			}
-			i1 = 36*(dof2-2) + dof;
-			tmp.setVal(instOriMat[i1]);
-			tmp.mult(nnInv);
-			i2 = nd;
-			instDisp[i2].add(tmp);
-			i1 = 36*(dof2-2) + 3 + dof;
-			tmp.setVal(instOriMat[i1]);
-			tmp.mult(nnInv);
-			i2 = nDim + nd;
-			instDisp[i2].add(tmp);
-			i1 = 36*(dof2-2) + 6 + dof;
-			tmp.setVal(instOriMat[i1]);
-			tmp.mult(nnInv);
-			i2 = 2*nDim + nd;
-			instDisp[i2].add(tmp);
 		}
 	}
+
 	
 	return;
 }
 
-void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getStressPrereq(DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int numLay;
 	DiffDoub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
@@ -2379,7 +2581,6 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, bool stat, NdPt ndAr[],
 	getNdTdot(pre.globTdot, ndAr);
 	if (dofPerNd == 6) {
 		correctOrient(pre.locOri, pre.globNds);
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, stat);
 		if (type != 2) {
 			numLay = sectPtr->getNumLayers();
 			if (numLay > pre.currentLayLen) {
@@ -2480,7 +2681,7 @@ void Element::getVolume(DiffDoub& vol, DiffDoubStressPrereq& pre, int layer) {
 	return;
 }
 
-void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], DiffDoub dNdx[], DiffDoub nVec[], int dv1, int dv2) {
+void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], DiffDoub dNdx[], DiffDoub nVec[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -2505,7 +2706,7 @@ void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub in
 		return;
 	}
 	
-	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, dv1, dv2);
+	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, nLGeom, dv1, dv2);
 	
 	if(dv1 + dv2 == -2) {
 		matMul(ux,instDisp,dNdx,3,nDim,3);
@@ -2539,6 +2740,7 @@ void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub in
 					i6 = i2;
 					i7 = nDim*(i1+3);
 					ux[i4].setVal(0.0);
+					rx[i4].setVal(0.0);
 					for (i3 = 0; i3 < numNds; i3++) {
 						tmp.setVal(instDisp[i5]);
 						tmp.mult(dNdx[i6]);
@@ -2806,7 +3008,14 @@ void Element::getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[]
 	}
 
 	if (type == 41 || type == 3) {
-		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
+		if (nLGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
+
+		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
 		
 		sectStrn[0].setVal(secDef[0]);
 		tmp.setVal(pre.layerZ[layer]);
@@ -2890,9 +3099,16 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[],
 	}
 
 	if (type == 41 || type == 3) {
+		if (nLGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
+
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		for (i1 = 0; i1 < totDof; i1++) {
-			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i1, -1);
+			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
 
 			sectStrn[0].setVal(secDef[0]);
 			tmp.setVal(pre.layerZ[layer]);
@@ -2956,7 +3172,7 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[],
 	return;
 }
 
-void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], DiffDoubStressPrereq& pre) {
+void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre) {
 	int i1;
 	DiffDoub nVec[11];
 	DiffDoub dNdx[33];
@@ -2971,8 +3187,15 @@ void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], Diff
 		return;
 	}
 
+	if (nLGeom) {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+	}
+	else {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+	}
+
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
-	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, -1, -1);
+	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
 
 	ptTemp.setVal(0.0);
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -2993,7 +3216,7 @@ void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], Diff
 	return;
 }
 
-void Element::dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], DiffDoubStressPrereq& pre) {
+void Element::dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
@@ -3005,10 +3228,18 @@ void Element::dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFr
 	DiffDoub tmp;
 	DiffDoub def[9];
 
+	if (nLGeom) {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+	}
+	else {
+		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+	}
+
+
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	totDof = numNds * dofPerNd + numIntDof;
 	for (i1 = 0; i1 < totDof; i1++) {
-		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i1, -1);
+		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
 		i2 = i1;
 		for (i3 = 0; i3 < defDim; i3++) {
 			dDefdU[i2].setVal(def[i3]);
@@ -3106,6 +3337,10 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
+ 
+ 
+ 
+ 
  
  
  

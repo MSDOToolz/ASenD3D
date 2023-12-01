@@ -51,7 +51,7 @@ void Element::condenseMat(double mat[]) {
 		for (i2 = 0; i2 < stRow; i2++) {
 			i5 = i2*numIntDof;
 			for (i3 = 0; i3 < numIntDof; i3++) {
-				mat[i4]+= internalMat[i5]*xVec[i3];
+				mat[i4]-= internalMat[i5]*xVec[i3];
 				i5++;
 			}
 			i4+= (endRow+1);
@@ -243,6 +243,15 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 	if (type == 1 || type == 21) {
 		return;
 	}
+
+	if (dofPerNd == 6) {
+		if (nLGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
+	}
 	
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec,dNdx,detJ,pre.locNds,&intPts[3*i1]);
@@ -297,7 +306,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 				}
 			}
 		} else {
-			getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,-1,-1);
+			getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,nLGeom,-1,-1);
 			matMul(secFcMom,pre.Cmat,secDef,defDim,defDim,1);
 			for (i2 = 0; i2 < 6; i2++) {
 				tmp.setVal(pre.thermExp[i2]);
@@ -309,7 +318,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 				matMul(CTEN, pre.thermExp, nVec, 6, 1, numNds);
 			}
 			for (i2 = 0; i2 < totDof; i2++) {
-				getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,i2,-1);
+				getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,nLGeom,i2,-1);
 				i4 = i2;
 				for (i3 = 0; i3 < defDim; i3++) {
 					tmp.setVal(secFcMom[i3]);
@@ -325,7 +334,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 					i5 = (totDof + 1)*i2;
 					i6 = i5;
 					for (i3 = i2; i3 < totDof; i3++) {
-						getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,i2,i3);
+						getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,nLGeom,i2,i3);
 						for (i4 = 0; i4 < defDim; i4++) {
 							dRdu[i5]+= secFcMom[i4].val*secDef[i4].val*dJwt.val;
 						}
@@ -377,7 +386,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 	return;
 }
 
-void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -435,9 +444,13 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 	}
 
 	if (dofPerNd == 6) {
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+		if (nLGeom) {
+		    getInstOri(pre.instOri, pre.locOri, pre.globDisp, 1);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
 	}
-
 
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
@@ -449,7 +462,7 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 			for (i2 = 0; i2 < ndDof; i2++) {
 				nd1 = dofTable[i7];
 				dof1 = dofTable[i7 + 1];
-				getInstDisp(instDisp, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, i2, -1);
+				getInstDisp(instDisp, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, nLGeom, i2, -1);
 				i6 = 0;
 				i5 = i2;
 				for (i3 = 0; i3 < 6; i3++) {
@@ -591,7 +604,7 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 		for (i1 = 0; i1 < ndDof; i1++) {
 			pre.globAcc[i1].setVal(pre.globVel[i1]);
 		}
-		getRum(Rtmp, dRtmp, getMatrix, true, pre, ndAr, dvAr);
+		getRum(Rtmp, dRtmp, getMatrix, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
 		for (i1 = 0; i1 < ndDof; i1++) {
 			Rvec[i1].add(Rtmp[i1]);
 		}
@@ -653,6 +666,12 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 	}
 
 	if (dNonZero) {
+		if (cmd->nonlinearGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
 		for (i1 = 0; i1 < numIP; i1++) {
 			getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[i1 * 3]);
 			wtDetJ.setVal(ipWt[i1]);
@@ -671,7 +690,7 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 			}
 			else {
 				for (i2 = 0; i2 < ndDof; i2++) {
-					getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i2, -1);
+					getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, cmd->nonlinearGeom, i2, -1);
 					i4 = i2;
 					for (i3 = 0; i3 < 6; i3++) {
 						pre.BMat[i4].setVal(secDef[i3]);
@@ -775,19 +794,6 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 		getRuk(Rvec, dRdu, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
 	}
 
-	////
-	//ofstream test;
-	//test.open("C:/Users/evans/ASenDHome/stiffnessMatrix.txt");
-	//for (i1 = 0; i1 < totDof; i1++) {
-	//	for (i2 = 0; i2 < totDof; i2++) {
-	//		i3 = i1 * totDof + i2;
-	//		test << dRdu[i3] << "\t";
-	//	}
-	//	test << "\n";
-	//}
-	//test.close();
-	////
-
 	if (numIntDof > 0) {
 		i2 = ndDof;
 		for (i1 = 0; i1 < numIntDof; i1++) {
@@ -808,21 +814,9 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 			condenseMat(dRdu);
 		}
 	}
-
-	//
-	/*test.open("C:/Users/evans/ASenDHome/stiffnessMatrix.txt");
-	for (i1 = 0; i1 < ndDof; i1++) {
-		for (i2 = 0; i2 < ndDof; i2++) {
-			i3 = i1 * totDof + i2;
-			test << dRdu[i3] << "\t";
-		}
-		test << "\n";
-	}
-	test.close();*/
-	//
 	
 	if(cmd->dynamic) {
-		getRum(Rtmp, dRtmp, getMatrix, true, pre, ndAr, dvAr);
+		getRum(Rtmp, dRtmp, getMatrix, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
 		for (i1 = 0; i1 < ndDof; i1++) {
 			Rvec[i1].add(Rtmp[i1]);
 		}
@@ -1230,7 +1224,7 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 	return;
 }
 
-void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1281,7 +1275,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 			pre.globAcc[i3].setVal(ldLoad[dof]);
 			i2 += 2;
 		}
-		getRum(elAppLd, dRdA, false, false, pre, ndAr, dvAr);
+		getRum(elAppLd, dRdA, false, false, nLGeom, pre, ndAr, dvAr);
 		i2 = 0;
 		for (i1 = 0; i1 < ndDof; i1++) {
 			dof = dofTable[i2 + 1];
@@ -1327,7 +1321,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 			}
 			i2 += 2;
 		}
-		getRum(elAppLd, dRdA, false, true, pre, ndAr, dvAr);
+		getRum(elAppLd, dRdA, false, true, nLGeom, pre, ndAr, dvAr);
 	}
 	else if (ldType == "centrifugal") {
 		ldPt->getCenter(ldCent);
@@ -1368,7 +1362,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 			}
 			i2 += 2;
 		}
-		getRum(elAppLd, dRdA, false, true, pre, ndAr, dvAr);
+		getRum(elAppLd, dRdA, false, true, nLGeom, pre, ndAr, dvAr);
 	}
 	else if (ldType == "surfaceTraction" || ldType == "surfacePressure") {
 		ldPt->getNormDir(ldNorm);
@@ -1408,7 +1402,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt n
 							i4 += numNds;
 						}
 					}
-					getRum(elAppLd, dRdA, false, false, pre, ndAr, dvAr);
+					getRum(elAppLd, dRdA, false, false, nLGeom, pre, ndAr, dvAr);
 					i2 = 0;
 					for (i1 = 0; i1 < ndDof; i1++) {
 						nd = dofTable[i2];
@@ -1622,6 +1616,15 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 	if (type == 1 || type == 21) {
 		return;
 	}
+
+	if (dofPerNd == 6) {
+		if (nLGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
+	}
 	
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec,dNdx,detJ,pre.locNds,&intPts[3*i1]);
@@ -1676,7 +1679,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 				}
 			}
 		} else {
-			getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,-1,-1);
+			getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,nLGeom,-1,-1);
 			matMul(secFcMom,pre.Cmat,secDef,defDim,defDim,1);
 			for (i2 = 0; i2 < 6; i2++) {
 				tmp.setVal(pre.thermExp[i2]);
@@ -1688,7 +1691,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 				matMul(CTEN, pre.thermExp, nVec, 6, 1, numNds);
 			}
 			for (i2 = 0; i2 < totDof; i2++) {
-				getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,i2,-1);
+				getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,nLGeom,i2,-1);
 				i4 = i2;
 				for (i3 = 0; i3 < defDim; i3++) {
 					tmp.setVal(secFcMom[i3]);
@@ -1704,7 +1707,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 					i5 = (totDof + 1)*i2;
 					i6 = i5;
 					for (i3 = i2; i3 < totDof; i3++) {
-						getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,i2,i3);
+						getSectionDef(secDef,pre.globDisp,pre.instOri,pre.locOri,pre.globNds,dNdx,nVec,nLGeom,i2,i3);
 						for (i4 = 0; i4 < defDim; i4++) {
 							dRdu[i5]+= secFcMom[i4].val*secDef[i4].val*dJwt.val;
 						}
@@ -1756,7 +1759,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 	return;
 }
 
-void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1814,9 +1817,13 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 	}
 
 	if (dofPerNd == 6) {
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, true);
+		if (nLGeom) {
+		    getInstOri(pre.instOri, pre.locOri, pre.globDisp, 1);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
 	}
-
 
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
@@ -1828,7 +1835,7 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 			for (i2 = 0; i2 < ndDof; i2++) {
 				nd1 = dofTable[i7];
 				dof1 = dofTable[i7 + 1];
-				getInstDisp(instDisp, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, i2, -1);
+				getInstDisp(instDisp, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, nLGeom, i2, -1);
 				i6 = 0;
 				i5 = i2;
 				for (i3 = 0; i3 < 6; i3++) {
@@ -1970,7 +1977,7 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 		for (i1 = 0; i1 < ndDof; i1++) {
 			pre.globAcc[i1].setVal(pre.globVel[i1]);
 		}
-		getRum(Rtmp, dRtmp, getMatrix, true, pre, ndAr, dvAr);
+		getRum(Rtmp, dRtmp, getMatrix, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
 		for (i1 = 0; i1 < ndDof; i1++) {
 			Rvec[i1].add(Rtmp[i1]);
 		}
@@ -2032,6 +2039,12 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 	}
 
 	if (dNonZero) {
+		if (cmd->nonlinearGeom) {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
+		}
+		else {
+			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
+		}
 		for (i1 = 0; i1 < numIP; i1++) {
 			getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[i1 * 3]);
 			wtDetJ.setVal(ipWt[i1]);
@@ -2050,7 +2063,7 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 			}
 			else {
 				for (i2 = 0; i2 < ndDof; i2++) {
-					getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, i2, -1);
+					getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, cmd->nonlinearGeom, i2, -1);
 					i4 = i2;
 					for (i3 = 0; i3 < 6; i3++) {
 						pre.BMat[i4].setVal(secDef[i3]);
@@ -2176,7 +2189,7 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 	}
 	
 	if(cmd->dynamic) {
-		getRum(Rtmp, dRtmp, getMatrix, true, pre, ndAr, dvAr);
+		getRum(Rtmp, dRtmp, getMatrix, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
 		for (i1 = 0; i1 < ndDof; i1++) {
 			Rvec[i1].add(Rtmp[i1]);
 		}
@@ -2584,7 +2597,7 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 	return;
 }
 
-void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2635,7 +2648,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 			pre.globAcc[i3].setVal(ldLoad[dof]);
 			i2 += 2;
 		}
-		getRum(elAppLd, dRdA, false, false, pre, ndAr, dvAr);
+		getRum(elAppLd, dRdA, false, false, nLGeom, pre, ndAr, dvAr);
 		i2 = 0;
 		for (i1 = 0; i1 < ndDof; i1++) {
 			dof = dofTable[i2 + 1];
@@ -2681,7 +2694,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 			}
 			i2 += 2;
 		}
-		getRum(elAppLd, dRdA, false, true, pre, ndAr, dvAr);
+		getRum(elAppLd, dRdA, false, true, nLGeom, pre, ndAr, dvAr);
 	}
 	else if (ldType == "centrifugal") {
 		ldPt->getCenter(ldCent);
@@ -2722,7 +2735,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 			}
 			i2 += 2;
 		}
-		getRum(elAppLd, dRdA, false, true, pre, ndAr, dvAr);
+		getRum(elAppLd, dRdA, false, true, nLGeom, pre, ndAr, dvAr);
 	}
 	else if (ldType == "surfaceTraction" || ldType == "surfacePressure") {
 		ldPt->getNormDir(ldNorm);
@@ -2762,7 +2775,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre
 							i4 += numNds;
 						}
 					}
-					getRum(elAppLd, dRdA, false, false, pre, ndAr, dvAr);
+					getRum(elAppLd, dRdA, false, false, nLGeom, pre, ndAr, dvAr);
 					i2 = 0;
 					for (i1 = 0; i1 < ndDof; i1++) {
 						nd = dofTable[i2];
@@ -2924,6 +2937,10 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
+ 
+ 
+ 
+ 
  
  
  

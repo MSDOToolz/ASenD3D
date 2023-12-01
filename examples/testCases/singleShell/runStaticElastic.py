@@ -63,11 +63,11 @@ myMod.writeModelInput('staticElastic/staticNodalLoads.yaml')
 ## Define objective
 myObj = Objective()
 myObj.addObjectiveTerm('displacement',operator='powerNorm',
-                       component=1,nodeSet='xMax',coefficient=0.5,exponent=1.0)
-myObj.addObjectiveTerm('strain',operator='powerNorm',component=1,layer=0,
-                       elementSet='all',coefficient=1.0,exponent=1.0)
-myObj.addObjectiveTerm('stress',operator='powerNorm',component=1,layer=0,
-                       elementSet='all',coefficient=1.0,exponent=1.0)
+                       component=3,nodeSet='xMax',coefficient=0.5,exponent=1.0)
+# myObj.addObjectiveTerm('strain',operator='powerNorm',component=1,layer=0,
+#                        elementSet='all',coefficient=1.0,exponent=1.0)
+# myObj.addObjectiveTerm('stress',operator='powerNorm',component=1,layer=0,
+#                        elementSet='all',coefficient=1.0,exponent=1.0)
 
 myObj.writeInput('staticElastic/staticObjective.yaml')
 

@@ -545,6 +545,10 @@ void Node::getThermalDVLoad(DiffDoub& ld, DVPt dvAr[]) {
  
  
  
+ 
+ 
+ 
+ 
 int Node::getDofIndex(int dof) {
 	return dofIndex[dof];
 }
