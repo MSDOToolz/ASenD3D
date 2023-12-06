@@ -102,14 +102,6 @@ public:
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
- 
-
 class Element {
 	private:
 	    int type;
@@ -434,20 +426,11 @@ class Element {
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
- 
- 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
  
  
-		
 // Equations
 		void condenseMat(double mat[]);
 		
@@ -509,14 +492,6 @@ class Element {
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
- 
- 
 };
 
 class ElPt {
@@ -543,7 +518,6 @@ class ElementList {
 
 		void destroy();
 };
-
 
 
 #endif

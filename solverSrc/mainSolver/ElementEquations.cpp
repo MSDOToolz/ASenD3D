@@ -248,9 +248,6 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 		if (nLGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 	}
 	
 	for (i1 = 0; i1 < numIP; i1++) {
@@ -447,9 +444,6 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 		if (nLGeom) {
 		    getInstOri(pre.instOri, pre.locOri, pre.globDisp, 1);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 	}
 
 	for (i1 = 0; i1 < numIP; i1++) {
@@ -474,6 +468,7 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 						i6++;
 					}
 					i5 += ndDof;
+					i6 += (nDim - numNds);
 				}
 				i7 += 2;
 			}
@@ -668,9 +663,6 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 	if (dNonZero) {
 		if (cmd->nonlinearGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
-		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
 		}
 		for (i1 = 0; i1 < numIP; i1++) {
 			getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[i1 * 3]);
@@ -1255,6 +1247,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq
 	Doub centToEl[3];
 	Doub axToEl[3];
 	Doub angVel2;
+	Doub nnInv;
 	Doub fcArea;
 	Doub fcNorm[3];
 	Doub trac[3];
@@ -1330,14 +1323,14 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq
 		angVel2.setVal(ldAngVel);
 		angVel2.sqr();
 		i3 = 0;
-		tmp.setVal(1.0/numNds);
+		nnInv.setVal(1.0 / numNds);
 		dp.setVal(0.0);
 		for (i1 = 0; i1 < 3; i1++) {
 			for (i2 = 0; i2 < numNds; i2++) {
 				elCent[i1].add(pre.globNds[i3]);
 				i3++;
 			}
-			elCent[i1].mult(tmp);
+			elCent[i1].mult(nnInv);
 			centToEl[i1].setVal(elCent[i1]);
 			tmp.setVal(ldCent[i1]);
 			centToEl[i1].sub(tmp);
@@ -1621,9 +1614,6 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 		if (nLGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 	}
 	
 	for (i1 = 0; i1 < numIP; i1++) {
@@ -1820,9 +1810,6 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 		if (nLGeom) {
 		    getInstOri(pre.instOri, pre.locOri, pre.globDisp, 1);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 	}
 
 	for (i1 = 0; i1 < numIP; i1++) {
@@ -1847,6 +1834,7 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 						i6++;
 					}
 					i5 += ndDof;
+					i6 += (nDim - numNds);
 				}
 				i7 += 2;
 			}
@@ -2041,9 +2029,6 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 	if (dNonZero) {
 		if (cmd->nonlinearGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
-		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
 		}
 		for (i1 = 0; i1 < numIP; i1++) {
 			getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[i1 * 3]);
@@ -2628,6 +2613,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStre
 	DiffDoub centToEl[3];
 	DiffDoub axToEl[3];
 	DiffDoub angVel2;
+	DiffDoub nnInv;
 	DiffDoub fcArea;
 	DiffDoub fcNorm[3];
 	DiffDoub trac[3];
@@ -2703,14 +2689,14 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStre
 		angVel2.setVal(ldAngVel);
 		angVel2.sqr();
 		i3 = 0;
-		tmp.setVal(1.0/numNds);
+		nnInv.setVal(1.0 / numNds);
 		dp.setVal(0.0);
 		for (i1 = 0; i1 < 3; i1++) {
 			for (i2 = 0; i2 < numNds; i2++) {
 				elCent[i1].add(pre.globNds[i3]);
 				i3++;
 			}
-			elCent[i1].mult(tmp);
+			elCent[i1].mult(nnInv);
 			centToEl[i1].setVal(elCent[i1]);
 			tmp.setVal(ldCent[i1]);
 			centToEl[i1].sub(tmp);
@@ -2937,12 +2923,5 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
- 
- 
- 
- 
- 
- 
- 
  
  

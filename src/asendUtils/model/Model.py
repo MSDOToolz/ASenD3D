@@ -200,7 +200,7 @@ class Model():
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addCentifugalForce(self,elementSet,center,axis,angularVelocity,stTime=0.0,endTime=1e+100):
+    def addCentrifugalForce(self,elementSet,center,axis,angularVelocity,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'centrifugal'
         newLd['activeTime'] = str([stTime,endTime])

@@ -365,7 +365,6 @@ void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], dou
 }
 
 void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int stat) {
-	// stat = 0: linear geometry, element ori = locOri
 	// stat = 1: nonlinear geometry, element ori from nodal theta, no derivatives, 1st order diff for nodes
 	// stat = 2: nonlinear geometry, 2nd order diff for Doub version, 1st order for DiffDoub version
 	Doub rot[3];
@@ -384,34 +383,25 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int 
 	}
 	bool isDiff = locOri[0].diffType();
 	
-	if (stat > 0) {
-		nnds.setVal(0.0);
-		one.setVal(1.0);
-		rot[0].setVal(0.0);
-		rot[1].setVal(0.0);
-		rot[2].setVal(0.0);
-		i2 = 3 * nDim;
-		for (i1 = 0; i1 < numNds; i1++) {
-			rot[0].add(globDisp[i2]);
-			rot[1].add(globDisp[i2 + nDim]);
-			rot[2].add(globDisp[i2 + 2 * nDim]);
-			nnds.add(one);
-			i2++;
-		}
-		rot[0].dvd(nnds);
-		rot[1].dvd(nnds);
-		rot[2].dvd(nnds);
+	nnds.setVal(0.0);
+	one.setVal(1.0);
+	rot[0].setVal(0.0);
+	rot[1].setVal(0.0);
+	rot[2].setVal(0.0);
+	i2 = 3 * nDim;
+	for (i1 = 0; i1 < numNds; i1++) {
+		rot[0].add(globDisp[i2]);
+		rot[1].add(globDisp[i2 + nDim]);
+		rot[2].add(globDisp[i2 + 2 * nDim]);
+		nnds.add(one);
+		i2++;
 	}
+	rot[0].dvd(nnds);
+	rot[1].dvd(nnds);
+	rot[2].dvd(nnds);
 	
-	if(stat < 2) {
-		if (stat == 0) {
-			for (i1 = 0; i1 < 9; i1++) {
-				instOriMat[i1].setVal(locOri[i1]);
-			}
-		}
-		else {
-			dOridThet(&instOriMat[0], locOri, rot, 0, 0);
-		}
+	if(stat == 1) {
+		dOridThet(&instOriMat[0], locOri, rot, 0, 0);
 		for (i1 = 1; i1 <= numNds; i1++) {
 			i2 = 3*nDim + i1 - 1;
 			rot[0].setVal(globDisp[i2]);
@@ -419,11 +409,6 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int 
 			rot[2].setVal(globDisp[i2+2*nDim]);
 			stIndex = 144 * i1;
 			dOridThet(&instOriMat[stIndex], locOri, rot, 0, 0);
-			if (stat == 0) {
-				rot[0].setVal(0.0);
-				rot[1].setVal(0.0);
-				rot[2].setVal(0.0);
-			}
 			for (i2 = 1; i2 < 4; i2++) {
 				stIndex = 144*i1 + 36*i2;
 				dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
@@ -1349,9 +1334,6 @@ void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int la
 		if (nLGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 
 		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
 		
@@ -1440,9 +1422,6 @@ void Element::dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[
 		if (nLGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		for (i1 = 0; i1 < totDof; i1++) {
@@ -1528,9 +1507,6 @@ void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], bool nLGeom,
 	if (nLGeom) {
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 	}
-	else {
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-	}
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
@@ -1568,9 +1544,6 @@ void Element::dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], do
 
 	if (nLGeom) {
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
-	}
-	else {
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
 	}
 
 
@@ -3011,9 +2984,6 @@ void Element::getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[]
 		if (nLGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 
 		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
 		
@@ -3102,9 +3072,6 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[],
 		if (nLGeom) {
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
-		else {
-			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-		}
 
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		for (i1 = 0; i1 < totDof; i1++) {
@@ -3190,9 +3157,6 @@ void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], bool
 	if (nLGeom) {
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 	}
-	else {
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
-	}
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
@@ -3230,9 +3194,6 @@ void Element::dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFr
 
 	if (nLGeom) {
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
-	}
-	else {
-		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 0);
 	}
 
 
@@ -3339,14 +3300,6 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
- 
-
 void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {
 	int i1;
 	int i2;

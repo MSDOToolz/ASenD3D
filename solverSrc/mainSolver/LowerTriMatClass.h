@@ -25,6 +25,8 @@ class LowerTriMat {
 		bool isAllocated();
 		
 		void populateFromSparseMat(SparseMat& spMat, ConstraintList& cList);
+
+		void copyToFullMat(double matFP[]);
 		
 		void ldlFactor();
 		

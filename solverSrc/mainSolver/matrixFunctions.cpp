@@ -1,6 +1,7 @@
 #include "matrixFunctions.h"
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
 
@@ -541,77 +542,305 @@ void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int tr
 		i3 = 0;
 		for (i1 = 0; i1 < matDim; i1++) {
 			for (i2 = 0; i2 < matDim; i2++) {
-				if(i1 == i2) {
+				if (i1 == i2) {
 					matCopy[i3] = mat[i3] - shift;
-				} else {
+				}
+				else {
 					matCopy[i3] = mat[i3];
 				}
 				i3++;
 			}
 		}
-		qRFactor(matCopy,matDim,0,(matDim-1),0,(matDim-1),newTd);
+		qRFactor(matCopy, matDim, 0, (matDim - 1), 0, (matDim - 1), newTd);
 		mag = 0.0;
 		for (i1 = 0; i1 < matDim; i1++) {
-			tmp = sin(1.0*i1*(i5+1));
+			tmp = sin(1.0 * i1 * (i5 + 1));
 			prevVec[i1] = tmp;
-			mag+= tmp*tmp;
+			mag += tmp * tmp;
 		}
-		mag = 1.0/sqrt(mag);
+		mag = 1.0 / sqrt(mag);
 		for (i1 = 0; i1 < matDim; i1++) {
-			prevVec[i1] = mag*prevVec[i1];
+			prevVec[i1] = mag * prevVec[i1];
 		}
 		conv = false;
 		it = 0;
-		while(!conv && it < maxIt) {
+		while (!conv && it < maxIt) {
 			for (i1 = 0; i1 < matDim; i1++) {
 				bVec[i1] = prevVec[i1];
 			}
-			solveqRxEqb(vec,matCopy,bVec,matDim,0,(matDim-1),0,(matDim-1),newTd);
+			solveqRxEqb(vec, matCopy, bVec, matDim, 0, (matDim - 1), 0, (matDim - 1), newTd);
 			mag = 0.0;
 			dp = 0.0;
-			for(i1 = 0; i1 < matDim; i1++) {
-				mag+= vec[i1]*vec[i1];
-				dp+= vec[i1]*prevVec[i1];
+			for (i1 = 0; i1 < matDim; i1++) {
+				mag += vec[i1] * vec[i1];
+				dp += vec[i1] * prevVec[i1];
 			}
 			mag = sqrt(mag);
-			if(abs(dp) > 0.999999*mag) {
+			if (abs(dp) > 0.999999 * mag) {
 				conv = true;
-				if(triDiag == 0) {
+				if (triDiag == 0) {
 					i3 = 0;
 					i4 = i5;
 					for (i1 = 0; i1 < matDim; i1++) {
 						eVecs[i4] = 0.0;
 						for (i2 = 0; i2 < matDim; i2++) {
-						    eVecs[i4]+= qMat[i3]*prevVec[i2];
+							eVecs[i4] += qMat[i3] * prevVec[i2];
 							i3++;
 						}
-						i4+= matDim;
+						i4 += matDim;
 					}
-				} else {
+				}
+				else {
 					i4 = i5;
 					for (i1 = 0; i1 < matDim; i1++) {
 						eVecs[i4] = prevVec[i1];
-						i4+= matDim;
+						i4 += matDim;
 					}
 				}
-			} else {
-				mag = 1.0/mag;
+			}
+			else {
+				mag = 1.0 / mag;
 				for (i1 = 0; i1 < matDim; i1++) {
-					prevVec[i1] = mag*vec[i1];
+					prevVec[i1] = mag * vec[i1];
 				}
 			}
 			it++;
 		}
 	}
-	
-	if(triDiag == 0) {
+
+	if (triDiag == 0) {
 		delete[] qMat;
 	}
-	
+
 	delete[] matCopy;
 	delete[] vec;
 	delete[] prevVec;
 	delete[] bVec;
+	return;
+}
+
+void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int triDiag) {
+	int i1;
+	int i2;
+	int i3;
+	int i3Min;
+	int i3Max;
+	int i4;
+	int loopCt;
+	double tmp;
+	double mag;
+	double dp;
+
+	double* tempV1 = new double[matDim];
+	double* tempV2 = new double[matDim];
+	double* eVtmp = new double[matDim * matDim];
+	int* srtOrder = new int[matDim];
+
+	for (i1 = 0; i1 < matDim; i1++) {
+		for (i2 = 0; i2 < matDim; i2++) {
+			tmp = sin(1.0 * i2 * (i1+1));
+			tempV1[i2] = tmp;
+		}
+		for (i2 = 0; i2 < i1; i2++) {
+			dp = 0.0;
+			i4 = i2 * matDim;
+			for (i3 = 0; i3 < matDim; i3++) {
+				dp += tempV1[i3] * eVtmp[i4];
+				i4++;
+			}
+			i4 = i2 * matDim;
+			for (i3 = 0; i3 < matDim; i3++) {
+				tempV1[i3] -= dp*eVtmp[i4];
+				i4++;
+			}
+		}
+		mag = 0.0;
+		for (i2 = 0; i2 < matDim; i2++) {
+			mag += tempV1[i2] * tempV1[i2];
+		}
+		mag = 1.0 / sqrt(mag);
+		for (i2 = 0; i2 < matDim; i2++) {
+			tempV1[i2] *= mag;
+		}
+		dp = 0.0;
+		loopCt = 0;
+		while (abs(dp) < 0.99999999*mag && loopCt < 10000) {
+			// Multiply by mat
+			for (i2 = 0; i2 < matDim; i2++) {
+				tempV2[i2] = 0.0;
+				if (triDiag == 1) {
+					i3Min = i2 - 1;
+					if (i3Min < 0) {
+						i3Min = 0;
+					}
+					i3Max = i2 + 2;
+					if (i3Max > matDim) {
+						i3Max = matDim;
+					}
+				}
+				else {
+					i3Min = 0;
+					i3Max = matDim;
+				}
+				i4 = i2 * matDim + i3Min;
+				for (i3 = i3Min; i3 < i3Max; i3++) {
+					//i4 = i2 * matDim + i3;
+					tempV2[i2] += mat[i4] * tempV1[i3];
+					i4++;
+				}
+			}
+			// orthogonalize with previous vectors
+			for (i2 = 0; i2 < i1; i2++) {
+				dp = 0.0;
+				i4 = i2 * matDim;
+				for (i3 = 0; i3 < matDim; i3++) {
+					dp += tempV2[i3] * eVtmp[i4];
+					i4++;
+				}
+				i4 = i2 * matDim;
+				for (i3 = 0; i3 < matDim; i3++) {
+					tempV2[i3] -= dp * eVtmp[i4];
+					i4++;
+				}
+			}
+			// get mag, dp
+			mag = 0.0;
+			dp = 0.0;
+			for (i2 = 0; i2 < matDim; i2++) {
+				mag += tempV2[i2] * tempV2[i2];
+				dp += tempV1[i2] * tempV2[i2];
+			}
+			mag = sqrt(mag);
+			// update tempV1
+			tmp = 1.0 / mag;
+			for (i2 = 0; i2 < matDim; i2++) {
+				tempV1[i2] = tmp * tempV2[i2];
+			}
+			loopCt++;
+		}
+		eVals[i1] = dp;
+		i3 = i1 * matDim;
+		for (i2 = 0; i2 < matDim; i2++) {
+			eVtmp[i3] = tempV1[i2];
+			i3++;
+		}
+	}
+
+	// sort pairs
+
+	for (i1 = 0; i1 < matDim; i1++) {
+		srtOrder[i1] = i1;
+	}
+
+	for (i1 = 0; i1 < matDim; i1++) {
+		for (i2 = 0; i2 < (matDim - 1); i2++) {
+			if (eVals[i2 + 1] < eVals[i2]) {
+				tmp = eVals[i2];
+				eVals[i2] = eVals[i2 + 1];
+				eVals[i2 + 1] = tmp;
+				i3 = srtOrder[i2];
+				srtOrder[i2] = srtOrder[i2 + 1];
+				srtOrder[i2 + 1] = i3;
+			}
+		}
+	}
+
+	for (i1 = 0; i1 < matDim; i1++) {
+		i2 = matDim * i1;
+		i3 = matDim * srtOrder[i1];
+		for (i4 = 0; i4 < matDim; i4++) {
+			eVecs[i2] = eVtmp[i3];
+			i2++;
+			i3++;
+		}
+	}
+
+	delete[] tempV1;
+	delete[] tempV2;
+	delete[] eVtmp;
+	delete[] srtOrder;
+
+	return;
+}
+
+void eigenFull(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, double massMat[], int matDim) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	double tmp;
+	double mag;
+
+	i3 = matDim * matDim;
+	double* matFP = new double[i3];
+	double* qMat = new double[i3];
+	double* eVectmp = new double[i3];
+	double* eValtmp = new double[matDim];
+	double* vtmp = new double[matDim];
+
+	for (i1 = 0; i1 < i3; i1++) {
+		matFP[i1] = 0.0;
+	}
+
+	mat.copyToFullMat(matFP);
+
+	for (i1 = 0; i1 < matDim; i1++) {
+		massMat[i1] = 1.0 / sqrt(massMat[i1]);
+		i3 = i1 * matDim;
+		i4 = i1;
+		for (i2 = 0; i2 < matDim; i2++) {
+			matFP[i3] *= massMat[i1];
+			matFP[i4] *= massMat[i1];
+			i3++;
+			i4 += matDim;
+		}
+	}
+
+	//symFactor(matFP, qMat, matDim);
+
+	symEigenSolve(eValtmp, eVectmp, matFP, matDim, 1);
+
+	for (i1 = 0; i1 < numPairs; i1++) {
+		i4 = 0;
+		i5 = i1 * matDim;
+		for (i2 = 0; i2 < matDim; i2++) {
+			/*vtmp[i2] = 0.0;
+			i5 = i1 * matDim;
+			for (i3 = 0; i3 < matDim; i3++) {
+				vtmp[i2] += qMat[i4] * eVectmp[i5];
+				i4++;
+				i5++;
+			}*/
+			vtmp[i2] = eVectmp[i5];
+			i5++;
+		}
+		mag = 0.0;
+		for (i2 = 0; i2 < matDim; i2++) {
+			tmp = vtmp[i2] * massMat[i2];
+			vtmp[i2] = tmp;
+			mag += tmp * tmp;
+		}
+		mag = 1.0/sqrt(mag);
+		i3 = i1 * matDim;
+		for (i2 = 0; i2 < matDim; i2++) {
+			eVecs[i3] = mag * vtmp[i2];
+			i3++;
+		}
+		eVals[i1] = eValtmp[i1];
+	}
+
+	for (i1 = 0; i1 < matDim; i1++) {
+		tmp = 1.0 / massMat[i1];
+		massMat[i1] = tmp * tmp;
+	}
+
+	delete[] matFP;
+	delete[] qMat;
+	delete[] eVectmp;
+	delete[] eValtmp;
+	delete[] vtmp;
+
 	return;
 }
 
@@ -624,9 +853,6 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	int i6;
 	
 	int hCols = 5*numPairs;
-	if(hCols < 24) {
-		hCols = 24;
-	}
 	i1 = hCols*matDim;
 	double *hMat = new double[i1];
 	i1 = hCols*(hCols - 1);
@@ -701,22 +927,25 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	i1 = hCols - 1;
 	double *coefVals = new double[i1];
 	double *coefVecs = new double[i1*i1];
-	eigenSolve(coefVals,coefVecs,coefMat,i1,2);
-	
+	symEigenSolve(coefVals, coefVecs, coefMat, i1, 1);
+
 	for (i3 = 0; i3 < matDim; i3++) {
 		massMat[i3] = 1.0/massMat[i3];
 	}
 	
-	for (i1 = 0; i1 < numPairs; i1++) {
-		i2 = hCols - 2 - i1;
+	i1 = 0;
+	i2 = hCols - 2;
+	while (i1 < numPairs && i2 >= 0) {
+	//for (i1 = 0; i1 < numPairs; i1++) {
 		for (i3 = 0; i3 < matDim; i3++) {
 			tVec1[i3] = 0.0;
 		}
 		i5 = 0;
 		for (i3 = 0; i3 < (hCols-1); i3++) {
-			i6 = (hCols-1)*i3 + i2;
+			//i6 = (hCols-1)*i3 + i2;
+			i6 = i2 * (hCols - 1) + i3;
 			for (i4 = 0; i4 < matDim; i4++) {
-				tVec1[i4]+= hMat[i5]*coefVecs[i6];
+				tVec1[i4] += hMat[i5] * coefVecs[i6];
 				i5++;
 			}
 		}
@@ -727,13 +956,40 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 			mag+= tmp*tmp;
 		}
 		mag = 1.0/sqrt(mag);
-		i4 = i1 * matDim;
 		for (i3 = 0; i3 < matDim; i3++) {
-			//i4 = i1 * matDim + i3;
-			eVecs[i4] = mag*tVec2[i3];
-			i4++;
+			tVec2[i3] *= mag;
 		}
-		eVals[i1] = 1.0/coefVals[i2];
+		if (i1 > 0) {
+			tmp = 0.0;
+			i4 = matDim * (i1 - 1);
+			for (i3 = 0; i3 < matDim; i3++) {
+				tmp += eVecs[i4] * tVec2[i3];
+				i4++;
+			}
+			if (abs(tmp) < 0.99) {
+				for (i3 = 0; i3 < matDim; i3++) {
+					eVecs[i4] = tVec2[i3];
+					i4++;
+				}
+				eVals[i1] = 1.0 / coefVals[i2];
+				i1++;
+				i2--;
+			}
+			else {
+				i2--;
+			}
+		}
+		else {
+			i4 = 0;
+			for (i3 = 0; i3 < matDim; i3++) {
+				//i4 = i1 * matDim + i3;
+				eVecs[i4] = tVec2[i3];
+				i4++;
+			}
+			eVals[i1] = 1.0 / coefVals[i2];
+			i1++;
+			i2--;
+		}
 	}
 	
 	for (i1 = 0; i1 < matDim; i1++) {
@@ -1123,14 +1379,6 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
 //end dup
  
 //end skip 
- 
- 
- 
- 
- 
- 
- 
- 
  
  
 //dup2
@@ -1926,14 +2174,6 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
- 
- 
 //dup1
 void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
@@ -2132,13 +2372,5 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 //end dup  
  
 //end skip 
- 
- 
- 
- 
- 
- 
- 
- 
  
  

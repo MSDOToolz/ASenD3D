@@ -159,6 +159,29 @@ void LowerTriMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList)
 	return;
 }
 
+void LowerTriMat::copyToFullMat(double matFP[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+
+	for (i1 = 0; i1 < dim; i1++) {
+		i3 = minCol[i1];
+		i4 = i1 * dim + i3;
+		i5 = i3 * dim + i1;
+		for (i2 = range[i1]; i2 < range[i1 + 1]; i2++) {
+			matFP[i4] = mat[i2];
+			matFP[i5] = mat[i2];
+			i3++;
+			i4++;
+			i5 += dim;
+		}
+	}
+
+	return;
+}
+
 void LowerTriMat::ldlFactor() {
 	int i1;
 	int i2;

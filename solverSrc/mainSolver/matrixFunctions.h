@@ -22,6 +22,10 @@ double getLowEval(double mat[], int matDim);
 
 void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int triDiag);
 
+void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int triDiag);
+
+void eigenFull(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, double massMat[], int matDim);
+
 void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, double massMat[], int matDim);
 
 //dup1
@@ -44,14 +48,6 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
 //end dup
  
 //end skip 
- 
- 
- 
- 
- 
- 
- 
- 
  
  
 //dup2
@@ -91,14 +87,6 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]);
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
- 
- 
 //dup1
 
 void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2);
@@ -115,9 +103,6 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 //end dup
  
 //end skip 
- 
- 
- 
  
  
 #endif

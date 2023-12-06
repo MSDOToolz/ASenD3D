@@ -30,3 +30,4 @@ for fn in fileNames:
     outFile.close()
     os.remove(fn)
     os.rename('temp.out',fn)
+    print('copied ' + fn)

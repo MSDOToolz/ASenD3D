@@ -453,11 +453,13 @@ void Model::findSurfaceFaces() {
 	thisEl = elements.getFirst();
 	Face* thisFc;
 	while(thisEl) {
-		thisFc = thisEl->getFirstFace();
-		while(thisFc) {
-			lowNd = thisFc->getLowNd();
-			added = fLArray[lowNd].addIfAbsent(thisFc);
-			thisFc = thisFc->getNext();
+		if (thisEl->getDofPerNd() == 3) {
+			thisFc = thisEl->getFirstFace();
+			while (thisFc) {
+				lowNd = thisFc->getLowNd();
+				added = fLArray[lowNd].addIfAbsent(thisFc);
+				thisFc = thisFc->getNext();
+			}
 		}
 		thisEl = thisEl->getNext();
 	}
@@ -534,7 +536,7 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	}
 
 	for (i1 = 0; i1 < elMatDim; i1++) {
-		appLd[0] += tempD1[i1].val;
+		appLd[i1] += tempD1[i1].val;
 	}
 	
 	// Design variable dependent loads.
@@ -1040,6 +1042,9 @@ void Model::eigenSolve(JobCommand* cmd) {
 		buildElasticSolnLoad(tempV1, true);
 		i2 = 0;
 		for (i1 = 0; i1 < cmd->numModes; i1++) {
+			for (i3 = 0; i3 < elMatDim; i3++) {
+				tempV1[i3] = 0.0;
+			}
 			elasticMat.vectorMultiply(tempV1, &eigVecs[i2],false);
 			vKv = 0.0;
 			for (i3 = 0; i3 < elMatDim; i3++) {
@@ -1066,7 +1071,7 @@ void Model::eigenSolve(JobCommand* cmd) {
 		readTimeStepSoln(-1);
 	}
 	else {
-		for (i1 = 0; cmd->numModes; i1++) {
+		for (i1 = 0; i1 < cmd->numModes; i1++) {
 			try {
 				loadFact[i1] = 0.159154943091895335 * sqrt(eigVals[i1]);
 			}
@@ -1318,12 +1323,7 @@ void Model::solveForAdjoint() {
 	double* intAdj;
 
 	objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
-    //
-	cout << "dLdU:" << endl;
-	for (i1 = 0; i1 < totGlobDof; i1++) {
-		cout << dLdU[i1] << endl;
-	}
-	//
+    
 	if (solveCmd->elastic) {
 		if (solveCmd->dynamic) {
 			c1 = solveCmd->timeStep * solveCmd->newmarkGamma;
@@ -1657,19 +1657,7 @@ void Model::getObjGradient() {
 			dLdU[i2] = 0.0;
 		}
 		solveForAdjoint();
-		//
-		cout << "Adjoint:" << endl;
-		for (i1 = 0; i1 < elMatDim; i1++) {
-			cout << uAdj[i1] << endl;
-		}
-		//
 		objective.calculatedLdD(dLdD, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
-		//
-		cout << "dLdD:" << endl;
-		for (i1 = 0; i1 < numDV; i1++) {
-			cout << dLdD[i1] << endl;
-		}
-		//
 		for (i1 = 0; i1 < numDV; i1++) {
 			if (solveCmd->thermal) {
 				dRthermaldD(i1);
@@ -1679,10 +1667,8 @@ void Model::getObjGradient() {
 			}
 			if (solveCmd->elastic) {
 				dRelasticdD(i1);
-				cout << "dRdD:" << endl;
 				for (i2 = 0; i2 < elMatDim; i2++) {
 					dLdD[i1] -= uAdj[i2] * dRudD[i2].dval;
-					cout << dRudD[i2].dval << endl;
 				}
 				thisEl = elements.getFirst();
 				while (thisEl) {
