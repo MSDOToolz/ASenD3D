@@ -332,7 +332,7 @@ Section::Section(string newType) {
 	potCoef = 0.0;
 	potExp = 1.0;
 	dampCoef = 0.0;
-	dampCoef = 1.0;
+	dampExp = 1.0;
 	matPtr = nullptr;
 	nextSection = nullptr;
 	return;

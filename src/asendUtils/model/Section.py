@@ -69,12 +69,16 @@ class Section:
         potField = dict()
         potField['coef'] = coef
         potField['exp'] = exp
-        self.secData[potField]
+        self.secData['potField'] = potField
         
     def setDampingField(self,coef,exp):
         dampField = dict()
         dampField['coef'] = coef
         dampField['exp'] = exp
+        self.secData['dampField'] = dampField
+        
+    def setMassPerElement(self,elMass):
+        self.secData['massPerEl'] = elMass
             
     def setElementSet(self,elsetName):
         self.secData['elementSet'] = elsetName

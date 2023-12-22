@@ -2000,7 +2000,6 @@ void Element::getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDo
 }
 
 void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], int stat) {
-	// stat = 0: linear geometry, element ori = locOri
 	// stat = 1: nonlinear geometry, element ori from nodal theta, no derivatives, 1st order diff for nodes
 	// stat = 2: nonlinear geometry, 2nd order diff for DiffDoub version, 1st order for DiffDoub version
 	DiffDoub rot[3];
@@ -2019,34 +2018,25 @@ void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub glob
 	}
 	bool isDiff = locOri[0].diffType();
 	
-	if (stat > 0) {
-		nnds.setVal(0.0);
-		one.setVal(1.0);
-		rot[0].setVal(0.0);
-		rot[1].setVal(0.0);
-		rot[2].setVal(0.0);
-		i2 = 3 * nDim;
-		for (i1 = 0; i1 < numNds; i1++) {
-			rot[0].add(globDisp[i2]);
-			rot[1].add(globDisp[i2 + nDim]);
-			rot[2].add(globDisp[i2 + 2 * nDim]);
-			nnds.add(one);
-			i2++;
-		}
-		rot[0].dvd(nnds);
-		rot[1].dvd(nnds);
-		rot[2].dvd(nnds);
+	nnds.setVal(0.0);
+	one.setVal(1.0);
+	rot[0].setVal(0.0);
+	rot[1].setVal(0.0);
+	rot[2].setVal(0.0);
+	i2 = 3 * nDim;
+	for (i1 = 0; i1 < numNds; i1++) {
+		rot[0].add(globDisp[i2]);
+		rot[1].add(globDisp[i2 + nDim]);
+		rot[2].add(globDisp[i2 + 2 * nDim]);
+		nnds.add(one);
+		i2++;
 	}
+	rot[0].dvd(nnds);
+	rot[1].dvd(nnds);
+	rot[2].dvd(nnds);
 	
-	if(stat < 2) {
-		if (stat == 0) {
-			for (i1 = 0; i1 < 9; i1++) {
-				instOriMat[i1].setVal(locOri[i1]);
-			}
-		}
-		else {
-			dOridThet(&instOriMat[0], locOri, rot, 0, 0);
-		}
+	if(stat == 1) {
+		dOridThet(&instOriMat[0], locOri, rot, 0, 0);
 		for (i1 = 1; i1 <= numNds; i1++) {
 			i2 = 3*nDim + i1 - 1;
 			rot[0].setVal(globDisp[i2]);
@@ -2054,11 +2044,6 @@ void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub glob
 			rot[2].setVal(globDisp[i2+2*nDim]);
 			stIndex = 144 * i1;
 			dOridThet(&instOriMat[stIndex], locOri, rot, 0, 0);
-			if (stat == 0) {
-				rot[0].setVal(0.0);
-				rot[1].setVal(0.0);
-				rot[2].setVal(0.0);
-			}
 			for (i2 = 1; i2 < 4; i2++) {
 				stIndex = 144*i1 + 36*i2;
 				dOridThet(&instOriMat[stIndex],locOri,rot,i2,0);
@@ -3298,6 +3283,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
+ 
  
  
 void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {

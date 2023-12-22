@@ -580,21 +580,27 @@ void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int tr
 				conv = true;
 				if (triDiag == 0) {
 					i3 = 0;
-					i4 = i5;
+					//i4 = i5;
+					i4 = i5 * matDim;
 					for (i1 = 0; i1 < matDim; i1++) {
+						//i4 = i5*matDim + i1
 						eVecs[i4] = 0.0;
 						for (i2 = 0; i2 < matDim; i2++) {
 							eVecs[i4] += qMat[i3] * prevVec[i2];
 							i3++;
 						}
-						i4 += matDim;
+						//i4 += matDim;
+						i4++;
 					}
 				}
 				else {
-					i4 = i5;
+					//i4 = i5;
+					i4 = i5 * matDim;
 					for (i1 = 0; i1 < matDim; i1++) {
+						//i4 = i5*matDim + i1;
 						eVecs[i4] = prevVec[i1];
-						i4 += matDim;
+						//i4 += matDim;
+						i4++;
 					}
 				}
 			}
@@ -865,14 +871,23 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	double mag = 0.0;
 	double tmp;
 	for (i2 = 0; i2 < matDim; i2++) {
-		tmp = sin(1.0*i2);
-		hMat[i2] = tmp;
-		mag+= tmp*tmp;
-	}
-	mag = 1.0/sqrt(mag);
-	for (i2 = 0; i2 < matDim; i2++) {
-		hMat[i2] = mag*hMat[i2];
 		massMat[i2] = sqrt(massMat[i2]);
+	}
+
+	for (i2 = matDim; i2 < (2 * matDim); i2++) {
+		hMat[i2] = sin(1.0 * i2);
+	}
+
+	mat.ldlSolve(&hMat[0], &hMat[matDim]);
+
+	mag = 0.0;
+	for (i2 = 0; i2 < matDim; i2++) {
+		mag += hMat[i2] * hMat[i2];
+	}
+	mag = 1.0 / sqrt(mag);
+
+	for (i2 = 0; i2 < matDim; i2++) {
+		hMat[i2] *= mag;
 	}
 	
 	double *tVec1 = new double[matDim];
@@ -927,6 +942,7 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	i1 = hCols - 1;
 	double *coefVals = new double[i1];
 	double *coefVecs = new double[i1*i1];
+	//eigenSolve(coefVals, coefVecs, coefMat, i1, 2);
 	symEigenSolve(coefVals, coefVecs, coefMat, i1, 1);
 
 	for (i3 = 0; i3 < matDim; i3++) {
@@ -936,7 +952,6 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	i1 = 0;
 	i2 = hCols - 2;
 	while (i1 < numPairs && i2 >= 0) {
-	//for (i1 = 0; i1 < numPairs; i1++) {
 		for (i3 = 0; i3 < matDim; i3++) {
 			tVec1[i3] = 0.0;
 		}
@@ -966,7 +981,7 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 				tmp += eVecs[i4] * tVec2[i3];
 				i4++;
 			}
-			if (abs(tmp) < 0.99) {
+			if (abs(tmp) < 0.9) {
 				for (i3 = 0; i3 < matDim; i3++) {
 					eVecs[i4] = tVec2[i3];
 					i4++;
@@ -1379,6 +1394,7 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
 //end dup
  
 //end skip 
+ 
  
  
 //dup2
@@ -2174,6 +2190,7 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 //end skip 
  
  
+ 
 //dup1
 void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
@@ -2372,5 +2389,6 @@ void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, in
 //end dup  
  
 //end skip 
+ 
  
  

@@ -18,6 +18,8 @@ class Model():
         self.modelData['sets']['element'] = list()
         self.modelData['sections'] = list()
         self.modelData['materials'] = list()
+        self.massElements = list()
+        self.forceElements = list()
         self.totNds = 0
         self.totEls = 0
         
@@ -105,6 +107,16 @@ class Model():
             beamDic['type'] = 'beam2'
             beamDic['connectivity'] = beamList
             self.modelData['elements'].append(beamDic)
+        elif(meshType == 'frcFld'):
+            elList = list()
+            for i, eRow in enumerate(allEls,nEls):
+                el = [i]
+                el.extend(eRow)
+                elList.append(str(el))
+            elDic = dict()
+            elDic['type'] = 'frcFld'
+            elDic['connectivity'] = elList
+            self.modelData['elements'].append(elDic)
         try:
             inpSets = meshData['sets']
             try:
@@ -131,6 +143,14 @@ class Model():
                 self.modelData['sets']['element'].extend(newElSets)
             except:
                 pass
+        except:
+            pass
+        try:
+            self.massElements.extend(meshData['massElements'])
+        except:
+            pass
+        try:
+            self.forceElements.extend(meshData['forceElements'])
         except:
             pass
         self.totNds = nNds + nInpNds
@@ -270,10 +290,68 @@ class Model():
             initialState = dict()
             initialState[field] = strState
             self.modelData['initialState'] = initialState
-        
+    
+    def integrateMassElements(self):
+        for me in self.massElements:
+            setLabs = list()
+            for ns in self.modelData['sets']['node']:
+                if(ns['name'] == me[0]):
+                    setLabs = ns['labels']
+            ei = self.totEls
+            newESLabs = list()
+            newEls = list()
+            for nd in setLabs:
+                newEl = [ei,nd]
+                newEls.append(str(newEl))
+                newESLabs.append(ei)
+                ei = ei + 1
+            eList = dict()
+            eList['type'] = 'mass'
+            eList['connectivity'] = newEls
+            self.modelData['elements'].append(eList)
+            eSet = dict()
+            eSet['name'] = me[1]
+            eSet['labels'] = newESLabs
+            self.modelData['sets']['element'].append(eSet)
+            self.totEls = ei
+        self.massElements = list()
+
+    def integrateForceElements(self):
+        for fe in self.forceElements:
+            set1Labs = list()
+            set2Labs = list()
+            for ns in self.modelData['sets']['node']:
+                if(ns['name'] == fe[0]):
+                    set1Labs = ns['labels']
+                if(ns['name'] == fe[1]):
+                    set2Labs = ns['labels']
+            ei = self.totEls
+            newEls = list()
+            newES = list()
+            for s1 in set1Labs:
+                for s2 in set2Labs:
+                    if(s2 != s1):
+                        newEl = [ei,s1,s2]
+                        newEls.append(str(newEl))
+                        newES.append(ei)
+                        ei = ei + 1
+            eList = dict()
+            eList['type'] = 'frcFld'
+            eList['connectivity'] = newEls
+            self.modelData['elements'].append(eList)
+            eSet = dict()
+            eSet['name'] = fe[2]
+            eSet['labels'] = newES
+            self.modelData['sets']['element'].append(eSet)
+            self.totEls = ei
+        self.forceElements = list()
+    
     def writeModelInput(self,fileName):
         self.fileName = makeAbsolute(fileName)
 
+        self.integrateForceElements()
+        self.integrateMassElements()
+        
         outFile = open('temp.yaml','w')
         yaml.dump(self.modelData,stream=outFile,sort_keys=False)
         outFile.close()

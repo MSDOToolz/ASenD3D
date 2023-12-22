@@ -102,6 +102,7 @@ public:
 //end skip 
  
  
+ 
 class Element {
 	private:
 	    int type;
@@ -426,6 +427,7 @@ class Element {
 //end skip 
  
  
+ 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]);
@@ -490,6 +492,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
  
 };

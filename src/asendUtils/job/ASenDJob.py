@@ -189,6 +189,7 @@ class ASenDJob:
             dt = dt.replace(':','_')
             dt = dt.replace(' ','_')
             fn = 'ASenDJob_' + dt
+            self.fileName = fn
             self.writeJobInput(fn)
         if(solverPath != 'default'):
             slvPth = makeAbsolute(solverPath)
@@ -199,8 +200,10 @@ class ASenDJob:
             errSt = 'Error: solver path ' + slvPth + 'does not exist. Double check and reset with asendUtils.syst.pathTools.setSolverPath()'
             raise Exception(errStr)
         try:
+            ptStr = 'Executing job file ' + self.fileName + ' ...'
+            print(ptStr)
             procRes = subprocess.run([slvPth,self.fileName],capture_output=True,text=True)
-            ptStr = 'Job: ' + self.fileName
+            ptStr = 'Job ' + self.fileName
             print(ptStr)
             ptStr = 'return code: ' + str(procRes.returncode)
             print(ptStr)

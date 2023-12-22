@@ -28,4 +28,4 @@ myJob.writeModalResults('natFreq/results/natFreqResults.yaml')
 
 myJob.writeJobInput('natFreq/job.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()

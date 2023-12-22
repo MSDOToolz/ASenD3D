@@ -1162,7 +1162,7 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 		fN1[i1].mult(dvVec[i1]);
 	}
 
-	matMul(dfN1dU, dvVec, dDistdU, 3, 1, 6);
+	/*matMul(dfN1dU, dvVec, dDistdU, 3, 1, 6);
 
 	tmp2.setVal(pre.frcFldCoef[1]);
 	tmp2.mult(pre.frcFldExp[1]);
@@ -1171,7 +1171,7 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 
 	for (i1 = 0; i1 < 18; i1++) {
 		dfN1dU[i1].mult(tmp2);
-	}
+	}*/
 
 	tmp2.setVal(-cmd->newmarkGamma / (cmd->timeStep * (cmd->newmarkBeta - cmd->newmarkGamma)));
 	tmp.mult(tmp2);
@@ -1179,7 +1179,8 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 	for (i1 = 0; i1 < 18; i1++) {
 		tmp2.setVal(tmp);
 		tmp2.mult(dDvecdU[i1]);
-		dfN1dU[i1].add(tmp2);
+		//dfN1dU[i1].add(tmp2);
+		dfN1dU[i1].setVal(tmp2);
 	}
 
 	for (i1 = 0; i1 < 3; i1++) {
@@ -2528,7 +2529,7 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 		fN1[i1].mult(dvVec[i1]);
 	}
 
-	matMul(dfN1dU, dvVec, dDistdU, 3, 1, 6);
+	/*matMul(dfN1dU, dvVec, dDistdU, 3, 1, 6);
 
 	tmp2.setVal(pre.frcFldCoef[1]);
 	tmp2.mult(pre.frcFldExp[1]);
@@ -2537,7 +2538,7 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 
 	for (i1 = 0; i1 < 18; i1++) {
 		dfN1dU[i1].mult(tmp2);
-	}
+	}*/
 
 	tmp2.setVal(-cmd->newmarkGamma / (cmd->timeStep * (cmd->newmarkBeta - cmd->newmarkGamma)));
 	tmp.mult(tmp2);
@@ -2545,7 +2546,8 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 	for (i1 = 0; i1 < 18; i1++) {
 		tmp2.setVal(tmp);
 		tmp2.mult(dDvecdU[i1]);
-		dfN1dU[i1].add(tmp2);
+		//dfN1dU[i1].add(tmp2);
+		dfN1dU[i1].setVal(tmp2);
 	}
 
 	for (i1 = 0; i1 < 3; i1++) {
@@ -2923,5 +2925,6 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
+ 
  
  
