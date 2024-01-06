@@ -1,0 +1,27 @@
+Homogeneous shell:
+    offset = -1, 
+	thickness = 0.1, 
+	length = width = 2.0, 
+	E = 1000000, 
+	nu = 0.0, 
+	G12 = 500000
+	fixed at x = xMin, loaded F = 2.0 at x = xMax:
+	    - uz at end = 1.2e-3
+
+Two layer composite (+/-) 45 deg:
+    offset = 0
+    material:
+        E11 = 1e+7
+        E22 = 1e+6
+        nu = 0
+        G12 = 5e+6
+    layers:
+        - {thickness: 0.05, angle: 45}
+        - {thickness: 0.05, angle: -45}
+    length = width = 2.0
+    fixed at x = xMin, y = yMin, ux fixed at x = xMin, y = yMax, loaded F = 2.0 at x = xMax:
+	    - ux = 4.651452282161358e-06
+		- uy = 2.6514522821613584e-06
+		- uz = -1.79253112033e-04
+		- thetax = -8.96265560167775e-05
+        	
