@@ -19,6 +19,8 @@ const double r_1ort3 = 0.577350269189625765;
 //dup1
 
 void Element::getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DVPt dvAr[]) {
+	//zOffset = 1: upper Z surface is reference plane
+	//zOffset = -1: lower Z surface is reference plane
 	int layi = 0;
 	Doub dvVal;
 	Doub coef;
@@ -86,6 +88,7 @@ void Element::getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DVPt dvAr[
 		layZ[layi].setVal(zMid);
 		thisLay = thisLay->getNext();
 		layi++;
+		zCrd.setVal(zNext);
 	}
 
 	return;
@@ -782,6 +785,8 @@ void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub 
 	int i2;
 	int i3;
 	int i4;
+	int i5;
+	int i6;
 	int numLay;
 	Doub zMax;
 	Doub zMin;
@@ -808,15 +813,15 @@ void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub 
 		// A matrix portion
 		tmp.setVal(zMax);
 		tmp.sub(zMin);
-		for (i1 = 0; i1 < 3; i1++) {
-			i3 = 9 * i1;
-			i4 = 3 * i1;
-			for (i2 = 0; i2 < 3; i2++) {
+		for (i3 = 0; i3 < 3; i3++) {
+			i5 = 9 * i3;
+			i6 = 3 * i3;
+			for (i4 = 0; i4 < 3; i4++) {
 				tmp2.setVal(tmp);
-				tmp2.mult(Qmat[i4]);
-				Cmat[i3].add(tmp2);
-				i3++;
-				i4++;
+				tmp2.mult(Qmat[i6]);
+				Cmat[i5].add(tmp2);
+				i5++;
+				i6++;
 			}
 		}
 
@@ -828,15 +833,17 @@ void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub 
 		tmp.sub(tmp2);
 		tmp2.setVal(0.5);
 		tmp.mult(tmp2);
-		for (i1 = 0; i1 < 3; i1++) {
-			i3 = 9 * i1 + 3;
-			i4 = 3 * i1;
-			for (i2 = 0; i2 < 3; i2++) {
+		for (i3 = 0; i3 < 3; i3++) {
+			i5 = 9 * i3 + 3;
+			i6 = 3 * i3;
+			for (i4 = 0; i4 < 3; i4++) {
+				//i6 = i3*3 + i4;
+				//i5 = i3*9 + (i4 + 3)
 				tmp2.setVal(tmp);
-				tmp2.mult(Qmat[i4]);
-				Cmat[i3].add(tmp2);
-				i3++;
-				i4++;
+				tmp2.mult(Qmat[i6]);
+				Cmat[i5].add(tmp2);
+				i5++;
+				i6++;
 			}
 		}
 
@@ -850,23 +857,26 @@ void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub 
 		tmp.sub(tmp2);
 		tmp2.setVal(r_1o3);
 		tmp.mult(tmp2);
-		for (i1 = 0; i1 < 3; i1++) {
-			i3 = 9 * (i1 + 3) + 3;
-			i4 = 3 * i1;
-			for (i2 = 0; i2 < 3; i2++) {
+		for (i3 = 0; i3 < 3; i3++) {
+			i5 = 9 * (i3 + 3) + 3;
+			i6 = 3 * i3;
+			for (i4 = 0; i4 < 3; i4++) {
 				tmp2.setVal(tmp);
-				tmp2.mult(Qmat[i4]);
-				Cmat[i3].add(tmp2);
-				i3++;
-				i4++;
+				tmp2.mult(Qmat[i6]);
+				Cmat[i5].add(tmp2);
+				i5++;
+				i6++;
 			}
 		}
+		i2 += 9;
 	}
 
 	for (i1 = 1; i1 < 6; i1++) {
 		i3 = 9 * i1;
 		i4 = i1;
 		for (i2 = 0; i2 < i1; i2++) {
+			//i3 = i1*9 + i2
+			//i4 = i2*9 + i1
 			Cmat[i3].setVal(Cmat[i4]);
 			i3++;
 			i4 += 9;
@@ -2247,6 +2257,8 @@ void Element::getMassPerEl(Doub& massPerEl, DVPt dvAr[]) {
 //dup1
 
 void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset, DVPt dvAr[]) {
+	//zOffset = 1: upper Z surface is reference plane
+	//zOffset = -1: lower Z surface is reference plane
 	int layi = 0;
 	DiffDoub dvVal;
 	DiffDoub coef;
@@ -2314,6 +2326,7 @@ void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset
 		layZ[layi].setVal(zMid);
 		thisLay = thisLay->getNext();
 		layi++;
+		zCrd.setVal(zNext);
 	}
 
 	return;
@@ -3010,6 +3023,8 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 	int i2;
 	int i3;
 	int i4;
+	int i5;
+	int i6;
 	int numLay;
 	DiffDoub zMax;
 	DiffDoub zMin;
@@ -3036,15 +3051,15 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 		// A matrix portion
 		tmp.setVal(zMax);
 		tmp.sub(zMin);
-		for (i1 = 0; i1 < 3; i1++) {
-			i3 = 9 * i1;
-			i4 = 3 * i1;
-			for (i2 = 0; i2 < 3; i2++) {
+		for (i3 = 0; i3 < 3; i3++) {
+			i5 = 9 * i3;
+			i6 = 3 * i3;
+			for (i4 = 0; i4 < 3; i4++) {
 				tmp2.setVal(tmp);
-				tmp2.mult(Qmat[i4]);
-				Cmat[i3].add(tmp2);
-				i3++;
-				i4++;
+				tmp2.mult(Qmat[i6]);
+				Cmat[i5].add(tmp2);
+				i5++;
+				i6++;
 			}
 		}
 
@@ -3056,15 +3071,17 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 		tmp.sub(tmp2);
 		tmp2.setVal(0.5);
 		tmp.mult(tmp2);
-		for (i1 = 0; i1 < 3; i1++) {
-			i3 = 9 * i1 + 3;
-			i4 = 3 * i1;
-			for (i2 = 0; i2 < 3; i2++) {
+		for (i3 = 0; i3 < 3; i3++) {
+			i5 = 9 * i3 + 3;
+			i6 = 3 * i3;
+			for (i4 = 0; i4 < 3; i4++) {
+				//i6 = i3*3 + i4;
+				//i5 = i3*9 + (i4 + 3)
 				tmp2.setVal(tmp);
-				tmp2.mult(Qmat[i4]);
-				Cmat[i3].add(tmp2);
-				i3++;
-				i4++;
+				tmp2.mult(Qmat[i6]);
+				Cmat[i5].add(tmp2);
+				i5++;
+				i6++;
 			}
 		}
 
@@ -3078,23 +3095,26 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 		tmp.sub(tmp2);
 		tmp2.setVal(r_1o3);
 		tmp.mult(tmp2);
-		for (i1 = 0; i1 < 3; i1++) {
-			i3 = 9 * (i1 + 3) + 3;
-			i4 = 3 * i1;
-			for (i2 = 0; i2 < 3; i2++) {
+		for (i3 = 0; i3 < 3; i3++) {
+			i5 = 9 * (i3 + 3) + 3;
+			i6 = 3 * i3;
+			for (i4 = 0; i4 < 3; i4++) {
 				tmp2.setVal(tmp);
-				tmp2.mult(Qmat[i4]);
-				Cmat[i3].add(tmp2);
-				i3++;
-				i4++;
+				tmp2.mult(Qmat[i6]);
+				Cmat[i5].add(tmp2);
+				i5++;
+				i6++;
 			}
 		}
+		i2 += 9;
 	}
 
 	for (i1 = 1; i1 < 6; i1++) {
 		i3 = 9 * i1;
 		i4 = i1;
 		for (i2 = 0; i2 < i1; i2++) {
+			//i3 = i1*9 + i2
+			//i4 = i2*9 + i1
 			Cmat[i3].setVal(Cmat[i4]);
 			i3++;
 			i4 += 9;
@@ -4470,6 +4490,7 @@ void Element::getMassPerEl(DiffDoub& massPerEl, DVPt dvAr[]) {
 //end dup
  
 //end skip 
+ 
  
  
  
