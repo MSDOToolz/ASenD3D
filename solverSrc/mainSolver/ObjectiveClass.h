@@ -114,11 +114,11 @@ class ObjectiveTerm {
 
 		void dVolAveragedD(double dLdD[]);
 
-		void getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+		void getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
-		void getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+		void getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
-		void getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+		void getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
 		void destroy();
 };
@@ -140,11 +140,11 @@ class Objective {
 
 		void clearValues();
 
-		void calculateTerms(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+		void calculateTerms(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
-		void calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+		void calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
-		void calculatedLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]);
+		void calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
 		void destroy();
 };

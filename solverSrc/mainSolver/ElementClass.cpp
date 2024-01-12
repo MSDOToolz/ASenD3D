@@ -553,10 +553,6 @@ void Element::destroy() {
 	return;
 }
 
-ElPt::ElPt() {
-	ptr = nullptr;
-}
-
 //ElementList begin
 ElementList::ElementList() {
 	firstEl = nullptr;

@@ -332,7 +332,7 @@ double Node::getPrevTdot() {
 }
 
 //dup1
-void Node::getCrd(Doub crdOut[], DVPt dvAr[]) {
+void Node::getCrd(Doub crdOut[], DesignVariable* dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
 	crdOut[2].setVal(coord[2]);
@@ -346,7 +346,7 @@ void Node::getCrd(Doub crdOut[], DVPt dvAr[]) {
 	Doub coef;
 	while(currD) {
 		dIndex = currD->value;
-		dPtr = dvAr[dIndex].ptr;
+		dPtr = dvAr[dIndex];
 		dPtr->getValue(dVal);
 		cat = dPtr->getCategory();
 		comp = dPtr->getComponent() - 1;
@@ -369,7 +369,7 @@ void Node::getDisp(Doub disp[]) {
 	return;
 }
 
-void Node::getElasticDVLoad(Doub ld[], DVPt dvAr[]) {
+void Node::getElasticDVLoad(Doub ld[], DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt *thisDV;
@@ -386,7 +386,7 @@ void Node::getElasticDVLoad(Doub ld[], DVPt dvAr[]) {
 	thisCoef = coefs.getFirst();
 	while(thisDV) {
 		dIndex = thisDV->value;
-		dPtr = dvAr[dIndex].ptr;
+		dPtr = dvAr[dIndex];
 		dPtr->getValue(dVal);
 		cat = dPtr->getCategory();
 		comp = dPtr->getComponent() - 1;
@@ -401,7 +401,7 @@ void Node::getElasticDVLoad(Doub ld[], DVPt dvAr[]) {
 	return;
 }
 
-void Node::getThermalDVLoad(Doub& ld, DVPt dvAr[]) {
+void Node::getThermalDVLoad(Doub& ld, DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt* thisDV;
@@ -417,7 +417,7 @@ void Node::getThermalDVLoad(Doub& ld, DVPt dvAr[]) {
 	thisCoef = coefs.getFirst();
 	while (thisDV) {
 		dIndex = thisDV->value;
-		dPtr = dvAr[dIndex].ptr;
+		dPtr = dvAr[dIndex];
 		dPtr->getValue(dVal);
 		cat = dPtr->getCategory();
 		if (cat == "thermalLoad") {
@@ -437,7 +437,7 @@ void Node::getThermalDVLoad(Doub& ld, DVPt dvAr[]) {
  
 //DiffDoub versions: 
 //dup1
-void Node::getCrd(DiffDoub crdOut[], DVPt dvAr[]) {
+void Node::getCrd(DiffDoub crdOut[], DesignVariable* dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
 	crdOut[2].setVal(coord[2]);
@@ -451,7 +451,7 @@ void Node::getCrd(DiffDoub crdOut[], DVPt dvAr[]) {
 	DiffDoub coef;
 	while(currD) {
 		dIndex = currD->value;
-		dPtr = dvAr[dIndex].ptr;
+		dPtr = dvAr[dIndex];
 		dPtr->getValue(dVal);
 		cat = dPtr->getCategory();
 		comp = dPtr->getComponent() - 1;
@@ -474,7 +474,7 @@ void Node::getDisp(DiffDoub disp[]) {
 	return;
 }
 
-void Node::getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]) {
+void Node::getElasticDVLoad(DiffDoub ld[], DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt *thisDV;
@@ -491,7 +491,7 @@ void Node::getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]) {
 	thisCoef = coefs.getFirst();
 	while(thisDV) {
 		dIndex = thisDV->value;
-		dPtr = dvAr[dIndex].ptr;
+		dPtr = dvAr[dIndex];
 		dPtr->getValue(dVal);
 		cat = dPtr->getCategory();
 		comp = dPtr->getComponent() - 1;
@@ -506,7 +506,7 @@ void Node::getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]) {
 	return;
 }
 
-void Node::getThermalDVLoad(DiffDoub& ld, DVPt dvAr[]) {
+void Node::getThermalDVLoad(DiffDoub& ld, DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt* thisDV;
@@ -522,7 +522,7 @@ void Node::getThermalDVLoad(DiffDoub& ld, DVPt dvAr[]) {
 	thisCoef = coefs.getFirst();
 	while (thisDV) {
 		dIndex = thisDV->value;
-		dPtr = dvAr[dIndex].ptr;
+		dPtr = dvAr[dIndex];
 		dPtr->getValue(dVal);
 		cat = dPtr->getCategory();
 		if (cat == "thermalLoad") {
@@ -563,10 +563,6 @@ void Node::destroy() {
 	dVars.destroy();
 	coefs.destroy();
 	return;
-}
-
-NdPt::NdPt() {
-	ptr = nullptr;
 }
 
 

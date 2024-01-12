@@ -604,21 +604,21 @@ void Model::readModelInput(string fileName) {
 	
 	// Populate node array
 	i1 = nodes.getLength();
-	nodeArray = new NdPt[i1];
+	nodeArray = new Node*[i1];
 	newNd = nodes.getFirst();
 	while(newNd) {
 		i1 = newNd->getLabel();
-		nodeArray[i1].ptr = newNd;
+		nodeArray[i1] = newNd;
 		newNd = newNd->getNext();
 	}
 	
 	// Populate element array
 	i1 = elements.getLength();
-	elementArray = new ElPt[i1];
+	elementArray = new  Element*[i1];
 	newEl = elements.getFirst();
 	while(newEl) {
 		i1 = newEl->getLabel();
-		elementArray[i1].ptr = newEl;
+		elementArray[i1] = newEl;
 		newEl = newEl->getNext();
 	}
 
@@ -660,11 +660,11 @@ void Model::readModelInput(string fileName) {
 
 	i1 = nodeSets.getLength();
 
-	nsArray = new SetPt[i1];
+	nsArray = new Set*[i1];
 	newSet = nodeSets.getFirst();
 	i2 = 0;
 	while (newSet) {
-		nsArray[i2].ptr = newSet;
+		nsArray[i2] = newSet;
 		nsMap.insert(make_pair(newSet->getName(), i2));
 		newSet = newSet->getNext();
 		i2++;
@@ -672,11 +672,11 @@ void Model::readModelInput(string fileName) {
 
 	i1 = elementSets.getLength();
 
-	esArray = new SetPt[i1];
+	esArray = new Set*[i1];
 	newSet = elementSets.getFirst();
 	i2 = 0;
 	while (newSet) {
-		esArray[i2].ptr = newSet;
+		esArray[i2] = newSet;
 		esMap.insert(make_pair(newSet->getName(), i2));
 		newSet = newSet->getNext();
 		i2++;
@@ -853,18 +853,18 @@ void Model::readInitialState(string fileName) {
 						i2++;
 					}
 					if(headings[1] == "displacement") {
-						nodeArray[ndi].ptr->setInitialDisp(doubInp);
+						nodeArray[ndi]->setInitialDisp(doubInp);
 					} else if(headings[1] == "velocity") {
-						nodeArray[ndi].ptr->setInitialVel(doubInp);
+						nodeArray[ndi]->setInitialVel(doubInp);
 					} else if(headings[1] == "acceleration") {
-						nodeArray[ndi].ptr->setInitialAcc(doubInp);
+						nodeArray[ndi]->setInitialAcc(doubInp);
 					}
 				} else if(headings[1] == "temperature" && dataLen == 2) {
 					ndi = stoi(data[0]);
-					nodeArray[ndi].ptr->setInitialTemp(stod(data[1]));
+					nodeArray[ndi]->setInitialTemp(stod(data[1]));
 				} else if(headings[1] == "tdot" && dataLen == 2) {
 					ndi = stoi(data[0]);
-					nodeArray[ndi].ptr->setInitialTdot(stod(data[1]));
+					nodeArray[ndi]->setInitialTdot(stod(data[1]));
 				}
 			}
 		}
@@ -938,11 +938,11 @@ void Model::readDesVarInput(string fileName) {
 	
 	// Populate design variable array
 	i1 = designVars.getLength();
-	dVarArray = new DVPt[i1];
+	dVarArray = new DesignVariable*[i1];
 	newDVar = designVars.getFirst();
 	i2 = 0;
 	while(newDVar) {
-		dVarArray[i2].ptr = newDVar;
+		dVarArray[i2] = newDVar;
 		newDVar = newDVar->getNext();
 		i2++;
 	}
@@ -1026,7 +1026,7 @@ void Model::readDesVarValues(string fileName) {
 			if(dataLen == 2) {
 				label = stoi(data[0]);
 				value = stod(data[1]);
-				dVarArray[label].ptr->setValue(value);
+				dVarArray[label]->setValue(value);
 			}
 		}
 	} else {
@@ -1057,7 +1057,7 @@ void Model::readNodeResults(string fileName) {
 			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "nodeResults" && dataLen > 1) {
 				nd = stoi(data[0]);
-				thisNd = nodeArray[nd].ptr;
+				thisNd = nodeArray[nd];
 				i2 = dispFields.find(headings[1]);
 				if (i2 > -1) {
 					for (i1 = 0; i1 < thisNd->getNumDof(); i1++) {

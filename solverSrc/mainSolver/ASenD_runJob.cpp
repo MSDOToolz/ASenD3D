@@ -9,7 +9,7 @@ using namespace std;
 int main() {
 	int argc = 2;
 	string argv[2];
-	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/compositePlate/twoPlyPlusMinus45/job.yaml";
+	argv[1] = "C:/Users/evaande/ASenDHome/ASenD3D/examples/testCases/compositePlate/twoPlyPlusMinus45/job.yaml";
 
 // --------------------------------------
 

@@ -16,7 +16,7 @@ const double r_pio180 = 0.0174532925199432958;
 const double r_1ort3 = 0.577350269189625765;
 
 //dup1
-void Element::getNdDisp(Doub globDisp[], NdPt ndAr[]) {
+void Element::getNdDisp(Doub globDisp[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -27,7 +27,7 @@ void Element::getNdDisp(Doub globDisp[], NdPt ndAr[]) {
 	Node *nPtr;
 	
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		nPtr->getDisp(ndDisp);
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
@@ -50,7 +50,7 @@ void Element::getNdDisp(Doub globDisp[], NdPt ndAr[]) {
 	return;
 }
 
-void Element::getNdVel(Doub globVel[], NdPt ndAr[]) {
+void Element::getNdVel(Doub globVel[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -58,7 +58,7 @@ void Element::getNdVel(Doub globVel[], NdPt ndAr[]) {
 	double ndVel[6];
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		nPtr->getVel(ndVel);
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
@@ -70,7 +70,7 @@ void Element::getNdVel(Doub globVel[], NdPt ndAr[]) {
 	return;
 }
 
-void Element::getNdAcc(Doub globAcc[], NdPt ndAr[]) {
+void Element::getNdAcc(Doub globAcc[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -78,7 +78,7 @@ void Element::getNdAcc(Doub globAcc[], NdPt ndAr[]) {
 	double ndAcc[6];
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		nPtr->getAcc(ndAcc);
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
@@ -90,26 +90,26 @@ void Element::getNdAcc(Doub globAcc[], NdPt ndAr[]) {
 	return;
 }
 
-void Element::getNdTemp(Doub globTemp[], NdPt ndAr[]) {
+void Element::getNdTemp(Doub globTemp[], Node* ndAr[]) {
 	int i1;
 	double temp;
 	Node* nPtr;
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		temp = nPtr->getTemperature();
 		globTemp[i1].setVal(temp);
 	}
 	return;
 }
 
-void Element::getNdTdot(Doub globTdot[], NdPt ndAr[]) {
+void Element::getNdTdot(Doub globTdot[], Node* ndAr[]) {
 	int i1;
 	double tdot;
 	Node* nPtr;
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		tdot = nPtr->getTdot();
 		globTdot[i1].setVal(tdot);
 	}
@@ -892,7 +892,7 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 	return;
 }
 
-void Element::getStressPrereq(DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getStressPrereq(DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int numLay;
 	Doub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
@@ -1611,7 +1611,7 @@ void Element::dFluxTGraddT(Doub dFdT[], Doub dTG[], double spt[], int layer, Dou
 	return;
 }
 
-void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int matRow, NdPt ndAr[]) {
+void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int matRow, Node* ndAr[]) {
 	int i1;
 	int ndDof = numNds*dofPerNd;
 	int totDof = ndDof + numIntDof;
@@ -1622,7 +1622,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int
 	if (forTherm) {
 		for (i1 = 0; i1 < numNds; i1++) {
 			nd = nodes[i1];
-			globInd = ndAr[i1].ptr->getSortedRank();
+			globInd = ndAr[i1]->getSortedRank();
 			qMat.addEntry(matRow, globInd, elQVec[i1].val);
 		}
 	}
@@ -1631,7 +1631,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int
 			if (i1 < ndDof) {
 				nd = nodes[dofTable[2 * i1]];
 				dof = dofTable[2 * i1 + 1];
-				globInd = ndAr[nd].ptr->getDofIndex(dof);
+				globInd = ndAr[nd]->getDofIndex(dof);
 				qMat.addEntry(matRow, globInd, elQVec[i1].val);
 			}
 			else {
@@ -1651,7 +1651,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int
  
 //DiffDoub versions: 
 //dup1
-void Element::getNdDisp(DiffDoub globDisp[], NdPt ndAr[]) {
+void Element::getNdDisp(DiffDoub globDisp[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1662,7 +1662,7 @@ void Element::getNdDisp(DiffDoub globDisp[], NdPt ndAr[]) {
 	Node *nPtr;
 	
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		nPtr->getDisp(ndDisp);
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
@@ -1685,7 +1685,7 @@ void Element::getNdDisp(DiffDoub globDisp[], NdPt ndAr[]) {
 	return;
 }
 
-void Element::getNdVel(DiffDoub globVel[], NdPt ndAr[]) {
+void Element::getNdVel(DiffDoub globVel[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1693,7 +1693,7 @@ void Element::getNdVel(DiffDoub globVel[], NdPt ndAr[]) {
 	double ndVel[6];
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		nPtr->getVel(ndVel);
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
@@ -1705,7 +1705,7 @@ void Element::getNdVel(DiffDoub globVel[], NdPt ndAr[]) {
 	return;
 }
 
-void Element::getNdAcc(DiffDoub globAcc[], NdPt ndAr[]) {
+void Element::getNdAcc(DiffDoub globAcc[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1713,7 +1713,7 @@ void Element::getNdAcc(DiffDoub globAcc[], NdPt ndAr[]) {
 	double ndAcc[6];
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		nPtr->getAcc(ndAcc);
 		i3 = i1;
 		for (i2 = 0; i2 < dofPerNd; i2++) {
@@ -1725,26 +1725,26 @@ void Element::getNdAcc(DiffDoub globAcc[], NdPt ndAr[]) {
 	return;
 }
 
-void Element::getNdTemp(DiffDoub globTemp[], NdPt ndAr[]) {
+void Element::getNdTemp(DiffDoub globTemp[], Node* ndAr[]) {
 	int i1;
 	double temp;
 	Node* nPtr;
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		temp = nPtr->getTemperature();
 		globTemp[i1].setVal(temp);
 	}
 	return;
 }
 
-void Element::getNdTdot(DiffDoub globTdot[], NdPt ndAr[]) {
+void Element::getNdTdot(DiffDoub globTdot[], Node* ndAr[]) {
 	int i1;
 	double tdot;
 	Node* nPtr;
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		nPtr = ndAr[nodes[i1]].ptr;
+		nPtr = ndAr[nodes[i1]];
 		tdot = nPtr->getTdot();
 		globTdot[i1].setVal(tdot);
 	}
@@ -2527,7 +2527,7 @@ void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub ins
 	return;
 }
 
-void Element::getStressPrereq(DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getStressPrereq(DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int numLay;
 	DiffDoub offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
@@ -3246,7 +3246,7 @@ void Element::dFluxTGraddT(DiffDoub dFdT[], DiffDoub dTG[], double spt[], int la
 	return;
 }
 
-void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm, int matRow, NdPt ndAr[]) {
+void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm, int matRow, Node* ndAr[]) {
 	int i1;
 	int ndDof = numNds*dofPerNd;
 	int totDof = ndDof + numIntDof;
@@ -3257,7 +3257,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 	if (forTherm) {
 		for (i1 = 0; i1 < numNds; i1++) {
 			nd = nodes[i1];
-			globInd = ndAr[i1].ptr->getSortedRank();
+			globInd = ndAr[i1]->getSortedRank();
 			qMat.addEntry(matRow, globInd, elQVec[i1].val);
 		}
 	}
@@ -3266,7 +3266,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 			if (i1 < ndDof) {
 				nd = nodes[dofTable[2 * i1]];
 				dof = dofTable[2 * i1 + 1];
-				globInd = ndAr[nd].ptr->getDofIndex(dof);
+				globInd = ndAr[nd]->getDofIndex(dof);
 				qMat.addEntry(matRow, globInd, elQVec[i1].val);
 			}
 			else {
@@ -3287,7 +3287,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
  
  
  
-void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {
+void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int nd;
@@ -3298,7 +3298,7 @@ void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool int
 	if (forTherm) {
 		for (i1 = 0; i1 < numNds; i1++) {
 			nd = nodes[i1];
-			globInd = ndAr[nd].ptr->getSortedRank();
+			globInd = ndAr[nd]->getSortedRank();
 			elVec[i1] = globVec[globInd];
 		}
 	}
@@ -3308,7 +3308,7 @@ void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool int
 		for (i1 = 0; i1 < ndDof; i1++) {
 			nd = nodes[dofTable[i2]];
 			dof = dofTable[i2 + 1];
-			globInd = ndAr[nd].ptr->getDofIndex(dof);
+			globInd = ndAr[nd]->getDofIndex(dof);
 			elVec[i1] = globVec[globInd];
 			i2 += 2;
 		}
@@ -3322,7 +3322,7 @@ void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool int
 	return;
 }
 
-void Element::addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, NdPt ndAr[]) {
+void Element::addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int nd;
@@ -3333,7 +3333,7 @@ void Element::addToGlobVec(double elVec[], double globVec[], bool forTherm, bool
 	if (forTherm) {
 		for (i1 = 0; i1 < numNds; i1++) {
 			nd = nodes[i1];
-			globInd = ndAr[nd].ptr->getSortedRank();
+			globInd = ndAr[nd]->getSortedRank();
 			globVec[globInd] += elVec[i1];
 		}
 	}
@@ -3343,7 +3343,7 @@ void Element::addToGlobVec(double elVec[], double globVec[], bool forTherm, bool
 		for (i1 = 0; i1 < ndDof; i1++) {
 			nd = nodes[dofTable[i2]];
 			dof = dofTable[i2 + 1];
-			globInd = ndAr[nd].ptr->getDofIndex(dof);
+			globInd = ndAr[nd]->getDofIndex(dof);
 			globVec[globInd] += elVec[i1];
 			i2 += 2;
 		}

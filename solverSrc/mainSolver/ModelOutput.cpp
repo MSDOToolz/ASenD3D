@@ -104,13 +104,13 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	
 	try {
 		i1 = nsMap.at(nodeSet);
-		setPt = nsArray[i1].ptr;
+		setPt = nsArray[i1];
 	}
 	catch (...) {
 		errStr = "Warning: there is no node set named " + nodeSet + ". Defaulting to all nodes in writeNodeResults";
 		cout << errStr << endl;
 		i1 = nsMap.at("all");
-		setPt = nsArray[i1].ptr;
+		setPt = nsArray[i1];
 	}
 	
 	ofstream outFile;
@@ -131,7 +131,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 			thisEnt = setPt->getFirstEntry();
 			while (thisEnt) {
 				ndLabel = thisEnt->value;
-				ndPt = nodeArray[ndLabel].ptr;
+				ndPt = nodeArray[ndLabel];
 				outFile << "        - [" << ndLabel;
 				ndof = ndPt->getNumDof();
 				for (i1 = 0; i1 < ndof; i1++) {
@@ -147,7 +147,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 			thisEnt = setPt->getFirstEntry();
 			while (thisEnt) {
 				ndLabel = thisEnt->value;
-				ndPt = nodeArray[ndLabel].ptr;
+				ndPt = nodeArray[ndLabel];
 				outFile << "        - [" << ndLabel;
 				globInd = ndPt->getSortedRank();
 				outFile << ", " << -tempV1[globInd] << "\n";
@@ -158,7 +158,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 			thisEnt = setPt->getFirstEntry();
 			while (thisEnt) {
 				ndLabel = thisEnt->value;
-				ndPt = nodeArray[ndLabel].ptr;
+				ndPt = nodeArray[ndLabel];
 				outFile << "        - [" << ndLabel;
 				if (thisField == "displacement") {
 					ndPt->getDisp(ndDat);
@@ -241,13 +241,13 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 
 	try {
 		i1 = esMap.at(elSet);
-		setPt = esArray[i1].ptr;
+		setPt = esArray[i1];
 	}
 	catch (...) {
 		errStr = "Warning: there is no element set named " + elSet + ". Defaulting to all elements in writeNodeResults";
 		cout << errStr << endl;
 		i1 = nsMap.at("all");
-		setPt = esArray[i1].ptr;
+		setPt = esArray[i1];
 	}
 
 	ofstream outFile;
@@ -287,7 +287,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 		thisEnt = setPt->getFirstEntry();
 		while (thisEnt) {
 			elLabel = thisEnt->value;
-			elPt = elementArray[elLabel].ptr;
+			elPt = elementArray[elLabel];
 			
 			fieldList = "stress strain strainEnergyDen";
 			i2 = fieldList.find(thisField);

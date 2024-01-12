@@ -61,7 +61,7 @@ void Element::condenseMat(double mat[]) {
 	return;
 }
 
-void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
+void Element::updateExternal(double extVec[], int forSoln, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -106,7 +106,7 @@ void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	for (i1 = 0; i1 < stRow; i1++) {
 		nd = nodes[dofTable[i4]];
 		dof = dofTable[i4+1];
-		glbInd = ndAr[nd].ptr->getDofIndex(dof);
+		glbInd = ndAr[nd]->getDofIndex(dof);
 		for (i2 = 0; i2 < numIntDof; i2++) {
 			extVec[glbInd]+= internalMat[i3]*xVec[i2];
 			i3++;
@@ -117,7 +117,7 @@ void Element::updateExternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	return;
 }
 
-void Element::updateInternal(double extVec[], int forSoln, NdPt ndAr[]) {
+void Element::updateInternal(double extVec[], int forSoln, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -159,7 +159,7 @@ void Element::updateInternal(double extVec[], int forSoln, NdPt ndAr[]) {
 	for (i1 = 0; i1 < stRow; i1++) {
 		nd = nodes[dofTable[2*i1]];
 		dof = dofTable[2*i1+1];
-		glbInd = ndAr[nd].ptr->getDofIndex(dof);
+		glbInd = ndAr[nd]->getDofIndex(dof);
 		i3 = i1*numIntDof;
 		i4 = stRow;
 		for (i2 = 0; i2 < numIntDof; i2++) {
@@ -195,7 +195,7 @@ double Element::getIntAdjdRdD() {
 
 //dup1
 
-void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -383,7 +383,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 	return;
 }
 
-void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -550,7 +550,7 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 	return;
 }
 
-void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -740,7 +740,7 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 }
 
 
-void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -851,7 +851,7 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	for (i1 = 0; i1 < ndDof; i1++) {
 		nd = nodes[dofTable[i4]];
 		dof = dofTable[i4+1];
-		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globInd = ndAr[nd]->getDofIndex(dof);
 		globR[globInd].add(Rvec[i1]);
 		if(getMatrix) {
 			i3 = i1*totDof;
@@ -859,7 +859,7 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 			for (i2 = 0; i2 < ndDof; i2++) {
 				nd2 = nodes[dofTable[i5]];
 				dof2 = dofTable[i5+1];
-				globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
+				globInd2 = ndAr[nd2]->getDofIndex(dof2);
 				globdRdu.addEntry(globInd, globInd2, dRdu[i3]);
 				i3++;
 				i5 += 2;
@@ -989,7 +989,7 @@ void Element::getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, bool actualP
 	return;
 }
 
-void Element::getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]) {
+void Element::getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1019,11 +1019,11 @@ void Element::getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobComman
 
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
-		globInd1 = ndAr[nodes[i1]].ptr->getSortedRank();
+		globInd1 = ndAr[nodes[i1]]->getSortedRank();
 		globR[globInd1].add(Rvec[i1]);
 		if (getMatrix) {
 			for (i2 = 0; i2 < numNds; i2++) {
-				globInd2 = ndAr[nodes[i2]].ptr->getSortedRank();
+				globInd2 = ndAr[nodes[i2]]->getSortedRank();
 				globdRdT.addEntry(globInd1, globInd2, dRdT[i3]);
 				i3++;
 			}
@@ -1033,7 +1033,7 @@ void Element::getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobComman
 	return;
 }
 
-void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, NdPt ndAr[]) {
+void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1197,7 +1197,7 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 	for (i1 = 0; i1 < ndDof; i1++) {
 		nd = nodes[dofTable[i4]];
 		dof = dofTable[i4 + 1];
-		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globInd = ndAr[nd]->getDofIndex(dof);
 		globR[globInd].add(Rvec[i1]);
 		if (getMatrix) {
 			i3 = i1 * totDof;
@@ -1205,7 +1205,7 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 			for (i2 = 0; i2 < ndDof; i2++) {
 				nd2 = nodes[dofTable[i5]];
 				dof2 = dofTable[i5 + 1];
-				globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
+				globInd2 = ndAr[nd2]->getDofIndex(dof2);
 				globdRdu.addEntry(globInd, globInd2, dRdU[i3]);
 				i3++;
 				i5 += 2;
@@ -1217,7 +1217,7 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 	return;
 }
 
-void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1441,7 +1441,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq
 	for (i1 = 0; i1 < ndDof; i1++) {
 		nd = nodes[dofTable[i2]];
 		dof = dofTable[i2 + 1];
-		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globInd = ndAr[nd]->getDofIndex(dof);
 		AppLd[globInd].add(elAppLd[i1]);
 		i2 += 2;
 	}
@@ -1449,7 +1449,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq
 	return;
 }
 
-void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int globInd;
@@ -1548,7 +1548,7 @@ void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, N
 	}
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		globInd = ndAr[nodes[i1]].ptr->getSortedRank();
+		globInd = ndAr[nodes[i1]]->getSortedRank();
 		AppLd[globInd].add(elAppLd[i1]);
 	}
 
@@ -1562,7 +1562,7 @@ void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, N
 //DiffDoub versions: 
 //dup1
 
-void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1750,7 +1750,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 	return;
 }
 
-void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1917,7 +1917,7 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 	return;
 }
 
-void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2107,7 +2107,7 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 }
 
 
-void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2218,7 +2218,7 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 	for (i1 = 0; i1 < ndDof; i1++) {
 		nd = nodes[dofTable[i4]];
 		dof = dofTable[i4+1];
-		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globInd = ndAr[nd]->getDofIndex(dof);
 		globR[globInd].add(Rvec[i1]);
 		if(getMatrix) {
 			i3 = i1*totDof;
@@ -2226,7 +2226,7 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 			for (i2 = 0; i2 < ndDof; i2++) {
 				nd2 = nodes[dofTable[i5]];
 				dof2 = dofTable[i5+1];
-				globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
+				globInd2 = ndAr[nd2]->getDofIndex(dof2);
 				globdRdu.addEntry(globInd, globInd2, dRdu[i3]);
 				i3++;
 				i5 += 2;
@@ -2356,7 +2356,7 @@ void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, bool act
 	return;
 }
 
-void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]) {
+void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2386,11 +2386,11 @@ void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCo
 
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
-		globInd1 = ndAr[nodes[i1]].ptr->getSortedRank();
+		globInd1 = ndAr[nodes[i1]]->getSortedRank();
 		globR[globInd1].add(Rvec[i1]);
 		if (getMatrix) {
 			for (i2 = 0; i2 < numNds; i2++) {
-				globInd2 = ndAr[nodes[i2]].ptr->getSortedRank();
+				globInd2 = ndAr[nodes[i2]]->getSortedRank();
 				globdRdT.addEntry(globInd1, globInd2, dRdT[i3]);
 				i3++;
 			}
@@ -2400,7 +2400,7 @@ void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCo
 	return;
 }
 
-void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, NdPt ndAr[]) {
+void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2564,7 +2564,7 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 	for (i1 = 0; i1 < ndDof; i1++) {
 		nd = nodes[dofTable[i4]];
 		dof = dofTable[i4 + 1];
-		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globInd = ndAr[nd]->getDofIndex(dof);
 		globR[globInd].add(Rvec[i1]);
 		if (getMatrix) {
 			i3 = i1 * totDof;
@@ -2572,7 +2572,7 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 			for (i2 = 0; i2 < ndDof; i2++) {
 				nd2 = nodes[dofTable[i5]];
 				dof2 = dofTable[i5 + 1];
-				globInd2 = ndAr[nd2].ptr->getDofIndex(dof2);
+				globInd2 = ndAr[nd2]->getDofIndex(dof2);
 				globdRdu.addEntry(globInd, globInd2, dRdU[i3]);
 				i3++;
 				i5 += 2;
@@ -2584,7 +2584,7 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 	return;
 }
 
-void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2808,7 +2808,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStre
 	for (i1 = 0; i1 < ndDof; i1++) {
 		nd = nodes[dofTable[i2]];
 		dof = dofTable[i2 + 1];
-		globInd = ndAr[nd].ptr->getDofIndex(dof);
+		globInd = ndAr[nd]->getDofIndex(dof);
 		AppLd[globInd].add(elAppLd[i1]);
 		i2 += 2;
 	}
@@ -2816,7 +2816,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStre
 	return;
 }
 
-void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, NdPt ndAr[], DVPt dvAr[]) {
+void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int globInd;
@@ -2915,7 +2915,7 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 	}
 
 	for (i1 = 0; i1 < numNds; i1++) {
-		globInd = ndAr[nodes[i1]].ptr->getSortedRank();
+		globInd = ndAr[nodes[i1]]->getSortedRank();
 		AppLd[globInd].add(elAppLd[i1]);
 	}
 

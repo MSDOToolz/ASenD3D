@@ -61,7 +61,7 @@ class Constraint {
 		
 		Constraint* getNext();
 		
-		void buildMat(NdPt ndAr[]);
+		void buildMat(Node* ndAr[]);
 
 		ConstraintTerm* getFirst();
 		

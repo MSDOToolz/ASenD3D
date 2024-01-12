@@ -210,11 +210,6 @@ MatrixEnt::MatrixEnt(int newRow, int newCol, double newVal) {
 }
 
 
-MEPtr::MEPtr () {
-	ptr = nullptr;
-}
-
-
 SparseMat::SparseMat() {
 	dim = 0;
 	matrix = nullptr;
@@ -222,8 +217,12 @@ SparseMat::SparseMat() {
 }
 
 void SparseMat::setDim(int newDim) {
+	int i1;
 	dim = newDim;
-	matrix = new MEPtr[newDim];
+	matrix = new MatrixEnt*[newDim];
+	for (i1 = 0; i1 < newDim; i1++) {
+		matrix[i1] = nullptr;
+	}
 	return;
 }
 
@@ -232,7 +231,7 @@ void SparseMat::zeroAll() {
 	MatrixEnt *thisEnt;
 	
 	for (i1 = 0; i1 < dim; i1++) {
-		thisEnt = matrix[i1].ptr;
+		thisEnt = matrix[i1];
 		while(thisEnt) {
 		    thisEnt->value = 0.0;
 			thisEnt = thisEnt->nextEnt;
@@ -243,9 +242,9 @@ void SparseMat::zeroAll() {
 }
 
 void SparseMat::addEntry(int row, int col, double val) {
-	MatrixEnt *thisEnt = matrix[row].ptr;
+	MatrixEnt *thisEnt = matrix[row];
 	if(!thisEnt) {
-		matrix[row].ptr = new MatrixEnt(row,col,val);
+		matrix[row] = new MatrixEnt(row,col,val);
 	} else {
 		bool inserted = false;
 		MatrixEnt *prevEnt = nullptr;
@@ -270,7 +269,7 @@ int SparseMat::getDim() {
 }
 
 MatrixEnt* SparseMat::getFirstEnt(int row) {
-	return matrix[row].ptr;
+	return matrix[row];
 }
 
 void SparseMat::vectorMultiply(double prod[], double inpVec[], bool transpose) {
@@ -279,7 +278,7 @@ void SparseMat::vectorMultiply(double prod[], double inpVec[], bool transpose) {
 	MatrixEnt *thisEnt;
 	if(transpose) {
 		for (i1=0; i1<dim; i1++) {
-			thisEnt = matrix[i1].ptr;
+			thisEnt = matrix[i1];
 			while(thisEnt) {
 				col = thisEnt->col;
 				prod[col] += thisEnt->value*inpVec[i1];
@@ -288,7 +287,7 @@ void SparseMat::vectorMultiply(double prod[], double inpVec[], bool transpose) {
 		}
 	} else {
 		for (i1=0; i1<dim; i1++) {
-			thisEnt = matrix[i1].ptr;
+			thisEnt = matrix[i1];
 			while(thisEnt) {
 				col = thisEnt->col;
 				prod[i1] += thisEnt->value*inpVec[col];
@@ -305,7 +304,7 @@ double SparseMat::getMaxAbsVal() {
 	double thisVal;
 	double maxVal = 0.0;
 	for (i1 = 0; i1 < dim; i1++) {
-		thisEnt = matrix[i1].ptr;
+		thisEnt = matrix[i1];
 		while (thisEnt) {
 			thisVal = abs(thisEnt->value);
 			if (thisVal > maxVal) {
@@ -321,7 +320,7 @@ void SparseMat::writeToFile(ofstream& outFile) {
 	int i1;
 	MatrixEnt* thisEnt;
 	for (i1 = 0; i1 < dim; i1++) {
-		thisEnt = matrix[i1].ptr;
+		thisEnt = matrix[i1];
 		while (thisEnt) {
 			outFile << "    - [" << thisEnt->row << ", " << thisEnt->col << ", " << thisEnt->value << "]\n";
 			thisEnt = thisEnt->nextEnt;
@@ -335,7 +334,7 @@ void SparseMat::destroy() {
 	MatrixEnt *nextEnt;
 	int i1;
 	for (i1 = 0; i1 < dim; i1++){
-		thisEnt = matrix[i1].ptr;
+		thisEnt = matrix[i1];
 		while(thisEnt) {
 			nextEnt = thisEnt->nextEnt;
 			delete thisEnt;

@@ -77,13 +77,6 @@ class DesignVariable {
 		void destroy();
 };
 
-class DVPt {
-	public:
-	    DesignVariable *ptr;
-		
-		DVPt();
-};
-
 class DesVarList {
 	private:
 	    DesignVariable *firstDVar;

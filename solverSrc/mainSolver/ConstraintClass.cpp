@@ -100,7 +100,7 @@ Constraint* Constraint::getNext() {
 	return nextConst;
 }
 
-void Constraint::buildMat(NdPt ndAr[]) {
+void Constraint::buildMat(Node* ndAr[]) {
 	int setLen = 1;
 	int setiLen;
 	int ndIndex;
@@ -133,10 +133,10 @@ void Constraint::buildMat(NdPt ndAr[]) {
 			thisNd = thisSet->getFirstEntry();
 			ndIndex = thisNd->value;
 			if (type == "displacement") {
-				col = ndAr[ndIndex].ptr->getDofIndex(dof - 1);
+				col = ndAr[ndIndex]->getDofIndex(dof - 1);
 			}
 			else {
-				col = ndAr[ndIndex].ptr->getSortedRank();
+				col = ndAr[ndIndex]->getSortedRank();
 			}
 			for (row = 0; row < setLen; row++) {
 				mat.addEntry(row, col, coef);
@@ -148,10 +148,10 @@ void Constraint::buildMat(NdPt ndAr[]) {
 			while (thisNd) {
 				ndIndex = thisNd->value;
 				if (type == "displacement") {
-					col = ndAr[ndIndex].ptr->getDofIndex(dof - 1);
+					col = ndAr[ndIndex]->getDofIndex(dof - 1);
 				}
 				else {
-					col = ndAr[ndIndex].ptr->getSortedRank();
+					col = ndAr[ndIndex]->getSortedRank();
 				}
 				mat.addEntry(row, col, coef);
 				thisNd = thisNd->next;

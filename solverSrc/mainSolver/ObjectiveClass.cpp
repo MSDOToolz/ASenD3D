@@ -380,7 +380,7 @@ void ObjectiveTerm::dVolAveragedD(double dLdD[]) {
 	return;
 }
 
-void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
+void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
 	if (time < activeTime[0] || time > activeTime[1]) {
 		return;
 	}
@@ -421,16 +421,16 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		qInd = 0;
 		while (thisEnt) {
 			if (category == "displacement") {
-				ndAr[thisEnt->value].ptr->getDisp(ndData);
+				ndAr[thisEnt->value]->getDisp(ndData);
 			} else if (category == "velocity") {
-				ndAr[thisEnt->value].ptr->getVel(ndData);
+				ndAr[thisEnt->value]->getVel(ndData);
 			} else if (category == "acceleration") {
-				ndAr[thisEnt->value].ptr->getAcc(ndData);
+				ndAr[thisEnt->value]->getAcc(ndData);
 			} else if (category == "temperature") {
-				ndData[0] = ndAr[thisEnt->value].ptr->getTemperature();
+				ndData[0] = ndAr[thisEnt->value]->getTemperature();
 				component = 1;
 			} else if (category == "tdot") {
-				ndData[0] = ndAr[thisEnt->value].ptr->getTdot();
+				ndData[0] = ndAr[thisEnt->value]->getTdot();
 				component = 1;
 			}
 			qVec[qInd] = ndData[component - 1];
@@ -491,7 +491,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			if (category == "stress") {
@@ -568,7 +568,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, stPre);
@@ -652,7 +652,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
 			if (category == "flux") {
@@ -725,7 +725,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getVolume(eVol,stPre,layer);
 			elVolVec[qInd] = eVol.val;
@@ -753,7 +753,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[]
 	return;
 }
 
-void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
+void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
 	if (time < activeTime[0] || time > activeTime[1]) {
 		return;
 	}
@@ -803,8 +803,8 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		qInd = 0;
 		while (thisEnt) {
 			label = thisEnt->value;
-			dofInd = ndAr[label].ptr->getDofIndex(component - 1);
-			currRank = ndAr[label].ptr->getSortedRank();
+			dofInd = ndAr[label]->getDofIndex(component - 1);
+			currRank = ndAr[label]->getSortedRank();
 			if (category == "displacement") {
 				dQdU.addEntry(qInd, dofInd, 1.0);
 			}
@@ -855,7 +855,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
@@ -930,7 +930,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			//thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
@@ -985,7 +985,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(stPre, ndAr, dvAr);
 			thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
 			thisEl->dFluxTGraddT(dFdT, dTGdT, spt, layer, stPre);
@@ -1027,7 +1027,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	return;
 }
 
-void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
+void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
 	if (time < activeTime[0] || time > activeTime[1]) {
 		return;
 	}
@@ -1067,11 +1067,11 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisDVEnt = thisEl->getFirstCompDV();
 			while (thisDVEnt) {
 				dvi = thisDVEnt->value;
-				thisDV = dvAr[dvi].ptr;
+				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
 				thisEl->getStressPrereq(stPre, ndAr, dvAr);
@@ -1133,11 +1133,11 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisDVEnt = thisEl->getFirstCompDV();
 			while (thisDVEnt) {
 				dvi = thisDVEnt->value;
-				thisDV = dvAr[dvi].ptr;
+				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
 				thisEl->getStressPrereq(stPre, ndAr, dvAr);
@@ -1202,11 +1202,11 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisDVEnt = thisEl->getFirstCompDV();
 			while (thisDVEnt) {
 				dvi = thisDVEnt->value;
-				thisDV = dvAr[dvi].ptr;
+				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
 				thisEl->getStressPrereq(stPre, ndAr, dvAr);
@@ -1260,11 +1260,11 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[]
 		thisEnt = elSetPtr->getFirstEntry();
 		qInd = 0;
 		while (thisEnt) {
-			thisEl = elAr[thisEnt->value].ptr;
+			thisEl = elAr[thisEnt->value];
 			thisDVEnt = thisEl->getFirstCompDV();
 			while (thisDVEnt) {
 				dvi = thisDVEnt->value;
-				thisDV = dvAr[dvi].ptr;
+				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
 				thisEl->getStressPrereq(stPre, ndAr, dvAr);
@@ -1349,7 +1349,7 @@ void Objective::clearValues() {
 	return;
 }
 
-void Objective::calculateTerms(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
+void Objective::calculateTerms(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
 	ObjectiveTerm* thisTerm = firstTerm;
 	while (thisTerm) {
 		thisTerm->getObjVal(time, nLGeom, ndAr, elAr, dvAr);
@@ -1358,7 +1358,7 @@ void Objective::calculateTerms(double time, bool nLGeom, NdPt ndAr[], ElPt elAr[
 	return;
 }
 
-void Objective::calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
+void Objective::calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
 	ObjectiveTerm* thisTerm = firstTerm;
 	while (thisTerm) {
 		thisTerm->getdLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, time, nLGeom, ndAr, elAr, dvAr);
@@ -1367,7 +1367,7 @@ void Objective::calculatedLdU(double dLdU[], double dLdV[], double dLdA[], doubl
 	return;
 }
 
-void Objective::calculatedLdD(double dLdD[], double time, bool nLGeom, NdPt ndAr[], ElPt elAr[], DVPt dvAr[]) {
+void Objective::calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
 	ObjectiveTerm* thisTerm = firstTerm;
 	while (thisTerm) {
 		thisTerm->getdLdD(dLdD, time, nLGeom, ndAr, elAr, dvAr);

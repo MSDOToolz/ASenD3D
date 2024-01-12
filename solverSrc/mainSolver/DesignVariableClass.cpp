@@ -144,12 +144,6 @@ void DesignVariable::destroy() {
 }
 
 
-DVPt::DVPt() {
-	ptr = nullptr;
-	return;
-}
-
-
 DesVarList::DesVarList() {
 	firstDVar = nullptr;
 	lastDVar = nullptr;

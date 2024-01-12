@@ -45,11 +45,6 @@ void Set::destroy() {
 	return;
 }
 
-SetPt::SetPt() {
-	ptr = nullptr;
-	return;
-}
-
 SetList::SetList() {
 	firstSet = nullptr;
 	lastSet = nullptr;

@@ -124,26 +124,26 @@ class Node {
 		double getPrevTdot();
 		
 //dup1
-		void getCrd(Doub crdOut[], DVPt dvAr[]);
+		void getCrd(Doub crdOut[], DesignVariable* dvAr[]);
 		
 		void getDisp(Doub disp[]);
 		
-		void getElasticDVLoad(Doub ld[], DVPt dvAr[]);
+		void getElasticDVLoad(Doub ld[], DesignVariable* dvAr[]);
 
-		void getThermalDVLoad(Doub& ld, DVPt dvAr[]);
+		void getThermalDVLoad(Doub& ld, DesignVariable* dvAr[]);
 //end dup		
  
 //skip 
  
 //DiffDoub versions: 
 //dup1
-		void getCrd(DiffDoub crdOut[], DVPt dvAr[]);
+		void getCrd(DiffDoub crdOut[], DesignVariable* dvAr[]);
 		
 		void getDisp(DiffDoub disp[]);
 		
-		void getElasticDVLoad(DiffDoub ld[], DVPt dvAr[]);
+		void getElasticDVLoad(DiffDoub ld[], DesignVariable* dvAr[]);
 
-		void getThermalDVLoad(DiffDoub& ld, DVPt dvAr[]);
+		void getThermalDVLoad(DiffDoub& ld, DesignVariable* dvAr[]);
 //end dup		
  
 //end skip 
@@ -160,13 +160,6 @@ class Node {
 		void setNext(Node *newNext);
 		
 		void destroy();
-};
-
-class NdPt {
-	public:
-	    Node *ptr;
-		
-		NdPt();
 };
 
 class NodeList {

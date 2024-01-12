@@ -44,7 +44,7 @@ void Model::reorderNodes(int blockDim) {
 		for (i1 = 0; i1 < elNumNds; i1++) {
 			nd1 = elNodes[i1];
 			if (elDofPerNd > 3) {
-				nodeArray[nd1].ptr->setNumDof(elDofPerNd);
+				nodeArray[nd1]->setNumDof(elDofPerNd);
 			}
 			for (i2 = i1+1; i2 < elNumNds; i2++) {
 				nd2 = elNodes[i2];
@@ -92,11 +92,11 @@ void Model::reorderNodes(int blockDim) {
 		if(sinceRestart >= blockDim || !thisNd->next) {
 			thisNd = orderedNds.getLast();
 			nd1 = thisNd->value;
-			nodeArray[nd1].ptr->getCrd(p1);
+			nodeArray[nd1]->getCrd(p1);
 			minDist = 1.0e+100;
 			for (i1 = 0; i1 < numNodes; i1++) {
 				if(nodeInserted[i1] == 0) {
-					nodeArray[i1].ptr->getCrd(p2);
+					nodeArray[i1]->getCrd(p2);
 					dist = getDist(p1, p2);
 					if(dist < minDist) {
 						minDist = dist;
@@ -120,7 +120,7 @@ void Model::reorderNodes(int blockDim) {
 	Node *thisPt;
 	while(thisNd) {
 		nd1 = thisNd->value;
-		thisPt = nodeArray[nd1].ptr;
+		thisPt = nodeArray[nd1];
 		thisPt->setSortedRank(i3);
 		i3++;
 		thisPt->setDofIndex(0,i2);
@@ -225,10 +225,10 @@ void Model::updateReference() {
 	while(thisSec) {
 		elSet = thisSec->getElset();
 		i1 = esMap.at(elSet);
-		esPtr = esArray[i1].ptr;
+		esPtr = esArray[i1];
 		thisInt = esPtr->getFirstEntry();
 		while(thisInt) {
-			elementArray[thisInt->value].ptr->setSectPtr(thisSec);
+			elementArray[thisInt->value]->setSectPtr(thisSec);
 			thisInt = thisInt->next;
 		}
 		thisMat = materials.getFirst();
@@ -257,12 +257,12 @@ void Model::updateReference() {
 		try {
 			ndSet = thisLoad->getNodeSet();
 			i1 = nsMap.at(ndSet);
-			thisLoad->setNdSetPtr(nsArray[i1].ptr);
+			thisLoad->setNdSetPtr(nsArray[i1]);
 		}
 		catch (...) {
 			elSet = thisLoad->getElSet();
 			i1 = esMap.at(elSet);
-			thisLoad->setElSetPtr(esArray[i1].ptr);
+			thisLoad->setElSetPtr(esArray[i1]);
 		}
 		thisLoad = thisLoad->getNext();
 	}
@@ -271,12 +271,12 @@ void Model::updateReference() {
 		try {
 			ndSet = thisLoad->getNodeSet();
 			i1 = nsMap.at(ndSet);
-			thisLoad->setNdSetPtr(nsArray[i1].ptr);
+			thisLoad->setNdSetPtr(nsArray[i1]);
 		}
 		catch (...) {
 			elSet = thisLoad->getElSet();
 			i1 = esMap.at(elSet);
-			thisLoad->setElSetPtr(esArray[i1].ptr);
+			thisLoad->setElSetPtr(esArray[i1]);
 		}
 		thisLoad = thisLoad->getNext();
 	}
@@ -288,7 +288,7 @@ void Model::updateReference() {
 		while (thisCTerm) {
 			ndSet = thisCTerm->getSetName();
 			i1 = nsMap.at(ndSet);
-			thisCTerm->setNsPtr(nsArray[i1].ptr);
+			thisCTerm->setNsPtr(nsArray[i1]);
 			thisCTerm = thisCTerm->getNext();
 		}
 		thisConst = thisConst->getNext();
@@ -299,7 +299,7 @@ void Model::updateReference() {
 		while (thisCTerm) {
 			ndSet = thisCTerm->getSetName();
 			i1 = nsMap.at(ndSet);
-			thisCTerm->setNsPtr(nsArray[i1].ptr);
+			thisCTerm->setNsPtr(nsArray[i1]);
 			thisCTerm = thisCTerm->getNext();
 		}
 		thisConst = thisConst->getNext();
@@ -310,12 +310,12 @@ void Model::updateReference() {
 		try {
 			ndSet = thisDV->getNdSet();
 			i1 = nsMap.at(ndSet);
-			thisDV->setNdsetPtr(nsArray[i1].ptr);
+			thisDV->setNdsetPtr(nsArray[i1]);
 		}
 		catch (...) {
 			elSet = thisDV->getElSet();
 			i1 = esMap.at(elSet);
-			thisDV->setElsetPtr(esArray[i1].ptr);
+			thisDV->setElsetPtr(esArray[i1]);
 		}
 		thisDV = thisDV->getNext();
 	}
@@ -325,12 +325,12 @@ void Model::updateReference() {
 		try {
 			elSet = thisTerm->getElsetName();
 			i1 = esMap.at(elSet);
-			thisTerm->setElsetPtr(esArray[i1].ptr);
+			thisTerm->setElsetPtr(esArray[i1]);
 		}
 		catch (...) {
 			ndSet = thisTerm->getNdsetName();
 			i1 = nsMap.at(ndSet);
-			thisTerm->setNdsetPtr(nsArray[i1].ptr);
+			thisTerm->setNdsetPtr(nsArray[i1]);
 		}
 		thisTerm = thisTerm->getNext();
 	}
@@ -356,7 +356,7 @@ void Model::updateReference() {
 				}
 				thisInt = esPtr->getFirstEntry();
 				while(thisInt) {
-					elementArray[thisInt->value].ptr->addDesignVariable(DVi,constCoef);
+					elementArray[thisInt->value]->addDesignVariable(DVi,constCoef);
 					thisInt = thisInt->next;
 				}
 			}
@@ -364,7 +364,7 @@ void Model::updateReference() {
 				thisInt = esPtr->getFirstEntry();
 				thisDoub = coefs->getFirst();
 				while (thisInt && thisDoub) {
-					elementArray[thisInt->value].ptr->addDesignVariable(DVi, thisDoub->value);
+					elementArray[thisInt->value]->addDesignVariable(DVi, thisDoub->value);
 					thisInt = thisInt->next;
 					thisDoub = thisDoub->next;
 				}
@@ -383,7 +383,7 @@ void Model::updateReference() {
 				}
 				thisInt = nsPtr->getFirstEntry();
 				while (thisInt) {
-					nodeArray[thisInt->value].ptr->addDesignVariable(DVi, constCoef);
+					nodeArray[thisInt->value]->addDesignVariable(DVi, constCoef);
 					thisInt = thisInt->next;
 				}
 			}
@@ -391,7 +391,7 @@ void Model::updateReference() {
 				thisInt = nsPtr->getFirstEntry();
 				thisDoub = coefs->getFirst();
 				while (thisInt && thisDoub) {
-					nodeArray[thisInt->value].ptr->addDesignVariable(DVi, thisDoub->value);
+					nodeArray[thisInt->value]->addDesignVariable(DVi, thisDoub->value);
 					thisInt = thisInt->next;
 					thisDoub = thisDoub->next;
 				}
@@ -413,19 +413,19 @@ void Model::updateReference() {
 		desVars = thisEl->getDesignVars();
 		thisInt = desVars->getFirst();
 		while(thisInt) {
-			dVarArray[thisInt->value].ptr->addCompEl(elLabel);
+			dVarArray[thisInt->value]->addCompEl(elLabel);
 			thisEl->addCompDVar(thisInt->value);
 			thisInt = thisInt->next;
 		}
 		elNumNds = thisEl->getNumNds();
 		elNodes = thisEl->getNodes();
 		for (i1 = 0; i1 < elNumNds; i1++) {
-			desVars = nodeArray[elNodes[i1]].ptr->getDesignVars();
+			desVars = nodeArray[elNodes[i1]]->getDesignVars();
 			thisInt = desVars->getFirst();
 			while(thisInt) {
-				thisDV = dVarArray[thisInt->value].ptr;
+				thisDV = dVarArray[thisInt->value];
 				if (thisDV->getCategory() == "nodeCoord") {
-					dVarArray[thisInt->value].ptr->addCompEl(elLabel);
+					dVarArray[thisInt->value]->addCompEl(elLabel);
 					thisEl->addCompDVar(thisInt->value);
 				}
 				thisInt = thisInt->next;
@@ -512,7 +512,7 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 				thisSet = thisLoad->getNdSetPtr();
 				thisEnt = thisSet->getFirstEntry();
 				while(thisEnt) {
-					thisNd = nodeArray[thisEnt->value].ptr;
+					thisNd = nodeArray[thisEnt->value];
 					numDof = thisNd->getNumDof();
 					for (i1 = 0; i1 < numDof; i1++) {
 						dofInd = thisNd->getDofIndex(i1);
@@ -525,7 +525,7 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 				thisSet = thisLoad->getElSetPtr();
 				thisEnt = thisSet->getFirstEntry();
 				while (thisEnt) {
-					thisEl = elementArray[thisEnt->value].ptr;
+					thisEl = elementArray[thisEnt->value];
 					thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 					thisEl->getAppLoad(tempD1, thisLoad, solveCmd->nonlinearGeom, pre, nodeArray, dVarArray);
 					thisEnt = thisEnt->next;
@@ -588,7 +588,7 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 				thisSet = thisLoad->getNdSetPtr();
 				thisEnt = thisSet->getFirstEntry();
 				while (thisEnt) {
-					thisNd = nodeArray[thisEnt->value].ptr;
+					thisNd = nodeArray[thisEnt->value];
 					dofInd = thisNd->getSortedRank();
 					appLd[dofInd] += ndLoad[0];
 					thisEnt = thisEnt->next;
@@ -598,7 +598,7 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 				thisSet = thisLoad->getElSetPtr();
 				thisEnt = thisSet->getFirstEntry();
 				while (thisEnt) {
-					thisEl = elementArray[thisEnt->value].ptr;
+					thisEl = elementArray[thisEnt->value];
 					thisEl->getStressPrereq(pre, nodeArray, dVarArray);
 					thisEl->getAppThermLoad(tempD1, thisLoad, pre, nodeArray, dVarArray);
 					thisEnt = thisEnt->next;
@@ -1415,7 +1415,7 @@ void Model::dRthermaldD(int dVarNum) {
 	Element* thisElPt;
 	Load* thisLd;
 
-	thisDV = dVarArray[dVarNum].ptr;
+	thisDV = dVarArray[dVarNum];
 	thisDV->getValue(dvVal);
 	thisDV->setDiffVal(dvVal.val, 1.0);
 
@@ -1442,7 +1442,7 @@ void Model::dRthermaldD(int dVarNum) {
 			while (thisEnt) {
 				i1 = thisEnt->value;
 				if (elInD[i1]) {
-					thisElPt = elementArray[i1].ptr;
+					thisElPt = elementArray[i1];
 					thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
 					thisElPt->getAppThermLoad(dRtdD, thisLd, pre, nodeArray, dVarArray);
 				}
@@ -1459,7 +1459,7 @@ void Model::dRthermaldD(int dVarNum) {
 	// Solution-dependent contribution of load
 	thisEnt = thisDV->getFirstEl();
 	while (thisEnt) {
-		thisElPt = elementArray[thisEnt->value].ptr;
+		thisElPt = elementArray[thisEnt->value];
 		thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
 		thisElPt->getRt(dRtdD,thermMat,false,solveCmd,pre,nodeArray);
 		thisEnt = thisEnt->next;
@@ -1471,7 +1471,7 @@ void Model::dRthermaldD(int dVarNum) {
 	Node* thisNdPt;
 	DiffDoub ndLd;
 	while (thisEnt) {
-		thisNdPt = nodeArray[thisEnt->value].ptr;
+		thisNdPt = nodeArray[thisEnt->value];
 		thisNdPt->getThermalDVLoad(ndLd, dVarArray);
 		globInd = thisNdPt->getSortedRank();
 		dRtdD[globInd].sub(ndLd);
@@ -1495,7 +1495,7 @@ void Model::dRelasticdD(int dVarNum) {
 	Element* thisElPt;
 	Load* thisLd;
 
-	thisDV = dVarArray[dVarNum].ptr;
+	thisDV = dVarArray[dVarNum];
 	thisDV->getValue(dvVal);
 	thisDV->setDiffVal(dvVal.val, 1.0);
 
@@ -1522,7 +1522,7 @@ void Model::dRelasticdD(int dVarNum) {
 			while (thisEnt) {
 				i1 = thisEnt->value;
 				if (elInD[i1] > 0) {
-					thisElPt = elementArray[i1].ptr;
+					thisElPt = elementArray[i1];
 					thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
 					thisElPt->getAppLoad(dRudD, thisLd, solveCmd->nonlinearGeom, pre, nodeArray, dVarArray);
 				}
@@ -1539,7 +1539,7 @@ void Model::dRelasticdD(int dVarNum) {
 	// Solution-dependent contribution of load
 	thisEnt = thisDV->getFirstEl();
 	while (thisEnt) {
-		thisElPt = elementArray[thisEnt->value].ptr;
+		thisElPt = elementArray[thisEnt->value];
 		thisElPt->getStressPrereq(pre, nodeArray, dVarArray);
 		thisElPt->getRu(dRudD, elasticMat, false, solveCmd, pre, nodeArray, dVarArray);
 		thisEnt = thisEnt->next;
@@ -1551,7 +1551,7 @@ void Model::dRelasticdD(int dVarNum) {
 	Node* thisNdPt;
 	DiffDoub ndLd[6];
 	while (thisEnt) {
-		thisNdPt = nodeArray[thisEnt->value].ptr;
+		thisNdPt = nodeArray[thisEnt->value];
 		thisNdPt->getElasticDVLoad(ndLd, dVarArray);
 		numDof = thisNdPt->getNumDof();
 		for (i1 = 0; i1 < numDof; i1++) {

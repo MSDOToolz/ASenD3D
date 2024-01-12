@@ -29,13 +29,6 @@ class Set {
 		 void destroy();
 };
 
-class SetPt {
-    public:
-		Set* ptr;
-
-		SetPt();
-};
-
 class SetList {
 	private:
 	    Set *firstSet;

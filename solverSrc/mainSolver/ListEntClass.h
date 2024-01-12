@@ -97,17 +97,10 @@ class MatrixEnt {
 	    MatrixEnt(int newRow, int newCol, double newVal);
 };
 
-class MEPtr {
-	public:
-	    MatrixEnt *ptr;
-		
-		MEPtr();
-};
-
 class SparseMat {
 	private:
 	    int dim;
-	    MEPtr *matrix;
+	    MatrixEnt** matrix;
 		
 	public:
 	    SparseMat();

@@ -18,14 +18,14 @@
 class Model {
 	private:
 	    NodeList nodes;
-		NdPt *nodeArray;
+		Node** nodeArray;
 		ElementList elements;
-		ElPt *elementArray;
+		Element** elementArray;
 		SetList nodeSets;
-		SetPt* nsArray;
+		Set** nsArray;
 		std::map<std::string, int> nsMap;
 		SetList elementSets;
-		SetPt* esArray;
+		Set** esArray;
 		std::map<std::string, int> esMap;
 		SectionList sections;
 		MaterialList materials;
@@ -34,7 +34,7 @@ class Model {
 		LoadList elasticLoads;
 		LoadList thermalLoads;
 		DesVarList designVars;
-		DVPt *dVarArray;
+		DesignVariable** dVarArray;
 		Objective objective;
 		Job job;
 		
