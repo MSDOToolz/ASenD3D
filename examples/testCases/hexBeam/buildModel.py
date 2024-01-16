@@ -29,7 +29,7 @@ beam = Mesh3D(surfMesh['nodes'],surfMesh['elements'])
 beamMesh = beam.createSweptMesh('inDirection',1,sweepDistance=0.1,axis=[0.0,0.0,1.0])
 
 beamMesh = getNodeSetInXYZRange(beamMesh,'xMin',xRange=[-0.1,0.1])
-beamMesh = getNodeSetInXYZRange(beamMesh,'xMax',xRange=[9.9,10.1])
+beamMesh = getNodeSetInXYZRange(beamMesh,'xMax',xRange=[9.99,10.01])
 
 ## Create model and add in mesh
 myMod = Model()

@@ -71,6 +71,8 @@ class Constraint {
 		
 		MatrixEnt* getMatFirst(int row);
 
+		void fullVecMultiply(double prod[], double vec[], double tmpV[]);
+
 		void getLoad(double cLd[], double uVec[], double qVec[],int resDim);
 
 		void writeToFile(std::ofstream& outFile);
@@ -91,6 +93,8 @@ class ConstraintList {
 		Constraint* getFirst();
 
 		void setScaleFact(double newSF);
+
+		void getTotalVecMult(double prod[], double vec[], double tmpV[]);
 
 		void getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim);
 

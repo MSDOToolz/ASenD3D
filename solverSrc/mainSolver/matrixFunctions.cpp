@@ -4,6 +4,8 @@
 #include <fstream>
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
+#include "LowerTriMatClass.h"
+#include "ConstraintClass.h"
 
 using namespace std;
 
@@ -150,6 +152,136 @@ void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stR
 		xVec[i1] = (bVec[i3] - rowSum)/mat[k11];
 	}
 	
+	return;
+}
+
+void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt, int restart) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int itCt;
+	double resNrm;
+	double tmp;
+	int dim = mat.getDim();
+
+	double* resVec = new double[dim];
+	double* tmpV = new double[dim];
+	double* tmpV2 = new double[dim];
+	i1 = dim * (restart + 1);
+	double* hMat = new double[i1];
+	i1 = restart * (restart + 1);
+	double* phiMat = new double[i1];
+
+	for (i1 = 0; i1 < dim; i1++) {
+		soln[i1] = 0.0;
+		tmpV[i1] = -rhs[i1];
+	}
+
+	pcMat.ldlSolve(resVec, tmpV);
+	resNrm = 0.0;
+	for (i1 = 0; i1 < dim; i1++) {
+		resNrm += resVec[i1] * resVec[i1];
+	}
+	resNrm = sqrt(resNrm);
+
+	itCt = 0;
+	while (resNrm > convTol && itCt < maxIt) {
+		tmp = 1.0 / resNrm;
+		for (i1 = 0; i1 < dim; i1++) {
+			hMat[i1] = tmp * resVec[i1];
+		}
+		i2 = restart * (restart + 1);
+		for (i1 = 0; i1 < i2; i1++) {
+			phiMat[i1] = 0.0;
+		}
+		//Generate basis vectors
+		for (i1 = 1; i1 < (restart + 1); i1++) {
+			//Multiply by previous vector
+			for (i2 = 0; i2 < dim; i2++) {
+				tmpV[i2] = 0.0;
+			}
+			i2 = dim * (i1 - 1);
+			mat.vectorMultiply(tmpV, &hMat[i2], false);
+			cnst.getTotalVecMult(tmpV, &hMat[i2], tmpV2);
+			pcMat.ldlSolve(tmpV2, tmpV);
+			//Orthogonalize with all previous vectors
+			for (i2 = 0; i2 < i1; i2++) {
+				i4 = dim * i2;
+				tmp = 0.0;
+				for (i3 = 0; i3 < dim; i3++) {
+					tmp += tmpV2[i3] * hMat[i4];
+					i4++;
+				}
+				i5 = i2 * restart + (i1 - 1);
+				phiMat[i5] = tmp;
+				i4 = dim * i2;
+				for (i3 = 0; i3 < dim; i3++) {
+					tmpV2[i3] -= tmp * hMat[i4];
+					i4++;
+				}
+			}
+			//Calculate magnitude and set new unit basis vector
+			tmp = 0.0;
+			for (i3 = 0; i3 < dim; i3++) {
+				tmp += tmpV2[i3] * tmpV2[i3];
+			}
+			tmp = sqrt(tmp);
+			i5 = i1 * restart + (i1 - 1);
+			phiMat[i5] = tmp;
+			tmp = 1.0 / tmp;
+			i4 = dim * i1;
+			for (i2 = 0; i2 < dim; i2++) {
+				hMat[i4] = tmp * tmpV2[i2];
+				i4++;
+			}
+		}
+		//Find the least squares solution
+		i3 = 0;
+		for (i1 = 0; i1 < restart; i1++) {
+			tmpV[i1] = 0.0;
+			for (i2 = 0; i2 < dim; i2++) {
+				tmpV[i1] -= hMat[i3] * resVec[i2];
+				i3++;
+			}
+		}
+		qRFactor(phiMat, restart, 0, (restart-1), 0, (restart-1), 1);
+		solveqRxEqb(tmpV2, phiMat, tmpV, restart, 0, (restart-1), 0, (restart-1), 1);
+		//Update the solution vector
+		i3 = 0;
+		for (i1 = 0; i1 < restart; i1++) {
+			for (i2 = 0; i2 < dim; i2++) {
+				soln[i2] += hMat[i3] * tmpV2[i1];
+				i3++;
+			}
+		}
+		//Update residual vector
+		for (i1 = 0; i1 < dim; i1++) {
+			tmpV[i1] = -rhs[i1];
+		}
+		mat.vectorMultiply(tmpV, soln, false);
+		cnst.getTotalVecMult(tmpV, soln, tmpV2);
+		pcMat.ldlSolve(resVec, tmpV);
+		resNrm = 0.0;
+		for (i1 = 0; i1 < dim; i1++) {
+			resNrm += resVec[i1] * resVec[i1];
+		}
+		resNrm = sqrt(resNrm);
+		itCt += restart;
+	}
+
+	if (resNrm > convTol) {
+		cout << "Warning: GMRES solver did not converge to the requested tolerance of " << convTol << endl;
+		cout << "Residual norm after " << itCt << " iterations: " << resNrm << endl;
+	}
+
+	delete[] resVec;
+	delete[] tmpV;
+	delete[] tmpV2;
+	delete[] hMat;
+	delete[] phiMat;
+
 	return;
 }
 

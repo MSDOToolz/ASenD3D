@@ -105,6 +105,8 @@ void Model::reorderNodes(int blockDim) {
 				}
 			}
 			orderedNds.addEntry(minNd);
+			nodeInserted[minNd] = 1;
+			sinceRestart++;
 			if(sinceRestart >= blockDim) {
 				sinceRestart = 0;
 			}
@@ -472,12 +474,38 @@ void Model::findSurfaceFaces() {
 	return;
 }
 
-void Model::analysisPrep(int blockDim) {
+void Model::analysisPrep() {
+	int i1;
+	int numNds;
+	int blockDim;
+	if (solveCmd) {
+		if (solveCmd->solverMethod == "direct") {
+			solveCmd->solverBlockDim = 2000000000;
+		}
+		else {
+			i1 = 6;
+			numNds = nodes.getLength();
+			while ((i1 * i1) < numNds) {
+				i1 += 6;
+			}
+			if (solveCmd->solverBlockDim == 2000000000) {
+				solveCmd->solverBlockDim = i1;
+			}
+			if (solveCmd->maxIt == 0) {
+				solveCmd->maxIt = 3 * numNds;
+			}
+		}
+		blockDim = solveCmd->solverBlockDim;
+	}
+	else {
+		blockDim = 2000000000;
+	}
+
 	updateReference();
 	reorderNodes(blockDim);
 	buildConstraintMats();
 	findSurfaceFaces();
-	
+
 	anPrepRun = true;
 	return;
 }
@@ -766,6 +794,9 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 		if (cmd->solverMethod == "direct") {
 			thermLT.ldlSolve(tempV2, tempV1);
 		}
+		else {
+			gMResSparse(tempV2, thermMat, thermalConst, thermLT, tempV1, cmd->convTol, cmd->maxIt, cmd->solverBlockDim);
+		}
 		thisNd = nodes.getFirst();
 		while (thisNd) {
 			dofInd = thisNd->getSortedRank();
@@ -808,12 +839,15 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				}
 				thisEl = thisEl->getNext();
 			}
+			if (cmd->nonlinearGeom) {
+				elasticLT.populateFromSparseMat(elasticMat, elasticConst);
+				elasticLT.ldlFactor();
+			}
 			if(cmd->solverMethod == "direct") {
-				if(cmd->nonlinearGeom) {
-					elasticLT.populateFromSparseMat(elasticMat,elasticConst);
-					elasticLT.ldlFactor();
-				}
 				elasticLT.ldlSolve(tempV2,tempV1);
+			}
+			else {
+				gMResSparse(tempV2, elasticMat, elasticConst, elasticLT, tempV1, cmd->convTol, cmd->maxIt, 6*cmd->solverBlockDim);
 			}
 			thisNd = nodes.getFirst();
 			while(thisNd) {
@@ -862,7 +896,7 @@ void Model::solve(JobCommand *cmd) {
 	double zeroAr[9] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	
 	if(!anPrepRun) {
-		analysisPrep(cmd->solverBlockDim);
+		analysisPrep();
 	}
 	
 	if(cmd->thermal) {
@@ -876,7 +910,7 @@ void Model::solve(JobCommand *cmd) {
 		}
 		if (!thermLT.isAllocated()) {
 			buildThermalSolnLoad(tempV1, true);
-			thermLT.allocateFromSparseMat(thermMat, thermalConst, cmd->solverBandwidth);
+			thermLT.allocateFromSparseMat(thermMat, thermalConst, cmd->solverBlockDim);
 		}
 		if (!thermScaled) {
 			scaleThermalConst();
@@ -902,7 +936,7 @@ void Model::solve(JobCommand *cmd) {
 		}
 		if(!elasticLT.isAllocated()) {
 			buildElasticSolnLoad(tempV1,true);
-			elasticLT.allocateFromSparseMat(elasticMat,elasticConst,cmd->solverBandwidth);
+			elasticLT.allocateFromSparseMat(elasticMat,elasticConst,6*cmd->solverBlockDim);
 		}
 		if(!cmd->nonlinearGeom) {
 			if (!elasticScaled) {
@@ -977,7 +1011,7 @@ void Model::eigenSolve(JobCommand* cmd) {
 	DoubStressPrereq pre;
 
 	if (!anPrepRun) {
-		analysisPrep(cmd->solverBlockDim);
+		analysisPrep();
 	}
 	if (!eigVecs) {
 		i1 = cmd->numModes;
@@ -1349,6 +1383,9 @@ void Model::solveForAdjoint() {
 		if (solveCmd->solverMethod == "direct") {
 			elasticLT.ldlSolve(uAdj, dLdU);
 		}
+		else {
+			gMResSparse(uAdj, elasticMat, elasticConst, elasticLT, dLdU, solveCmd->convTol, solveCmd->maxIt, 6*solveCmd->solverBlockDim);
+		}
 		thisEl = elements.getFirst();
 		while (thisEl) {
 			thisEl->updateInternal(uAdj, 0, nodeArray);
@@ -1395,6 +1432,9 @@ void Model::solveForAdjoint() {
 		}
 		if (solveCmd->solverMethod == "direct") {
 			thermLT.ldlSolve(tAdj, dLdT);
+		}
+		else {
+			gMResSparse(tAdj, thermMat, thermalConst, thermLT, dLdT, solveCmd->convTol, solveCmd->maxIt, solveCmd->solverBlockDim);
 		}
 	}
 	

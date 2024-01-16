@@ -180,6 +180,21 @@ MatrixEnt* Constraint::getMatFirst(int row) {
 	return mat.getFirstEnt(row);
 }
 
+void Constraint::fullVecMultiply(double prod[], double vec[], double tmpV[]) {
+	// Compute scaleFact*[mat]^T*([mat]*vec + qVec)
+	int i1;
+	int dim = mat.getDim();
+	for (i1 = 0; i1 < dim; i1++) {
+		tmpV[i1] = 0.0;
+	}
+	mat.vectorMultiply(tmpV, vec, false);
+	for (i1 = 0; i1 < dim; i1++) {
+		tmpV[i1] *= scaleFact;
+	}
+	mat.vectorMultiply(prod, tmpV, true);
+	return;
+}
+
 void Constraint::getLoad(double cLd[], double uVec[], double qVec[], int resDim) {
 	int i1;
 	int dim = mat.getDim();
@@ -246,8 +261,16 @@ void ConstraintList::setScaleFact(double newSF) {
 	return;
 }
 
+void ConstraintList::getTotalVecMult(double prod[], double vec[], double tmpV[]) {
+	Constraint* thisConst = firstConst;
+	while (thisConst) {
+		thisConst->fullVecMultiply(prod, vec, tmpV);
+		thisConst = thisConst->getNext();
+	}
+	return;
+}
+
 void ConstraintList::getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim) {
-	int i1;
 	Constraint* thisConst = firstConst;
 	while (thisConst) {
 		thisConst->getLoad(cLd,uVec,qVec,resDim);

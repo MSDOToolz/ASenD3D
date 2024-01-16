@@ -167,7 +167,14 @@ void Model::readJob(string fileName) {
 				newCmd->solverBlockDim = stoi(data[0]);
 			} else if(headings[1] == "solverMethod" && dataLen == 1) {
 				newCmd->solverMethod = data[0];
-			} else if(headings[1] == "staticLoadTime" && dataLen == 1) {
+			}
+			else if (headings[1] == "maxIterations" && dataLen == 1) {
+				newCmd->maxIt = stoi(data[0]);
+			}
+			else if (headings[1] == "convergenceTol" && dataLen == 1) {
+				newCmd->convTol = stod(data[0]);
+			}
+			else if (headings[1] == "staticLoadTime" && dataLen == 1) {
 				newCmd->staticLoadTime = stod(data[0]);
 			} else if(headings[1] == "thermal" && dataLen == 1) {
 				if(data[0] == "yes") {
@@ -1097,34 +1104,30 @@ void Model::readTimeStepSoln(int tStep) {
 	int i1;
 	int dofPerNd;
 	int numIntDof;
-	double ndDat[6];
-	double elDat[9];
+	double* inDat;
+	char inLn[72];
 	string fullFile = solveCmd->fileName + "/solnTStep" + to_string(tStep) + ".out";
 	ifstream inFile;
-	inFile.open(fullFile);
+	inFile.open(fullFile, std::ifstream::binary);
 
+	inDat = reinterpret_cast<double*>(&inLn[0]);
 	Node* thisNd = nodes.getFirst();
 	while (thisNd) {
 		if (solveCmd->thermal) {
-			inFile >> ndDat[0];
-			thisNd->setPrevTemp(ndDat[0]);
-			inFile >> ndDat[0];
-			thisNd->setPrevTdot(ndDat[0]);
+			inFile.read(&inLn[0], 8);
+			thisNd->setPrevTemp(*inDat);
+			inFile.read(&inLn[0], 8);
+			thisNd->setPrevTdot(*inDat);
 		}
 		if (solveCmd->elastic) {
 			dofPerNd = thisNd->getNumDof();
-			for (i1 = 0; i1 < dofPerNd; i1++) {
-				inFile >> ndDat[i1];
-			}
-			thisNd->setPrevDisp(ndDat);
-			for (i1 = 0; i1 < dofPerNd; i1++) {
-				inFile >> ndDat[i1];
-			}
-			thisNd->setPrevVel(ndDat);
-			for (i1 = 0; i1 < dofPerNd; i1++) {
-				inFile >> ndDat[i1];
-			}
-			thisNd->setPrevAcc(ndDat);
+			i1 = 8 * dofPerNd;
+			inFile.read(&inLn[0], i1);
+			thisNd->setPrevDisp(inDat);
+			inFile.read(&inLn[0], i1);
+			thisNd->setPrevVel(inDat);
+			inFile.read(&inLn[0], i1);
+			thisNd->setPrevAcc(inDat);
 		}
 		thisNd = thisNd->getNext();
 	}
@@ -1134,10 +1137,9 @@ void Model::readTimeStepSoln(int tStep) {
 		while (thisEl) {
 			numIntDof = thisEl->getNumIntDof();
 			if (numIntDof > 0) {
-				for (i1 = 0; i1 < numIntDof; i1++) {
-					inFile >> elDat[i1];
-				}
-				thisEl->setIntPrevDisp(elDat);
+				i1 = 8 * numIntDof;
+				inFile.read(&inLn[0], i1);
+				thisEl->setIntPrevDisp(inDat);
 			}
 			thisEl = thisEl->getNext();
 		}

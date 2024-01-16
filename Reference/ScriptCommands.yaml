@@ -31,8 +31,9 @@ jobCommands:
     saveSolnHist: no
     solnHistDir:
     solverMethod:
-    solverBandwidth:
     solverBlockDim:
+    maxIterations:
+    convergenceTol:
 
   - command: modalAnalysis X
     type: buckling

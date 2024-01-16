@@ -141,7 +141,7 @@ class Model {
 		
 		void findSurfaceFaces();
 		
-		void analysisPrep(int blockDim);
+		void analysisPrep();
 		
 		void buildElasticAppLoad(double appLd[], double time);
 

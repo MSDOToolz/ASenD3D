@@ -18,9 +18,11 @@ JobCommand::JobCommand() {
 	nonlinearGeom = false;
 	saveSolnHist = false;
 	simPeriod = 1.0;
-	solverBandwidth = 100;
+	solverBandwidth = 2000000000;
 	solverBlockDim = 2000000000;
 	solverMethod = "direct";
+	maxIt = 0;
+	convTol = 1.0e-12;
 	staticLoadTime = 0.0;
 	thermal = false;
 	timeStep = 1.0;

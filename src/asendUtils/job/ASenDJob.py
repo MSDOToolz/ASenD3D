@@ -71,7 +71,7 @@ class ASenDJob:
     def solve(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
               simPeriod=1.0,saveSolnHist=False,solnHistDir='',solverMethod='direct',
-              solverBandwidth=2000000000,solverBlockDim=2000000000):
+              solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
         newCmd = dict()
         newCmd['command'] = 'solve'
         if(not elastic):
@@ -92,8 +92,11 @@ class ASenDJob:
             newCmd['saveSolnHist'] = 'yes'
         newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
         newCmd['solverMethod'] = solverMethod
-        newCmd['solverBandwidth'] = solverBandwidth
         newCmd['solverBlockDim'] = solverBlockDim
+        if(maxIt != 0):
+            newCmd['maxIterations'] = maxIt
+        if(covTol != 1.0e-12):
+            newCmd['convergenceTol'] = convTol
         self.jobData['jobCommands'].append(newCmd)
         
     def modalAnalysis(self,analysisType='buckling',numModes=10,solverMethod='direct'):

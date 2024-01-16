@@ -21,6 +21,7 @@ Model::Model() {
 	eigVecs = nullptr;
 	eigVals = nullptr;
 	diagMass = nullptr;
+	solveCmd = nullptr;
 	modalCmd = nullptr;
 	return;
 }

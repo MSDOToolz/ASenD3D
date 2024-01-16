@@ -20,7 +20,7 @@ class LowerTriMat {
 		
 		void setDim(int newDim);
 		
-		void allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int maxBw);
+		void allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int blockDim);
 		
 		bool isAllocated();
 		

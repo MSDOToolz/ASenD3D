@@ -26,11 +26,13 @@ void LowerTriMat::setDim(int newDim) {
 	return;
 }
 
-void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int maxBw) {
+void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int blockDim) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
+	int currBlock;
+	int blkMC;
 	int constDim;
 	
 	MatrixEnt *mEnt1;
@@ -43,12 +45,14 @@ void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList,
 	
 	for (i1 = 0; i1 < dim; i1++) {
 		range[i1] = 1;
+		currBlock = i1 / blockDim;
+		blkMC = blockDim * currBlock;
 		mEnt1 = spMat.getFirstEnt(i1);
 		while(mEnt1) {
 			i2 = mEnt1->col;
-			if(i2 <= i1) {
+			if(i2 <= i1 && i2 >= blkMC) {
 				i3 = i1 - i2 + 1;
-				if(i3 > range[i1] && i3 <= maxBw) {
+				if(i3 > range[i1]) {
 					range[i1] = i3;
 				}
 			}
@@ -63,12 +67,14 @@ void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList,
 			mEnt1 = thisConst->getMatFirst(i1);
 			while(mEnt1) {
 				i2 = mEnt1->col;
+				currBlock = i2 / blockDim;
+				blkMC = blockDim * currBlock;
 				mEnt2 = thisConst->getMatFirst(i1);
 				while(mEnt2) {
 					i3 = mEnt2->col;
-					if(i3 <= i2) {
+					if(i3 <= i2 && i3 >= blkMC) {
 						i4 = i2 - i3 + 1;
-						if(i4 > range[i2] && i4 <= maxBw) {
+						if(i4 > range[i2]) {
 							range[i2] = i4;
 						}
 					}

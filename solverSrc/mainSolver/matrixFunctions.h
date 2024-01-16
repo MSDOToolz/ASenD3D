@@ -3,6 +3,7 @@
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
 #include "LowerTriMatClass.h"
+#include "ConstraintClass.h"
 
 double getDist(double p1[], double p2[]);
 
@@ -11,6 +12,8 @@ void crossProd(double prod[], double v1[], double v2[]);
 void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
 
 void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+
+void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt, int restart);
 
 void symFactor(double mat[], double qMat[], int matDim);
 

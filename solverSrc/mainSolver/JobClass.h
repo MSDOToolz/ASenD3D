@@ -22,6 +22,8 @@ class JobCommand {
 		int solverBandwidth;
 		int solverBlockDim;
 		std::string solverMethod;
+		int maxIt;
+		double convTol;
 		double staticLoadTime;
 		bool thermal;
 		double timeStep;

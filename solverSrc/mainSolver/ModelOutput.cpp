@@ -21,44 +21,42 @@ void Model::writeTimeStepSoln(int tStep) {
 	int numIntDof;
 	double ndDat[6];
 	double elDat[9];
+	char* buf;
 	string fullFile = solveCmd->fileName + "/solnTStep" + to_string(tStep) + ".out";
 	ofstream outFile;
-	outFile.open(fullFile);
-	outFile << setprecision(15);
+	outFile.open(fullFile, std::ofstream::binary);
 
+	buf = reinterpret_cast<char*>(&ndDat[0]);
 	Node* thisNd = nodes.getFirst();
 	while (thisNd) {
 		if (solveCmd->thermal) {
-			outFile << thisNd->getPrevTemp() << "\n";
-			outFile << thisNd->getPrevTdot() << "\n";
+			ndDat[0] = thisNd->getPrevTemp();
+			outFile.write(buf, 8);
+			ndDat[0] = thisNd->getPrevTdot();
+			outFile.write(buf, 8);
 		}
 		if (solveCmd->elastic) {
 			dofPerNd = thisNd->getNumDof();
+			i1 = 8 * dofPerNd;
 			thisNd->getPrevDisp(ndDat);
-			for (i1 = 0; i1 < dofPerNd; i1++) {
-				outFile << ndDat[i1] << "\n";
-			}
+			outFile.write(buf, i1);
 			thisNd->getPrevVel(ndDat);
-			for (i1 = 0; i1 < dofPerNd; i1++) {
-				outFile << ndDat[i1] << "\n";
-			}
+			outFile.write(buf, i1);
 			thisNd->getPrevAcc(ndDat);
-			for (i1 = 0; i1 < dofPerNd; i1++) {
-				outFile << ndDat[i1] << "\n";
-			}
+			outFile.write(buf, i1);
 		}
 		thisNd = thisNd->getNext();
 	}
 
 	if (solveCmd->elastic) {
+		buf = reinterpret_cast<char*>(&elDat[0]);
 		Element* thisEl = elements.getFirst();
 		while (thisEl) {
 			numIntDof = thisEl->getNumIntDof();
 			if (numIntDof > 0) {
+				i1 = 8 * numIntDof;
 				thisEl->getIntPrevDisp(elDat);
-				for (i1 = 0; i1 < numIntDof; i1++) {
-					outFile << elDat[i1] << "\n";
-				}
+				outFile.write(buf, i1);
 			}
 			thisEl = thisEl->getNext();
 		}

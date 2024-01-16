@@ -13,43 +13,46 @@ import subprocess
 wkDir = os.getcwd()
 thisDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 thisDir = thisDir.replace('\\','/')
-solveDir = thisDir + '/bin/ASenDSolver/x64/Debug/ASenDSolver.exe' ##'/bin/ASenD_runJob.exe'
-setSolverPath(solveDir)
+##solveDir = thisDir + '/bin/ASenDSolver/x64/Debug/ASenDSolver.exe' ##'/bin/ASenD_runJob.exe'
+solveDir = thisDir + '/bin/ASenD_runJob.exe'
 
 ## Compile the core solver
-# print('compiling core solver...')
-# CC = 'g++'
+print('compiling core solver...')
+CC = 'g++'
 
-# binDir = thisDir + '/bin'
-# if(not os.path.exists(binDir)):
-#     os.mkdir(binDir)
+binDir = thisDir + '/bin'
+if(not os.path.exists(binDir)):
+    os.mkdir(binDir)
 
-# srcDir = thisDir + '/solverSrc/mainSolver'
-# os.chdir(srcDir)
+srcDir = thisDir + '/solverSrc/mainSolver'
+os.chdir(srcDir)
 
-# sourceFiles = ['ASenD_runJob.cpp',
-#               'ConstraintClass.cpp','ConstraintClass.h',
-#               'DesignVariableClass.cpp','DesignVariableClass.h',
-#               'DiffDoubClass.cpp','DiffDoubClass.h',
-#               'ElementClass.cpp','ElementEquations.cpp','ElementProperties.cpp','ElementSolnFields.cpp','ElementClass.h',
-#               'FaceClass.cpp','FaceClass.h',
-#               'JobClass.cpp','JobClass.h',
-#               'ListEntClass.cpp','ListEntClass.h',
-#               'LoadClass.cpp','LoadClass.h',
-#               'LowerTriMatClass.cpp','LowerTriMatClass.h',
-#               'matrixFunctions.cpp','matrixFunctions.h',
-#               'ModelClass.cpp','ModelAnalysis.cpp','ModelInput.cpp','ModelOutput.cpp','ModelClass.h',
-#               'NodeClass.cpp','NodeClass.h',
-#               'ObjectiveClass.cpp','ObjectiveClass.h',
-#               'SectionClass.cpp','SectionClass.h',
-#               'SetClass.cpp','SetClass.h']
-
-
-# args = [CC,'-o',solveDir]
-
-# args.extend(sourceFiles)
-
-# subprocess.run(args,capture_output=True,text=True)
+sourceFiles = ['ASenD_runJob.cpp',
+              'ConstraintClass.cpp','ConstraintClass.h',
+              'DesignVariableClass.cpp','DesignVariableClass.h',
+              'DiffDoubClass.cpp','DiffDoubClass.h',
+              'ElementClass.cpp','ElementEquations.cpp','ElementProperties.cpp','ElementSolnFields.cpp','ElementClass.h',
+              'FaceClass.cpp','FaceClass.h',
+              'JobClass.cpp','JobClass.h',
+              'ListEntClass.cpp','ListEntClass.h',
+              'LoadClass.cpp','LoadClass.h',
+              'LowerTriMatClass.cpp','LowerTriMatClass.h',
+              'matrixFunctions.cpp','matrixFunctions.h',
+              'ModelClass.cpp','ModelAnalysis.cpp','ModelInput.cpp','ModelOutput.cpp','ModelClass.h',
+              'NodeClass.cpp','NodeClass.h',
+              'ObjectiveClass.cpp','ObjectiveClass.h',
+              'SectionClass.cpp','SectionClass.h',
+              'SetClass.cpp','SetClass.h']
 
 
-# os.chdir(wkDir)
+args = [CC,'-o',solveDir]
+
+args.extend(sourceFiles)
+
+procRes = subprocess.run(args,capture_output=True,text=True)
+
+print(procRes.stdout)
+
+setSolverPath(solveDir)
+
+os.chdir(wkDir)
