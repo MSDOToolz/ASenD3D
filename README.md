@@ -2,67 +2,61 @@
 
 ASenD3D (Adjoint-based Sensitivity and Design in 3D) is a tool for performing finite element analysis of structural systems and computing sensitivities of structural objectives to design parameters/variables using the adjoint method.  High-efficiency, high-fidelity gradient-based optimization and uncertainty quantification in structural design are the primary intended applications, but the package functions as a general open-source finite element analysis tool.  Capabilities include analysis of elastic and thermal response of 3D solid, shell and beam structures under loading, as well as modal analysis for natural frequency and buckling problems.
 
-Originally created at the University of Wyoming under government-funded research projects and formerly known as AStrO (Adjoint-based Structural Optimizer), ASenD3D continues to expand, with recent efforts in improving efficiency and usability of interface.  Several python-based utilities are under development to promote ease and covenience of use and integration with other packages such as optimizers and meshing tools.  These remain a work-in-progress and will come online in the months ahead.
+Originally created at the University of Wyoming under government-funded research projects and formerly known as AStrO (Adjoint-based Structural Optimizer), ASenD3D continues to expand, with recent efforts in improving efficiency and usability of interface.  A python-based interface provides easy-to-use tools for model/input generation, job submission to the core solver, post-processing and visualization.  It also facilitates integration with other packages such as optimizers.
 
-Basic examples of usage are provided for starters as the public repository undergoes construction.  Users are encouraged to try these out and familiarize themselves, and seek to make contributions as they feel inclined.
+Basic example scripts are provided in the examples directory.  Users are encouraged to try these out and familiarize themselves, and seek to make contributions as they feel inclined.
 
 # Setup
 
-Presently, ASenD3D is set up to be run in a Linux (specifically Ubuntu) environment, though support for Windows and MacOS is intended to be added in the near future.  That said, it's use of external libraries/packages is relatively minimal so setup is rather straight-forward, and should need only minor modifications for other operating systems.
+## Prerequisities
 
-The core solver and sensitivity tool of ASenD3D is written in Fortran, and users should be able to run from the pre-compiled binaries included in the 'bin' directory.  But if the user has a preferred compiler, or wishes to modify the main source code, they will need to compile it themselves from source.  Either way, the user must first clone the repository to their local machine as a first step.
+Depending on their operating system and current setup, there are a few prerequisites that users may or may not need before setting up ASenD3D.
 
-## 1. Clone the repository
+### 1. Install Anaconda/Python Environment
 
-To clone the ASenD3D repository onto your local machine, navigate to a directory of your choice in the command line terminal and run
+It is recommended to run ASenD3D within Anaconda, which provides all needed tools conveniently packaged and accessible, as well as support for creating specialized environments for different projects.  If not already installed, it can be downloaded for free from https://anaconda.org.
 
-        $ git clone https://github.com/MSDOToolz/ASenD3D.git
+### 2. Install C++ Compiler/IDE
+
+On MacOS or Linux, the core solver is compiled by default using g++, the GNU compiler for C++.  So users will need to make sure g++ is installed as a prerequisite.  Windows uses the included Visual Studio build by default, in which case this step is not needed.  As it is open source, the user is free to use any other build/compiler options they prefer.  If it is desired to edit the core solver source, users should set up an IDE of there choice to do so, such as Microsoft Visual Studio for Windows or Xcode for MacOS.
+
+### 3. Install Git
+
+Especially if running on Windows, users may want to install Git, an application for conveniently organizing and tracking changes to complex code projects.  It is not strictly necessary, but it will be helpful if one wants to make changes to the interface modules or the core solver itself.  Downloads can be found at https://git-scm.com.
+
+## Main Install Steps
+
+### 1. Clone the Repository
+
+To clone the ASenD3D repository onto your local machine, navigate to a directory of your choice in the git bash, or command line terminal in Linux and run
+
+        git clone https://github.com/MSDOToolz/ASenD3D.git
+		cd ASenD3D
         
-Currently there is only one branch called main.  To build the core solver from source, proceed to step 2.  To run using the included binaries, skip to step 3.
+Currently there is only one branch called main.  If preferred, users can just download and extract the package from the above url without utilizing git commands.  They just won't have the functionality for updating and tracking changes that the git interface offers.  
 
-## 2. Building From Source
+### 2. Installing the Python Interface
 
-If a user wishes to build ASenD3D themselves from source code, a Fortran compiler is needed.  Seasoned coders may have their own preference of compiler, and any choice should do.  If you don't have one installed already, a simple and convenient choice on Linux is the GNU Fortran compiler, or gfortan, which can be installed with
+If desired, create an anaconda environment for ASenD3D, by running
 
-        $ sudo apt update
-        $ sudo apt install gfortran
+        conda create -n asend-env (asend-env can be changed to any environment name of your choice)
+		conda activate asend-env
 
-Once the compiler is installed, run the shell script buildFromSource.sh in the main directory.  You will likely need to give it permission first, with
+from the anaconda powershell prompt, or just the command line terminal in Linux.  To install the interface for model and input file generation, job submission and post-processing, run
 
-        $ chmod +x buildFromSource.sh    (this command only needs called on first setup, and should not required for subsequent compiles)
-        
-And then execute, with
+        pip install .
+		
+### 3. Initializing the Core Solver
 
-        $ ./buildFromSource.sh
-        
-The included script is set up for gfortran as the compiler, if another is being used the script will have to be be modified accordingly.
+To initialize the core solver to be invoked through the interface tools, run
 
-## 3.  Installing Python-Based Packages
-
-A library of utilities are provided to assist with pre and post-processing, and other useful functions periferral to the main solver.  These are Python-based, so the user must have Python installed in some form as a pre-requisite.  A popular avenue is the Anaconda environment (https://www.anaconda.com), but standard installation as guided from https://www.python.org is more than adequate.  The needed packages can be installed with pip:
-
-        $ pip install numpy
-        $ pip install plotly==5.13.0
-        $ pip install ruamel.yaml
-        
-or conda:
-
-        $ conda install numpy
-        $ conda install -c plotly plotly
-        $ conda install -c conda-forge ruamel.yaml
-        
-If using conda, one may of course want to first create and operate through an environment with
-
-        $ conda create -n my-asend3d-env   (or any envirnonment hame of your choice)
-        $ conda activate my-asend3d-env
+        python solverSetup.py
+		
+from the root directory in the anaconda powershell prompt or the command line in Linux.  If a C++ compiler other than g++ is desired in MacOS or Linux, the solverSetup.py script will have to be edited, by redefining the CC variable.
         
 # Running ASenD3D
 
-The basic usage of ASenD3D is to create the necessary input files along with a job script detailing the analysis steps desired, and call the main solver executable in the form:
-
-        $ ./bin/ASenD3D.exe path/to/job/script/jobScriptName.txt
-        
-There are three basic types of input files: 1) model input, 2) design variable input, and 3) objective function input.  Examples of all of these are provided for various basic test cases in the examples directory, along with several sample job scripts.  The main solver can be invoked directly from the command line, though many tools are provided in the pythonUtilities directory to help streamline the workflow process and make the most of the results.  Users are encouraged to build such tools of their own as their needs call for, and consider sharing them for others who may benefit.
+Upon completing the steps for setup, ASenD3D can be run by creating Python scripts such as those given in the examples directory, and running them in your environment from the command prompt or an IDE like Spyder.
 
 # Documentation
 
