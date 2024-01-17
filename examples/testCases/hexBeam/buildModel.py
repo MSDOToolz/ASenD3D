@@ -30,6 +30,9 @@ beamMesh = beam.createSweptMesh('inDirection',1,sweepDistance=0.1,axis=[0.0,0.0,
 
 beamMesh = getNodeSetInXYZRange(beamMesh,'xMin',xRange=[-0.1,0.1])
 beamMesh = getNodeSetInXYZRange(beamMesh,'xMax',xRange=[9.99,10.01])
+beamMesh = getNodeSetInXYZRange(beamMesh,'zMax',zRange=[0.09,1.01])
+beamMesh = getNodeSetInXYZRange(beamMesh,'xzMax',xRange=[9.99,10.01],zRange=[0.09,1.01])
+beamMesh = getNodeSetInXYZRange(beamMesh,'xMaxzMin',xRange=[9.99,10.01],zRange=[-0.01,0.01])
 
 ## Create model and add in mesh
 myMod = Model()

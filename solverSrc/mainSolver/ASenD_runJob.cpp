@@ -9,8 +9,7 @@ int main(int argc, char* argv[]) {
 //int main() {
 //	int argc = 2;
 //	string argv[2];
-//	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/singleHex/dynamicElastic/dynamicElasticJob.yaml";
-
+//	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/hexBeam/natFreq/job.yaml";
 // --------------------------------------
 
 	if(argc < 2) {

@@ -894,7 +894,7 @@ void Model::solve(JobCommand *cmd) {
 	Node *thisNd;
 	Element* thisEl;
 	double zeroAr[9] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-	
+
 	if(!anPrepRun) {
 		analysisPrep();
 	}

@@ -81,10 +81,13 @@ void Model::executeJob() {
 			readLoadInput(fileName);
 			readInitialState(fileName);
 		} else if(cmdStr == "readConstraints") {
+			cout << "reading constraints: " << fileName << endl;
 			readConstraintInput(fileName);
 		} else if(cmdStr == "readLoads") {
+			cout << "reading loads: " << fileName << endl;
 			readLoadInput(fileName);
 		} else if(cmdStr == "readInitialState") {
+			cout << "reading initial state: " << fileName << endl;
 			readInitialState(fileName);
 		} else if(cmdStr == "readDesignVarInput") {
 			cout << "reading design variable input: " << fileName << endl;
@@ -100,10 +103,12 @@ void Model::executeJob() {
 			readNodeResults(thisCmd->fileName);
 		}
 		else if (cmdStr == "solve") {
+			cout << "running main analysis " << endl;
 			solveCmd = thisCmd;
 			solve(thisCmd);
 		}
 		else if (cmdStr == "modalAnalysis") {
+			cout << "running modal analysis " << fileName << endl;
 			modalCmd = thisCmd;
 			eigenSolve(thisCmd);
 		}
@@ -111,6 +116,7 @@ void Model::executeJob() {
 			setSolnToMode(thisCmd->solnField, thisCmd->mode, thisCmd->maxAmplitude);
 		}
 		else if (cmdStr == "calcObjective") {
+			cout << "calculating objective function " << fileName << endl;
 			if (solveCmd->dynamic) {
 				if (timeStepsSaved == 0) {
 					cout << "Warning: dynamic analysis was run but time history was not saved." << endl;
@@ -147,8 +153,15 @@ void Model::executeJob() {
 			}
 		}
 		else if (cmdStr == "calcObjGradient") {
+			cout << "calculating objective gradient " << fileName << endl;
 			getObjGradient();
 		} else if (cmdStr == "writeNodeResults" || cmdStr == "writeElementResults") {
+			if (cmdStr == "writeNodeResults") {
+				cout << "writing node results" << endl;
+			}
+			else {
+				cout << "writing element results" << endl;
+			}
 			numTsteps = thisCmd->timeSteps.getLength();
 			if (numTsteps > 0) {
 				i2 = thisCmd->fileName.find(".");
@@ -182,9 +195,11 @@ void Model::executeJob() {
 			}
 		}
 		else if (cmdStr == "writeModalResults") {
+			cout << "writing modal results" << endl;
 			writeModalResults(thisCmd->fileName, thisCmd->writeModes);
 		}
 		else if (cmdStr == "writeObjective") {
+			cout << "writing objective results" << endl;
 			writeObjective(thisCmd->fileName, thisCmd->objInclude, thisCmd->writeGradient);
 		}
 		

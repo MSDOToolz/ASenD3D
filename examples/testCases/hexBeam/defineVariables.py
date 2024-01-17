@@ -12,5 +12,6 @@ dVars = DesignVariables()
 dVars.addDesignVariable('modulus',component=1,layer=0,elementSet='all')
 dVars.addDesignVariable('density',layer=0,elementSet='all')
 dVars.addDesignVariable('nodeCoord',component=1,nodeSet='xMax')
+dVars.addDesignVariable('nodeCoord',component=3,nodeSet='zMax')
 
 dVars.writeInput('hexBeamDVars.yaml')
