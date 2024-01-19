@@ -44,6 +44,7 @@ public:
 	Doub* frcFldCoef;
 	Doub* frcFldExp;
 	Doub massPerEl;
+	double* scratch;
 
 	int currentLayLen;
 
@@ -90,6 +91,7 @@ public:
 	DiffDoub* frcFldCoef;
 	DiffDoub* frcFldExp;
 	DiffDoub massPerEl;
+	double* scratch;
 
 	int currentLayLen;
 
@@ -100,6 +102,7 @@ public:
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -119,16 +122,16 @@ class Element {
 		double* intPts;
 		double* ipWt;
 		int numIP;
-		FaceList faces;
+		FaceList* faces;
 		double *internalDisp;
 		double *intPrevDisp;
 		double *internaldLdu;
 		double *internalAdj;
 		DiffDoub *internalRu;
 		double *internalMat;
-		IntList designVars;
-		DoubList dvCoef;
-		IntList compDVars;
+		IntList* designVars;
+		DoubList* dvCoef;
+		IntList* compDVars;
 		Section *sectPtr;
 		Element *nextEl;
 		
@@ -430,6 +433,7 @@ class Element {
  
  
  
+ 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
@@ -494,6 +498,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
  
  

@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{26e63ef9-3e96-49d4-a20e-ae09f2d8bed0}</ProjectGuid>
+    <ProjectGuid>{7977ea72-f4d6-4a6f-b4c9-8c80b31398dd}</ProjectGuid>
     <RootNamespace>ASenDrunJob</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

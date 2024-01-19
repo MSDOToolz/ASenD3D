@@ -563,8 +563,10 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 	int ndDof = numNds * dofPerNd;
 	Doub tmp;
 	Doub Rtmp[33];
-	double dRtmp[1089];
-	double dRdT[330];
+	//double dRtmp[1089];
+	double* dRtmp = &pre.scratch[2508];
+	//double dRdT[330];
+	double* dRdT = &pre.scratch[3597];
 	bool dNonZero;
 	Doub nVec[11];
 	Doub dNdx[33];
@@ -755,10 +757,13 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	int ndDof;
 	int totDof;
 	Doub Rvec[33];
-	double dRdu[1089];
-	double dRdT[330];
+	//double dRdu[1089];
+	double* dRdu = &pre.scratch[0];
+	//double dRdT[330];
+	double* dRdT = &pre.scratch[1089];
 	Doub Rtmp[33];
-	double dRtmp[1089];
+	//double dRtmp[1089];
+	double* dRtmp = &pre.scratch[1419];
 	double c1;
 	double c2;
 	Doub tmp;
@@ -781,7 +786,7 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 		getRuFrcFld(globR, globdRdu, getMatrix, cmd, pre, ndAr);
 		return;
 	}
-	
+
 	if (type != 1) {
 		getRuk(Rvec, dRdu, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
 	}
@@ -1361,7 +1366,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq
 	else if (ldType == "surfaceTraction" || ldType == "surfacePressure") {
 		ldPt->getNormDir(ldNorm);
 		ldPt->getLoad(ldLoad);
-		fcPt = faces.getFirst();
+		fcPt = faces->getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				fcPt->getAreaNormal(fcArea, fcNorm, ndAr, dvAr);
@@ -1502,7 +1507,7 @@ void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, N
 		}
 	}
 	else if (ldType == "surfaceFlux") {
-		fcPt = faces.getFirst();
+		fcPt = faces->getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				ldPt->getNormDir(ldNorm);
@@ -1930,8 +1935,10 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 	int ndDof = numNds * dofPerNd;
 	DiffDoub tmp;
 	DiffDoub Rtmp[33];
-	double dRtmp[1089];
-	double dRdT[330];
+	//double dRtmp[1089];
+	double* dRtmp = &pre.scratch[2508];
+	//double dRdT[330];
+	double* dRdT = &pre.scratch[3597];
 	bool dNonZero;
 	DiffDoub nVec[11];
 	DiffDoub dNdx[33];
@@ -2122,10 +2129,13 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 	int ndDof;
 	int totDof;
 	DiffDoub Rvec[33];
-	double dRdu[1089];
-	double dRdT[330];
+	//double dRdu[1089];
+	double* dRdu = &pre.scratch[0];
+	//double dRdT[330];
+	double* dRdT = &pre.scratch[1089];
 	DiffDoub Rtmp[33];
-	double dRtmp[1089];
+	//double dRtmp[1089];
+	double* dRtmp = &pre.scratch[1419];
 	double c1;
 	double c2;
 	DiffDoub tmp;
@@ -2148,7 +2158,7 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 		getRuFrcFld(globR, globdRdu, getMatrix, cmd, pre, ndAr);
 		return;
 	}
-	
+
 	if (type != 1) {
 		getRuk(Rvec, dRdu, dRdT, getMatrix, cmd->nonlinearGeom, pre, ndAr, dvAr);
 	}
@@ -2728,7 +2738,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStre
 	else if (ldType == "surfaceTraction" || ldType == "surfacePressure") {
 		ldPt->getNormDir(ldNorm);
 		ldPt->getLoad(ldLoad);
-		fcPt = faces.getFirst();
+		fcPt = faces->getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				fcPt->getAreaNormal(fcArea, fcNorm, ndAr, dvAr);
@@ -2869,7 +2879,7 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 		}
 	}
 	else if (ldType == "surfaceFlux") {
-		fcPt = faces.getFirst();
+		fcPt = faces->getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				ldPt->getNormDir(ldNorm);
@@ -2925,6 +2935,7 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 //end dup
  
 //end skip 
+ 
  
  
  

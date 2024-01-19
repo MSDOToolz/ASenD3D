@@ -37,4 +37,4 @@ myJob.writeModalResults('buckling/results/bucklingResults.yaml')
 
 myJob.writeJobInput('buckling/job.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()

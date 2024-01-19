@@ -28,8 +28,8 @@ class Node {
 		double initialAcc[6];
 		double initialTemp;
 		double initialTdot;
-		IntList dVars;
-		DoubList coefs;
+		IntList* dVars;
+		DoubList* coefs;
 		Node *nextNd;
 		
     public:
@@ -147,6 +147,7 @@ class Node {
 //end dup		
  
 //end skip 
+ 
  
  
  

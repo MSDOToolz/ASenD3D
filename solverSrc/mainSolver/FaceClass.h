@@ -53,6 +53,7 @@ class Face {
  
  
  
+ 
 		void destroy();
 };
 

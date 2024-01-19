@@ -14,48 +14,99 @@
 using namespace std;
 
 Model::Model() {
+	nodes = new NodeList;
+	nodeArray = nullptr;
+	elements = new ElementList;
+	elementArray = nullptr;
+	nodeSets = new SetList;
+	nsArray = nullptr;
+	elementSets = new SetList;
+	esArray = nullptr;
+	sections = new SectionList;
+	materials = new MaterialList;
+	elasticConst = new ConstraintList;
+	thermalConst = new ConstraintList;
+	elasticLoads = new LoadList;
+	thermalLoads = new LoadList;
+	designVars = new DesVarList;
+	dVarArray = nullptr;
+	objective = new Objective;
+	job = new Job;
+	elasticMat = new SparseMat;
+	elasticLT = new LowerTriMat;
+	thermMat = new SparseMat;
+	thermLT = new LowerTriMat;
 	anPrepRun = false;
 	timeStepsSaved = 0;
+	elMatDim = 0;
+	totGlobDof = 0;
 	elasticScaled = false;
 	thermScaled = false;
+	solveCmd = nullptr;
+	modalCmd = nullptr;
+
 	eigVecs = nullptr;
 	eigVals = nullptr;
 	diagMass = nullptr;
-	solveCmd = nullptr;
-	modalCmd = nullptr;
+	loadFact = nullptr;
+
+	tempV1 = nullptr;
+	tempV2 = nullptr;
+	tempV3 = nullptr;
+	tempV4 = nullptr;
+	tempV5 = nullptr;
+	tempV6 = nullptr;
+
+	tempD1 = nullptr;
+
+	dLdU = nullptr;
+	dLdV = nullptr;
+	dLdA = nullptr;
+	dLdT = nullptr;
+	dLdTdot = nullptr;
+	uAdj = nullptr;
+	vAdj = nullptr;
+	aAdj = nullptr;
+	tAdj = nullptr;
+	tdotAdj = nullptr;
+
+	dRudD = nullptr;
+	dRtdD = nullptr;
+	dLdD = nullptr;
+	elInD = nullptr;
 	return;
 }
 
 NodeList* Model::getNodes() {
-	return &nodes;
+	return nodes;
 }
 
 ElementList* Model::getElements() {
-	return &elements;
+	return elements;
 }
 
 SetList* Model::getNodeSets() {
-	return &nodeSets;
+	return nodeSets;
 }
 
 SetList* Model::getElementSets() {
-	return &elementSets;
+	return elementSets;
 }
 
 SectionList* Model::getSections() {
-	return &sections;
+	return sections;
 }
 
 MaterialList* Model::getMaterials() {
-	return &materials;
+	return materials;
 }
 
 ConstraintList* Model::getElasticConstraints() {
-	return &elasticConst;
+	return elasticConst;
 }
 
 DesVarList* Model::getDesignVars() {
-	return &designVars;
+	return designVars;
 }
 
 void Model::executeJob() {
@@ -64,7 +115,7 @@ void Model::executeJob() {
 	int numTsteps;
 	double time;
 	IntListEnt* thisEnt;
-	JobCommand *thisCmd = job.getFirst();
+	JobCommand *thisCmd = job->getFirst();
 	Node* thisNd;
 	string cmdStr;
 	string fileName;
@@ -121,16 +172,16 @@ void Model::executeJob() {
 				if (timeStepsSaved == 0) {
 					cout << "Warning: dynamic analysis was run but time history was not saved." << endl;
 					cout << "         The objective can only be computed based on the final state." << endl;
-					objective.clearValues();
-					objective.calculateTerms(solveCmd->simPeriod, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+					objective->clearValues();
+					objective->calculateTerms(solveCmd->simPeriod, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 				}
 				else {
-					objective.clearValues();
+					objective->clearValues();
 					readTimeStepSoln(timeStepsSaved);
 					i1 = timeStepsSaved - 1;
 					time = solveCmd->timeStep * timeStepsSaved;
 					while (i1 >= 0) {
-						thisNd = nodes.getFirst();
+						thisNd = nodes->getFirst();
 						while (thisNd) {
 							if (solveCmd->elastic) {
 								thisNd->backstepDisp();
@@ -141,15 +192,15 @@ void Model::executeJob() {
 							thisNd = thisNd->getNext();
 						}
 						readTimeStepSoln(i1);
-						objective.calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+						objective->calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 						i1--;
 						time -= solveCmd->timeStep;
 					}
 				}
 			}
 			else {
-				objective.clearValues();
-				objective.calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+				objective->clearValues();
+				objective->calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
 			}
 		}
 		else if (cmdStr == "calcObjGradient") {
@@ -162,7 +213,7 @@ void Model::executeJob() {
 			else {
 				cout << "writing element results" << endl;
 			}
-			numTsteps = thisCmd->timeSteps.getLength();
+			numTsteps = thisCmd->timeSteps->getLength();
 			if (numTsteps > 0) {
 				i2 = thisCmd->fileName.find(".");
 				if (i2 > -1) {
@@ -173,24 +224,24 @@ void Model::executeJob() {
 					exten = "";
 					fileName = thisCmd->fileName;
 				}
-				thisEnt = thisCmd->timeSteps.getFirst();
+				thisEnt = thisCmd->timeSteps->getFirst();
 				while (thisEnt) {
 					fullFname = fileName + "_timestep" + to_string(thisEnt->value) + exten;
 					if (cmdStr == "writeNodeResults") {
-						writeNodeResults(fullFname, thisCmd->nodeSet, thisCmd->fields, thisEnt->value);
+						writeNodeResults(fullFname, thisCmd->nodeSet, *thisCmd->fields, thisEnt->value);
 					}
 					else {
-						writeElementResults(fullFname, thisCmd->elementSet, thisCmd->fields, thisEnt->value);
+						writeElementResults(fullFname, thisCmd->elementSet, *thisCmd->fields, thisEnt->value);
 					}
 					thisEnt = thisEnt->next;
 				}
 			}
 			else {
 				if (cmdStr == "writeNodeResults") {
-					writeNodeResults(thisCmd->fileName, thisCmd->nodeSet, thisCmd->fields, -1);
+					writeNodeResults(thisCmd->fileName, thisCmd->nodeSet, *thisCmd->fields, -1);
 				}
 				else {
-					writeElementResults(thisCmd->fileName, thisCmd->elementSet, thisCmd->fields, -1);
+					writeElementResults(thisCmd->fileName, thisCmd->elementSet, *thisCmd->fields, -1);
 				}
 			}
 		}
@@ -200,7 +251,7 @@ void Model::executeJob() {
 		}
 		else if (cmdStr == "writeObjective") {
 			cout << "writing objective results" << endl;
-			writeObjective(thisCmd->fileName, thisCmd->objInclude, thisCmd->writeGradient);
+			writeObjective(thisCmd->fileName, *thisCmd->objInclude, thisCmd->writeGradient);
 		}
 		
 		thisCmd = thisCmd->next;
@@ -210,26 +261,44 @@ void Model::executeJob() {
 }
 
 void Model::destroy() {
-	nodes.destroy();
+	nodes->destroy();
+	delete nodes;
 	delete[] nodeArray;
-	elements.destroy();
+	elements->destroy();
+	delete elements;
 	delete[] elementArray;
-	nodeSets.destroy();
+	nodeSets->destroy();
+	delete nodeSets;
 	delete[] nsArray;
-	elementSets.destroy();
+	elementSets->destroy();
+	delete elementSets;
 	delete[] esArray;
-	sections.destroy();
-	materials.destroy();
-    elasticConst.destroy();
-	thermalConst.destroy();
-	elasticLoads.destroy();
-	designVars.destroy();
+	sections->destroy();
+	delete sections;
+	materials->destroy();
+	delete materials;
+    elasticConst->destroy();
+	delete elasticConst;
+	thermalConst->destroy();
+	delete thermalConst;
+	elasticLoads->destroy();
+	delete elasticLoads;
+	designVars->destroy();
+	delete designVars;
 	delete[] dVarArray;
-	objective.destroy();
-	job.destroy();
+	objective->destroy();
+	delete objective;
+	job->destroy();
+	delete job;
 
-	elasticMat.destroy();
-	elasticLT.destroy();
+	elasticMat->destroy();
+	delete elasticMat;
+	elasticLT->destroy();
+	delete elasticLT;
+	thermMat->destroy();
+	delete thermMat;
+	thermLT->destroy();
+	delete thermLT;
 
 	if (eigVecs) {
 		delete[] eigVecs;

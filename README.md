@@ -40,7 +40,7 @@ Currently there is only one branch called main.  If preferred, users can just do
 If desired, create an anaconda environment for ASenD3D, by running
 
         conda create -n asend-env (asend-env can be changed to any environment name of your choice)
-		conda activate asend-env
+        conda activate asend-env
 
 from the anaconda powershell prompt, or just the command line terminal in Linux.  To install the interface for model and input file generation, job submission and post-processing, run
 

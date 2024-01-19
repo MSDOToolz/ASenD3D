@@ -6,7 +6,7 @@
 class Set {
 	private:
 	    std::string name;
-		IntList labels;
+		IntList* labels;
 		Set *nextSet;
 		
     public:

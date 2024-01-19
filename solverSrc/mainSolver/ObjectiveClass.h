@@ -31,13 +31,13 @@ class ObjectiveTerm {
 
 		int qLen;
 
-		SparseMat dQdU;
-		SparseMat dQdV;
-		SparseMat dQdA;
-		SparseMat dQdT;
-		SparseMat dQdTdot;
-		SparseMat dQdD;
-		SparseMat dVdD;
+		SparseMat* dQdU;
+		SparseMat* dQdV;
+		SparseMat* dQdA;
+		SparseMat* dQdT;
+		SparseMat* dQdTdot;
+		SparseMat* dQdD;
+		SparseMat* dVdD;
 		
 	public:
 	    ObjectiveTerm(std::string newCat);

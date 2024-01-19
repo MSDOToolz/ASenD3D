@@ -42,7 +42,7 @@ class Constraint {
 		ConstraintTerm *lastTerm;
 		std::string type;
 		double rhs;
-		SparseMat mat;
+		SparseMat* mat;
 		double scaleFact;
 		Constraint *nextConst;
 		

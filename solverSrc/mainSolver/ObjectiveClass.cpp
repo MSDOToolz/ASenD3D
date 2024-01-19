@@ -15,6 +15,13 @@ ObjectiveTerm::ObjectiveTerm(string newCat) {
 	elVolVec = nullptr;
 	tgtVec = nullptr;
 	errNormVec = nullptr;
+	dQdU = new SparseMat;
+	dQdV = new SparseMat;
+	dQdA = new SparseMat;
+	dQdT = new SparseMat;
+	dQdTdot = new SparseMat;
+	dQdD = new SparseMat;
+	dVdD = new SparseMat;
 	next = nullptr;
 	activeTime[0] = -1.0;
 	activeTime[1] = 1.0e+100;
@@ -174,25 +181,25 @@ void ObjectiveTerm::allocateObj() {
 
 void ObjectiveTerm::allocateObjGrad() {
 	int i1;
-	if (qLen > 0 && dQdU.getDim() == 0) {
-		dQdU.setDim(qLen);
-		dQdV.setDim(qLen);
-		dQdA.setDim(qLen);
-		dQdT.setDim(qLen);
-		dQdTdot.setDim(qLen);
-		dQdD.setDim(qLen);
-		dVdD.setDim(qLen);
+	if (qLen > 0 && dQdU->getDim() == 0) {
+		dQdU->setDim(qLen);
+		dQdV->setDim(qLen);
+		dQdA->setDim(qLen);
+		dQdT->setDim(qLen);
+		dQdTdot->setDim(qLen);
+		dQdD->setDim(qLen);
+		dVdD->setDim(qLen);
 		if (optr == "powerNorm") {
 			errNormVec = new double[qLen];
 		}
 	}
-	dQdU.zeroAll();
-	dQdV.zeroAll();
-	dQdA.zeroAll();
-	dQdT.zeroAll();
-	dQdTdot.zeroAll();
-	dQdD.zeroAll();
-	dVdD.zeroAll();
+	dQdU->zeroAll();
+	dQdV->zeroAll();
+	dQdA->zeroAll();
+	dQdT->zeroAll();
+	dQdTdot->zeroAll();
+	dQdD->zeroAll();
+	dVdD->zeroAll();
 	for (i1 = 0; i1 < qLen; i1++) {
 		errNormVec[i1] = 0.0;
 	}
@@ -211,17 +218,17 @@ double ObjectiveTerm::getPowerNorm() {
 }
 
 void ObjectiveTerm::dPowerNormdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[]) {
-	dQdU.vectorMultiply(dLdU, errNormVec, true);
-	dQdV.vectorMultiply(dLdV, errNormVec, true);
-	dQdA.vectorMultiply(dLdA, errNormVec, true);
-	dQdT.vectorMultiply(dLdT, errNormVec, true);
-	dQdTdot.vectorMultiply(dLdTdot, errNormVec, true);
+	dQdU->vectorMultiply(dLdU, errNormVec, true);
+	dQdV->vectorMultiply(dLdV, errNormVec, true);
+	dQdA->vectorMultiply(dLdA, errNormVec, true);
+	dQdT->vectorMultiply(dLdT, errNormVec, true);
+	dQdTdot->vectorMultiply(dLdTdot, errNormVec, true);
 
 	return;
 }
 
 void ObjectiveTerm::dPowerNormdD(double dLdD[]) {
-	dQdD.vectorMultiply(dLdD, errNormVec, true);
+	dQdD->vectorMultiply(dLdD, errNormVec, true);
 
 	return;
 }
@@ -249,11 +256,11 @@ void ObjectiveTerm::dVolIntegraldU(double dLdU[], double dLdV[], double dLdA[], 
 		 elVolVec[i1]*= vInt;
 	}
 
-	dQdU.vectorMultiply(dLdU, elVolVec, true);
-	dQdV.vectorMultiply(dLdV, elVolVec, true);
-	dQdA.vectorMultiply(dLdA, elVolVec, true);
-	dQdT.vectorMultiply(dLdT, elVolVec, true);
-	dQdTdot.vectorMultiply(dLdTdot, elVolVec, true);
+	dQdU->vectorMultiply(dLdU, elVolVec, true);
+	dQdV->vectorMultiply(dLdV, elVolVec, true);
+	dQdA->vectorMultiply(dLdA, elVolVec, true);
+	dQdT->vectorMultiply(dLdT, elVolVec, true);
+	dQdTdot->vectorMultiply(dLdTdot, elVolVec, true);
 
 	vInt = 1.0 / vInt;
 	for (i1 = 0; i1 < qLen; i1++) {
@@ -277,8 +284,8 @@ void ObjectiveTerm::dVolIntegraldD(double dLdD[]) {
 		elVolVec[i1] *= vInt;
 	}
 
-	dQdD.vectorMultiply(dLdD, elVolVec, true);
-	dVdD.vectorMultiply(dLdD, qVec, true);
+	dQdD->vectorMultiply(dLdD, elVolVec, true);
+	dVdD->vectorMultiply(dLdD, qVec, true);
 
 	vInt = 1.0 / vInt;
 	for (i1 = 0; i1 < qLen; i1++) {
@@ -322,11 +329,11 @@ void ObjectiveTerm::dVolAveragedU(double dLdU[], double dLdV[], double dLdA[], d
 		elVolVec[i1] *= vaErr;
 	}
 
-	dQdU.vectorMultiply(dLdU, elVolVec, true);
-	dQdV.vectorMultiply(dLdV, elVolVec, true);
-	dQdA.vectorMultiply(dLdA, elVolVec, true);
-	dQdT.vectorMultiply(dLdT, elVolVec, true);
-	dQdTdot.vectorMultiply(dLdTdot, elVolVec, true);
+	dQdU->vectorMultiply(dLdU, elVolVec, true);
+	dQdV->vectorMultiply(dLdV, elVolVec, true);
+	dQdA->vectorMultiply(dLdA, elVolVec, true);
+	dQdT->vectorMultiply(dLdT, elVolVec, true);
+	dQdTdot->vectorMultiply(dLdTdot, elVolVec, true);
 
 	vaErr = 1.0 / vaErr;
 	for (i1 = 0; i1 < qLen; i1++) {
@@ -356,8 +363,8 @@ void ObjectiveTerm::dVolAveragedD(double dLdD[]) {
 		qVec[i1] *= vaErr;
 	}
 
-	dQdD.vectorMultiply(dLdD, elVolVec, true);
-	dVdD.vectorMultiply(dLdD, qVec, true);
+	dQdD->vectorMultiply(dLdD, elVolVec, true);
+	dVdD->vectorMultiply(dLdD, qVec, true);
 
 	vaErr = 1.0 / vaErr;
 	for (i1 = 0; i1 < qLen; i1++) {
@@ -369,7 +376,7 @@ void ObjectiveTerm::dVolAveragedD(double dLdD[]) {
 
 	MatrixEnt* thisEnt;
 	for (i1 = 0; i1 < qLen; i1++) {
-		thisEnt = dVdD.getFirstEnt(i1);
+		thisEnt = dVdD->getFirstEnt(i1);
 		while (thisEnt) {
 			col = thisEnt->col;
 			dLdD[col] -= vaErr * thisEnt->value;
@@ -396,7 +403,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 	int qInd;
 	double ndData[6];
 	Element* thisEl;
-	DoubStressPrereq stPre;
+	DoubStressPrereq* stPre = new DoubStressPrereq;
 	double spt[3] = {0.0,0.0,0.0};
 	Doub strain[6];
 	Doub stress[6];
@@ -470,11 +477,13 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value+= getVolIntegral();
 				return;
 			} else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value+= getVolAverage();
 				return;
 			}
@@ -492,8 +501,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
-			thisEl->getStressPrereq(stPre, ndAr, dvAr);
-			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
+			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, *stPre);
 			if (category == "stress") {
 				qVec[qInd] = stress[component - 1].val;
 			} else if (category == "strain") {
@@ -507,7 +516,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				qVec[qInd] = seDen;
 			}
 			if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				thisEl->getVolume(eVol, stPre, layer);
+				thisEl->getVolume(eVol, *stPre, layer);
 				elVolVec[qInd] = eVol.val;
 			}
 			thisEnt = thisEnt->next;
@@ -535,7 +544,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			value+= getPowerNorm();
 			return;
 		}
@@ -546,11 +556,13 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value+= getVolIntegral();
 				return;
 			} else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value+= getVolAverage();
 				return;
 			}
@@ -569,9 +581,9 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
-			thisEl->getStressPrereq(stPre, ndAr, dvAr);
+			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, stPre);
+			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, *stPre);
 			if (category == "sectionDef") {
 				qVec[qInd] = def[component - 1].val;
 			}
@@ -583,12 +595,12 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				if (numLay > 1) {
 					eVol.setVal(0.0);
 					for (i1 = 0; i1 < numLay; i1++) {
-						thisEl->getVolume(tmp, stPre, i1);
+						thisEl->getVolume(tmp, *stPre, i1);
 						eVol.add(tmp);
 					}
 				}
 				else {
-					thisEl->getVolume(eVol, stPre, 0);
+					thisEl->getVolume(eVol, *stPre, 0);
 				}
 				elVolVec[qInd] = eVol.val;
 			}
@@ -617,7 +629,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			value += getPowerNorm();
 			return;
 		}
@@ -629,12 +642,14 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value += getVolIntegral();
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value += getVolAverage();
 				return;
 			}
@@ -653,8 +668,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
-			thisEl->getStressPrereq(stPre, ndAr, dvAr);
-			thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
+			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			thisEl->getFluxTGrad(flux, tGrad, spt, layer, *stPre);
 			if (category == "flux") {
 				qVec[qInd] = flux[component - 1].val;
 			}
@@ -662,7 +677,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				qVec[qInd] = tGrad[component - 1].val;
 			}
 			if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				thisEl->getVolume(eVol, stPre, layer);
+				thisEl->getVolume(eVol, *stPre, layer);
 				elVolVec[qInd] = eVol.val;
 			}
 			thisEnt = thisEnt->next;
@@ -690,7 +705,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			value += getPowerNorm();
 			return;
 		}
@@ -702,12 +718,14 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value += getVolIntegral();
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				value += getVolAverage();
 				return;
 			}
@@ -726,8 +744,8 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
-			thisEl->getStressPrereq(stPre, ndAr, dvAr);
-			thisEl->getVolume(eVol,stPre,layer);
+			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			thisEl->getVolume(eVol,*stPre,layer);
 			elVolVec[qInd] = eVol.val;
 			if (category == "volume") {
 				qVec[qInd] = 1.0;
@@ -743,12 +761,14 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		} else {
 			tgtVec[0] = tgtVals.getFirst()->value;
 		}
-		stPre.destroy();
+		stPre->destroy();
+		delete stPre;
 		value+= getVolIntegral();
 		return;
 	}
 
-	stPre.destroy();
+	stPre->destroy();
+	delete stPre;
 
 	return;
 }
@@ -769,7 +789,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	int dofInd;
 	int currRank;
 	Element* thisEl;
-	DoubStressPrereq stPre;
+	DoubStressPrereq* stPre = new DoubStressPrereq;
 	double spt[3] = { 0.0,0.0,0.0 };
 	Doub strain[6];
 	Doub stress[6];
@@ -806,19 +826,19 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			dofInd = ndAr[label]->getDofIndex(component - 1);
 			currRank = ndAr[label]->getSortedRank();
 			if (category == "displacement") {
-				dQdU.addEntry(qInd, dofInd, 1.0);
+				dQdU->addEntry(qInd, dofInd, 1.0);
 			}
 			else if (category == "velocity") {
-				dQdV.addEntry(qInd, dofInd, 1.0);
+				dQdV->addEntry(qInd, dofInd, 1.0);
 			}
 			else if (category == "acceleration") {
-				dQdA.addEntry(qInd, dofInd, 1.0);
+				dQdA->addEntry(qInd, dofInd, 1.0);
 			}
 			else if (category == "temperature") {
-				dQdT.addEntry(qInd, currRank, 1.0);
+				dQdT->addEntry(qInd, currRank, 1.0);
 			}
 			else if (category == "tdot") {
-				dQdTdot.addEntry(qInd, currRank, 1.0);
+				dQdTdot->addEntry(qInd, currRank, 1.0);
 			}
 			thisEnt = thisEnt->next;
 			qInd++;
@@ -832,12 +852,14 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		}
 		else if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
@@ -856,9 +878,9 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
-			thisEl->getStressPrereq(stPre, ndAr, dvAr);
-			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-			thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
+			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, *stPre);
+			thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, *stPre);
 			elNumNds = thisEl->getNumNds();
 			elDofPerNd = thisEl->getDofPerNd();
 			elNumIntDof = thisEl->getNumIntDof();
@@ -866,11 +888,11 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			i1 = elTotDof * (component - 1);
 			i2 = elNumNds * (component - 1);
 			if (category == "stress") {
-				thisEl->putVecToGlobMat(dQdU, &dsdU[i1], false, qInd, ndAr);
-				thisEl->putVecToGlobMat(dQdT, &dsdT[i2], true, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdU, &dsdU[i1], false, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdT, &dsdT[i2], true, qInd, ndAr);
 			}
 			else if (category == "strain") {
-				thisEl->putVecToGlobMat(dQdU, &dedU[i1], false, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdU, &dedU[i1], false, qInd, ndAr);
 			}
 			else {
 				for (i2 = 0; i2 < elTotDof; i2++) {
@@ -891,8 +913,8 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 					}
 					dseDendT[i2].val *= 0.5;
 				}
-				thisEl->putVecToGlobMat(dQdU, dseDendU, false, qInd, ndAr);
-				thisEl->putVecToGlobMat(dQdT, dseDendT, true, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdU, dseDendU, false, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdT, dseDendT, true, qInd, ndAr);
 			}
 			thisEnt = thisEnt->next;
 			qInd++;
@@ -901,18 +923,21 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
@@ -931,11 +956,11 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
-			thisEl->getStressPrereq(stPre, ndAr, dvAr);
+			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			//thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
-			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, stPre);
-			thisEl->dDefFrcMomdU(dedU, dsdU, dsdT, spt, nLGeom, stPre);
+			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, *stPre);
+			thisEl->dDefFrcMomdU(dedU, dsdU, dsdT, spt, nLGeom, *stPre);
 			elNumNds = thisEl->getNumNds();
 			elDofPerNd = thisEl->getDofPerNd();
 			elNumIntDof = thisEl->getNumIntDof();
@@ -943,11 +968,11 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			i1 = elTotDof * (component - 1);
 			i2 = elNumNds * (component - 1);
 			if (category == "sectionFrcMom") {
-				thisEl->putVecToGlobMat(dQdU, &dsdU[i1], false, qInd, ndAr);
-				thisEl->putVecToGlobMat(dQdT, &dsdT[i2], true, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdU, &dsdU[i1], false, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdT, &dsdT[i2], true, qInd, ndAr);
 			}
 			else if (category == "sectionDef") {
-				thisEl->putVecToGlobMat(dQdU, &dedU[i1], false, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdU, &dedU[i1], false, qInd, ndAr);
 			}
 			thisEnt = thisEnt->next;
 			qInd++;
@@ -956,18 +981,21 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
@@ -986,16 +1014,16 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		qInd = 0;
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
-			thisEl->getStressPrereq(stPre, ndAr, dvAr);
-			thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
-			thisEl->dFluxTGraddT(dFdT, dTGdT, spt, layer, stPre);
+			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			thisEl->getFluxTGrad(flux, tGrad, spt, layer, *stPre);
+			thisEl->dFluxTGraddT(dFdT, dTGdT, spt, layer, *stPre);
 			elNumNds = thisEl->getNumNds();
 			i1 = elNumNds * (component - 1);
 			if (category == "flux") {
-				thisEl->putVecToGlobMat(dQdT, &dFdT[i1], true, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdT, &dFdT[i1], true, qInd, ndAr);
 			}
 			else if (category == "tempGradient") {
-				thisEl->putVecToGlobMat(dQdT, &dTGdT[i1], true, qInd, ndAr);
+				thisEl->putVecToGlobMat(*dQdT, &dTGdT[i1], true, qInd, ndAr);
 			}
 			thisEnt = thisEnt->next;
 			qInd++;
@@ -1004,25 +1032,29 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 		}
 	}
 
-	stPre.destroy();
+	stPre->destroy();
+	delete stPre;
 
 	return;
 }
@@ -1042,7 +1074,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 	Element* thisEl;
 	DesignVariable* thisDV;
 	Doub dvVal;
-	DiffDoubStressPrereq stPre;
+	DiffDoubStressPrereq* stPre = new DiffDoubStressPrereq;
 	double spt[3] = { 0.0,0.0,0.0 };
 	DiffDoub strain[6];
 	DiffDoub stress[6];
@@ -1074,13 +1106,13 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, ndAr, dvAr);
-				thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
+				thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+				thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, *stPre);
 				if (category == "stress") {
-					dQdD.addEntry(qInd, dvi, stress[component - 1].dval);
+					dQdD->addEntry(qInd, dvi, stress[component - 1].dval);
 				}
 				else if (category == "strain") {
-					dQdD.addEntry(qInd, dvi, strain[component - 1].dval);
+					dQdD->addEntry(qInd, dvi, strain[component - 1].dval);
 				}
 				else {
 					seDen = 0.0;
@@ -1088,11 +1120,11 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 						seDen += stress[i1].val * strain[i1].dval + stress[i1].dval * strain[i1].val;
 					}
 					seDen *= 0.5;
-					dQdD.addEntry(qInd, dvi, seDen);
+					dQdD->addEntry(qInd, dvi, seDen);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
-					thisEl->getVolume(eVol, stPre, layer);
-					dVdD.addEntry(qInd, dvi, eVol.dval);
+					thisEl->getVolume(eVol, *stPre, layer);
+					dVdD->addEntry(qInd, dvi, eVol.dval);
 				}
 				thisDV->setDiffVal(dvVal.val, 0.0);
 				thisDVEnt = thisDVEnt->next;
@@ -1104,18 +1136,21 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
 			}
@@ -1140,28 +1175,28 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, ndAr, dvAr);
+				thisEl->getStressPrereq(*stPre, ndAr, dvAr);
 				//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-				thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, stPre);
+				thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, *stPre);
 				if (category == "sectionFrcMom") {
-					dQdD.addEntry(qInd, dvi, frcMom[component - 1].dval);
+					dQdD->addEntry(qInd, dvi, frcMom[component - 1].dval);
 				}
 				else if (category == "sectionDef") {
-					dQdD.addEntry(qInd, dvi, def[component - 1].dval);
+					dQdD->addEntry(qInd, dvi, def[component - 1].dval);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
 					numLay = thisEl->getNumLayers();
 					if (numLay > 1) {
 						eVol.setVal(0.0);
 						for (i1 = 0; i1 < numLay; i1++) {
-							thisEl->getVolume(tmp, stPre, i1);
+							thisEl->getVolume(tmp, *stPre, i1);
 							eVol.add(tmp);
 						}
 					}
 					else {
-						thisEl->getVolume(eVol, stPre, 0);
+						thisEl->getVolume(eVol, *stPre, 0);
 					}
-					dVdD.addEntry(qInd, dvi, eVol.dval);
+					dVdD->addEntry(qInd, dvi, eVol.dval);
 				}
 				thisDV->setDiffVal(dvVal.val, 0.0);
 				thisDVEnt = thisDVEnt->next;
@@ -1173,18 +1208,21 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
 			}
@@ -1209,17 +1247,17 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, ndAr, dvAr);
-				thisEl->getFluxTGrad(flux, tGrad, spt, layer, stPre);
+				thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+				thisEl->getFluxTGrad(flux, tGrad, spt, layer, *stPre);
 				if (category == "flux") {
-					dQdD.addEntry(qInd, dvi, flux[component - 1].dval);
+					dQdD->addEntry(qInd, dvi, flux[component - 1].dval);
 				}
 				else if (category == "tempGradient") {
-					dQdD.addEntry(qInd, dvi, tGrad[component - 1].dval);
+					dQdD->addEntry(qInd, dvi, tGrad[component - 1].dval);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
-					thisEl->getVolume(eVol, stPre, layer);
-					dVdD.addEntry(qInd, dvi, eVol.dval);
+					thisEl->getVolume(eVol, *stPre, layer);
+					dVdD->addEntry(qInd, dvi, eVol.dval);
 				}
 				thisDV->setDiffVal(dvVal.val, 0.0);
 				thisDVEnt = thisDVEnt->next;
@@ -1231,18 +1269,21 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre.destroy();
+			stPre->destroy();
+			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				stPre.destroy();
+				stPre->destroy();
+				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
 			}
@@ -1267,12 +1308,12 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				thisEl->getStressPrereq(stPre, ndAr, dvAr);
-				thisEl->getVolume(eVol, stPre, layer);
-				dVdD.addEntry(qInd, dvi, eVol.dval);
+				thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+				thisEl->getVolume(eVol, *stPre, layer);
+				dVdD->addEntry(qInd, dvi, eVol.dval);
 				if(category == "mass") {
 					thisEl->getDensity(eDen, layer, dvAr);
-					dQdD.addEntry(qInd, dvi, eDen.dval);
+					dQdD->addEntry(qInd, dvi, eDen.dval);
 				}
 				thisDV->setDiffVal(dvVal.val, 0.0);
 				thisDVEnt = thisDVEnt->next;
@@ -1280,12 +1321,14 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			thisEnt = thisEnt->next;
 			qInd++;
 		}
-		stPre.destroy();
+		stPre->destroy();
+		delete stPre;
 		dVolIntegraldD(dLdD);
 		return;
 	}
 
-	stPre.destroy();
+	stPre->destroy();
+	delete stPre;
 
 	return;
 }
@@ -1304,13 +1347,20 @@ void ObjectiveTerm::destroy() {
 	if (errNormVec) {
 		delete[] errNormVec;
 	}
-	dQdU.destroy();
-	dQdV.destroy();
-	dQdA.destroy();
-	dQdT.destroy();
-	dQdTdot.destroy();
-	dQdD.destroy();
-	dVdD.destroy();
+	dQdU->destroy();
+	delete dQdU;
+	dQdV->destroy();
+	delete dQdV;
+	dQdA->destroy();
+	delete dQdA;
+	dQdT->destroy();
+	delete dQdT;
+	dQdTdot->destroy();
+	delete dQdTdot;
+	dQdD->destroy();
+	delete dQdD;
+	dVdD->destroy();
+	delete dVdD;
 
 	return;
 }

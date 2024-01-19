@@ -37,8 +37,8 @@ void Element::getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DesignVari
 	Layer* thisLay = sectPtr->getFirstLayer();
 	while (thisLay) {
 		layThk[layi].setVal(thisLay->getThickness());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVpt = dvAr[thisDV->value];
 			if (thisDVpt->getCategory() == "thickness" && thisDVpt->getLayer() == layi) {
@@ -56,8 +56,8 @@ void Element::getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DesignVari
 	}
 
 	zOffset.setVal(sectPtr->getZOffset());
-	thisDV = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisDV = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while (thisDV) {
 		thisDVpt = dvAr[thisDV->value];
 		if (thisDVpt->getCategory() == "zOffset") {
@@ -132,8 +132,8 @@ void Element::getLayerQ(Doub layQ[], DesignVariable* dvAr[]) {
 			poissonDV[i1].setVal(pr[i1]);
 			shearModDV[i1].setVal(shMod[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -222,8 +222,8 @@ void Element::getLayerD(Doub layD[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			dampMatDV[i1].setVal(dampMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -286,8 +286,8 @@ void Element::getLayerAngle(Doub layAng[], DesignVariable* dvAr[]) {
 	thisLay = sectPtr->getFirstLayer();
 	while (thisLay) {
 		angle.setVal(thisLay->getAngle());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -335,8 +335,8 @@ void Element::getLayerThExp(Doub layThExp[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 6; i1++) {
 			tExpDV[i1].setVal(matExp[i1]);
 		}
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "thermalExp" && thisDV->getLayer() == layi) {
@@ -382,8 +382,8 @@ void Element::getLayerEinit(Doub layEinit[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 6; i1++) {
 			E0DV[i1].setVal(0.0);
 		}
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "initialStrain" && thisDV->getLayer() == layi) {
@@ -423,8 +423,8 @@ void Element::getLayerDen(Doub layerDen[], DesignVariable* dvAr[]) {
 	while (thisLay) {
 		matDen = thisLay->getMatPt()->getDensity();
 		denDV.setVal(matDen);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "density" && thisDV->getLayer() == layi) {
@@ -465,8 +465,8 @@ void Element::getLayerCond(Doub layCond[], DesignVariable* dvAr[]) {
 		for (i2 = 0; i2 < 6; i2++) {
 			condDV[i1].setVal(matCond[i2]);
 		}
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "thermalCond" && thisDV->getLayer() == layi) {
@@ -511,8 +511,8 @@ void Element::getLayerSpecHeat(Doub laySH[], DesignVariable* dvAr[]) {
 	while (thisLay) {
 		matSH = thisLay->getMatPt()->getSpecificHeat();
 		shDV.setVal(matSH);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "specHeat" && thisDV->getLayer() == layi) {
@@ -681,8 +681,8 @@ void Element::getSolidStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Cmat[i1].setVal(stiffMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -715,8 +715,8 @@ void Element::getSolidStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 			poissonDV[i1].setVal(pr[i1]);
 			shearModDV[i1].setVal(shMod[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -925,8 +925,8 @@ void Element::getBeamStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Cmat[i1].setVal(stiffMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -963,8 +963,8 @@ void Element::getBeamStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 			IDV[i1].setVal(areaMom[i1]);
 		}
 		JDV.setVal(sectPtr->getPolarMoment());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -1071,8 +1071,8 @@ void Element::getThermalExp(Doub thExp[], Doub Einit[], DesignVariable* dvAr[]) 
 		Einit[i1].setVal(0.0);
 	}
 
-	thisDVEnt = designVars.getFirst();
-	thisCEnt = dvCoef.getFirst();
+	thisDVEnt = designVars->getFirst();
+	thisCEnt = dvCoef->getFirst();
 	while (thisDVEnt) {
 		thisDV = dvAr[thisDVEnt->value];
 		if (thisDV->getCategory() == "thermalExp") {
@@ -1196,8 +1196,8 @@ void Element::getBeamExpLoad(Doub expLd[], Doub E0Ld[], DesignVariable* dvAr[]) 
 			expLd[i1].setVal(secExpLd[i1]);
 			E0Ld[i1].setVal(0.0);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -1238,8 +1238,8 @@ void Element::getBeamExpLoad(Doub expLd[], Doub E0Ld[], DesignVariable* dvAr[]) 
 			IDV[i1].setVal(sectI[i1]);
 		}
 		catList = "modulus shearModulus thermalExp initialStrain area areaMoment";
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -1324,8 +1324,8 @@ void Element::getDensity(Doub& den, int layer, DesignVariable* dvAr[]) {
 		}
 		thisMat = thisLay->getMatPt();
 		den.setVal(thisMat->getDensity());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -1342,8 +1342,8 @@ void Element::getDensity(Doub& den, int layer, DesignVariable* dvAr[]) {
 	} else {
 		thisMat = sectPtr->getMatPtr();
 		den.setVal(thisMat->getDensity());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -1446,8 +1446,8 @@ void Element::getBeamMass(Doub Mmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Mmat[i1].setVal(massMat[i1]);
 		}
-		dvEnt = designVars.getFirst();
-		coefEnt = dvCoef.getFirst();
+		dvEnt = designVars->getFirst();
+		coefEnt = dvCoef->getFirst();
 		while (dvEnt) {
 			thisDV = dvAr[dvEnt->value];
 			if (thisDV->getCategory() == "massMat") {
@@ -1482,8 +1482,8 @@ void Element::getBeamMass(Doub Mmat[], DesignVariable* dvAr[]) {
 		JDV.setVal(sectPtr->getPolarMoment());
 		matPt = sectPtr->getMatPtr();
 		denDV.setVal(matPt->getDensity());
-		dvEnt = designVars.getFirst();
-		coefEnt = dvCoef.getFirst();
+		dvEnt = designVars->getFirst();
+		coefEnt = dvCoef->getFirst();
 		while (dvEnt) {
 			thisDV = dvAr[dvEnt->value];
 			dCat = thisDV->getCategory();
@@ -1563,8 +1563,8 @@ void Element::getSolidDamp(Doub Dmat[], DesignVariable* dvAr[]) {
 	int i3;
 	int i4;
 	DesignVariable* thisDV;
-	IntListEnt* thisDVEnt = designVars.getFirst();
-	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	IntListEnt* thisDVEnt = designVars->getFirst();
+	DoubListEnt* thisCEnt = dvCoef->getFirst();
 	Doub temp;
 	Doub dvVal;
 	int dvComp;
@@ -1638,8 +1638,8 @@ void Element::getBeamDamp(Doub Dmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Dmat[i1].setVal(dampMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -1674,8 +1674,8 @@ void Element::getBeamDamp(Doub Dmat[], DesignVariable* dvAr[]) {
 			IDV[i1].setVal(areaMom[i1]);
 		}
 		JDV.setVal(sectPtr->getPolarMoment());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -1766,8 +1766,8 @@ void Element::getConductivity(Doub tCond[], DesignVariable* dvAr[]) {
 	double* secCond = matPt->getConductivity();
 	Doub condDV[6];
 	DesignVariable* thisDV;
-	IntListEnt* thisDVEnt = designVars.getFirst();
-	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	IntListEnt* thisDVEnt = designVars->getFirst();
+	DoubListEnt* thisCEnt = dvCoef->getFirst();
 	Doub temp;
 	Doub dvVal;
 	int dvComp;
@@ -1856,8 +1856,8 @@ void Element::getBeamCond(Doub tCond[], DesignVariable* dvAr[]) {
 	
 	if (secCon > 0.0) {
 		condDV.setVal(secCon);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "thermCond") {
@@ -1873,8 +1873,8 @@ void Element::getBeamCond(Doub tCond[], DesignVariable* dvAr[]) {
 	else {
 		condDV.setVal(matCon[0]);
 		areaDV.setVal(sectPtr->getArea());
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			cat = thisDV->getCategory();
@@ -1913,8 +1913,8 @@ void Element::getSpecificHeat(Doub& specHeat, DesignVariable* dvAr[]) {
 	double secSpecHeat = matPt->getSpecificHeat();
 	Doub specHeatDV;
 	DesignVariable* thisDV;
-	IntListEnt* thisDVEnt = designVars.getFirst();
-	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	IntListEnt* thisDVEnt = designVars->getFirst();
+	DoubListEnt* thisCEnt = dvCoef->getFirst();
 	Doub temp;
 	Doub dvVal;
 	int dvComp;
@@ -1969,8 +1969,8 @@ void Element::getBeamSpecHeat(Doub& specHeat, DesignVariable* dvAr[]) {
 
 	if (secSH > 0.0) {
 		specHeat.setVal(secSH);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "specHeat") {
@@ -1987,8 +1987,8 @@ void Element::getBeamSpecHeat(Doub& specHeat, DesignVariable* dvAr[]) {
 		specHeat.setVal(matSH);
 		densityDV.setVal(matDen);
 		areaDV.setVal(sectPtr->getArea());
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			cat = thisDV->getCategory();
@@ -2056,8 +2056,8 @@ void Element::getLocOri(Doub locOri[], DesignVariable* dvAr[]) {
 	rot[0].setVal(0.0);
 	rot[1].setVal(0.0);
     rot[2].setVal(0.0);
-	thisDV = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisDV = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while(thisDV) {
 		dvInd = thisDV->value;
 		thisDVpt = dvAr[dvInd];
@@ -2197,8 +2197,8 @@ void Element::getFrcFldConst(Doub coef[], Doub exp[], DesignVariable* dvAr[]) {
 	exp[0].setVal(sectPtr->getPotExp());
 	exp[1].setVal(sectPtr->getDampExp());
 
-	thisEnt = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisEnt = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while (thisEnt) {
 		thisDV = dvAr[thisEnt->value];
 		cat = thisDV->getCategory();
@@ -2231,8 +2231,8 @@ void Element::getMassPerEl(Doub& massPerEl, DesignVariable* dvAr[]) {
 
 	massPerEl.setVal(sectPtr->getMassPerEl());
 
-	thisEnt = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisEnt = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while (thisEnt) {
 		thisDV = dvAr[thisEnt->value];
 		cat = thisDV->getCategory();
@@ -2275,8 +2275,8 @@ void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset
 	Layer* thisLay = sectPtr->getFirstLayer();
 	while (thisLay) {
 		layThk[layi].setVal(thisLay->getThickness());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVpt = dvAr[thisDV->value];
 			if (thisDVpt->getCategory() == "thickness" && thisDVpt->getLayer() == layi) {
@@ -2294,8 +2294,8 @@ void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset
 	}
 
 	zOffset.setVal(sectPtr->getZOffset());
-	thisDV = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisDV = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while (thisDV) {
 		thisDVpt = dvAr[thisDV->value];
 		if (thisDVpt->getCategory() == "zOffset") {
@@ -2370,8 +2370,8 @@ void Element::getLayerQ(DiffDoub layQ[], DesignVariable* dvAr[]) {
 			poissonDV[i1].setVal(pr[i1]);
 			shearModDV[i1].setVal(shMod[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -2460,8 +2460,8 @@ void Element::getLayerD(DiffDoub layD[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			dampMatDV[i1].setVal(dampMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -2524,8 +2524,8 @@ void Element::getLayerAngle(DiffDoub layAng[], DesignVariable* dvAr[]) {
 	thisLay = sectPtr->getFirstLayer();
 	while (thisLay) {
 		angle.setVal(thisLay->getAngle());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -2573,8 +2573,8 @@ void Element::getLayerThExp(DiffDoub layThExp[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 6; i1++) {
 			tExpDV[i1].setVal(matExp[i1]);
 		}
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "thermalExp" && thisDV->getLayer() == layi) {
@@ -2620,8 +2620,8 @@ void Element::getLayerEinit(DiffDoub layEinit[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 6; i1++) {
 			E0DV[i1].setVal(0.0);
 		}
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "initialStrain" && thisDV->getLayer() == layi) {
@@ -2661,8 +2661,8 @@ void Element::getLayerDen(DiffDoub layerDen[], DesignVariable* dvAr[]) {
 	while (thisLay) {
 		matDen = thisLay->getMatPt()->getDensity();
 		denDV.setVal(matDen);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "density" && thisDV->getLayer() == layi) {
@@ -2703,8 +2703,8 @@ void Element::getLayerCond(DiffDoub layCond[], DesignVariable* dvAr[]) {
 		for (i2 = 0; i2 < 6; i2++) {
 			condDV[i1].setVal(matCond[i2]);
 		}
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "thermalCond" && thisDV->getLayer() == layi) {
@@ -2749,8 +2749,8 @@ void Element::getLayerSpecHeat(DiffDoub laySH[], DesignVariable* dvAr[]) {
 	while (thisLay) {
 		matSH = thisLay->getMatPt()->getSpecificHeat();
 		shDV.setVal(matSH);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "specHeat" && thisDV->getLayer() == layi) {
@@ -2919,8 +2919,8 @@ void Element::getSolidStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Cmat[i1].setVal(stiffMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -2953,8 +2953,8 @@ void Element::getSolidStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 			poissonDV[i1].setVal(pr[i1]);
 			shearModDV[i1].setVal(shMod[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -3163,8 +3163,8 @@ void Element::getBeamStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Cmat[i1].setVal(stiffMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -3201,8 +3201,8 @@ void Element::getBeamStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 			IDV[i1].setVal(areaMom[i1]);
 		}
 		JDV.setVal(sectPtr->getPolarMoment());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -3309,8 +3309,8 @@ void Element::getThermalExp(DiffDoub thExp[], DiffDoub Einit[], DesignVariable* 
 		Einit[i1].setVal(0.0);
 	}
 
-	thisDVEnt = designVars.getFirst();
-	thisCEnt = dvCoef.getFirst();
+	thisDVEnt = designVars->getFirst();
+	thisCEnt = dvCoef->getFirst();
 	while (thisDVEnt) {
 		thisDV = dvAr[thisDVEnt->value];
 		if (thisDV->getCategory() == "thermalExp") {
@@ -3434,8 +3434,8 @@ void Element::getBeamExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DesignVariable* 
 			expLd[i1].setVal(secExpLd[i1]);
 			E0Ld[i1].setVal(0.0);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -3476,8 +3476,8 @@ void Element::getBeamExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DesignVariable* 
 			IDV[i1].setVal(sectI[i1]);
 		}
 		catList = "modulus shearModulus thermalExp initialStrain area areaMoment";
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -3562,8 +3562,8 @@ void Element::getDensity(DiffDoub& den, int layer, DesignVariable* dvAr[]) {
 		}
 		thisMat = thisLay->getMatPt();
 		den.setVal(thisMat->getDensity());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -3580,8 +3580,8 @@ void Element::getDensity(DiffDoub& den, int layer, DesignVariable* dvAr[]) {
 	} else {
 		thisMat = sectPtr->getMatPtr();
 		den.setVal(thisMat->getDensity());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			thisDVPt = dvAr[thisDV->value];
 			cat = thisDVPt->getCategory();
@@ -3684,8 +3684,8 @@ void Element::getBeamMass(DiffDoub Mmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Mmat[i1].setVal(massMat[i1]);
 		}
-		dvEnt = designVars.getFirst();
-		coefEnt = dvCoef.getFirst();
+		dvEnt = designVars->getFirst();
+		coefEnt = dvCoef->getFirst();
 		while (dvEnt) {
 			thisDV = dvAr[dvEnt->value];
 			if (thisDV->getCategory() == "massMat") {
@@ -3720,8 +3720,8 @@ void Element::getBeamMass(DiffDoub Mmat[], DesignVariable* dvAr[]) {
 		JDV.setVal(sectPtr->getPolarMoment());
 		matPt = sectPtr->getMatPtr();
 		denDV.setVal(matPt->getDensity());
-		dvEnt = designVars.getFirst();
-		coefEnt = dvCoef.getFirst();
+		dvEnt = designVars->getFirst();
+		coefEnt = dvCoef->getFirst();
 		while (dvEnt) {
 			thisDV = dvAr[dvEnt->value];
 			dCat = thisDV->getCategory();
@@ -3801,8 +3801,8 @@ void Element::getSolidDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
 	int i3;
 	int i4;
 	DesignVariable* thisDV;
-	IntListEnt* thisDVEnt = designVars.getFirst();
-	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	IntListEnt* thisDVEnt = designVars->getFirst();
+	DoubListEnt* thisCEnt = dvCoef->getFirst();
 	DiffDoub temp;
 	DiffDoub dvVal;
 	int dvComp;
@@ -3876,8 +3876,8 @@ void Element::getBeamDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
 		for (i1 = 0; i1 < 36; i1++) {
 			Dmat[i1].setVal(dampMat[i1]);
 		}
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -3912,8 +3912,8 @@ void Element::getBeamDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
 			IDV[i1].setVal(areaMom[i1]);
 		}
 		JDV.setVal(sectPtr->getPolarMoment());
-		thisDV = designVars.getFirst();
-		thisCoef = dvCoef.getFirst();
+		thisDV = designVars->getFirst();
+		thisCoef = dvCoef->getFirst();
 		while (thisDV) {
 			dvInd = thisDV->value;
 			thisDVpt = dvAr[dvInd];
@@ -4004,8 +4004,8 @@ void Element::getConductivity(DiffDoub tCond[], DesignVariable* dvAr[]) {
 	double* secCond = matPt->getConductivity();
 	DiffDoub condDV[6];
 	DesignVariable* thisDV;
-	IntListEnt* thisDVEnt = designVars.getFirst();
-	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	IntListEnt* thisDVEnt = designVars->getFirst();
+	DoubListEnt* thisCEnt = dvCoef->getFirst();
 	DiffDoub temp;
 	DiffDoub dvVal;
 	int dvComp;
@@ -4094,8 +4094,8 @@ void Element::getBeamCond(DiffDoub tCond[], DesignVariable* dvAr[]) {
 	
 	if (secCon > 0.0) {
 		condDV.setVal(secCon);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "thermCond") {
@@ -4111,8 +4111,8 @@ void Element::getBeamCond(DiffDoub tCond[], DesignVariable* dvAr[]) {
 	else {
 		condDV.setVal(matCon[0]);
 		areaDV.setVal(sectPtr->getArea());
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			cat = thisDV->getCategory();
@@ -4151,8 +4151,8 @@ void Element::getSpecificHeat(DiffDoub& specHeat, DesignVariable* dvAr[]) {
 	double secSpecHeat = matPt->getSpecificHeat();
 	DiffDoub specHeatDV;
 	DesignVariable* thisDV;
-	IntListEnt* thisDVEnt = designVars.getFirst();
-	DoubListEnt* thisCEnt = dvCoef.getFirst();
+	IntListEnt* thisDVEnt = designVars->getFirst();
+	DoubListEnt* thisCEnt = dvCoef->getFirst();
 	DiffDoub temp;
 	DiffDoub dvVal;
 	int dvComp;
@@ -4207,8 +4207,8 @@ void Element::getBeamSpecHeat(DiffDoub& specHeat, DesignVariable* dvAr[]) {
 
 	if (secSH > 0.0) {
 		specHeat.setVal(secSH);
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			if (thisDV->getCategory() == "specHeat") {
@@ -4225,8 +4225,8 @@ void Element::getBeamSpecHeat(DiffDoub& specHeat, DesignVariable* dvAr[]) {
 		specHeat.setVal(matSH);
 		densityDV.setVal(matDen);
 		areaDV.setVal(sectPtr->getArea());
-		thisDVEnt = designVars.getFirst();
-		thisCEnt = dvCoef.getFirst();
+		thisDVEnt = designVars->getFirst();
+		thisCEnt = dvCoef->getFirst();
 		while (thisDVEnt) {
 			thisDV = dvAr[thisDVEnt->value];
 			cat = thisDV->getCategory();
@@ -4294,8 +4294,8 @@ void Element::getLocOri(DiffDoub locOri[], DesignVariable* dvAr[]) {
 	rot[0].setVal(0.0);
 	rot[1].setVal(0.0);
     rot[2].setVal(0.0);
-	thisDV = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisDV = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while(thisDV) {
 		dvInd = thisDV->value;
 		thisDVpt = dvAr[dvInd];
@@ -4435,8 +4435,8 @@ void Element::getFrcFldConst(DiffDoub coef[], DiffDoub exp[], DesignVariable* dv
 	exp[0].setVal(sectPtr->getPotExp());
 	exp[1].setVal(sectPtr->getDampExp());
 
-	thisEnt = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisEnt = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while (thisEnt) {
 		thisDV = dvAr[thisEnt->value];
 		cat = thisDV->getCategory();
@@ -4469,8 +4469,8 @@ void Element::getMassPerEl(DiffDoub& massPerEl, DesignVariable* dvAr[]) {
 
 	massPerEl.setVal(sectPtr->getMassPerEl());
 
-	thisEnt = designVars.getFirst();
-	thisCoef = dvCoef.getFirst();
+	thisEnt = designVars->getFirst();
+	thisCoef = dvCoef->getFirst();
 	while (thisEnt) {
 		thisDV = dvAr[thisEnt->value];
 		cat = thisDV->getCategory();
@@ -4490,6 +4490,7 @@ void Element::getMassPerEl(DiffDoub& massPerEl, DesignVariable* dvAr[]) {
 //end dup
  
 //end skip 
+ 
  
  
  

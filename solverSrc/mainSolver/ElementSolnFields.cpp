@@ -3287,6 +3287,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
  
  
  
+ 
 void Element::getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]) {
 	int i1;
 	int i2;

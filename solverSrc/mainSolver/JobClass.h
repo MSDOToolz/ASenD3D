@@ -39,8 +39,8 @@ class JobCommand {
 		
 		// writeNodeResults
 		std::string nodeSet;
-		StringList fields;
-		IntList timeSteps;
+		StringList* fields;
+		IntList* timeSteps;
 		std::string timeStepTag;
 		
 		// writeElementResults
@@ -50,10 +50,10 @@ class JobCommand {
 		bool writeModes;
 		
 		// writeElementProperties
-		StringList properties;
+		StringList* properties;
 		
 		// writeObjective
-		StringList objInclude;
+		StringList* objInclude;
 		bool writeGradient;
 		
 		JobCommand *next;

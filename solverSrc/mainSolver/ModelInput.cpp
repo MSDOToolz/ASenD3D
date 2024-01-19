@@ -124,7 +124,7 @@ void Model::readJob(string fileName) {
 			if(headings[1] == "command" && dataLen == 1) {
 				newCmd = new JobCommand();
 				newCmd->cmdString = data[0];
-				job.addCommand(newCmd);
+				job->addCommand(newCmd);
 			} else if(headings[1] == "fileName" && dataLen == 1) {
 				newCmd->fileName = data[0];
 			} else if(headings[1] == "dynamic" && dataLen == 1) {
@@ -197,7 +197,7 @@ void Model::readJob(string fileName) {
 			} else if(headings[1] == "nodeSet" && dataLen == 1) {
 				newCmd->nodeSet = data[0];
 			} else if(headings[1] == "fields" && dataLen == 1) {
-				newCmd->fields.addEntry(data[0]);
+				newCmd->fields->addEntry(data[0]);
 			} else if(headings[1] == "timeSteps") {
 				if(dataLen == 1) {
 					if(data[0] == "all") {
@@ -207,7 +207,7 @@ void Model::readJob(string fileName) {
 					} else {
 						try {
 							i1 = stoi(data[0]);
-							newCmd->timeSteps.addEntry(stoi(data[0]));
+							newCmd->timeSteps->addEntry(stoi(data[0]));
 						} catch(...) {
 							errSt = "Warning: possible invalid entry for " + headings[0] + " timeSteps in job file " + fileName;
 							cout << errSt << endl;
@@ -222,7 +222,7 @@ void Model::readJob(string fileName) {
 						i4 = 1;
 					}
 					for (i1 = i2; i1 < i3; i1+= i4) {
-						newCmd->timeSteps.addEntry(i1);
+						newCmd->timeSteps->addEntry(i1);
 					}
 				}
 			} else if(headings[1] == "elementSet" && dataLen == 1) {
@@ -234,9 +234,9 @@ void Model::readJob(string fileName) {
 					newCmd->writeModes = false;
 				}
 			} else if(headings[1] == "properties" && dataLen == 1) {
-				newCmd->properties.addEntry(data[0]);
+				newCmd->properties->addEntry(data[0]);
 			} else if(headings[1] == "include" && dataLen == 1) {
-				newCmd->objInclude.addEntry(data[0]);
+				newCmd->objInclude->addEntry(data[0]);
 			} else if(headings[1] == "writeGradient" && dataLen == 1) {
 				if(data[0] == "yes") {
 					newCmd->writeGradient = true;
@@ -288,7 +288,7 @@ void Model::readModelInput(string fileName) {
 				doubInp[1] = stod(data[2]);
 				doubInp[2] = stod(data[3]);
 				newNd->setCrd(doubInp);
-				nodes.addNode(newNd);
+				nodes->addNode(newNd);
 			} else if(headings[0] == "elements") {
 				if(headings[1] == "type" && dataLen == 1) {
 					if(data[0] == "tet4") {
@@ -323,18 +323,18 @@ void Model::readModelInput(string fileName) {
 						intInp[i1-1] = stoi(data[i1]);
 					}
 					newEl->setNodes(intInp);
-					elements.addElement(newEl);
+					elements->addElement(newEl);
 				} 
 			} else if(headings[0] == "sets") {
 				if(headings[1] == "node") {
 					if(headings[2] == "name" && dataLen == 1) {
 						newSet = new Set;
 						newSet->setName(data[0]);
-						nodeSets.addSet(newSet);
+						nodeSets->addSet(newSet);
 					} else if(headings[2] == "labels") {
 						if(dataLen == 1) {
 							if(data[0] == "all") {
-								i2 = nodes.getLength();
+								i2 = nodes->getLength();
 								for (i1 = 0; i1 < i2; i1++) {
 									newSet->addEntry(i1);
 								}
@@ -358,11 +358,11 @@ void Model::readModelInput(string fileName) {
 					if(headings[2] == "name" && dataLen == 1) {
 						newSet = new Set;
 						newSet->setName(data[0]);
-						elementSets.addSet(newSet);
+						elementSets->addSet(newSet);
 					} else if(headings[2] == "labels") {
 						if(dataLen == 1) {
 							if(data[0] == "all") {
-								i2 = elements.getLength();
+								i2 = elements->getLength();
 								for (i1 = 0; i1 < i2; i1++) {
 									newSet->addEntry(i1);
 								}
@@ -386,7 +386,7 @@ void Model::readModelInput(string fileName) {
 			} else if(headings[0] == "sections") {
 				if(headings[1] == "type" && dataLen == 1) {
 					newSec = new Section(data[0]);
-					sections.addSection(newSec);
+					sections->addSection(newSec);
 				} else if(headings[1] == "material" && dataLen == 1) {
 					newSec->setMaterial(data[0]);
 				} else if(headings[1] == "orientation" && dataLen == 6) {
@@ -470,7 +470,7 @@ void Model::readModelInput(string fileName) {
 			} else if(headings[0] == "materials") {
 				if(headings[1] == "name" && dataLen == 1) {
 					newMat = new Material(data[0]);
-					materials.addMaterial(newMat);
+					materials->addMaterial(newMat);
 				} else if(headings[1] == "density" && dataLen == 1) {
 					newMat->setDensity(stod(data[0]));
 				} else if(headings[1] == "elastic") {
@@ -610,9 +610,9 @@ void Model::readModelInput(string fileName) {
 	}
 	
 	// Populate node array
-	i1 = nodes.getLength();
+	i1 = nodes->getLength();
 	nodeArray = new Node*[i1];
-	newNd = nodes.getFirst();
+	newNd = nodes->getFirst();
 	while(newNd) {
 		i1 = newNd->getLabel();
 		nodeArray[i1] = newNd;
@@ -620,9 +620,9 @@ void Model::readModelInput(string fileName) {
 	}
 	
 	// Populate element array
-	i1 = elements.getLength();
+	i1 = elements->getLength();
 	elementArray = new  Element*[i1];
-	newEl = elements.getFirst();
+	newEl = elements->getFirst();
 	while(newEl) {
 		i1 = newEl->getLabel();
 		elementArray[i1] = newEl;
@@ -631,13 +631,13 @@ void Model::readModelInput(string fileName) {
 
 	// Create all and individual nd/element sets
 
-	i1 = nodes.getLength();
+	i1 = nodes->getLength();
     
 	for (i2 = 0; i2 < i1; i2++) {
 		newSet = new Set;
 		newSet->setName(to_string(i2));
 		newSet->addEntry(i2);
-		nodeSets.addSet(newSet);
+		nodeSets->addSet(newSet);
 	}
 
 	newSet = new Set;
@@ -645,15 +645,15 @@ void Model::readModelInput(string fileName) {
 	for (i2 = 0; i2 < i1; i2++) {
 		newSet->addEntry(i2);
 	}
-	nodeSets.addSet(newSet);
+	nodeSets->addSet(newSet);
 
-	i1 = elements.getLength();
+	i1 = elements->getLength();
 
 	for (i2 = 0; i2 < i1; i2++) {
 		newSet = new Set;
 		newSet->setName(to_string(i2));
 		newSet->addEntry(i2);
-		elementSets.addSet(newSet);
+		elementSets->addSet(newSet);
 	}
 
 	newSet = new Set;
@@ -661,14 +661,14 @@ void Model::readModelInput(string fileName) {
 	for (i2 = 0; i2 < i1; i2++) {
 		newSet->addEntry(i2);
 	}
-	elementSets.addSet(newSet);
+	elementSets->addSet(newSet);
 
 	// Populate set arrays
 
-	i1 = nodeSets.getLength();
+	i1 = nodeSets->getLength();
 
 	nsArray = new Set*[i1];
-	newSet = nodeSets.getFirst();
+	newSet = nodeSets->getFirst();
 	i2 = 0;
 	while (newSet) {
 		nsArray[i2] = newSet;
@@ -677,10 +677,10 @@ void Model::readModelInput(string fileName) {
 		i2++;
 	}
 
-	i1 = elementSets.getLength();
+	i1 = elementSets->getLength();
 
 	esArray = new Set*[i1];
-	newSet = elementSets.getFirst();
+	newSet = elementSets->getFirst();
 	i2 = 0;
 	while (newSet) {
 		esArray[i2] = newSet;
@@ -717,10 +717,10 @@ void Model::readConstraintInput(string fileName) {
 				if (headings[1] == "type" && dataLen == 1) {
 					newConst = new Constraint;
 					if (data[0] == "displacement") {
-						elasticConst.addConstraint(newConst);
+						elasticConst->addConstraint(newConst);
 					}
 					else if (data[0] == "temperature") {
-						thermalConst.addConstraint(newConst);
+						thermalConst->addConstraint(newConst);
 					}
 					else {
 						errSt = "Error: " + data[0] + " is not a valid constraint type.  Allowable values are " + allTypes;
@@ -771,10 +771,10 @@ void Model::readLoadInput(string fileName) {
 					newLd = new Load(data[0]);
 					i1 = elasticList.find(data[0]);
 					if (i1 > -1) {
-						elasticLoads.addLoad(newLd);
+						elasticLoads->addLoad(newLd);
 					}
 					else {
-						thermalLoads.addLoad(newLd);
+						thermalLoads->addLoad(newLd);
 					}
 				} else if(headings[1] == "activeTime" && dataLen > 0) {
 					doubInp[0] = stod(data[0]);
@@ -905,7 +905,7 @@ void Model::readDesVarInput(string fileName) {
 			if(headings[0] == "designVariables") {
 				if(headings[1] == "category" && dataLen == 1) {
 					newDVar = new DesignVariable(data[0]);
-					designVars.addDVar(newDVar);
+					designVars->addDVar(newDVar);
 				} else if(headings[1] == "elementSet" && dataLen == 1) {
 					newDVar->setElset(data[0]);
 				} else if(headings[1] == "nodeSet" && dataLen == 1) {
@@ -944,9 +944,9 @@ void Model::readDesVarInput(string fileName) {
 	}
 	
 	// Populate design variable array
-	i1 = designVars.getLength();
+	i1 = designVars->getLength();
 	dVarArray = new DesignVariable*[i1];
-	newDVar = designVars.getFirst();
+	newDVar = designVars->getFirst();
 	i2 = 0;
 	while(newDVar) {
 		dVarArray[i2] = newDVar;
@@ -975,7 +975,7 @@ void Model::readObjectiveInput(string fileName) {
 			if(headings[0] == "objectiveTerms") {
 				if(headings[1] == "category" && dataLen == 1) {
 					newTerm = new ObjectiveTerm(data[0]);
-					objective.addTerm(newTerm);
+					objective->addTerm(newTerm);
 				} else if(headings[1] == "operator" && dataLen == 1) {
 					newTerm->setOperator(data[0]);
 				} else if(headings[1] == "activeTime" && dataLen > 0) {
@@ -1111,7 +1111,7 @@ void Model::readTimeStepSoln(int tStep) {
 	inFile.open(fullFile, std::ifstream::binary);
 
 	inDat = reinterpret_cast<double*>(&inLn[0]);
-	Node* thisNd = nodes.getFirst();
+	Node* thisNd = nodes->getFirst();
 	while (thisNd) {
 		if (solveCmd->thermal) {
 			inFile.read(&inLn[0], 8);
@@ -1133,7 +1133,7 @@ void Model::readTimeStepSoln(int tStep) {
 	}
 
 	if (solveCmd->elastic) {
-		Element* thisEl = elements.getFirst();
+		Element* thisEl = elements->getFirst();
 		while (thisEl) {
 			numIntDof = thisEl->getNumIntDof();
 			if (numIntDof > 0) {

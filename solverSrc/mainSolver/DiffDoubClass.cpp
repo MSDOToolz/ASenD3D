@@ -202,6 +202,10 @@ Diff2Doub::Diff2Doub() {
 	dv1 = 0.0;
 	dv2 = 0.0;
 	dv12 = 0.0;
+	tmp = 0.0;
+	tmp2 = 0.0;
+	tmp3 = 0.0;
+	tmp4 = 0.0;
 	return;
 }
 

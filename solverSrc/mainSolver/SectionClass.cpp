@@ -319,6 +319,7 @@ Section::Section(string newType) {
 	orientation[0] = 1.0;
 	orientation[4] = 1.0;
 	orientation[8] = 1.0;
+	layers = new LayerList;
 	zOffset = 0.0;
 	area = 0.0;
 	for (i1 = 0; i1 < 5; i1++) {
@@ -386,7 +387,7 @@ void Section::setZOffset(double newZOff) {
 }
 
 void Section::addLayer(Layer *newLay) {
-	layers.addLayer(newLay);
+	layers->addLayer(newLay);
 	return;
 }
 
@@ -492,11 +493,11 @@ double Section::getZOffset() {
 }
 
 int Section::getNumLayers() {
-	return layers.getLength();
+	return layers->getLength();
 }
 
 Layer* Section::getFirstLayer() {
-	return layers.getFirst();
+	return layers->getFirst();
 }
 
 double Section::getArea() {
@@ -565,7 +566,8 @@ void Section::setNext(Section *newNext) {
 }
 
 void Section::destroy() {
-	layers.destroy();
+	layers->destroy();
+	delete layers;
 	return;
 }
 

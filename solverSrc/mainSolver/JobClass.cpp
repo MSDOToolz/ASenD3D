@@ -38,6 +38,8 @@ JobCommand::JobCommand() {
 	
 	// writeNodeResults
 	nodeSet = "all";
+	fields = new StringList;
+	timeSteps = new IntList;
 	timeStepTag = "";
 	
 	// writeElementResults
@@ -45,8 +47,11 @@ JobCommand::JobCommand() {
 	
 	// writeModalResults
 	writeModes = true;
+
+	properties = new StringList;
 	
 	// writeObjective
+	objInclude = new StringList;
 	writeGradient = true;	
 	
 	next = nullptr;
@@ -54,10 +59,14 @@ JobCommand::JobCommand() {
 }
 
 void JobCommand::destroy() {
-	fields.destroy();
-	timeSteps.destroy();
-	properties.destroy();
-	objInclude.destroy();
+	fields->destroy();
+	delete fields;
+	timeSteps->destroy();
+	delete timeSteps;
+	properties->destroy();
+	delete properties;
+	objInclude->destroy();
+	delete objInclude;
 	return;
 }
 

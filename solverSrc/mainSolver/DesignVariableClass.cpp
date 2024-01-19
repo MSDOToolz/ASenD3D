@@ -16,8 +16,10 @@ DesignVariable::DesignVariable(string newCat) {
 	ndSetPtr = nullptr;
 	activeTime[0] = 0.0;
 	activeTime[1] = 1.0e+100;
+	coefs = new DoubList;
 	value.setVal(0.0);
 	diffVal.setVal(0.0);
+	compElList = new IntList;
 	nextDV = nullptr;
 }
 
@@ -71,12 +73,12 @@ void DesignVariable::setNext(DesignVariable* newNext) {
 }
 
 void DesignVariable::addCoefficient(double newCoef) {
-	coefs.addEntry(newCoef);
+	coefs->addEntry(newCoef);
 	return;
 }
 
 void DesignVariable::addCompEl(int newEl) {
-	compElList.addIfAbsent(newEl);
+	compElList->addIfAbsent(newEl);
 	return;
 }
 
@@ -101,7 +103,7 @@ Set* DesignVariable::getNdsetPtr() {
 }
 
 DoubList* DesignVariable::getCoefs() {
-	return &coefs;
+	return coefs;
 }
 
 void DesignVariable::getValue(Doub& inp) {
@@ -123,7 +125,7 @@ int DesignVariable::getLayer() {
 }
 
 IntListEnt* DesignVariable::getFirstEl() {
-	return compElList.getFirst();
+	return compElList->getFirst();
 }
 
 IntListEnt* DesignVariable::getFirstNd() {
@@ -138,8 +140,10 @@ DesignVariable* DesignVariable::getNext() {
 }
 
 void DesignVariable::destroy() {
-	coefs.destroy();
-	compElList.destroy();
+	coefs->destroy();
+	delete coefs;
+	compElList->destroy();
+	delete compElList;
 	return;
 }
 
