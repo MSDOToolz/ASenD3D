@@ -48,4 +48,4 @@ myJob.writeObjective('centrifugalLoading/results/objectiveResults.yaml')
 
 myJob.writeJobInput('centrifugalLoading/job.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()

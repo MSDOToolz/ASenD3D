@@ -139,10 +139,8 @@ DesignVariable* DesignVariable::getNext() {
 	return nextDV;
 }
 
-void DesignVariable::destroy() {
-	coefs->destroy();
+DesignVariable::~DesignVariable() {
 	delete coefs;
-	compElList->destroy();
 	delete compElList;
 	return;
 }
@@ -173,12 +171,11 @@ DesignVariable* DesVarList::getFirst() {
 	return firstDVar;
 }
 
-void DesVarList::destroy() {
+DesVarList::~DesVarList() {
 	DesignVariable* thisDV = firstDVar;
 	DesignVariable* nextDV;
 	while (thisDV) {
 		nextDV = thisDV->getNext();
-		thisDV->destroy();
 		delete thisDV;
 		thisDV = nextDV;
 	}

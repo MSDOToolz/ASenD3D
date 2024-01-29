@@ -41,8 +41,7 @@ void Set::setNext(Set* newNext) {
     return;
 }
 
-void Set::destroy() {
-	labels->destroy();
+Set::~Set() {
 	delete labels;
 	labels = nullptr;
 	return;
@@ -77,12 +76,11 @@ Set* SetList::getLast() {
 	return lastSet;
 }
 
-void SetList::destroy() {
+SetList::~SetList() {
 	Set* thisSet = firstSet;
 	Set* nextSet;
 	while (thisSet) {
 		nextSet = thisSet->getNext();
-		thisSet->destroy();
 		delete thisSet;
 		thisSet = nextSet;
 	}

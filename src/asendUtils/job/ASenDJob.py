@@ -95,7 +95,7 @@ class ASenDJob:
         newCmd['solverBlockDim'] = solverBlockDim
         if(maxIt != 0):
             newCmd['maxIterations'] = maxIt
-        if(covTol != 1.0e-12):
+        if(convTol != 1.0e-12):
             newCmd['convergenceTol'] = convTol
         self.jobData['jobCommands'].append(newCmd)
         
@@ -135,12 +135,14 @@ class ASenDJob:
             newCmd['timeSteps'] = timeSteps
         self.jobData['jobCommands'].append(newCmd)
         
-    def writeElementResults(self,fileName,fields,timeSteps=None,elementSet='all'):
+    def writeElementResults(self,fileName,fields,position='centroid',timeSteps=None,elementSet='all'):
         newCmd = dict()
         newCmd['command'] = 'writeElementResults'
         newCmd['fileName'] = makeAbsolute(fileName)
         newCmd['elementSet'] = elementSet
         newCmd['fields'] = fields
+        if(position != 'centroid'):
+            newCmd['position'] = position
         if(timeSteps != None):
             newCmd['timeSteps'] = timeSteps
         self.jobData['jobCommands'].append(newCmd)
@@ -201,7 +203,7 @@ class ASenDJob:
             slvPth = getSolverPath()
         if(not os.path.exists(slvPth)):
             errSt = 'Error: solver path ' + slvPth + 'does not exist. Double check and reset with asendUtils.syst.pathTools.setSolverPath()'
-            raise Exception(errStr)
+            raise Exception(errSt)
         try:
             ptStr = 'Executing job file ' + self.fileName + ' ...'
             print(ptStr)
@@ -215,6 +217,7 @@ class ASenDJob:
             print(ptStr)
             outFile = open(lfName,'w')
             outFile.write(procRes.stdout)
+            outFile.write(procRes.stderr)
             outFile.close()
         except:
             errSt = 'Error: problem executing job: ' + self.fileName + '.  Could not complete analysis.\n'

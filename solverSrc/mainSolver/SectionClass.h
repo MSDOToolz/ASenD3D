@@ -102,7 +102,7 @@ class MaterialList {
 		
 		Material* getFirst();
 
-		void destroy();
+		~MaterialList();
 };
 
 class Layer {
@@ -150,7 +150,7 @@ class LayerList {
 		
 		Layer* getFirst();
 
-		void destroy();
+		~LayerList();
 };
 
 class Section {
@@ -267,7 +267,7 @@ class Section {
 		
 		void setNext(Section *newNext);
 
-		void destroy();
+		~Section();
 };
 
 class SectionList {
@@ -285,7 +285,7 @@ class SectionList {
 		
 		Section* getFirst();
 
-		void destroy();
+		~SectionList();
 };
 
 #endif

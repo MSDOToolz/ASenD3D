@@ -120,7 +120,7 @@ class ObjectiveTerm {
 
 		void getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
-		void destroy();
+		~ObjectiveTerm();
 };
 
 class Objective {
@@ -146,7 +146,7 @@ class Objective {
 
 		void calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]);
 
-		void destroy();
+		~Objective();
 };
 
 #endif

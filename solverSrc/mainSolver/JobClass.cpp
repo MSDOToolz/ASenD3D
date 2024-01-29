@@ -44,6 +44,7 @@ JobCommand::JobCommand() {
 	
 	// writeElementResults
 	elementSet = "all";
+	position = "centroid";
 	
 	// writeModalResults
 	writeModes = true;
@@ -58,14 +59,10 @@ JobCommand::JobCommand() {
 	return;
 }
 
-void JobCommand::destroy() {
-	fields->destroy();
+JobCommand::~JobCommand() {
 	delete fields;
-	timeSteps->destroy();
 	delete timeSteps;
-	properties->destroy();
 	delete properties;
-	objInclude->destroy();
 	delete objInclude;
 	return;
 }
@@ -95,12 +92,11 @@ JobCommand* Job::getFirst() {
 	return firstCmd;
 }
 
-void Job::destroy() {
+Job::~Job() {
 	JobCommand* thisCmd = firstCmd;
 	JobCommand* nextCmd;
 	while (thisCmd) {
 		nextCmd = thisCmd->next;
-		thisCmd->destroy();
 		delete thisCmd;
 		thisCmd = nextCmd;
 	}

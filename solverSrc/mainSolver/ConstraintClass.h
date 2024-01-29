@@ -77,7 +77,7 @@ class Constraint {
 
 		void writeToFile(std::ofstream& outFile);
 		
-		void destroy();
+		~Constraint();
 };
 
 class ConstraintList {
@@ -100,7 +100,7 @@ class ConstraintList {
 
 		void writeAllToFile(std::string fileName);
 		
-		void destroy();
+		~ConstraintList();
 };
 
 #endif

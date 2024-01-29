@@ -295,7 +295,7 @@ void LowerTriMat::writeToFile(ofstream& outFile) {
 	return;
 }
 
-void LowerTriMat::destroy() {
+LowerTriMat::~LowerTriMat() {
 	if (dim < 0) {
 		delete[] range;
 		delete[] minCol;

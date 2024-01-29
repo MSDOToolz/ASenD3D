@@ -187,13 +187,7 @@ void Model::reorderNodes(int blockDim) {
 	}
 	else {
 		dLdD = nullptr;
-	}
-
-    for (i1 = 0; i1 < numNodes; i1++) {
-		nodalConn[i1].destroy();
-	}
-
-    orderedNds.destroy();	
+	}	
 	
 	delete[] nodalConn;
 	delete[] nodeInserted;
@@ -466,9 +460,6 @@ void Model::findSurfaceFaces() {
 		thisEl = thisEl->getNext();
 	}
 	
-	for (i1 = 0; i1 < numNodes; i1++) {
-		fLArray[i1].destroy();
-	}
 	delete[] fLArray;
 	
 	return;
@@ -579,7 +570,6 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 		thisNd = thisNd->getNext();
 	}
 
-	pre->destroy();
 	delete pre;
 	
 	return;
@@ -650,7 +640,6 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 		thisNd = thisNd->getNext();
 	}
 
-	pre->destroy();
 	delete pre;
 
 	return;
@@ -679,7 +668,6 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 		solnLd[i1]-= tempD1[i1].val;
 	}
 
-	pre->destroy();
 	delete pre;
 	
 	return;
@@ -711,7 +699,6 @@ void Model::buildThermalSolnLoad(double solnLd[], bool buildMat) {
 		solnLd[i1] -= tempD1[i1].val;
 	}
 
-	pre->destroy();
 	delete pre;
 
 	return;
@@ -1119,68 +1106,11 @@ void Model::eigenSolve(JobCommand* cmd) {
 	solveCmd->nonlinearGeom = cmd->nonlinearGeom;
 	solveCmd->dynamic = cmd->dynamic;
 
-	pre->destroy();
 	delete pre;
 
 	return;
 }
 
-//void Model::backupElastic() {
-//	int i1;
-//	int i2;
-//	int numIntDof;
-//	Node* thisNd = nodes->getFirst();
-//	i1 = 0;
-//	i2 = 0;
-//	double zeros[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-//	while (thisNd) {
-//		thisNd->getPrevDisp(&tempV1[i1]);
-//		thisNd->getPrevVel(&tempV2[i1]);
-//		thisNd->getPrevAcc(&tempV3[i1]);
-//		tempV4[i2] = thisNd->getTemperature();
-//		thisNd->getDisp(&tempV5[i1]);
-//		thisNd->setPrevDisp(zeros);
-//		thisNd->setPrevVel(zeros);
-//		thisNd->setPrevAcc(zeros);
-//		thisNd->setTemperature(zeros[0]);
-//		thisNd->setDisplacement(zeros);
-//		thisNd = thisNd->getNext();
-//		i1 += thisNd->getNumDof();
-//		i2++;
-//	}
-//
-//	Element* thisEl = elements->getFirst();
-//	i1 = 0;
-//	while (thisEl) {
-//		numIntDof = thisEl->getNumIntDof();
-//		if (numIntDof > 0) {
-//			thisEl->getIntDisp(&tempV6[i1]);
-//			i1 += numIntDof;
-//		}
-//		thisEl = thisEl->getNext();
-//	}
-//	return;
-//}
-//
-//void Model::restoreElastic() {
-//	int i1;
-//	int i2;
-//	Node* thisNd = nodes->getFirst();
-//	i1 = 0;
-//	i2 = 0;
-//	double zeros[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-//	while (thisNd) {
-//		thisNd->setPrevDisp(&tempV1[i1]);
-//		thisNd->setPrevVel(&tempV2[i1]);
-//		thisNd->setPrevAcc(&tempV3[i1]);
-//		thisNd->setTemperature(tempV4[i2]);
-//		thisNd->setDisplacement(&tempV5[i1]);
-//		thisNd = thisNd->getNext();
-//		i1 += thisNd->getNumDof();
-//		i2++;
-//	}
-//	return;
-//}
 
 void Model::setSolnToMode(string field, int mode, double maxVal) {
 	int i1;
@@ -1332,7 +1262,6 @@ void Model::augmentdLdU() {
 		}
 	}
 	
-	pre->destroy();
 	delete pre;
 	delete[] Mmat;
 	delete[] Dmat;
@@ -1443,7 +1372,6 @@ void Model::solveForAdjoint() {
 		}
 	}
 	
-	pre->destroy();
 	delete pre;
 	
 	return;
@@ -1526,7 +1454,6 @@ void Model::dRthermaldD(int dVarNum) {
 
 	thisDV->setDiffVal(dvVal.val, 0.0);
 	
-	pre->destroy();
 	delete pre;
 	return;
 }
@@ -1611,7 +1538,6 @@ void Model::dRelasticdD(int dVarNum) {
 
 	thisDV->setDiffVal(dvVal.val, 0.0);
 	
-	pre->destroy();
 	delete pre;
 
 	return;

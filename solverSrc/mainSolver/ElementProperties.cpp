@@ -242,8 +242,8 @@ void Element::getLayerD(Doub layD[], DesignVariable* dvAr[]) {
 		}
 
 		for (i3 = 1; i3 < 6; i3++) {
-			i5 = 6 * i1; // Lower tri term
-			i6 = i1; // Upper tri term
+			i5 = 6 * i3; // Lower tri term
+			i6 = i3; // Upper tri term
 			for (i4 = 0; i4 < i3; i4++) {
 				dampMatDV[i5].setVal(dampMatDV[i6]);
 				i5++;
@@ -2480,8 +2480,8 @@ void Element::getLayerD(DiffDoub layD[], DesignVariable* dvAr[]) {
 		}
 
 		for (i3 = 1; i3 < 6; i3++) {
-			i5 = 6 * i1; // Lower tri term
-			i6 = i1; // Upper tri term
+			i5 = 6 * i3; // Lower tri term
+			i6 = i3; // Upper tri term
 			for (i4 = 0; i4 < i3; i4++) {
 				dampMatDV[i5].setVal(dampMatDV[i6]);
 				i5++;

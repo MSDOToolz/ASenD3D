@@ -74,7 +74,7 @@ class DesignVariable {
 		
 		DesignVariable* getNext();
 		
-		void destroy();
+		~DesignVariable();
 };
 
 class DesVarList {
@@ -92,7 +92,7 @@ class DesVarList {
 		
 		DesignVariable* getFirst();
 
-		void destroy();
+		~DesVarList();
 };
 
 #endif

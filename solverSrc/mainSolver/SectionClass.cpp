@@ -205,7 +205,7 @@ Material* MaterialList::getFirst() {
 	return firstMat;
 }
 
-void MaterialList::destroy() {
+MaterialList::~MaterialList() {
 	Material* thisMat = firstMat;
 	Material* nextMat;
 	while (thisMat) {
@@ -291,7 +291,7 @@ Layer* LayerList::getFirst() {
 	return firstLay;
 }
 
-void LayerList::destroy() {
+LayerList::~LayerList() {
 	Layer* thisLay = firstLay;
 	Layer* nextLay;
 	while (thisLay) {
@@ -565,8 +565,7 @@ void Section::setNext(Section *newNext) {
 	return;
 }
 
-void Section::destroy() {
-	layers->destroy();
+Section::~Section() {
 	delete layers;
 	return;
 }
@@ -598,12 +597,11 @@ Section* SectionList::getFirst() {
 	return firstSec;
 }
 
-void SectionList::destroy() {
+SectionList::~SectionList() {
 	Section* thisSec = firstSec;
 	Section* nextSec;
 	while (thisSec) {
 		nextSec = thisSec->getNext();
-		thisSec->destroy();
 		delete thisSec;
 		thisSec = nextSec;
 	}

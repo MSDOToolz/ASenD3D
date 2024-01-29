@@ -30,7 +30,7 @@ class IntList {
 		
 		void addIfAbsent(int newInt);
 		
-		void destroy();
+		~IntList();
 };
 
 class DoubListEnt {
@@ -58,7 +58,7 @@ class DoubList {
 		
 		void addIfAbsent(double newDoub);
 		
-		void destroy();
+		~DoubList();
 };
 
 class StringListEnt {
@@ -84,7 +84,7 @@ class StringList {
 		
 		void addEntry(std::string newStr);
 		
-		void destroy();
+		~StringList();
 };
 
 class MatrixEnt {
@@ -121,6 +121,6 @@ class SparseMat {
 
 		void writeToFile(std::ofstream& outFile);
 		
-		void destroy();
+		~SparseMat();
 };
 #endif

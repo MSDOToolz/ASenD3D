@@ -563,10 +563,8 @@ void Node::setNext(Node *newNext) {
 	nextNd = newNext;
 }
 
-void Node::destroy() {
-	dVars->destroy();
+Node::~Node() {
 	delete dVars;
-	coefs->destroy();
 	delete coefs;
 	return;
 }
@@ -597,12 +595,11 @@ Node* NodeList::getFirst() {
 	return firstNode;
 }
 
-void NodeList::destroy() {
+NodeList::~NodeList() {
 	Node* thisNd = firstNode;
 	Node* nextNd;
 	while (thisNd) {
 		nextNd = thisNd->getNext();
-		thisNd->destroy();
 		delete thisNd;
 		thisNd = nextNd;
 	}

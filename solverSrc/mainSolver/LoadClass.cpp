@@ -196,7 +196,7 @@ Load* LoadList::getFirst() {
 	return firstLoad;
 }
 
-void LoadList::destroy() {
+LoadList::~LoadList() {
 	Load* thisLd = firstLoad;
 	Load* nextLd;
 	while (thisLd) {

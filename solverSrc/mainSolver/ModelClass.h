@@ -105,7 +105,7 @@ class Model {
 		
 		void executeJob();
 
-        void destroy();	// Finish	
+        ~Model();	// Finish	
 		
 		// Input
 		
@@ -187,7 +187,7 @@ class Model {
 		
 		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
 
-		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, int timeStep);
+		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, std::string position, int timeStep);
 
 		void writeModalResults(std::string fileName, bool writeModes);
 

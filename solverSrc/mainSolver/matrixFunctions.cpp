@@ -504,7 +504,6 @@ void getEvals(double eVals[], double mat[], int matDim, double lamInit, double c
 		i1++;
 	}
 	delete[] matCopy;
-	eValList.destroy();
 	return;
 }
 

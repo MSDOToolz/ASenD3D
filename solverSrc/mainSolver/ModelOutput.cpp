@@ -201,7 +201,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	return;
 }
 
-void Model::writeElementResults(string fileName, string elSet, StringList& fields, int timeStep) {
+void Model::writeElementResults(string fileName, string elSet, StringList& fields, string position, int timeStep) {
 	int i1;
 	int i2;
 	int i3;
@@ -215,6 +215,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	int numIP;
 	int numLay;
 	double* intPts;
+	double cent[3] = { 0.0,0.0,0.0 };
 	Doub strain[6];
 	Doub stress[6];
 	double SEDen;
@@ -291,8 +292,14 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
 				elPt->getStressPrereq(*stPre, nodeArray, dVarArray);
-				numIP = elPt->getNumIP();
-				intPts = elPt->getIP();
+				if (position == "intPts") {
+					numIP = elPt->getNumIP();
+					intPts = elPt->getIP();
+				}
+				else {
+					numIP = 1;
+					intPts = &cent[0];
+				}
 				for (i1 = 0; i1 < numIP; i1++) {
 					type = elPt->getType();
 					if (type == 3 || type == 41) {
@@ -331,8 +338,14 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			i2 = fieldList.find(thisField);
 			if (i2 > -1 && elPt->getDofPerNd() == 6) {
 				elPt->getStressPrereq(*stPre, nodeArray, dVarArray);
-				numIP = elPt->getNumIP();
-				intPts = elPt->getIP();
+				if (position == "intPts") {
+					numIP = elPt->getNumIP();
+					intPts = elPt->getIP();
+				}
+				else {
+					numIP = 1;
+					intPts = &cent[0];
+				}
 				for (i1 = 0; i1 < numIP; i1++) {
 					type = elPt->getType();
 					//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
@@ -359,8 +372,14 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
 				elPt->getStressPrereq(*stPre, nodeArray, dVarArray);
-				numIP = elPt->getNumIP();
-				intPts = elPt->getIP();
+				if (position == "intPts") {
+					numIP = elPt->getNumIP();
+					intPts = elPt->getIP();
+				}
+				else {
+					numIP = 1;
+					intPts = &cent[0];
+				}
 				for (i1 = 0; i1 < numIP; i1++) {
 					type = elPt->getType();
 					if (type == 3 || type == 41) {
@@ -390,7 +409,6 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 
 	outFile.close();
 
-	stPre->destroy();
 	delete stPre;
 
 	return;

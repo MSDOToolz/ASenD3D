@@ -220,8 +220,7 @@ void Constraint::writeToFile(ofstream& outFile) {
 	return;
 }
 
-void Constraint::destroy() {
-	mat->destroy();
+Constraint::~Constraint() {
 	delete mat;
 	ConstraintTerm *thisTerm = firstTerm;
 	ConstraintTerm *nextTerm;
@@ -294,12 +293,11 @@ void ConstraintList::writeAllToFile(string fileName) {
 	return;
 }
 
-void ConstraintList::destroy() {
+ConstraintList::~ConstraintList() {
 	Constraint *thisConst = firstConst;
 	Constraint *nextConst;
 	while(thisConst) {
 		nextConst = thisConst->getNext();
-		thisConst->destroy();
 		delete thisConst;
 		thisConst = nextConst;
 	}

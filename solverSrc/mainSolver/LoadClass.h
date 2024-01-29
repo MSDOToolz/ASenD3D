@@ -91,7 +91,7 @@ class LoadList {
 		
 		Load* getFirst();
 
-		void destroy();
+		~LoadList();
 };
 
 #endif

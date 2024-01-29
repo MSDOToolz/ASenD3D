@@ -54,7 +54,7 @@ class Face {
  
  
  
-		void destroy();
+		~Face();
 };
 
 class FacePt {
@@ -80,7 +80,7 @@ class FaceList {
 		
 		Face* getFirst();
 		
-		void destroy();
+		~FaceList();
 };
 
 class FacePtList {
@@ -97,7 +97,7 @@ class FacePtList {
 
 		bool addIfAbsent(Face* newFc);
 
-		void destroy();
+		~FacePtList();
 };
 
 #endif

@@ -68,7 +68,7 @@ void IntList::addIfAbsent(int newInt) {
 	return;
 }
 
-void IntList::destroy() {
+IntList::~IntList() {
 	IntListEnt *thisEnt = first;
 	IntListEnt *nextEnt;
 	while(thisEnt) {
@@ -140,7 +140,7 @@ void DoubList::addIfAbsent(double newDoub) {
 	return;
 }
 
-void DoubList::destroy() {
+DoubList::~DoubList() {
 	DoubListEnt *thisEnt = first;
 	DoubListEnt *nextEnt;
 	while(thisEnt) {
@@ -188,7 +188,7 @@ void StringList::addEntry(string newStr) {
 	return;
 }
 
-void StringList::destroy() {
+StringList::~StringList() {
 	StringListEnt *thisEnt = first;
 	StringListEnt *nextEnt;
 	while(thisEnt) {
@@ -329,7 +329,7 @@ void SparseMat::writeToFile(ofstream& outFile) {
 	return;
 }
 
-void SparseMat::destroy() {
+SparseMat::~SparseMat() {
 	MatrixEnt *thisEnt;
 	MatrixEnt *nextEnt;
 	int i1;

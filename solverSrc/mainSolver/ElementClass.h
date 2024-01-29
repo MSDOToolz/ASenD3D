@@ -50,7 +50,7 @@ public:
 
 	DoubStressPrereq();
 
-	void destroy();
+	~DoubStressPrereq();
 };
 //end dup
  
@@ -97,7 +97,7 @@ public:
 
 	DiffDoubStressPrereq();
 
-	void destroy();
+	~DiffDoubStressPrereq();
 };
 //end dup
  
@@ -196,7 +196,7 @@ class Element {
 
 		void addCompDVar(int dIndex);
 
-		void destroy();
+		~Element();
 //dup1
 
 // Properties
@@ -520,7 +520,7 @@ class ElementList {
 		
 		Element* getFirst();
 
-		void destroy();
+		~ElementList();
 };
 
 

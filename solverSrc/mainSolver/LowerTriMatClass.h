@@ -34,7 +34,7 @@ class LowerTriMat {
 
 		void writeToFile(std::ofstream& outFile);
 		
-		void destroy();
+		~LowerTriMat();
 };
 
 #endif

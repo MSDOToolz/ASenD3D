@@ -160,7 +160,7 @@ class Node {
 		
 		void setNext(Node *newNext);
 		
-		void destroy();
+		~Node();
 };
 
 class NodeList {
@@ -178,7 +178,7 @@ class NodeList {
 		
 		Node* getFirst();
 
-		void destroy();
+		~NodeList();
 };
 
 #endif

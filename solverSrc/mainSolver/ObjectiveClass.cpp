@@ -477,12 +477,10 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				value+= getVolIntegral();
 				return;
 			} else {
-				stPre->destroy();
 				delete stPre;
 				value+= getVolAverage();
 				return;
@@ -544,7 +542,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			stPre->destroy();
 			delete stPre;
 			value+= getPowerNorm();
 			return;
@@ -556,12 +553,10 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				value+= getVolIntegral();
 				return;
 			} else {
-				stPre->destroy();
 				delete stPre;
 				value+= getVolAverage();
 				return;
@@ -629,7 +624,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			stPre->destroy();
 			delete stPre;
 			value += getPowerNorm();
 			return;
@@ -642,13 +636,11 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				value += getVolIntegral();
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				value += getVolAverage();
 				return;
@@ -705,7 +697,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			stPre->destroy();
 			delete stPre;
 			value += getPowerNorm();
 			return;
@@ -718,13 +709,11 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				value += getVolIntegral();
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				value += getVolAverage();
 				return;
@@ -761,13 +750,11 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		} else {
 			tgtVec[0] = tgtVals.getFirst()->value;
 		}
-		stPre->destroy();
 		delete stPre;
 		value+= getVolIntegral();
 		return;
 	}
 
-	stPre->destroy();
 	delete stPre;
 
 	return;
@@ -852,13 +839,11 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		}
 		else if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
@@ -923,20 +908,17 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre->destroy();
 			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
@@ -981,20 +963,17 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre->destroy();
 			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
@@ -1032,20 +1011,17 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre->destroy();
 			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
@@ -1053,7 +1029,6 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		}
 	}
 
-	stPre->destroy();
 	delete stPre;
 
 	return;
@@ -1136,20 +1111,17 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre->destroy();
 			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
@@ -1208,20 +1180,17 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre->destroy();
 			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
@@ -1269,20 +1238,17 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			stPre->destroy();
 			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				stPre->destroy();
 				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				stPre->destroy();
 				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
@@ -1321,20 +1287,17 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			thisEnt = thisEnt->next;
 			qInd++;
 		}
-		stPre->destroy();
 		delete stPre;
 		dVolIntegraldD(dLdD);
 		return;
 	}
 
-	stPre->destroy();
 	delete stPre;
 
 	return;
 }
 
-void ObjectiveTerm::destroy() {
-	tgtVals.destroy();
+ObjectiveTerm::~ObjectiveTerm() {
 	if (qVec) {
 		delete[] qVec;
 	}
@@ -1347,19 +1310,12 @@ void ObjectiveTerm::destroy() {
 	if (errNormVec) {
 		delete[] errNormVec;
 	}
-	dQdU->destroy();
 	delete dQdU;
-	dQdV->destroy();
 	delete dQdV;
-	dQdA->destroy();
 	delete dQdA;
-	dQdT->destroy();
 	delete dQdT;
-	dQdTdot->destroy();
 	delete dQdTdot;
-	dQdD->destroy();
 	delete dQdD;
-	dVdD->destroy();
 	delete dVdD;
 
 	return;
@@ -1426,12 +1382,11 @@ void Objective::calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndA
 	return;
 }
 
-void Objective::destroy() {
+Objective::~Objective() {
 	ObjectiveTerm* thisTerm = firstTerm;
 	ObjectiveTerm* nextTerm;
 	while (thisTerm) {
 		nextTerm = thisTerm->getNext();
-		thisTerm->destroy();
 		delete thisTerm;
 		thisTerm = nextTerm;
 	}

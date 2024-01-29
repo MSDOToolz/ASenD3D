@@ -79,6 +79,7 @@ jobCommands:
         - tempGradient
         - sectionDef
         - sectionFrcMom
+    position: intPts, centroid
     timeSteps: all
     ## or
     timeSteps:

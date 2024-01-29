@@ -205,7 +205,7 @@ void Face::getAreaNormal(DiffDoub& area, DiffDoub norm[], Node* ndAr[], DesignVa
  
  
  
-void Face::destroy() {
+Face::~Face() {
 	delete[] locNodes;
 	delete[] globNodes;
 	return;
@@ -279,13 +279,12 @@ Face* FaceList::getFirst() {
 	return first;
 }
 
-void FaceList::destroy() {
+FaceList::~FaceList() {
 	Face *thisFc;
 	Face *nextFc;
 	thisFc = first;
 	while(thisFc) {
 		nextFc = thisFc->getNext();
-		thisFc->destroy();
 		delete thisFc;
 		thisFc = nextFc;
 	}
@@ -350,7 +349,7 @@ bool FacePtList::addIfAbsent(Face* newFc) {
 	return true;
 }
 
-void FacePtList::destroy() {
+FacePtList::~FacePtList() {
 	FacePt* thisFpt = first;
 	FacePt* nextFpt;
 	while (thisFpt) {

@@ -26,7 +26,7 @@ class Set {
 		 
 		 void setNext(Set* newNext);
 
-		 void destroy();
+		 ~Set();
 };
 
 class SetList {
@@ -46,6 +46,6 @@ class SetList {
 
 		Set* getLast();
 
-		void destroy();
+		~SetList();
 };
 #endif

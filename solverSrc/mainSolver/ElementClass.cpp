@@ -539,7 +539,7 @@ void Element::addCompDVar(int dIndex) {
 	return;
 }
 
-void Element::destroy() {
+Element::~Element() {
 	delete[] nodes;
 	delete[] dofTable;
 	delete[] intPts;
@@ -551,13 +551,9 @@ void Element::destroy() {
 		delete[] internalRu;
 		delete[] internalMat;
 	}
-	faces->destroy();
 	delete faces;
-	designVars->destroy();
 	delete designVars;
-	dvCoef->destroy();
 	delete dvCoef;
-	compDVars->destroy();
 	delete compDVars;
 	return;
 }
@@ -590,12 +586,11 @@ Element* ElementList::getFirst() {
 	return firstEl;
 }
 
-void ElementList::destroy() {
+ElementList::~ElementList() {
 	Element* thisEl = firstEl;
 	Element* nextEl;
 	while (thisEl) {
 		nextEl = thisEl->getNext();
-		thisEl->destroy();
 		delete thisEl;
 		thisEl = nextEl;
 	}
@@ -640,8 +635,7 @@ void ElementList::destroy() {
 	return;
 }
 
-void DoubStressPrereq::destroy() {
-	int i1;
+ DoubStressPrereq::~DoubStressPrereq() {
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;
@@ -729,8 +723,7 @@ void DoubStressPrereq::destroy() {
 	return;
 }
 
-void DiffDoubStressPrereq::destroy() {
-	int i1;
+ DiffDoubStressPrereq::~DiffDoubStressPrereq() {
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;

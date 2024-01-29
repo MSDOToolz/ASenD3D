@@ -227,7 +227,11 @@ void Model::readJob(string fileName) {
 				}
 			} else if(headings[1] == "elementSet" && dataLen == 1) {
 				newCmd->elementSet = data[0];
-			} else if(headings[1] == "writeModes" && dataLen == 1) {
+			}
+			else if (headings[1] == "position" && dataLen == 1) {
+				newCmd->position = data[0];
+			}
+			else if (headings[1] == "writeModes" && dataLen == 1) {
 				if(data[0] == "yes") {
 					newCmd->writeModes = true;
 				} else {

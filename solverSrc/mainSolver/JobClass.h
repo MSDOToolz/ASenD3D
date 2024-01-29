@@ -45,6 +45,7 @@ class JobCommand {
 		
 		// writeElementResults
 		std::string elementSet;
+		std::string position;
 		
 		// writeModalResults
 		bool writeModes;
@@ -60,7 +61,7 @@ class JobCommand {
 		
 		JobCommand();
 
-		void destroy();
+		~JobCommand();
 };
 
 class Job {
@@ -78,7 +79,7 @@ class Job {
 		
 		JobCommand* getFirst();
 
-		void destroy();
+		~Job();
 };
 
 #endif

@@ -231,7 +231,7 @@ void Model::executeJob() {
 						writeNodeResults(fullFname, thisCmd->nodeSet, *thisCmd->fields, thisEnt->value);
 					}
 					else {
-						writeElementResults(fullFname, thisCmd->elementSet, *thisCmd->fields, thisEnt->value);
+						writeElementResults(fullFname, thisCmd->elementSet, *thisCmd->fields, thisCmd->position, thisEnt->value);
 					}
 					thisEnt = thisEnt->next;
 				}
@@ -241,7 +241,7 @@ void Model::executeJob() {
 					writeNodeResults(thisCmd->fileName, thisCmd->nodeSet, *thisCmd->fields, -1);
 				}
 				else {
-					writeElementResults(thisCmd->fileName, thisCmd->elementSet, *thisCmd->fields, -1);
+					writeElementResults(thisCmd->fileName, thisCmd->elementSet, *thisCmd->fields, thisCmd->position, -1);
 				}
 			}
 		}
@@ -260,44 +260,28 @@ void Model::executeJob() {
 	return;
 }
 
-void Model::destroy() {
-	nodes->destroy();
+Model::~Model() {
 	delete nodes;
 	delete[] nodeArray;
-	elements->destroy();
 	delete elements;
 	delete[] elementArray;
-	nodeSets->destroy();
 	delete nodeSets;
 	delete[] nsArray;
-	elementSets->destroy();
 	delete elementSets;
 	delete[] esArray;
-	sections->destroy();
 	delete sections;
-	materials->destroy();
 	delete materials;
-    elasticConst->destroy();
 	delete elasticConst;
-	thermalConst->destroy();
 	delete thermalConst;
-	elasticLoads->destroy();
 	delete elasticLoads;
-	designVars->destroy();
 	delete designVars;
 	delete[] dVarArray;
-	objective->destroy();
 	delete objective;
-	job->destroy();
 	delete job;
 
-	elasticMat->destroy();
 	delete elasticMat;
-	elasticLT->destroy();
 	delete elasticLT;
-	thermMat->destroy();
 	delete thermMat;
-	thermLT->destroy();
 	delete thermLT;
 
 	if (eigVecs) {

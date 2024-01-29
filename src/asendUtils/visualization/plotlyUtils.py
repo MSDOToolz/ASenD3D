@@ -4,9 +4,11 @@ Created on Sun Nov 12 09:35:47 2023
 
 @author: evans
 """
+import numpy as np
 import plotly.graph_objects as go
 
 def plotMeshSolution(xLst,yLst,zLst,values,v1,v2,v3,title=''):
+    print('plotMeshSolution')
     fig = go.Figure(data=[
         go.Mesh3d(
             x=xLst,
@@ -17,7 +19,6 @@ def plotMeshSolution(xLst,yLst,zLst,values,v1,v2,v3,title=''):
                         [0.5, 'green'],
                         [1.0, 'red']],
             intensity=values,
-            intensitymode='cell',
             i=v1,
             j=v2,
             k=v3,
