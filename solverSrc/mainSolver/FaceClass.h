@@ -7,8 +7,8 @@
 class Face {
 	private:
 	    int numNds;
-	    int *locNodes;
-		int *globNodes;
+	    int locNodes[6];
+		int globNodes[6];
 		bool onSurf;
 		Face *next;
 		
@@ -49,12 +49,7 @@ class Face {
 		//end dup
  
 //end skip 
- 
- 
- 
- 
- 
-		~Face();
+
 };
 
 class FacePt {

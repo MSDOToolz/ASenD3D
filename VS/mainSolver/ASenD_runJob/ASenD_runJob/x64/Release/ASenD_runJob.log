@@ -54,12 +54,12 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(776,27): wa
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(854,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1072,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   ModelOutput.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(264,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(269,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(274,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(292,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(338,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(372,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(270,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(275,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(280,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(298,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(344,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(378,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   NodeClass.cpp
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\NodeClass.cpp(416,6): warning C4101: 'comp': unreferenced local variable
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\NodeClass.cpp(408,6): warning C4101: 'i1': unreferenced local variable

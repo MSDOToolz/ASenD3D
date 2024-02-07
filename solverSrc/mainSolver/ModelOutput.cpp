@@ -77,6 +77,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	int ndLabel;
 	double ndDat[6];
 	int ndof;
+	double time;
 	
 	if(timeStep >= 0) {
 		// Read the results from the time step file and store them in nodes
@@ -116,6 +117,8 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	outFile << setprecision(12);
 	
 	outFile << "nodeResults:\n";
+	time = solveCmd->timeStep * timeStep;
+	outFile << "    time: " << time << "\n";
 	outFile << "    nodeSet: " << nodeSet << "\n";
 	
 	StringListEnt *strPt = fields.getFirst();
@@ -224,6 +227,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	Doub tGrad[3];
 	Doub flux[3];
 	string fieldList;
+	double time;
 	DoubStressPrereq* stPre = new DoubStressPrereq;
 
 	if (timeStep >= 0) {
@@ -254,6 +258,8 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	outFile << setprecision(12);
 
 	outFile << "elementResults:\n";
+	time = solveCmd->timeStep * timeStep;
+	outFile << "    time: " << time << "\n";
 	outFile << "    elSet: " << elSet << "\n";
 
 	StringListEnt* strPt = fields.getFirst();

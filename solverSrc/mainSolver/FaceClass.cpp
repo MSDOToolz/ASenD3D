@@ -8,8 +8,6 @@ using namespace std;
 
 Face::Face(int newNumNds) {
 	numNds = newNumNds;
-	locNodes = new int[numNds];
-	globNodes = new int[numNds];
 	onSurf = true;
 	next = nullptr;
 	return;
@@ -200,16 +198,6 @@ void Face::getAreaNormal(DiffDoub& area, DiffDoub norm[], Node* ndAr[], DesignVa
 //end dup
  
 //end skip 
- 
- 
- 
- 
- 
-Face::~Face() {
-	delete[] locNodes;
-	delete[] globNodes;
-	return;
-}
 
 // FacePt
 

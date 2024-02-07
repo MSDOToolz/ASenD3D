@@ -13,9 +13,11 @@ const double r_1ort3 = 0.577350269189625765; //0.577350269189625765;
 const double r_2o3 = 0.666666666666666667;
 const double r_1o3 = 0.333333333333333333;
 const double r_1o6 = 0.166666666666666667;
+const double r_1o24 = 0.041666666666666667;
 const double r_pi = 3.14159265358979324;
 const double r_pio180 = 0.0174532925199432958;
-
+const double r_tet1 = 0.1381966011250071;
+const double r_tet2 = 0.585410196624929;
 
 Element::Element(int newType) {
 	type = newType;
@@ -104,7 +106,37 @@ Element::Element(int newType) {
 				}
 			}
 		}
-	} else if(type == 3) {
+	}
+	else if (type == 10) {
+		numNds = 3;
+		dofPerNd = 3;
+		numIntDof = 0;
+		nDim = 10;
+		defDim = 6;
+		numIP = 4;
+		nodes = new int[numNds];
+		i1 = numNds * dofPerNd + numIntDof;
+		dofTable = new int[2 * i1];
+		intPts = new double[numIP * 3];
+		ipWt = new double[numIP];
+		intPts[0] = r_tet1;
+		intPts[1] = r_tet1;
+		intPts[2] = r_tet1;
+		intPts[3] = r_tet2;
+		intPts[4] = r_tet1;
+		intPts[5] = r_tet1;
+		intPts[6] = r_tet1;
+		intPts[7] = r_tet2;
+		intPts[8] = r_tet1;
+		intPts[9] = r_tet1;
+		intPts[10] = r_tet1;
+		intPts[11] = r_tet2;
+		ipWt[0] = r_1o24;
+		ipWt[1] = r_1o24;
+		ipWt[2] = r_1o24;
+		ipWt[3] = r_1o24;
+	}
+	else if (type == 3) {
 		numNds = 3;
 		dofPerNd = 6;
 		numIntDof = 3;
@@ -375,7 +407,42 @@ void Element::initializeFaces() {
 		newFc->setNode(2,4,nodes[4]);
 		newFc->setNode(3,7,nodes[7]);
 		faces->addFace(newFc);
-	} else if(type == 3) {
+	}
+	else if (type == 10) {
+		newFc = new Face(6);
+		newFc->setNode(0, 0, nodes[0]);
+		newFc->setNode(1, 2, nodes[2]);
+		newFc->setNode(2, 1, nodes[1]);
+		newFc->setNode(3, 6, nodes[6]);
+		newFc->setNode(4, 5, nodes[5]);
+		newFc->setNode(5, 4, nodes[4]);
+		faces->addFace(newFc);
+		newFc = new Face(6);
+		newFc->setNode(0, 0, nodes[0]);
+		newFc->setNode(1, 1, nodes[1]);
+		newFc->setNode(2, 3, nodes[3]);
+		newFc->setNode(3, 4, nodes[4]);
+		newFc->setNode(4, 8, nodes[8]);
+		newFc->setNode(5, 7, nodes[7]);
+		faces->addFace(newFc);
+		newFc = new Face(6);
+		newFc->setNode(0, 1, nodes[1]);
+		newFc->setNode(1, 2, nodes[2]);
+		newFc->setNode(2, 3, nodes[3]);
+		newFc->setNode(3, 5, nodes[5]);
+		newFc->setNode(4, 9, nodes[9]);
+		newFc->setNode(5, 8, nodes[8]);
+		faces->addFace(newFc);
+		newFc = new Face(6);
+		newFc->setNode(0, 0, nodes[0]);
+		newFc->setNode(1, 3, nodes[3]);
+		newFc->setNode(2, 2, nodes[2]);
+		newFc->setNode(3, 7, nodes[7]);
+		newFc->setNode(4, 9, nodes[9]);
+		newFc->setNode(5, 6, nodes[6]);
+		faces->addFace(newFc);
+	}
+	else if (type == 3) {
 		newFc = new Face(3);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);

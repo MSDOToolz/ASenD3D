@@ -1315,7 +1315,7 @@ void Element::getDensity(Doub& den, int layer, DesignVariable* dvAr[]) {
 	Doub coef;
 	Doub dvVal;
 
-	if (type == 3 || type == 4) {
+	if (type == 3 || type == 41) {
 		thisLay = sectPtr->getFirstLayer();
 		layi = 0;
 		while (layi < layer && thisLay) {
@@ -3553,7 +3553,7 @@ void Element::getDensity(DiffDoub& den, int layer, DesignVariable* dvAr[]) {
 	DiffDoub coef;
 	DiffDoub dvVal;
 
-	if (type == 3 || type == 4) {
+	if (type == 3 || type == 41) {
 		thisLay = sectPtr->getFirstLayer();
 		layi = 0;
 		while (layi < layer && thisLay) {

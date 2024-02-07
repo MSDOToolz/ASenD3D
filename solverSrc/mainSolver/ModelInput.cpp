@@ -303,7 +303,11 @@ void Model::readModelInput(string fileName) {
 						elType = 8;
 					} else if(data[0] == "brickIM") {
 						elType = 81;
-					} else if(data[0] == "shell3") {
+					}
+					else if (data[0] == "tet10") {
+						elType = 10;
+					}
+					else if (data[0] == "shell3") {
 						elType = 3;
 					} else if(data[0] == "shell4") {
 						elType = 41;

@@ -224,7 +224,61 @@ void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 		    dNds[31].setVal(0.0);
 		    dNds[32].setVal(-2.0*spt[2]);
 		}
-	} else if(type == 3) {
+	}
+	else if (type == 10) {
+		double p1 = 1.0 - spt[0] - spt[1] - spt[2];
+		double p2 = p1 - 0.5;
+		nVec[0].setVal(2.0 * p1 * p2);
+		dNds[0].setVal(2.0 * (-p2 - p1));
+		dNds[1].setVal(2.0 * (-p2 - p1));
+		dNds[2].setVal(2.0 * (-p2 - p1));
+
+		nVec[1].setVal(-2.0 * spt[0] * (0.5 - spt[0]));
+		dNds[3].setVal(-2.0 * (0.5 - spt[0] - spt[0]));
+		dNds[4].setVal(0.0);
+		dNds[5].setVal(0.0);
+		
+		nVec[2].setVal(-2.0 * spt[1] * (0.5 - spt[1]));
+		dNds[6].setVal(0.0);
+		dNds[7].setVal(-2.0 * (0.5 - spt[1] - spt[1]));
+		dNds[8].setVal(0.0);
+		
+		nVec[3].setVal(-2.0 * spt[2] * (0.5 - spt[2]));
+		dNds[9].setVal(0.0);
+		dNds[10].setVal(0.0);
+		dNds[11].setVal(-2.0 * (0.5 - spt[2] - spt[2]));
+		
+		nVec[4].setVal(4.0 * spt[0] * p1);
+		dNds[12].setVal(4.0 * (p1 - spt[0]));
+		dNds[13].setVal(-4.0 * spt[0]);
+		dNds[14].setVal(-4.0 * spt[0]);
+		
+		nVec[5].setVal(4.0 * spt[0] * spt[1]);
+		dNds[15].setVal(4.0 * spt[1]);
+		dNds[16].setVal(4.0 * spt[0]);
+		dNds[17].setVal(0.0);
+		
+		nVec[6].setVal(4.0 * spt[1] * p1);
+		dNds[18].setVal(-4.0 * spt[1]);
+		dNds[19].setVal(4.0 * (p1 - spt[1]));
+		dNds[20].setVal(-4.0 * spt[1]);
+		
+		nVec[7].setVal(4.0 * spt[2] * p1);
+		dNds[21].setVal(-4.0 * spt[2]);
+		dNds[22].setVal(-4.0 * spt[2]);
+		dNds[23].setVal(4.0 * (p1 - spt[2]));
+		
+		nVec[8].setVal(4.0 * spt[0] * spt[2]);
+		dNds[24].setVal(4.0 * spt[2]);
+		dNds[25].setVal(0.0);
+		dNds[26].setVal(4.0 * spt[0]);
+		
+		nVec[9].setVal(4.0 * spt[1] * spt[2]);
+		dNds[27].setVal(0.0);
+		dNds[28].setVal(4.0 * spt[2]);
+		dNds[29].setVal(4.0 * spt[1]);
+	}
+	else if (type == 3) {
 		nVec[0].setVal(1.0-spt[0]-spt[1]);
 		dNds[0].setVal(-1.0);
 		dNds[1].setVal(-1.0);
