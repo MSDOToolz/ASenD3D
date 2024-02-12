@@ -8,10 +8,9 @@ using namespace std;
 //--------------------------------
 int main() {
 	int argc = 3;
-	char myChAr[20];
 	string argv[3];
-	argv[1] = "C:/Users/evans/ASenDHome/surfaceMesh.yaml";
-	argv[2] = "C:/Users/evans/ASenDHome/tetMesh.yaml";
+	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/tetBeam/unstructInp.yaml";
+	argv[2] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/tetBeam/tetMesh.yaml";
 //-------------------------------------
 	Mesher mesher;
 	string inputFile;
@@ -30,8 +29,16 @@ int main() {
 	}
 	mesher.readInput(inputFile);
 	mesher.prep();
-	mesher.generateMesh();
-	mesher.distributeNodes();
+	cout << "generating mesh" << endl;
+	bool resolved = mesher.generateMesh();
+	cout << "finished mesh" << endl;
+	if (resolved) {
+		mesher.distributeNodes();
+		cout << "distributing nodes" << endl;
+	}
+	else {
+		cout << "Warning: mesh reached maximum number of elements unresolved." << endl;
+	}
 	mesher.writeOutput(outputFile);
 	return 0;
 }

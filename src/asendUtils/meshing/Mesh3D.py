@@ -1,6 +1,11 @@
 import numpy as np
 from scipy import interpolate
+import os
+import subprocess
+import yaml
+from yaml import CLoader as Loader
 from asendUtils.meshing.SpatialGridList3D import *
+from asendUtils.syst.pathTools import *
 
 class Mesh3D():
 
@@ -281,3 +286,44 @@ class Mesh3D():
             # allEls[self.numWedgeEls:totEls,0:8] = self.hexElements[0:self.numHexEls]
         meshOut['elements'] = allEls
         return meshOut
+    
+    def createUnstructuredMesh(self,globProjWt=0.75):
+        inp = dict()
+        nodes = list()
+        for nd in self.nodes:
+            nodes.append(str(list(nd)))
+        faces = list()
+        for fc in self.faceNodes:
+            faces.append(str(list(fc[0:3])))
+        
+        inp['nodes'] = nodes
+        inp['faces'] = faces
+        if(globProjWt != 0.75):
+            inp['globProjWt'] = globProjWt
+            
+        fileStr = yaml.dump(inp,sort_keys=False)
+        
+        fileStr = fileStr.replace("'","")
+        fileStr = fileStr.replace('"','')
+        
+        outFile = open('unstructInp.yaml','w')
+        outFile.write(fileStr)
+        outFile.close()
+        
+        meshDir = getEnvPath('mesherpath')
+        print('generating unstructured 3D mesh...')
+        procRes = subprocess.run([meshDir,'unstructInp.yaml','unstructOut.yaml'],capture_output=True,text=True)
+        print(procRes.stdout)
+        
+        if(procRes.returncode == 0):
+            inFile = open('unstructOut.yaml','r')
+            meshOut = yaml.load(inFile,Loader=Loader)
+            meshOut['nodes'] = np.array(meshOut['nodes'])
+            numEls = len(meshOut['elements'])
+            elements = -1*np.ones((numEls,8),dtype=int)
+            for i, el in enumerate(meshOut['elements']):
+                elements[i,0:4] = np.array(el,dtype=int)
+            meshOut['elements'] = elements
+            return meshOut
+        else:
+            raise Exception('Error: Problem generating unstructured mesh.  Boundary input must be fully closed surface of triangular cells')

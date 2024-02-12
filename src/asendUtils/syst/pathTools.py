@@ -12,16 +12,20 @@ def makeAbsolute(fileName):
         absPath = currDir + '/' + fileName
         return absPath 
 
-def getSolverPath():
+def getEnvPath(tag):
     thisDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     thisDir = thisDir.replace('\\','/')
     envFn = thisDir + '/environment.yaml'
-    inFile = open(envFn,'r')
-    envData = yaml.safe_load(inFile)
-    inFile.close()
-    return envData['solverpath']
+    try:
+        inFile = open(envFn,'r')
+        envData = yaml.safe_load(inFile)
+        inFile.close()
+        return envData[tag]
+    except:
+        errSt = 'Error: the ' + tag + ' path has not been set.  Set it with asendUtils.syst.pathTools.setEnvPath()'
+        raise Exception(errSt)
 
-def setSolverPath(newPath):
+def setEnvPath(tag,newPath):
     pth = makeAbsolute(newPath)
     if(not os.path.exists(pth)):
         errStr = 'Error: the path ' + pth + ' does not exist.  Could not set solver path.'
@@ -29,7 +33,17 @@ def setSolverPath(newPath):
     thisDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     thisDir = thisDir.replace('\\','/')
     envFn = thisDir + '/environment.yaml'
-    outFile = open(envFn,'w')
-    outLn = 'solverpath: ' + pth + '\n'
-    outFile.write(outLn)
-    outFile.close()
+    try:
+        inFile = open(envFn,'r')
+        envData = yaml.safe_load(inFile)
+        inFile.close()
+        envData[tag] = pth
+        outFile = open(envFn,'w')
+        yaml.dump(envData,outFile,sort_keys=False)
+        outFile.close()
+    except:
+        envData = dict()
+        envData[tag] = pth
+        outFile = open(envFn,'w')
+        yaml.dump(envData,outFile,sort_keys=False)
+        outFile.close()

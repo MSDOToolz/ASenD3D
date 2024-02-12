@@ -380,9 +380,17 @@ void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 }
 
 void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], double spt[]) {
+	int i1;
+	int i2;
+	Doub nCent[11];
 	Doub dNds[33];
+	Doub dNdsCent[33];
 	Doub jMat[9];
+	Doub jCent[9];
+	Doub detCent;
 	Doub jInv[9];
+	Doub jInvCent[9];
+	double sCent[3] = { 0.0,0.0,0.0 };
 	Doub xVec[3];
 	Doub bVec[3];
 	Doub zDir;
@@ -413,7 +421,42 @@ void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], dou
 	
 	getDetInv(detJ,jInv,jMat,3,0,xVec,bVec);
 	
-	matMul(dNdx,dNds,jInv,nDim,3,3);
+	// matMul(dNds,dNds,jInv,nDim,3,3);
+	matMul(dNdx,dNds,jInv,numNds,3,3);
+
+	if (nDim > numNds) {
+		evalN(nCent, dNdsCent, sCent);
+		matMul(jCent, locNds, dNdsCent, 3, numNds, 3);
+
+		if (type == 41 || type == 3) {
+			zDir.setVal(jCent[0]);
+			zDir.mult(jCent[4]);
+			tmp.setVal(jCent[3]);
+			tmp.mult(jCent[1]);
+			zDir.sub(tmp);
+			if (zDir.val > 0.0) {
+				jCent[8].setVal(1.0);
+			}
+			else {
+				jCent[8].setVal(-1.0);
+			}
+		}
+		else if (type == 2) {
+			jCent[4].setVal(1.0);
+			if (jCent[0].val > 0.0) {
+				jCent[8].setVal(1.0);
+			}
+			else {
+				jCent[8].setVal(-1.0);
+			}
+		}
+
+		getDetInv(detCent, jInvCent, jCent, 3, 0, xVec, bVec);
+
+		i1 = 3 * numNds;
+		i2 = nDim - numNds;
+		matMul(&dNdx[i1], &dNds[i1], jInvCent, i2, 3, 3);
+	}
 	
 	return;
 }
@@ -1913,7 +1956,61 @@ void Element::evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]) {
 		    dNds[31].setVal(0.0);
 		    dNds[32].setVal(-2.0*spt[2]);
 		}
-	} else if(type == 3) {
+	}
+	else if (type == 10) {
+		double p1 = 1.0 - spt[0] - spt[1] - spt[2];
+		double p2 = p1 - 0.5;
+		nVec[0].setVal(2.0 * p1 * p2);
+		dNds[0].setVal(2.0 * (-p2 - p1));
+		dNds[1].setVal(2.0 * (-p2 - p1));
+		dNds[2].setVal(2.0 * (-p2 - p1));
+
+		nVec[1].setVal(-2.0 * spt[0] * (0.5 - spt[0]));
+		dNds[3].setVal(-2.0 * (0.5 - spt[0] - spt[0]));
+		dNds[4].setVal(0.0);
+		dNds[5].setVal(0.0);
+		
+		nVec[2].setVal(-2.0 * spt[1] * (0.5 - spt[1]));
+		dNds[6].setVal(0.0);
+		dNds[7].setVal(-2.0 * (0.5 - spt[1] - spt[1]));
+		dNds[8].setVal(0.0);
+		
+		nVec[3].setVal(-2.0 * spt[2] * (0.5 - spt[2]));
+		dNds[9].setVal(0.0);
+		dNds[10].setVal(0.0);
+		dNds[11].setVal(-2.0 * (0.5 - spt[2] - spt[2]));
+		
+		nVec[4].setVal(4.0 * spt[0] * p1);
+		dNds[12].setVal(4.0 * (p1 - spt[0]));
+		dNds[13].setVal(-4.0 * spt[0]);
+		dNds[14].setVal(-4.0 * spt[0]);
+		
+		nVec[5].setVal(4.0 * spt[0] * spt[1]);
+		dNds[15].setVal(4.0 * spt[1]);
+		dNds[16].setVal(4.0 * spt[0]);
+		dNds[17].setVal(0.0);
+		
+		nVec[6].setVal(4.0 * spt[1] * p1);
+		dNds[18].setVal(-4.0 * spt[1]);
+		dNds[19].setVal(4.0 * (p1 - spt[1]));
+		dNds[20].setVal(-4.0 * spt[1]);
+		
+		nVec[7].setVal(4.0 * spt[2] * p1);
+		dNds[21].setVal(-4.0 * spt[2]);
+		dNds[22].setVal(-4.0 * spt[2]);
+		dNds[23].setVal(4.0 * (p1 - spt[2]));
+		
+		nVec[8].setVal(4.0 * spt[0] * spt[2]);
+		dNds[24].setVal(4.0 * spt[2]);
+		dNds[25].setVal(0.0);
+		dNds[26].setVal(4.0 * spt[0]);
+		
+		nVec[9].setVal(4.0 * spt[1] * spt[2]);
+		dNds[27].setVal(0.0);
+		dNds[28].setVal(4.0 * spt[2]);
+		dNds[29].setVal(4.0 * spt[1]);
+	}
+	else if (type == 3) {
 		nVec[0].setVal(1.0-spt[0]-spt[1]);
 		dNds[0].setVal(-1.0);
 		dNds[1].setVal(-1.0);
@@ -2015,9 +2112,17 @@ void Element::evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]) {
 }
 
 void Element::getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDoub locNds[], double spt[]) {
+	int i1;
+	int i2;
+	DiffDoub nCent[11];
 	DiffDoub dNds[33];
+	DiffDoub dNdsCent[33];
 	DiffDoub jMat[9];
+	DiffDoub jCent[9];
+	DiffDoub detCent;
 	DiffDoub jInv[9];
+	DiffDoub jInvCent[9];
+	double sCent[3] = { 0.0,0.0,0.0 };
 	DiffDoub xVec[3];
 	DiffDoub bVec[3];
 	DiffDoub zDir;
@@ -2048,7 +2153,42 @@ void Element::getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDo
 	
 	getDetInv(detJ,jInv,jMat,3,0,xVec,bVec);
 	
-	matMul(dNdx,dNds,jInv,nDim,3,3);
+	// matMul(dNds,dNds,jInv,nDim,3,3);
+	matMul(dNdx,dNds,jInv,numNds,3,3);
+
+	if (nDim > numNds) {
+		evalN(nCent, dNdsCent, sCent);
+		matMul(jCent, locNds, dNdsCent, 3, numNds, 3);
+
+		if (type == 41 || type == 3) {
+			zDir.setVal(jCent[0]);
+			zDir.mult(jCent[4]);
+			tmp.setVal(jCent[3]);
+			tmp.mult(jCent[1]);
+			zDir.sub(tmp);
+			if (zDir.val > 0.0) {
+				jCent[8].setVal(1.0);
+			}
+			else {
+				jCent[8].setVal(-1.0);
+			}
+		}
+		else if (type == 2) {
+			jCent[4].setVal(1.0);
+			if (jCent[0].val > 0.0) {
+				jCent[8].setVal(1.0);
+			}
+			else {
+				jCent[8].setVal(-1.0);
+			}
+		}
+
+		getDetInv(detCent, jInvCent, jCent, 3, 0, xVec, bVec);
+
+		i1 = 3 * numNds;
+		i2 = nDim - numNds;
+		matMul(&dNdx[i1], &dNds[i1], jInvCent, i2, 3, 3);
+	}
 	
 	return;
 }
@@ -3337,6 +3477,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm,
 //end dup
  
 //end skip 
+ 
  
  
  

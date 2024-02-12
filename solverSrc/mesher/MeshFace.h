@@ -39,9 +39,15 @@ public:
 
 	double getProjDist();
 
+	double getLongestEdgeLen();
+
 	bool getIntersection(double outParam[], double pt[], double vec[]);
 
+	bool edgesIntersect(MeshFace* fc, double distTol);
+
 	int getSharedNodes(MeshNode* ndPts[], bool shared[], MeshFace* fc);
+
+	void printInfo();
 
 	MeshFace* getNext();
 };

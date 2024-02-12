@@ -17,7 +17,9 @@ thisDir = thisDir.replace('\\','/')
 pf = os.sys.platform
 if('win' in pf):
     solveDir = thisDir + '/VS/mainSolver/ASenD_runJob/x64/Release/ASenD_runJob.exe'
-    setSolverPath(solveDir)
+    setEnvPath('solverpath',solveDir)
+    meshDir = thisDir + '/VS/mesher/unstrucTetMesh/x64/Release/unstrucTetMesh.exe'
+    setEnvPath('mesherpath',meshDir)
 else:
     solveDir = thisDir + '/bin/ASenD_runJob.exe'
 
@@ -62,6 +64,6 @@ else:
         errSt = 'Error: Problem compiling the core solver.  Check to make sure ' + CC + ' compiler is properly installed'
         raise Exception(errSt)
     
-    setSolverPath(solveDir)
+    setEnvPath('solverpath',solveDir)
 
     os.chdir(wkDir)

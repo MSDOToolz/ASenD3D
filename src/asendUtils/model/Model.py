@@ -38,53 +38,66 @@ class Model():
             newNds.append(str(nd))
         self.modelData['nodes'].extend(newNds)
         if(meshType == 'solid'):
-            hexList = list()
-            wedList = list()
-            tetList = list()
-            for i in range(0,nInpEls):
-                if(allEls[i,4] == -1):
-                    el = list()
-                    el.append(nEls+i)
-                    el.extend(allEls[i,0:4]+nNds)
+            if(len(allEls[0]) == 8):
+                hexList = list()
+                wedList = list()
+                tetList = list()
+                for i, eli in enumerate(allEls):
+                    if(eli[4] == -1):
+                        el = list()
+                        el.append(nEls+i)
+                        el.extend(eli[0:4]+nNds)
+                        tetList.append(str(el))
+                    elif(eli[6] == -1):
+                        el = list()
+                        el.append(nEls+i)
+                        el.extend(eli[0:6]+nNds)
+                        wedList.append(str(el))
+                    else:
+                        el = list()
+                        el.append(nEls+i)
+                        el.extend(eli[0:8]+nNds)
+                        hexList.append(str(el))
+                if(len(tetList) > 0):
+                    tetDic = dict()
+                    tetDic['type'] = 'tet4'
+                    tetDic['connectivity'] = tetList
+                    self.modelData['elements'].append(tetDic)
+                if(len(wedList) > 0):
+                    wedDic = dict()
+                    wedDic['type'] = 'wedge6'
+                    wedDic['connectivity'] = wedList
+                    self.modelData['elements'].append(wedDic)
+                if(len(hexList) > 0):
+                    hexDic = dict()
+                    hexDic['type'] = 'brickIM'
+                    hexDic['connectivity'] = hexList
+                    self.modelData['elements'].append(hexDic)
+            else:
+                tetList = list()
+                for i, eli in enumerate(allEls):
+                    el = [nEls+i]
+                    el.extend(eli[0:10]+nNds)
                     tetList.append(str(el))
-                elif(allEls[i,6] == -1):
-                    el = list()
-                    el.append(nEls+i)
-                    el.extend(allEls[i,0:6]+nNds)
-                    wedList.append(str(el))
-                else:
-                    el = list()
-                    el.append(nEls+i)
-                    el.extend(allEls[i,0:8]+nNds)
-                    hexList.append(str(el))
-            if(len(tetList) > 0):
-                tetDic = dict()
-                tetDic['type'] = 'tet4'
-                tetDic['connectivity'] = tetList
-                self.modelData['elements'].append(tetDic)
-            if(len(wedList) > 0):
-                wedDic = dict()
-                wedDic['type'] = 'wedge6'
-                wedDic['connectivity'] = wedList
-                self.modelData['elements'].append(wedDic)
-            if(len(hexList) > 0):
-                hexDic = dict()
-                hexDic['type'] = 'brickIM'
-                hexDic['connectivity'] = hexList
-                self.modelData['elements'].append(hexDic)
+                if(len(tetList) > 0):
+                    tetDic = dict()
+                    tetDic['type'] = 'tet10'
+                    tetDic['connectivity'] = tetList
+                    self.modelData['elements'].append(tetDic)
+                
         elif(meshType == 'shell'):
             quadList = list()
             triList = list()
-            for i in range(0,nInpEls):
-                if(allEls[i,3] == -1):
+            for i, eli in enumerate(allEls):
+                if(eli[3] == -1):
                     el = list()
                     el.append(nEls+i)
-                    el.extend(allEls[i,0:3]+nNds)
+                    el.extend(eli[0:3]+nNds)
                     triList.append(str(el))
                 else:
                     el = list()
                     el.append(nEls+i)
-                    el.extend(allEls[i,0:4]+nNds)
+                    el.extend(eli[0:4]+nNds)
                     quadList.append(str(el))
             if(len(triList) > 0):
                 triDic = dict()
@@ -98,10 +111,10 @@ class Model():
                 self.modelData['elements'].append(quadDic)
         elif(meshType == 'beam'):
             beamList = list()
-            for i in range(0,nInpEls):
+            for i, eli in enumerate(allEls):
                 el = list()
                 el.append(nEls+i)
-                el.extend(allEls[i,0:2]+nNds)
+                el.extend(eli[0:2]+nNds)
                 beamList.append(str(el))
             beamDic = dict()
             beamDic['type'] = 'beam2'
@@ -352,21 +365,11 @@ class Model():
         self.integrateForceElements()
         self.integrateMassElements()
         
-        outFile = open('temp.yaml','w')
-        yaml.dump(self.modelData,stream=outFile,sort_keys=False)
-        outFile.close()
+        fileStr = yaml.dump(self.modelData,sort_keys=False)
         
-        inFile = open('temp.yaml','r')
-        outFile = open(fileName,'w')
-
-        fLine = inFile.readline()
-        while(fLine != ''):
-            newSt = fLine.replace("'","")
-            newSt = newSt.replace('"','')
-            outFile.write(newSt)
-            fLine = inFile.readline()
-
-        inFile.close()
-        outFile.close()
+        fileStr = fileStr.replace("'","")
+        fileStr = fileStr.replace('"','')
         
-        os.remove('temp.yaml')
+        outFile = open(self.fileName,'w')
+        outFile.write(fileStr)
+        outFile.close()

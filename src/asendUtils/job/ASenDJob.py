@@ -168,24 +168,14 @@ class ASenDJob:
     def writeJobInput(self,fileName):
         self.fileName = makeAbsolute(fileName)
         
-        outFile = open('temp.yaml','w')
-        yaml.dump(self.jobData,stream=outFile,sort_keys=False)
-        outFile.close()
+        fileStr = yaml.dump(self.jobData,sort_keys=False)
         
-        inFile = open('temp.yaml','r')
+        fileStr = fileStr.replace("'","")
+        fileStr = fileStr.replace('"','')
+        
         outFile = open(self.fileName,'w')
-
-        fLine = inFile.readline()
-        while(fLine != ''):
-            newSt = fLine.replace("'","")
-            newSt = newSt.replace('"','')
-            outFile.write(newSt)
-            fLine = inFile.readline()
-
-        inFile.close()
+        outFile.write(fileStr)
         outFile.close()
-        
-        os.remove('temp.yaml')
         
     def executeJob(self,solverPath='default'):
         if(self.fileName == ''):
@@ -198,11 +188,11 @@ class ASenDJob:
             self.writeJobInput(fn)
         if(solverPath != 'default'):
             slvPth = makeAbsolute(solverPath)
-            setSolverPath(slvPth)
+            setEnvPath('solverpath',slvPth)
         else:
-            slvPth = getSolverPath()
+            slvPth = getEnvPath('solverpath')
         if(not os.path.exists(slvPth)):
-            errSt = 'Error: solver path ' + slvPth + 'does not exist. Double check and reset with asendUtils.syst.pathTools.setSolverPath()'
+            errSt = 'Error: solver path ' + slvPth + 'does not exist. Double check and reset with asendUtils.syst.pathTools.setEnvPath()'
             raise Exception(errSt)
         try:
             ptStr = 'Executing job file ' + self.fileName + ' ...'

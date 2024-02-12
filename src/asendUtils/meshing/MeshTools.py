@@ -167,6 +167,62 @@ def mergeDuplicateNodes(meshData):
     meshData['elements'] = allEls
     
     return meshData
+    
+def splitToTri(meshData):
+    newEList = list()
+    for el in meshData['elements']:
+        if(el[3] == -1):
+            newEList.append(el)
+        else:
+            newE = np.array([el[0],el[1],el[2],-1])
+            newEList.append(newE)
+            newE = np.array([el[0],el[2],el[3],-1])
+            newEList.append(newE)
+    meshData['elements'] = np.array(newEList)
+    return meshData
+
+def convertToQuadratic(meshData):
+    nodes = meshData['nodes']
+    elements = meshData['elements']
+    numEls = len(elements)
+    elNds = len(elements[0])
+    numNds = len(nodes)
+    newNds = list(nodes)
+    if(elNds == 8):
+        newEls = -1*np.ones((numEls,10),dtype=int)
+        for i, el in enumerate(elements):
+            if(el[4] == -1):
+                newEls[i,0:4] = el[0:4]
+                newNds.append(0.5*(nodes[el[0]] + nodes[el[1]]))
+                newNds.append(0.5*(nodes[el[1]] + nodes[el[2]]))
+                newNds.append(0.5*(nodes[el[2]] + nodes[el[0]]))
+                newNds.append(0.5*(nodes[el[0]] + nodes[el[3]]))
+                newNds.append(0.5*(nodes[el[1]] + nodes[el[3]]))
+                newNds.append(0.5*(nodes[el[2]] + nodes[el[3]]))
+                newEls[i,4:10] = np.array(range(numNds,numNds+6))
+                numNds = numNds + 6
+    elif(elNds == 4):
+        newEls = -1*np.ones((numEls,8),dtype=int)
+        for i, el in enumerate(elements):
+            if(el[3] == -1):
+                newEls[i,0:3] = el[0:3]
+                newNds.append(0.5*(nodes[el[0]] + nodes[el[1]]))
+                newNds.append(0.5*(nodes[el[1]] + nodes[el[2]]))
+                newNds.append(0.5*(nodes[el[2]] + nodes[el[0]]))
+                newEls[i,3:6] = np.array(range(numNds,numNds+3))
+                numNds = numNds + 3
+            else:
+                newEls[i,0:4] = el[0:4]
+                newNds.append(0.5*(nodes[el[0]] + nodes[el[1]]))
+                newNds.append(0.5*(nodes[el[1]] + nodes[el[2]]))
+                newNds.append(0.5*(nodes[el[2]] + nodes[el[3]]))
+                newNds.append(0.5*(nodes[el[3]] + nodes[el[0]]))
+                newEls[i,4:8] = np.array(range(numNds,numNds+4))
+                numNds = numNds + 4
+    newData = dict()
+    newData['nodes'] = np.array(newNds)
+    newData['elements'] = newEls
+    return mergeDuplicateNodes(newData)
 
 def addNodeSet(meshData,newSet):
     try:

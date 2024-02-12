@@ -790,7 +790,7 @@ ElementList::~ElementList() {
 	return;
 }
 
- DiffDoubStressPrereq::~DiffDoubStressPrereq() {
+ DiffDoubStressPrereq::~DoubStressPrereq() {
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;
@@ -819,16 +819,17 @@ ElementList::~ElementList() {
 		delete[] layerDen;
 		delete[] layerTC;
 		delete[] layerSH;
+		layerZ = nullptr;
+		layerThk = nullptr;
+		layerAng = nullptr;
+		layerQ = nullptr;
+		layerD = nullptr;
+		layerTE = nullptr;
+		layerE0 = nullptr;
+		layerDen = nullptr;
+		layerTC = nullptr;
+		layerSH = nullptr;
 	}
-	layerZ = nullptr;
-	layerThk = nullptr;
-	layerAng = nullptr;
-	layerQ = nullptr;
-	layerTE = nullptr;
-	layerE0 = nullptr;
-	layerDen = nullptr;
-	layerTC = nullptr;
-	layerSH = nullptr;
 	delete[] frcFldCoef;
 	delete[] frcFldExp;
 	delete[] scratch;
@@ -839,6 +840,7 @@ ElementList::~ElementList() {
 //end dup 
  
 //end skip 
+ 
  
  
  

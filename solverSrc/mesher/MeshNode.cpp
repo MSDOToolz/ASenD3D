@@ -1,15 +1,19 @@
 #include "MeshNode.h"
 
-MeshNode::MeshNode(double newCrd[]) {
-	coord[0] = newCrd[0];
-	coord[1] = newCrd[1];
-	coord[2] = newCrd[2];
+MeshNode::MeshNode() {
 	next = nullptr;
 	return;
 }
 
 void MeshNode::setLabel(int newLab) {
 	label = newLab;
+	return;
+}
+
+void MeshNode::setCrd(double newCrd[]) {
+	coord[0] = newCrd[0];
+	coord[1] = newCrd[1];
+	coord[2] = newCrd[2];
 	return;
 }
 

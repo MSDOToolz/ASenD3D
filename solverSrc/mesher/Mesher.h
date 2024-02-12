@@ -21,7 +21,14 @@ private:
 
 	int numBoundNds;
 	double avgProj;
+	double maxProj;
+	double maxEdgeLen;
 	double globProjWt;
+	int maxNumEls;
+
+	MeshElement* newEl;
+	MeshFace* newElFcs[4];
+	MeshNode* newNd;
 
 public:
 	Mesher();
@@ -42,7 +49,7 @@ public:
 
 	bool createNewNd(MeshFace* thisFc, double tgtPt[]);
 
-	void generateMesh();
+	bool generateMesh();
 
 	void distributeNodes();
 

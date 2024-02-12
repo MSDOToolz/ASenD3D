@@ -41,21 +41,12 @@ class Objective():
     def writeInput(self,fileName):
         self.fileName = makeAbsolute(fileName)
         
-        outFile = open('temp.yaml','w')
-        yaml.dump(self.objData,stream=outFile,sort_keys=False)
+        fileStr = yaml.dump(self.objData,sort_keys=False)
+        
+        fileStr = fileStr.replace("'","")
+        fileStr = fileStr.replace('"','')
+        
+        outFile = open(self.fileName,'w')
+        outFile.write(fileStr)
         outFile.close()
         
-        inFile = open('temp.yaml','r')
-        outFile = open(fileName,'w')
-
-        fLine = inFile.readline()
-        while(fLine != ''):
-            newSt = fLine.replace("'","")
-            newSt = newSt.replace('"','')
-            outFile.write(newSt)
-            fLine = inFile.readline()
-
-        inFile.close()
-        outFile.close()
-        
-        os.remove('temp.yaml')    

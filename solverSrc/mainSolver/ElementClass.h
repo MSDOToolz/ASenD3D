@@ -97,11 +97,12 @@ public:
 
 	DiffDoubStressPrereq();
 
-	~DiffDoubStressPrereq();
+	~DoubStressPrereq();
 };
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -434,6 +435,7 @@ class Element {
  
  
  
+ 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
@@ -498,6 +500,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
  
  

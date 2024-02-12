@@ -667,10 +667,10 @@ class Mesh2D():
             rNext = np.dot(gVec,wVec)
             beta = rNext/res
             res = rNext
-            hVec = -wVec
+            hVec = -wVec + beta*hVec
             i = i + 1
         
-        for i in range(0,self.numNodes):
+        for i in range(self.numBndNodes,self.numNodes):
             j = i*2
             self.nodes[i] = xVec[j:j+2]
             
@@ -866,6 +866,7 @@ class Mesh2D():
     def createUnstructuredMesh(self,elType):
         self.unstructuredPrep(elType)
         
+        print('creating unstructured mesh')
         elsCreated = True
         while(elsCreated):
             # if(self.numTriEls > 0):
@@ -875,6 +876,10 @@ class Mesh2D():
                 # break
             elsCreated = False
             nEd = self.numEdges
+            print('numEdges')
+            print(nEd)
+            self.plot2DMesh()
+            inp = input('continue?\n')
             for edi in range(0,nEd):
                 if(self.edgeElements[edi,1] == -1):
                     n1 = self.edgeNodes[edi,0]

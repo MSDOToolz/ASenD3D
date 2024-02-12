@@ -8,9 +8,11 @@ private:
 	MeshNode* next;
 
 public:
-	MeshNode(double newCrd[]);
+	MeshNode();
 
 	void setLabel(int newLab);
+
+	void setCrd(double newCrd[]);
 
 	void setNext(MeshNode* newNd);
 

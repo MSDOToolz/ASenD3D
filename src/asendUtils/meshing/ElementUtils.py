@@ -217,6 +217,16 @@ def sPtInEl(elType,sPt):
         if(abs(sPt[2]) > 1.0):
             return False
         return True
+    if('tet' in elType):
+        sO = sPt + 0.25
+        if(sO[0] < 0.0):
+            return False
+        if(sO[1] < 0.0):
+            return False
+        if(sO[2] < 0.0):
+            return False
+        if(sO[2] > (1.0 - sO[0] - sO[1])):
+            return False
     if(elType == 'shell4'):
         if(abs(sPt[0]) > 1.0):
             return False
