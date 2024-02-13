@@ -350,7 +350,7 @@ void symFactor(double mat[], double qMat[], int matDim) {
 	return;
 }
 
-void getCharFun(DiffDoub& cFun, DiffDoub mat[], int matDim, DoubList& eVals, double lam, int triDiag) {
+void getCharFun(DiffDoub1& cFun, DiffDoub1 mat[], int matDim, DoubList& eVals, double lam, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -362,12 +362,12 @@ void getCharFun(DiffDoub& cFun, DiffDoub mat[], int matDim, DoubList& eVals, dou
 	int k12;
 	int k22;
 	int k23;
-	DiffDoub theta;
-	DiffDoub sth;
-	DiffDoub cth;
-	DiffDoub p1;
-	DiffDoub p2;
-	DiffDoub tmp;
+	DiffDoub1 theta;
+	DiffDoub1 sth;
+	DiffDoub1 cth;
+	DiffDoub1 p1;
+	DiffDoub1 p2;
+	DiffDoub1 tmp;
 
 	for (i1 = 0; i1 <= (matDim - 1); i1++) {
 		i2Min = i1 + 1;
@@ -464,8 +464,8 @@ void getEvals(double eVals[], double mat[], int matDim, double lamInit, double c
 	int i3;
 	int matSize = matDim*matDim;
 	DoubList eValList;
-	DiffDoub *matCopy = new DiffDoub[matSize];
-	DiffDoub cFun;
+	DiffDoub1 *matCopy = new DiffDoub1[matSize];
+	DiffDoub1 cFun;
 	double lam = lamInit;
 	double dLam;
 	double dTrm;
@@ -1154,7 +1154,7 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 }
 
 //dup1
-void qRFactor(Doub mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void qRFactor(DiffDoub0 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1166,12 +1166,12 @@ void qRFactor(Doub mat[], int colDim, int stRow, int endRow, int stCol, int endC
 	int k12;
 	int k22;
 	int k23;
-	Doub theta;
-	Doub sth;
-	Doub cth;
-	Doub p1;
-	Doub p2;
-	Doub tmp;
+	DiffDoub0 theta;
+	DiffDoub0 sth;
+	DiffDoub0 cth;
+	DiffDoub0 p1;
+	DiffDoub0 p2;
+	DiffDoub0 tmp;
 
 	for (i1 = stCol; i1 <= endCol; i1++) {
 		i2Min = stRow + (i1 - stCol) + 1;
@@ -1229,7 +1229,7 @@ void qRFactor(Doub mat[], int colDim, int stRow, int endRow, int stCol, int endC
 	return;
 }
 
-void solveqRxEqb(Doub xVec[], Doub mat[], Doub bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void solveqRxEqb(DiffDoub0 xVec[], DiffDoub0 mat[], DiffDoub0 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1237,13 +1237,13 @@ void solveqRxEqb(Doub xVec[], Doub mat[], Doub bVec[], int colDim, int stRow, in
 	int i2Max;
 	int k11;
 	int k12;
-	Doub theta;
-	Doub sth;
-	Doub cth;
-	Doub p1;
-	Doub p2;
-	Doub tmp;
-	Doub rowSum;
+	DiffDoub0 theta;
+	DiffDoub0 sth;
+	DiffDoub0 cth;
+	DiffDoub0 p1;
+	DiffDoub0 p2;
+	DiffDoub0 tmp;
+	DiffDoub0 rowSum;
 
     for (i1 = stCol; i1 <= endCol; i1++) {
 		i2Min = stRow + (i1 - stCol) + 1;
@@ -1310,7 +1310,7 @@ void solveqRxEqb(Doub xVec[], Doub mat[], Doub bVec[], int colDim, int stRow, in
 	return;
 }
 
-void getDetInv(Doub& det, Doub inv[], Doub mat[], int colDim, int triDiag, Doub xVec[], Doub bVec[]) {
+void getDetInv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int colDim, int triDiag, DiffDoub0 xVec[], DiffDoub0 bVec[]) {
 	qRFactor(mat, colDim, 0, (colDim-1), 0, (colDim-1), triDiag);
 	int i1;
     int i2;
@@ -1341,7 +1341,7 @@ void getDetInv(Doub& det, Doub inv[], Doub mat[], int colDim, int triDiag, Doub 
  
 //DiffDoub versions: 
 //dup1
-void qRFactor(DiffDoub mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void qRFactor(DiffDoub1 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1353,12 +1353,12 @@ void qRFactor(DiffDoub mat[], int colDim, int stRow, int endRow, int stCol, int 
 	int k12;
 	int k22;
 	int k23;
-	DiffDoub theta;
-	DiffDoub sth;
-	DiffDoub cth;
-	DiffDoub p1;
-	DiffDoub p2;
-	DiffDoub tmp;
+	DiffDoub1 theta;
+	DiffDoub1 sth;
+	DiffDoub1 cth;
+	DiffDoub1 p1;
+	DiffDoub1 p2;
+	DiffDoub1 tmp;
 
 	for (i1 = stCol; i1 <= endCol; i1++) {
 		i2Min = stRow + (i1 - stCol) + 1;
@@ -1416,7 +1416,7 @@ void qRFactor(DiffDoub mat[], int colDim, int stRow, int endRow, int stCol, int 
 	return;
 }
 
-void solveqRxEqb(DiffDoub xVec[], DiffDoub mat[], DiffDoub bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void solveqRxEqb(DiffDoub1 xVec[], DiffDoub1 mat[], DiffDoub1 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1424,13 +1424,13 @@ void solveqRxEqb(DiffDoub xVec[], DiffDoub mat[], DiffDoub bVec[], int colDim, i
 	int i2Max;
 	int k11;
 	int k12;
-	DiffDoub theta;
-	DiffDoub sth;
-	DiffDoub cth;
-	DiffDoub p1;
-	DiffDoub p2;
-	DiffDoub tmp;
-	DiffDoub rowSum;
+	DiffDoub1 theta;
+	DiffDoub1 sth;
+	DiffDoub1 cth;
+	DiffDoub1 p1;
+	DiffDoub1 p2;
+	DiffDoub1 tmp;
+	DiffDoub1 rowSum;
 
     for (i1 = stCol; i1 <= endCol; i1++) {
 		i2Min = stRow + (i1 - stCol) + 1;
@@ -1497,7 +1497,7 @@ void solveqRxEqb(DiffDoub xVec[], DiffDoub mat[], DiffDoub bVec[], int colDim, i
 	return;
 }
 
-void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int triDiag, DiffDoub xVec[], DiffDoub bVec[]) {
+void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int triDiag, DiffDoub1 xVec[], DiffDoub1 bVec[]) {
 	qRFactor(mat, colDim, 0, (colDim-1), 0, (colDim-1), triDiag);
 	int i1;
     int i2;
@@ -1532,14 +1532,14 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
  
  
 //dup2
-void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m2Cols) {
+void matMul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
 	int i5;
 	int i6;
-	Doub tmp;
+	DiffDoub0 tmp;
 	
 	i4 = 0;
 	i5 = 0;
@@ -1562,8 +1562,8 @@ void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m
 	return;
 }
 
-void transpose(Doub matT[], Doub mat[], int rowDim, int colDim) {
-	Doub tmp;
+void transpose(DiffDoub0 matT[], DiffDoub0 mat[], int rowDim, int colDim) {
+	DiffDoub0 tmp;
 	int i1;
 	int i2;
 	int i3;
@@ -1581,8 +1581,8 @@ void transpose(Doub matT[], Doub mat[], int rowDim, int colDim) {
 	return;
 }
 
-void crossProd(Doub prod[], Doub v1[], Doub v2[]) {
-	Doub tmp;
+void crossProd(DiffDoub0 prod[], DiffDoub0 v1[], DiffDoub0 v2[]) {
+	DiffDoub0 tmp;
 	
 	prod[0].setVal(v1[1]);
 	prod[0].mult(v2[2]);
@@ -1604,14 +1604,14 @@ void crossProd(Doub prod[], Doub v1[], Doub v2[]) {
 	return;
 }
 
-void rotateOrient(Doub instOri[], Doub locOri[], Doub rot[]) {
-	Doub mag;
-	Doub tmp;
-	Doub tmp2;
-	Doub oneHalf;
-	Doub a1[9];
-	Doub a2[9];
-	Doub a3[9];
+void rotateOrient(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[]) {
+	DiffDoub0 mag;
+	DiffDoub0 tmp;
+	DiffDoub0 tmp2;
+	DiffDoub0 oneHalf;
+	DiffDoub0 a1[9];
+	DiffDoub0 a2[9];
+	DiffDoub0 a3[9];
 	int i1;
 	int i2;
 	int i3;
@@ -1628,7 +1628,7 @@ void rotateOrient(Doub instOri[], Doub locOri[], Doub rot[]) {
 	mag.add(tmp2);
 	mag.sqt();
 	if(mag.val < magtol) {
-		Doub locRot[3];
+		DiffDoub0 locRot[3];
 		i3 = 0;
 		for (i1 = 0; i1 < 3; i1++) {
 			locRot[i1].setVal(0.0);
@@ -1698,15 +1698,15 @@ void rotateOrient(Doub instOri[], Doub locOri[], Doub rot[]) {
 		
 		matMul(instOri, a1, locOri, 3, 3, 3);
 	} else {
-		Doub sth;
-		Doub cth;
+		DiffDoub0 sth;
+		DiffDoub0 cth;
 		
 		sth.setVal(mag);
 		sth.sn();
 		cth.setVal(mag);
 		cth.cs();
 		
-		Doub unitRot[3];
+		DiffDoub0 unitRot[3];
 		tmp.setVal(1.0);
 		tmp.dvd(mag);
 		unitRot[0].setVal(rot[0]);
@@ -1797,14 +1797,14 @@ void rotateOrient(Doub instOri[], Doub locOri[], Doub rot[]) {
  
 //DiffDoub versions: 
 //dup2
-void matMul(DiffDoub prod[], DiffDoub mat1[], DiffDoub mat2[], int m1Rows, int m1Cols, int m2Cols) {
+void matMul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
 	int i5;
 	int i6;
-	DiffDoub tmp;
+	DiffDoub1 tmp;
 	
 	i4 = 0;
 	i5 = 0;
@@ -1827,8 +1827,8 @@ void matMul(DiffDoub prod[], DiffDoub mat1[], DiffDoub mat2[], int m1Rows, int m
 	return;
 }
 
-void transpose(DiffDoub matT[], DiffDoub mat[], int rowDim, int colDim) {
-	DiffDoub tmp;
+void transpose(DiffDoub1 matT[], DiffDoub1 mat[], int rowDim, int colDim) {
+	DiffDoub1 tmp;
 	int i1;
 	int i2;
 	int i3;
@@ -1846,8 +1846,8 @@ void transpose(DiffDoub matT[], DiffDoub mat[], int rowDim, int colDim) {
 	return;
 }
 
-void crossProd(DiffDoub prod[], DiffDoub v1[], DiffDoub v2[]) {
-	DiffDoub tmp;
+void crossProd(DiffDoub1 prod[], DiffDoub1 v1[], DiffDoub1 v2[]) {
+	DiffDoub1 tmp;
 	
 	prod[0].setVal(v1[1]);
 	prod[0].mult(v2[2]);
@@ -1869,14 +1869,14 @@ void crossProd(DiffDoub prod[], DiffDoub v1[], DiffDoub v2[]) {
 	return;
 }
 
-void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]) {
-	DiffDoub mag;
-	DiffDoub tmp;
-	DiffDoub tmp2;
-	DiffDoub oneHalf;
-	DiffDoub a1[9];
-	DiffDoub a2[9];
-	DiffDoub a3[9];
+void rotateOrient(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[]) {
+	DiffDoub1 mag;
+	DiffDoub1 tmp;
+	DiffDoub1 tmp2;
+	DiffDoub1 oneHalf;
+	DiffDoub1 a1[9];
+	DiffDoub1 a2[9];
+	DiffDoub1 a3[9];
 	int i1;
 	int i2;
 	int i3;
@@ -1893,7 +1893,7 @@ void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]) {
 	mag.add(tmp2);
 	mag.sqt();
 	if(mag.val < magtol) {
-		DiffDoub locRot[3];
+		DiffDoub1 locRot[3];
 		i3 = 0;
 		for (i1 = 0; i1 < 3; i1++) {
 			locRot[i1].setVal(0.0);
@@ -1963,15 +1963,15 @@ void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]) {
 		
 		matMul(instOri, a1, locOri, 3, 3, 3);
 	} else {
-		DiffDoub sth;
-		DiffDoub cth;
+		DiffDoub1 sth;
+		DiffDoub1 cth;
 		
 		sth.setVal(mag);
 		sth.sn();
 		cth.setVal(mag);
 		cth.cs();
 		
-		DiffDoub unitRot[3];
+		DiffDoub1 unitRot[3];
 		tmp.setVal(1.0);
 		tmp.dvd(mag);
 		unitRot[0].setVal(rot[0]);
@@ -2060,14 +2060,14 @@ void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]) {
  
 //Diff2Doub versions: 
 //dup2
-void matMul(Diff2Doub prod[], Diff2Doub mat1[], Diff2Doub mat2[], int m1Rows, int m1Cols, int m2Cols) {
+void matMul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
 	int i5;
 	int i6;
-	Diff2Doub tmp;
+	DiffDoub2 tmp;
 	
 	i4 = 0;
 	i5 = 0;
@@ -2090,8 +2090,8 @@ void matMul(Diff2Doub prod[], Diff2Doub mat1[], Diff2Doub mat2[], int m1Rows, in
 	return;
 }
 
-void transpose(Diff2Doub matT[], Diff2Doub mat[], int rowDim, int colDim) {
-	Diff2Doub tmp;
+void transpose(DiffDoub2 matT[], DiffDoub2 mat[], int rowDim, int colDim) {
+	DiffDoub2 tmp;
 	int i1;
 	int i2;
 	int i3;
@@ -2109,8 +2109,8 @@ void transpose(Diff2Doub matT[], Diff2Doub mat[], int rowDim, int colDim) {
 	return;
 }
 
-void crossProd(Diff2Doub prod[], Diff2Doub v1[], Diff2Doub v2[]) {
-	Diff2Doub tmp;
+void crossProd(DiffDoub2 prod[], DiffDoub2 v1[], DiffDoub2 v2[]) {
+	DiffDoub2 tmp;
 	
 	prod[0].setVal(v1[1]);
 	prod[0].mult(v2[2]);
@@ -2132,14 +2132,14 @@ void crossProd(Diff2Doub prod[], Diff2Doub v1[], Diff2Doub v2[]) {
 	return;
 }
 
-void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
-	Diff2Doub mag;
-	Diff2Doub tmp;
-	Diff2Doub tmp2;
-	Diff2Doub oneHalf;
-	Diff2Doub a1[9];
-	Diff2Doub a2[9];
-	Diff2Doub a3[9];
+void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]) {
+	DiffDoub2 mag;
+	DiffDoub2 tmp;
+	DiffDoub2 tmp2;
+	DiffDoub2 oneHalf;
+	DiffDoub2 a1[9];
+	DiffDoub2 a2[9];
+	DiffDoub2 a3[9];
 	int i1;
 	int i2;
 	int i3;
@@ -2156,7 +2156,7 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 	mag.add(tmp2);
 	mag.sqt();
 	if(mag.val < magtol) {
-		Diff2Doub locRot[3];
+		DiffDoub2 locRot[3];
 		i3 = 0;
 		for (i1 = 0; i1 < 3; i1++) {
 			locRot[i1].setVal(0.0);
@@ -2226,15 +2226,15 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
 		
 		matMul(instOri, a1, locOri, 3, 3, 3);
 	} else {
-		Diff2Doub sth;
-		Diff2Doub cth;
+		DiffDoub2 sth;
+		DiffDoub2 cth;
 		
 		sth.setVal(mag);
 		sth.sn();
 		cth.setVal(mag);
 		cth.cs();
 		
-		Diff2Doub unitRot[3];
+		DiffDoub2 unitRot[3];
 		tmp.setVal(1.0);
 		tmp.dvd(mag);
 		unitRot[0].setVal(rot[0]);
@@ -2329,18 +2329,18 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]) {
  
  
 //dup1
-void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
+void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
 		rotateOrient(instOri, locOri, rot);
 		return;
 	}
 //preserve
-    DiffDoub dRot[3];
-    Diff2Doub d2Rot[3];
-	DiffDoub dLocOri[9];
-	Diff2Doub d2LocOri[9];
-	DiffDoub dInstOri[9];
-	Diff2Doub d2InstOri[9];
+    DiffDoub1 dRot[3];
+    DiffDoub2 d2Rot[3];
+	DiffDoub1 dLocOri[9];
+	DiffDoub2 d2LocOri[9];
+	DiffDoub1 dInstOri[9];
+	DiffDoub2 d2InstOri[9];
 //end preserve
     int i1;
 	bool isDiff = locOri[0].diffType();
@@ -2430,17 +2430,17 @@ void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2) {
  
 //DiffDoub versions: 
 //dup1
-void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, int v2) {
+void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
 		rotateOrient(instOri, locOri, rot);
 		return;
 	}
-    DiffDoub dRot[3];
-    Diff2Doub d2Rot[3];
-	DiffDoub dLocOri[9];
-	Diff2Doub d2LocOri[9];
-	DiffDoub dInstOri[9];
-	Diff2Doub d2InstOri[9];
+    DiffDoub1 dRot[3];
+    DiffDoub2 d2Rot[3];
+	DiffDoub1 dLocOri[9];
+	DiffDoub2 d2LocOri[9];
+	DiffDoub1 dInstOri[9];
+	DiffDoub2 d2InstOri[9];
     int i1;
 	bool isDiff = locOri[0].diffType();
 	double param;

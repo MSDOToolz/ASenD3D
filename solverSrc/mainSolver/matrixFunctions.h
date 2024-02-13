@@ -17,7 +17,7 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 
 void symFactor(double mat[], double qMat[], int matDim);
 
-void getCharFun(DiffDoub& cFun, DiffDoub mat[], int matDim, DoubList& eVals, double lam, int triDiag);
+void getCharFun(DiffDoub1& cFun, DiffDoub1 mat[], int matDim, DoubList& eVals, double lam, int triDiag);
 
 void getEvals(double eVals[], double mat[], int matDim, double lamInit, double convTol, int triDiag);
 
@@ -32,22 +32,22 @@ void eigenFull(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, d
 void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, double massMat[], int matDim);
 
 //dup1
-void qRFactor(Doub mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void qRFactor(DiffDoub0 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
 
-void solveqRxEqb(Doub xVec[], Doub mat[], Doub bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveqRxEqb(DiffDoub0 xVec[], DiffDoub0 mat[], DiffDoub0 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
 
-void getDetInv(Doub& det, Doub inv[], Doub mat[], int colDim, int triDiag, Doub xVec[], Doub bVec[]);
+void getDetInv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int colDim, int triDiag, DiffDoub0 xVec[], DiffDoub0 bVec[]);
 //end dup
  
 //skip 
  
 //DiffDoub versions: 
 //dup1
-void qRFactor(DiffDoub mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void qRFactor(DiffDoub1 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
 
-void solveqRxEqb(DiffDoub xVec[], DiffDoub mat[], DiffDoub bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveqRxEqb(DiffDoub1 xVec[], DiffDoub1 mat[], DiffDoub1 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
 
-void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int triDiag, DiffDoub xVec[], DiffDoub bVec[]);
+void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int triDiag, DiffDoub1 xVec[], DiffDoub1 bVec[]);
 //end dup
  
 //end skip 
@@ -58,37 +58,37 @@ void getDetInv(DiffDoub& det, DiffDoub inv[], DiffDoub mat[], int colDim, int tr
  
  
 //dup2
-void matMul(Doub prod[], Doub mat1[], Doub mat2[], int m1Rows, int m1Cols, int m2Cols);
+void matMul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1Rows, int m1Cols, int m2Cols);
 
-void transpose(Doub matT[], Doub mat[], int rowDim, int colDim);
+void transpose(DiffDoub0 matT[], DiffDoub0 mat[], int rowDim, int colDim);
 
-void crossProd(Doub prod[], Doub v1[], Doub v2[]);
+void crossProd(DiffDoub0 prod[], DiffDoub0 v1[], DiffDoub0 v2[]);
 
-void rotateOrient(Doub instOri[], Doub locOri[], Doub rot[]);
+void rotateOrient(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[]);
 //end dup
  
 //skip 
  
 //DiffDoub versions: 
 //dup2
-void matMul(DiffDoub prod[], DiffDoub mat1[], DiffDoub mat2[], int m1Rows, int m1Cols, int m2Cols);
+void matMul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1Rows, int m1Cols, int m2Cols);
 
-void transpose(DiffDoub matT[], DiffDoub mat[], int rowDim, int colDim);
+void transpose(DiffDoub1 matT[], DiffDoub1 mat[], int rowDim, int colDim);
 
-void crossProd(DiffDoub prod[], DiffDoub v1[], DiffDoub v2[]);
+void crossProd(DiffDoub1 prod[], DiffDoub1 v1[], DiffDoub1 v2[]);
 
-void rotateOrient(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[]);
+void rotateOrient(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[]);
 //end dup
  
 //Diff2Doub versions: 
 //dup2
-void matMul(Diff2Doub prod[], Diff2Doub mat1[], Diff2Doub mat2[], int m1Rows, int m1Cols, int m2Cols);
+void matMul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1Rows, int m1Cols, int m2Cols);
 
-void transpose(Diff2Doub matT[], Diff2Doub mat[], int rowDim, int colDim);
+void transpose(DiffDoub2 matT[], DiffDoub2 mat[], int rowDim, int colDim);
 
-void crossProd(Diff2Doub prod[], Diff2Doub v1[], Diff2Doub v2[]);
+void crossProd(DiffDoub2 prod[], DiffDoub2 v1[], DiffDoub2 v2[]);
 
-void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]);
+void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]);
 //end dup
  
 //end skip 
@@ -100,7 +100,7 @@ void rotateOrient(Diff2Doub instOri[], Diff2Doub locOri[], Diff2Doub rot[]);
  
 //dup1
 
-void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2);
+void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1, int v2);
 
 //end dup
  
@@ -109,7 +109,7 @@ void dOridThet(Doub instOri[], Doub locOri[], Doub rot[], int v1, int v2);
 //DiffDoub versions: 
 //dup1
 
-void dOridThet(DiffDoub instOri[], DiffDoub locOri[], DiffDoub rot[], int v1, int v2);
+void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1, int v2);
 
 //end dup
  

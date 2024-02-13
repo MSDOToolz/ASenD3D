@@ -106,12 +106,12 @@ DoubList* DesignVariable::getCoefs() {
 	return coefs;
 }
 
-void DesignVariable::getValue(Doub& inp) {
+void DesignVariable::getValue(DiffDoub0& inp) {
 	inp.setVal(value);
 	return;
 }
 
-void DesignVariable::getValue(DiffDoub& inp) {
+void DesignVariable::getValue(DiffDoub1& inp) {
 	inp.setVal(diffVal);
 	return;
 }

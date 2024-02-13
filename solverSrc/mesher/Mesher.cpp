@@ -243,7 +243,7 @@ void Mesher::prep() {
 		thisFc = thisFc->getNext();
 	}
 	avgProj /= numFaces;
-	spacing = 2.0*avgProj;
+	spacing = avgProj;
 	nodeGrid.initialize(xRange, spacing, yRange, spacing, zRange, spacing);
 	elementGrid.initialize(xRange, spacing, yRange, spacing, zRange, spacing);
 	faceGrid.initialize(xRange, spacing, yRange, spacing, zRange, spacing);
@@ -275,7 +275,7 @@ void Mesher::prep() {
 	thisFc = faces.getFirst();
 	while (thisFc) {
 		thisFc->getCentroid(cent);
-		lstLen = faceGrid.getInRadius(gridOut1, gOLen, cent, 1.25*maxEdgeLen);
+		lstLen = faceGrid.getInRadius(gridOut1, gOLen, cent, 1.01*maxEdgeLen);
 		neighbCt = 0;
 		for (i1 = 0; i1 < lstLen; i1++) {
 			lstFc = gridOut1[i1]->getPt(lstFc);
@@ -331,7 +331,7 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 	bool shared[3];
 
 	newEl->getCentroid(cent);
-	lstLen = faceGrid.getInRadius(gridOut2, gOLen, cent, 1.25 * maxEdgeLen);
+	lstLen = faceGrid.getInRadius(gridOut2, gOLen, cent, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
 		thisFc = gridOut2[i1]->getPt(thisFc);
 
@@ -392,7 +392,7 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 
 	// Any node of new element in an existing element
 
-	lstLen = elementGrid.getInRadius(gridOut2, gOLen, cent, 1.25 * maxEdgeLen);
+	lstLen = elementGrid.getInRadius(gridOut2, gOLen, cent, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
 		thisEl = gridOut2[i1]->getPt(thisEl);
 		for (i2 = 0; i2 < 4; i2++) {
@@ -406,7 +406,7 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 
 	// Any existing node in the new element
 
-	lstLen = nodeGrid.getInRadius(gridOut2, gOLen, cent, 1.25 * maxEdgeLen);
+	lstLen = nodeGrid.getInRadius(gridOut2, gOLen, cent, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
 		thisNd = gridOut2[i1]->getPt(thisNd);
 		pt = thisNd->getCrd();
@@ -476,7 +476,7 @@ bool Mesher::adoptConnectedNd(MeshFace* thisFc, double tgtPt[], double srchRad) 
 	MeshNode** thisFcNds = thisFc->getNdPt();
 	MeshElement** thisFcEls = thisFc->getElPt();
 	thisFc->getCentroid(cent);
-	int lstLen = faceGrid.getInRadius(gridOut1, gOLen, tgtPt, 1.25 * maxEdgeLen);
+	int lstLen = faceGrid.getInRadius(gridOut1, gOLen, tgtPt, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
 		listFc = gridOut1[i1]->getPt(listFc);
 		numShared = listFc->getSharedNodes(faceNds, shared, thisFc);

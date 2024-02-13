@@ -42,6 +42,6 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mesher\utilities.cpp(219,29): warning
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mesher\utilities.cpp(220,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   Generating code
   Previous IPDB not found, fall back to full compilation.
-  All 333 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 330 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   unstrucTetMesh.vcxproj -> C:\Users\evans\ASenDHome\ASenD3D\VS\mesher\unstrucTetMesh\x64\Release\unstrucTetMesh.exe

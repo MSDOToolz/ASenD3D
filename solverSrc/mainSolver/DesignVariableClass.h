@@ -16,8 +16,8 @@ class DesignVariable {
 		std::string ndSetName;
 		Set* ndSetPtr;
 		DoubList* coefs;
-		Doub value;
-		DiffDoub diffVal;
+		DiffDoub0 value;
+		DiffDoub1 diffVal;
 		IntList* compElList;
 		DesignVariable *nextDV;
 		
@@ -60,9 +60,9 @@ class DesignVariable {
 		
 		DoubList* getCoefs();
 		
-		void getValue(Doub& inp);
+		void getValue(DiffDoub0& inp);
 		
-		void getValue(DiffDoub& inp);
+		void getValue(DiffDoub1& inp);
 		
 		int getComponent();
 		

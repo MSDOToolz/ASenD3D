@@ -403,18 +403,18 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 	int qInd;
 	double ndData[6];
 	Element* thisEl;
-	DoubStressPrereq* stPre = new DoubStressPrereq;
-	double spt[3] = {0.0,0.0,0.0};
-	Doub strain[6];
-	Doub stress[6];
+	DiffDoub0StressPrereq* stPre = new DiffDoub0StressPrereq;
+	double* spt = nullptr;
+	DiffDoub0 strain[6];
+	DiffDoub0 stress[6];
 	double seDen;
-	Doub def[9];
-	Doub frcMom[9];
-	Doub flux[3];
-	Doub tGrad[3];
-	Doub eVol;
-	Doub eDen;
-	Doub tmp;
+	DiffDoub0 def[9];
+	DiffDoub0 frcMom[9];
+	DiffDoub0 flux[3];
+	DiffDoub0 tGrad[3];
+	DiffDoub0 eVol;
+	DiffDoub0 eDen;
+	DiffDoub0 tmp;
 
 	string catList = "displacement velocity acceleration temperature tdot";
 	fi = catList.find(category);
@@ -500,6 +500,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			spt = thisEl->getSCent();
 			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, *stPre);
 			if (category == "stress") {
 				qVec[qInd] = stress[component - 1].val;
@@ -578,6 +579,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
+			spt = thisEl->getSCent();
 			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, *stPre);
 			if (category == "sectionDef") {
 				qVec[qInd] = def[component - 1].val;
@@ -661,6 +663,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			spt = thisEl->getSCent();
 			thisEl->getFluxTGrad(flux, tGrad, spt, layer, *stPre);
 			if (category == "flux") {
 				qVec[qInd] = flux[component - 1].val;
@@ -776,27 +779,27 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	int dofInd;
 	int currRank;
 	Element* thisEl;
-	DoubStressPrereq* stPre = new DoubStressPrereq;
-	double spt[3] = { 0.0,0.0,0.0 };
-	Doub strain[6];
-	Doub stress[6];
-	Doub dsdU[288];
-	Doub dedU[288];
-	Doub dsdT[90];
-	Doub dseDendU[33];
-	Doub dseDendT[10];
-	Doub def[9];
-	Doub frcMom[9];
-	Doub flux[3];
-	Doub tGrad[3];
-	Doub dFdT[30];
-	Doub dTGdT[30];
+	DiffDoub0StressPrereq* stPre = new DiffDoub0StressPrereq;
+	double* spt = nullptr;
+	DiffDoub0 strain[6];
+	DiffDoub0 stress[6];
+	DiffDoub0 dsdU[288];
+	DiffDoub0 dedU[288];
+	DiffDoub0 dsdT[90];
+	DiffDoub0 dseDendU[33];
+	DiffDoub0 dseDendT[10];
+	DiffDoub0 def[9];
+	DiffDoub0 frcMom[9];
+	DiffDoub0 flux[3];
+	DiffDoub0 tGrad[3];
+	DiffDoub0 dFdT[30];
+	DiffDoub0 dTGdT[30];
 	int elNumNds;
 	int elDofPerNd;
 	int elNumIntDof;
 	int elTotDof;
-	Doub eVol;
-	Doub eDen;
+	DiffDoub0 eVol;
+	DiffDoub0 eDen;
 
 	string catList = "displacement velocity acceleration temperature tdot";
 	fi = catList.find(category);
@@ -864,6 +867,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			spt = thisEl->getSCent();
 			thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, *stPre);
 			thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, *stPre);
 			elNumNds = thisEl->getNumNds();
@@ -941,6 +945,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
 			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 			//thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
+			spt = thisEl->getSCent();
 			thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, *stPre);
 			thisEl->dDefFrcMomdU(dedU, dsdU, dsdT, spt, nLGeom, *stPre);
 			elNumNds = thisEl->getNumNds();
@@ -994,6 +999,7 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		while (thisEnt) {
 			thisEl = elAr[thisEnt->value];
 			thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+			spt = thisEl->getSCent();
 			thisEl->getFluxTGrad(flux, tGrad, spt, layer, *stPre);
 			thisEl->dFluxTGraddT(dFdT, dTGdT, spt, layer, *stPre);
 			elNumNds = thisEl->getNumNds();
@@ -1048,19 +1054,19 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 	int qInd;
 	Element* thisEl;
 	DesignVariable* thisDV;
-	Doub dvVal;
-	DiffDoubStressPrereq* stPre = new DiffDoubStressPrereq;
-	double spt[3] = { 0.0,0.0,0.0 };
-	DiffDoub strain[6];
-	DiffDoub stress[6];
+	DiffDoub0 dvVal;
+	DiffDoub1StressPrereq* stPre = new DiffDoub1StressPrereq;
+	double* spt = nullptr;
+	DiffDoub1 strain[6];
+	DiffDoub1 stress[6];
 	double seDen;
-	DiffDoub def[9];
-	DiffDoub frcMom[9];
-	DiffDoub flux[3];
-	DiffDoub tGrad[3];
-	DiffDoub eVol;
-	DiffDoub eDen;
-	DiffDoub tmp;
+	DiffDoub1 def[9];
+	DiffDoub1 frcMom[9];
+	DiffDoub1 flux[3];
+	DiffDoub1 tGrad[3];
+	DiffDoub1 eVol;
+	DiffDoub1 eDen;
+	DiffDoub1 tmp;
 
 
 	string catList = "stress strain strainEnergyDen";
@@ -1082,6 +1088,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
 				thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+				spt = thisEl->getSCent();
 				thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, *stPre);
 				if (category == "stress") {
 					dQdD->addEntry(qInd, dvi, stress[component - 1].dval);
@@ -1149,6 +1156,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV->setDiffVal(dvVal.val, 1.0);
 				thisEl->getStressPrereq(*stPre, ndAr, dvAr);
 				//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
+				spt = thisEl->getSCent();
 				thisEl->getDefFrcMom(def, frcMom, spt, nLGeom, *stPre);
 				if (category == "sectionFrcMom") {
 					dQdD->addEntry(qInd, dvi, frcMom[component - 1].dval);
@@ -1217,6 +1225,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
 				thisEl->getStressPrereq(*stPre, ndAr, dvAr);
+				spt = thisEl->getSCent();
 				thisEl->getFluxTGrad(flux, tGrad, spt, layer, *stPre);
 				if (category == "flux") {
 					dQdD->addEntry(qInd, dvi, flux[component - 1].dval);

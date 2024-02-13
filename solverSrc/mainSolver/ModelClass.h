@@ -64,7 +64,7 @@ class Model {
 		double* tempV5;
 		double* tempV6;
 
-		Doub *tempD1;
+		DiffDoub0 *tempD1;
 
 		double* dLdU;
 		double* dLdV;
@@ -77,8 +77,8 @@ class Model {
 		double* tAdj;
 		double* tdotAdj;
 
-		DiffDoub* dRudD;
-		DiffDoub* dRtdD;
+		DiffDoub1* dRudD;
+		DiffDoub1* dRtdD;
 
 		int* elInD;
 

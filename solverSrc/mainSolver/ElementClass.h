@@ -11,46 +11,46 @@
 #include "JobClass.h"
 
 //dup1
-class DoubStressPrereq {
+class DiffDoub0StressPrereq {
 public:
-	Doub* globNds;  //globNds[30];
-	Doub* locNds;// [30] ;
-	Doub* locOri;// [9] ;
-	Doub* instOri;// [720] ;
-	Doub* globDisp;// [60] ;
-	Doub* globVel;
-	Doub* globAcc;// [30];
-	Doub* globTemp;
-	Doub* globTdot;
-	Doub* Cmat;// [81] ;
-	Doub* Mmat;// [36];
-	Doub* Dmat;
-	Doub* thermExp;
-	Doub* Einit;
-	Doub* TCmat;
-	Doub SpecHeat;
-	Doub* BMat;
-	Doub* CBMat;
-	Doub* layerZ;
-	Doub* layerThk;
-	Doub* layerAng;
-	Doub* layerQ;
-	Doub* layerD;
-	Doub* layerTE;
-	Doub* layerE0;
-	Doub* layerDen;
-	Doub* layerTC;
-	Doub* layerSH;
-	Doub* frcFldCoef;
-	Doub* frcFldExp;
-	Doub massPerEl;
+	DiffDoub0* globNds;  //globNds[30];
+	DiffDoub0* locNds;// [30] ;
+	DiffDoub0* locOri;// [9] ;
+	DiffDoub0* instOri;// [720] ;
+	DiffDoub0* globDisp;// [60] ;
+	DiffDoub0* globVel;
+	DiffDoub0* globAcc;// [30];
+	DiffDoub0* globTemp;
+	DiffDoub0* globTdot;
+	DiffDoub0* Cmat;// [81] ;
+	DiffDoub0* Mmat;// [36];
+	DiffDoub0* Dmat;
+	DiffDoub0* thermExp;
+	DiffDoub0* Einit;
+	DiffDoub0* TCmat;
+	DiffDoub0 SpecHeat;
+	DiffDoub0* BMat;
+	DiffDoub0* CBMat;
+	DiffDoub0* layerZ;
+	DiffDoub0* layerThk;
+	DiffDoub0* layerAng;
+	DiffDoub0* layerQ;
+	DiffDoub0* layerD;
+	DiffDoub0* layerTE;
+	DiffDoub0* layerE0;
+	DiffDoub0* layerDen;
+	DiffDoub0* layerTC;
+	DiffDoub0* layerSH;
+	DiffDoub0* frcFldCoef;
+	DiffDoub0* frcFldExp;
+	DiffDoub0 massPerEl;
 	double* scratch;
 
 	int currentLayLen;
 
-	DoubStressPrereq();
+	DiffDoub0StressPrereq();
 
-	~DoubStressPrereq();
+	~DiffDoub0StressPrereq();
 };
 //end dup
  
@@ -58,46 +58,46 @@ public:
  
 //DiffDoub versions: 
 //dup1
-class DiffDoubStressPrereq {
+class DiffDoub1StressPrereq {
 public:
-	DiffDoub* globNds;  //globNds[30];
-	DiffDoub* locNds;// [30] ;
-	DiffDoub* locOri;// [9] ;
-	DiffDoub* instOri;// [720] ;
-	DiffDoub* globDisp;// [60] ;
-	DiffDoub* globVel;
-	DiffDoub* globAcc;// [30];
-	DiffDoub* globTemp;
-	DiffDoub* globTdot;
-	DiffDoub* Cmat;// [81] ;
-	DiffDoub* Mmat;// [36];
-	DiffDoub* Dmat;
-	DiffDoub* thermExp;
-	DiffDoub* Einit;
-	DiffDoub* TCmat;
-	DiffDoub SpecHeat;
-	DiffDoub* BMat;
-	DiffDoub* CBMat;
-	DiffDoub* layerZ;
-	DiffDoub* layerThk;
-	DiffDoub* layerAng;
-	DiffDoub* layerQ;
-	DiffDoub* layerD;
-	DiffDoub* layerTE;
-	DiffDoub* layerE0;
-	DiffDoub* layerDen;
-	DiffDoub* layerTC;
-	DiffDoub* layerSH;
-	DiffDoub* frcFldCoef;
-	DiffDoub* frcFldExp;
-	DiffDoub massPerEl;
+	DiffDoub1* globNds;  //globNds[30];
+	DiffDoub1* locNds;// [30] ;
+	DiffDoub1* locOri;// [9] ;
+	DiffDoub1* instOri;// [720] ;
+	DiffDoub1* globDisp;// [60] ;
+	DiffDoub1* globVel;
+	DiffDoub1* globAcc;// [30];
+	DiffDoub1* globTemp;
+	DiffDoub1* globTdot;
+	DiffDoub1* Cmat;// [81] ;
+	DiffDoub1* Mmat;// [36];
+	DiffDoub1* Dmat;
+	DiffDoub1* thermExp;
+	DiffDoub1* Einit;
+	DiffDoub1* TCmat;
+	DiffDoub1 SpecHeat;
+	DiffDoub1* BMat;
+	DiffDoub1* CBMat;
+	DiffDoub1* layerZ;
+	DiffDoub1* layerThk;
+	DiffDoub1* layerAng;
+	DiffDoub1* layerQ;
+	DiffDoub1* layerD;
+	DiffDoub1* layerTE;
+	DiffDoub1* layerE0;
+	DiffDoub1* layerDen;
+	DiffDoub1* layerTC;
+	DiffDoub1* layerSH;
+	DiffDoub1* frcFldCoef;
+	DiffDoub1* frcFldExp;
+	DiffDoub1 massPerEl;
 	double* scratch;
 
 	int currentLayLen;
 
-	DiffDoubStressPrereq();
+	DiffDoub1StressPrereq();
 
-	~DoubStressPrereq();
+	~DiffDoub1StressPrereq();
 };
 //end dup
  
@@ -122,13 +122,14 @@ class Element {
 		int intDofIndex;
 		double* intPts;
 		double* ipWt;
+		double sCent[3];
 		int numIP;
 		FaceList* faces;
 		double *internalDisp;
 		double *intPrevDisp;
 		double *internaldLdu;
 		double *internalAdj;
-		DiffDoub *internalRu;
+		DiffDoub1 *internalRu;
 		double *internalMat;
 		IntList* designVars;
 		DoubList* dvCoef;
@@ -179,6 +180,8 @@ class Element {
 
 		double* getIP();
 
+		double* getSCent();
+
 		double* getIntAdj();
 
 		int getNumLayers();
@@ -201,114 +204,114 @@ class Element {
 //dup1
 
 // Properties
-		void getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DesignVariable* dvAr[]);
+		void getLayerThkZ(DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0& zOffset, DesignVariable* dvAr[]);
 
-		void getLayerQ(Doub layQ[], DesignVariable* dvAr[]);
+		void getLayerQ(DiffDoub0 layQ[], DesignVariable* dvAr[]);
 
-		void getLayerD(Doub layD[], DesignVariable* dvAr[]);
+		void getLayerD(DiffDoub0 layD[], DesignVariable* dvAr[]);
 
-		void getLayerAngle(Doub layAng[], DesignVariable* dvAr[]);
+		void getLayerAngle(DiffDoub0 layAng[], DesignVariable* dvAr[]);
 
-		void getLayerThExp(Doub layThExp[], DesignVariable* dvAr[]);
+		void getLayerThExp(DiffDoub0 layThExp[], DesignVariable* dvAr[]);
 
-		void getLayerEinit(Doub layEinit[], DesignVariable* dvAr[]);
+		void getLayerEinit(DiffDoub0 layEinit[], DesignVariable* dvAr[]);
 
-		void getLayerDen(Doub layerDen[], DesignVariable* dvAr[]);
+		void getLayerDen(DiffDoub0 layerDen[], DesignVariable* dvAr[]);
 
-		void getLayerCond(Doub layCond[], DesignVariable* dvAr[]);
+		void getLayerCond(DiffDoub0 layCond[], DesignVariable* dvAr[]);
 
-		void getLayerSpecHeat(Doub laySH[], DesignVariable* dvAr[]);
+		void getLayerSpecHeat(DiffDoub0 laySH[], DesignVariable* dvAr[]);
 
-		void transformStrain(Doub stnNew[], Doub stnOrig[], Doub& angle);
+		void transformStrain(DiffDoub0 stnNew[], DiffDoub0 stnOrig[], DiffDoub0& angle);
 
-		void transformQ(Doub qNew[], Doub qOrig[], Doub& angle);
+		void transformQ(DiffDoub0 qNew[], DiffDoub0 qOrig[], DiffDoub0& angle);
 
-		void getSolidStiff(Doub Cmat[], DesignVariable* dvAr[]);
+		void getSolidStiff(DiffDoub0 Cmat[], DesignVariable* dvAr[]);
 
-		void getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub layAng[]);
+		void getABD(DiffDoub0 Cmat[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layQ[], DiffDoub0 layAng[]);
 
-		void getBeamStiff(Doub Cmat[], DesignVariable* dvAr[]);
+		void getBeamStiff(DiffDoub0 Cmat[], DesignVariable* dvAr[]);
 
-		void getThermalExp(Doub thExp[], Doub Einit[], DesignVariable* dvAr[]);
+		void getThermalExp(DiffDoub0 thExp[], DiffDoub0 Einit[], DesignVariable* dvAr[]);
 
-		void getShellExpLoad(Doub expLd[], Doub E0Ld[], Doub layThk[], Doub layZ[], Doub layQ[], Doub layThExp[], Doub layEInit[], Doub layAng[]);
+		void getShellExpLoad(DiffDoub0 expLd[], DiffDoub0 E0Ld[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layQ[], DiffDoub0 layThExp[], DiffDoub0 layEInit[], DiffDoub0 layAng[]);
 
-		void getBeamExpLoad(Doub expLd[], Doub E0Ld[], DesignVariable* dvAr[]);
+		void getBeamExpLoad(DiffDoub0 expLd[], DiffDoub0 E0Ld[], DesignVariable* dvAr[]);
 
-		void getDensity(Doub& den, int layer, DesignVariable* dvAr[]);
+		void getDensity(DiffDoub0& den, int layer, DesignVariable* dvAr[]);
 
-		void getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], Doub layDen[], DesignVariable* dvAr[]);
+		void getShellMass(DiffDoub0 Mmat[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layDen[], DesignVariable* dvAr[]);
 
-		void getBeamMass(Doub Mmat[], DesignVariable* dvAr[]);
+		void getBeamMass(DiffDoub0 Mmat[], DesignVariable* dvAr[]);
 
-		void getSolidDamp(Doub Dmat[], DesignVariable* dvAr[]);
+		void getSolidDamp(DiffDoub0 Dmat[], DesignVariable* dvAr[]);
 
-		void getShellDamp(Doub Dmat[], Doub layThk[], Doub layZ[], Doub layD[], Doub layAng[]);
+		void getShellDamp(DiffDoub0 Dmat[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layD[], DiffDoub0 layAng[]);
 
-		void getBeamDamp(Doub Dmat[], DesignVariable* dvAr[]);
+		void getBeamDamp(DiffDoub0 Dmat[], DesignVariable* dvAr[]);
 
-		void getConductivity(Doub tCond[], DesignVariable* dvAr[]);
+		void getConductivity(DiffDoub0 tCond[], DesignVariable* dvAr[]);
 
-		void getShellCond(Doub tCond[], Doub layThk[], Doub layAng[], Doub layCond[], DesignVariable* dvAr[]);
+		void getShellCond(DiffDoub0 tCond[], DiffDoub0 layThk[], DiffDoub0 layAng[], DiffDoub0 layCond[], DesignVariable* dvAr[]);
 
-		void getBeamCond(Doub tCond[], DesignVariable* dvAr[]);
+		void getBeamCond(DiffDoub0 tCond[], DesignVariable* dvAr[]);
 
-		void getSpecificHeat(Doub& specHeat, DesignVariable* dvAr[]);
+		void getSpecificHeat(DiffDoub0& specHeat, DesignVariable* dvAr[]);
 
-		void getShellSpecHeat(Doub& specHeat, Doub layThk[], Doub laySH[], Doub layDen[]);
+		void getShellSpecHeat(DiffDoub0& specHeat, DiffDoub0 layThk[], DiffDoub0 laySH[], DiffDoub0 layDen[]);
 
-		void getBeamSpecHeat(Doub& specHeat, DesignVariable* dvAr[]);
+		void getBeamSpecHeat(DiffDoub0& specHeat, DesignVariable* dvAr[]);
 
-        void getNdCrds(Doub xGlob[], Node* ndAr[], DesignVariable* dvAr[]);
+        void getNdCrds(DiffDoub0 xGlob[], Node* ndAr[], DesignVariable* dvAr[]);
 		
-		void getLocOri(Doub locOri[], DesignVariable* dvAr[]);
+		void getLocOri(DiffDoub0 locOri[], DesignVariable* dvAr[]);
 		
-		void correctOrient(Doub locOri[], Doub xGlob[]);
+		void correctOrient(DiffDoub0 locOri[], DiffDoub0 xGlob[]);
 
-		void getFrcFldConst(Doub coef[], Doub exp[], DesignVariable* dvAr[]);
+		void getFrcFldConst(DiffDoub0 coef[], DiffDoub0 exp[], DesignVariable* dvAr[]);
 
-		void getMassPerEl(Doub& massPerEl, DesignVariable* dvAr[]);
+		void getMassPerEl(DiffDoub0& massPerEl, DesignVariable* dvAr[]);
 
 // Solution Fields
-		void getNdDisp(Doub globDisp[], Node* ndAr[]);
+		void getNdDisp(DiffDoub0 globDisp[], Node* ndAr[]);
 
-		void getNdVel(Doub globVel[], Node* ndAr[]);
+		void getNdVel(DiffDoub0 globVel[], Node* ndAr[]);
 
-		void getNdAcc(Doub globAcc[], Node* ndAr[]);
+		void getNdAcc(DiffDoub0 globAcc[], Node* ndAr[]);
 
-		void getNdTemp(Doub globTemp[], Node* ndAr[]);
+		void getNdTemp(DiffDoub0 globTemp[], Node* ndAr[]);
 
-		void getNdTdot(Doub globTdot[], Node* ndAr[]);
+		void getNdTdot(DiffDoub0 globTdot[], Node* ndAr[]);
 
-		void evalN(Doub nVec[], Doub dNds[], double spt[]);
+		void evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]);
 		
-		void getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], double spt[]);
+		void getIpData(DiffDoub0 nVec[], DiffDoub0 dNdx[], DiffDoub0& detJ, DiffDoub0 locNds[], double spt[]);
 		
-		void getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int stat);
+		void getInstOri(DiffDoub0 instOriMat[], DiffDoub0 locOri[], DiffDoub0 globDisp[], int stat);
 		
-		void getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], bool nLGeom, int dv1, int dv2);
+		void getInstDisp(DiffDoub0 instDisp[], DiffDoub0 globDisp[], DiffDoub0 instOriMat[], DiffDoub0 locOri[], DiffDoub0 xGlob[], bool nLGeom, int dv1, int dv2);
 
-		void getStressPrereq(DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getStressPrereq(DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getVolume(Doub& vol, DoubStressPrereq& pre, int layer);
+		void getVolume(DiffDoub0& vol, DiffDoub0StressPrereq& pre, int layer);
 		
-		void getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], bool nLGeom, int dv1, int dv2);
+		void getSectionDef(DiffDoub0 secDef[], DiffDoub0 globDisp[],  DiffDoub0 instOriMat[], DiffDoub0 locOri[], DiffDoub0 xGlob[], DiffDoub0 dNdx[], DiffDoub0 nVec[], bool nLGeom, int dv1, int dv2);
 		
-		void getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[], int dv1, int dv2, bool nLGeom);
+		void getSolidStrain(DiffDoub0 strain[], DiffDoub0 ux[], DiffDoub0 dNdx[], DiffDoub0 locOri[], int dv1, int dv2, bool nLGeom);
 
-		void getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
+		void getStressStrain(DiffDoub0 stress[], DiffDoub0 strain[], double spt[], int layer, bool nLGeom, DiffDoub0StressPrereq& pre);
 
-		void dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre);
+		void dStressStraindU(DiffDoub0 dsdU[], DiffDoub0 dedU[], DiffDoub0 dsdT[], double spt[], int layer, bool nLGeom, DiffDoub0StressPrereq& pre);
 
-		void getDefFrcMom(Doub def[], Doub frcMom[], double spt[], bool nLGeom, DoubStressPrereq& pre);
+		void getDefFrcMom(DiffDoub0 def[], DiffDoub0 frcMom[], double spt[], bool nLGeom, DiffDoub0StressPrereq& pre);
 
-		void dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], bool nLGeom, DoubStressPrereq& pre);
+		void dDefFrcMomdU(DiffDoub0 dDefdU[], DiffDoub0 dFrcMomdU[], DiffDoub0 dFrcMomdT[], double spt[], bool nLGeom, DiffDoub0StressPrereq& pre);
 
-		void getFluxTGrad(Doub flux[], Doub tGrad[], double spt[], int layer, DoubStressPrereq& pre);
+		void getFluxTGrad(DiffDoub0 flux[], DiffDoub0 tGrad[], double spt[], int layer, DiffDoub0StressPrereq& pre);
 
-		void dFluxTGraddT(Doub dFdT[], Doub dTG[], double spt[], int layer, DoubStressPrereq& pre);
+		void dFluxTGraddT(DiffDoub0 dFdT[], DiffDoub0 dTG[], double spt[], int layer, DiffDoub0StressPrereq& pre);
 
-		void putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int matRow, Node* ndAr[]);
+		void putVecToGlobMat(SparseMat& qMat, DiffDoub0 elQVec[], bool forTherm, int matRow, Node* ndAr[]);
 		
 //end dup
  
@@ -318,114 +321,114 @@ class Element {
 //dup1
 
 // Properties
-		void getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset, DesignVariable* dvAr[]);
+		void getLayerThkZ(DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1& zOffset, DesignVariable* dvAr[]);
 
-		void getLayerQ(DiffDoub layQ[], DesignVariable* dvAr[]);
+		void getLayerQ(DiffDoub1 layQ[], DesignVariable* dvAr[]);
 
-		void getLayerD(DiffDoub layD[], DesignVariable* dvAr[]);
+		void getLayerD(DiffDoub1 layD[], DesignVariable* dvAr[]);
 
-		void getLayerAngle(DiffDoub layAng[], DesignVariable* dvAr[]);
+		void getLayerAngle(DiffDoub1 layAng[], DesignVariable* dvAr[]);
 
-		void getLayerThExp(DiffDoub layThExp[], DesignVariable* dvAr[]);
+		void getLayerThExp(DiffDoub1 layThExp[], DesignVariable* dvAr[]);
 
-		void getLayerEinit(DiffDoub layEinit[], DesignVariable* dvAr[]);
+		void getLayerEinit(DiffDoub1 layEinit[], DesignVariable* dvAr[]);
 
-		void getLayerDen(DiffDoub layerDen[], DesignVariable* dvAr[]);
+		void getLayerDen(DiffDoub1 layerDen[], DesignVariable* dvAr[]);
 
-		void getLayerCond(DiffDoub layCond[], DesignVariable* dvAr[]);
+		void getLayerCond(DiffDoub1 layCond[], DesignVariable* dvAr[]);
 
-		void getLayerSpecHeat(DiffDoub laySH[], DesignVariable* dvAr[]);
+		void getLayerSpecHeat(DiffDoub1 laySH[], DesignVariable* dvAr[]);
 
-		void transformStrain(DiffDoub stnNew[], DiffDoub stnOrig[], DiffDoub& angle);
+		void transformStrain(DiffDoub1 stnNew[], DiffDoub1 stnOrig[], DiffDoub1& angle);
 
-		void transformQ(DiffDoub qNew[], DiffDoub qOrig[], DiffDoub& angle);
+		void transformQ(DiffDoub1 qNew[], DiffDoub1 qOrig[], DiffDoub1& angle);
 
-		void getSolidStiff(DiffDoub Cmat[], DesignVariable* dvAr[]);
+		void getSolidStiff(DiffDoub1 Cmat[], DesignVariable* dvAr[]);
 
-		void getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layQ[], DiffDoub layAng[]);
+		void getABD(DiffDoub1 Cmat[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layQ[], DiffDoub1 layAng[]);
 
-		void getBeamStiff(DiffDoub Cmat[], DesignVariable* dvAr[]);
+		void getBeamStiff(DiffDoub1 Cmat[], DesignVariable* dvAr[]);
 
-		void getThermalExp(DiffDoub thExp[], DiffDoub Einit[], DesignVariable* dvAr[]);
+		void getThermalExp(DiffDoub1 thExp[], DiffDoub1 Einit[], DesignVariable* dvAr[]);
 
-		void getShellExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layQ[], DiffDoub layThExp[], DiffDoub layEInit[], DiffDoub layAng[]);
+		void getShellExpLoad(DiffDoub1 expLd[], DiffDoub1 E0Ld[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layQ[], DiffDoub1 layThExp[], DiffDoub1 layEInit[], DiffDoub1 layAng[]);
 
-		void getBeamExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DesignVariable* dvAr[]);
+		void getBeamExpLoad(DiffDoub1 expLd[], DiffDoub1 E0Ld[], DesignVariable* dvAr[]);
 
-		void getDensity(DiffDoub& den, int layer, DesignVariable* dvAr[]);
+		void getDensity(DiffDoub1& den, int layer, DesignVariable* dvAr[]);
 
-		void getShellMass(DiffDoub Mmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layDen[], DesignVariable* dvAr[]);
+		void getShellMass(DiffDoub1 Mmat[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layDen[], DesignVariable* dvAr[]);
 
-		void getBeamMass(DiffDoub Mmat[], DesignVariable* dvAr[]);
+		void getBeamMass(DiffDoub1 Mmat[], DesignVariable* dvAr[]);
 
-		void getSolidDamp(DiffDoub Dmat[], DesignVariable* dvAr[]);
+		void getSolidDamp(DiffDoub1 Dmat[], DesignVariable* dvAr[]);
 
-		void getShellDamp(DiffDoub Dmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layD[], DiffDoub layAng[]);
+		void getShellDamp(DiffDoub1 Dmat[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layD[], DiffDoub1 layAng[]);
 
-		void getBeamDamp(DiffDoub Dmat[], DesignVariable* dvAr[]);
+		void getBeamDamp(DiffDoub1 Dmat[], DesignVariable* dvAr[]);
 
-		void getConductivity(DiffDoub tCond[], DesignVariable* dvAr[]);
+		void getConductivity(DiffDoub1 tCond[], DesignVariable* dvAr[]);
 
-		void getShellCond(DiffDoub tCond[], DiffDoub layThk[], DiffDoub layAng[], DiffDoub layCond[], DesignVariable* dvAr[]);
+		void getShellCond(DiffDoub1 tCond[], DiffDoub1 layThk[], DiffDoub1 layAng[], DiffDoub1 layCond[], DesignVariable* dvAr[]);
 
-		void getBeamCond(DiffDoub tCond[], DesignVariable* dvAr[]);
+		void getBeamCond(DiffDoub1 tCond[], DesignVariable* dvAr[]);
 
-		void getSpecificHeat(DiffDoub& specHeat, DesignVariable* dvAr[]);
+		void getSpecificHeat(DiffDoub1& specHeat, DesignVariable* dvAr[]);
 
-		void getShellSpecHeat(DiffDoub& specHeat, DiffDoub layThk[], DiffDoub laySH[], DiffDoub layDen[]);
+		void getShellSpecHeat(DiffDoub1& specHeat, DiffDoub1 layThk[], DiffDoub1 laySH[], DiffDoub1 layDen[]);
 
-		void getBeamSpecHeat(DiffDoub& specHeat, DesignVariable* dvAr[]);
+		void getBeamSpecHeat(DiffDoub1& specHeat, DesignVariable* dvAr[]);
 
-        void getNdCrds(DiffDoub xGlob[], Node* ndAr[], DesignVariable* dvAr[]);
+        void getNdCrds(DiffDoub1 xGlob[], Node* ndAr[], DesignVariable* dvAr[]);
 		
-		void getLocOri(DiffDoub locOri[], DesignVariable* dvAr[]);
+		void getLocOri(DiffDoub1 locOri[], DesignVariable* dvAr[]);
 		
-		void correctOrient(DiffDoub locOri[], DiffDoub xGlob[]);
+		void correctOrient(DiffDoub1 locOri[], DiffDoub1 xGlob[]);
 
-		void getFrcFldConst(DiffDoub coef[], DiffDoub exp[], DesignVariable* dvAr[]);
+		void getFrcFldConst(DiffDoub1 coef[], DiffDoub1 exp[], DesignVariable* dvAr[]);
 
-		void getMassPerEl(DiffDoub& massPerEl, DesignVariable* dvAr[]);
+		void getMassPerEl(DiffDoub1& massPerEl, DesignVariable* dvAr[]);
 
 // Solution Fields
-		void getNdDisp(DiffDoub globDisp[], Node* ndAr[]);
+		void getNdDisp(DiffDoub1 globDisp[], Node* ndAr[]);
 
-		void getNdVel(DiffDoub globVel[], Node* ndAr[]);
+		void getNdVel(DiffDoub1 globVel[], Node* ndAr[]);
 
-		void getNdAcc(DiffDoub globAcc[], Node* ndAr[]);
+		void getNdAcc(DiffDoub1 globAcc[], Node* ndAr[]);
 
-		void getNdTemp(DiffDoub globTemp[], Node* ndAr[]);
+		void getNdTemp(DiffDoub1 globTemp[], Node* ndAr[]);
 
-		void getNdTdot(DiffDoub globTdot[], Node* ndAr[]);
+		void getNdTdot(DiffDoub1 globTdot[], Node* ndAr[]);
 
-		void evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]);
+		void evalN(DiffDoub1 nVec[], DiffDoub1 dNds[], double spt[]);
 		
-		void getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDoub locNds[], double spt[]);
+		void getIpData(DiffDoub1 nVec[], DiffDoub1 dNdx[], DiffDoub1& detJ, DiffDoub1 locNds[], double spt[]);
 		
-		void getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], int stat);
+		void getInstOri(DiffDoub1 instOriMat[], DiffDoub1 locOri[], DiffDoub1 globDisp[], int stat);
 		
-		void getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], bool nLGeom, int dv1, int dv2);
+		void getInstDisp(DiffDoub1 instDisp[], DiffDoub1 globDisp[], DiffDoub1 instOriMat[], DiffDoub1 locOri[], DiffDoub1 xGlob[], bool nLGeom, int dv1, int dv2);
 
-		void getStressPrereq(DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getStressPrereq(DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getVolume(DiffDoub& vol, DiffDoubStressPrereq& pre, int layer);
+		void getVolume(DiffDoub1& vol, DiffDoub1StressPrereq& pre, int layer);
 		
-		void getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], DiffDoub dNdx[], DiffDoub nVec[], bool nLGeom, int dv1, int dv2);
+		void getSectionDef(DiffDoub1 secDef[], DiffDoub1 globDisp[],  DiffDoub1 instOriMat[], DiffDoub1 locOri[], DiffDoub1 xGlob[], DiffDoub1 dNdx[], DiffDoub1 nVec[], bool nLGeom, int dv1, int dv2);
 		
-		void getSolidStrain(DiffDoub strain[], DiffDoub ux[], DiffDoub dNdx[], DiffDoub locOri[], int dv1, int dv2, bool nLGeom);
+		void getSolidStrain(DiffDoub1 strain[], DiffDoub1 ux[], DiffDoub1 dNdx[], DiffDoub1 locOri[], int dv1, int dv2, bool nLGeom);
 
-		void getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre);
+		void getStressStrain(DiffDoub1 stress[], DiffDoub1 strain[], double spt[], int layer, bool nLGeom, DiffDoub1StressPrereq& pre);
 
-		void dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre);
+		void dStressStraindU(DiffDoub1 dsdU[], DiffDoub1 dedU[], DiffDoub1 dsdT[], double spt[], int layer, bool nLGeom, DiffDoub1StressPrereq& pre);
 
-		void getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre);
+		void getDefFrcMom(DiffDoub1 def[], DiffDoub1 frcMom[], double spt[], bool nLGeom, DiffDoub1StressPrereq& pre);
 
-		void dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre);
+		void dDefFrcMomdU(DiffDoub1 dDefdU[], DiffDoub1 dFrcMomdU[], DiffDoub1 dFrcMomdT[], double spt[], bool nLGeom, DiffDoub1StressPrereq& pre);
 
-		void getFluxTGrad(DiffDoub flux[], DiffDoub tGrad[], double spt[], int layer, DiffDoubStressPrereq& pre);
+		void getFluxTGrad(DiffDoub1 flux[], DiffDoub1 tGrad[], double spt[], int layer, DiffDoub1StressPrereq& pre);
 
-		void dFluxTGraddT(DiffDoub dFdT[], DiffDoub dTG[], double spt[], int layer, DiffDoubStressPrereq& pre);
+		void dFluxTGraddT(DiffDoub1 dFdT[], DiffDoub1 dTG[], double spt[], int layer, DiffDoub1StressPrereq& pre);
 
-		void putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm, int matRow, Node* ndAr[]);
+		void putVecToGlobMat(SparseMat& qMat, DiffDoub1 elQVec[], bool forTherm, int matRow, Node* ndAr[]);
 		
 //end dup
  
@@ -451,25 +454,25 @@ class Element {
 		double getIntAdjdRdD();
 
 //dup1
-        void getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+        void getRuk(DiffDoub0 Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getRum(DiffDoub0 Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 		
-		void getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getRud(DiffDoub0 Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getRu(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 		
-		void getRtk(Doub Rvec[], double dRdT[], bool getMatrix, DoubStressPrereq& pre);
+		void getRtk(DiffDoub0 Rvec[], double dRdT[], bool getMatrix, DiffDoub0StressPrereq& pre);
 
-		void getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DoubStressPrereq& pre);
+		void getRtm(DiffDoub0 Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoub0StressPrereq& pre);
 
-		void getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[]);
+		void getRt(DiffDoub0 globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]);
 
-		void getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[]);
+		void getRuFrcFld(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]);
 
-		void getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getAppLoad(DiffDoub0 AppLd[], Load* ldPt, bool nLGeom, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getAppThermLoad(DiffDoub0 AppLd[], Load* ldPt, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
 //end dup
  
@@ -477,25 +480,25 @@ class Element {
  
 //DiffDoub versions: 
 //dup1
-        void getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+        void getRuk(DiffDoub1 Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getRum(DiffDoub1 Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 		
-		void getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getRud(DiffDoub1 Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getRu(DiffDoub1 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 		
-		void getRtk(DiffDoub Rvec[], double dRdT[], bool getMatrix, DiffDoubStressPrereq& pre);
+		void getRtk(DiffDoub1 Rvec[], double dRdT[], bool getMatrix, DiffDoub1StressPrereq& pre);
 
-		void getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoubStressPrereq& pre);
+		void getRtm(DiffDoub1 Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoub1StressPrereq& pre);
 
-		void getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[]);
+		void getRt(DiffDoub1 globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[]);
 
-		void getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[]);
+		void getRuFrcFld(DiffDoub1 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[]);
 
-		void getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getAppLoad(DiffDoub1 AppLd[], Load* ldPt, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
-		void getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+		void getAppThermLoad(DiffDoub1 AppLd[], Load* ldPt, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
 //end dup
  

@@ -18,20 +18,20 @@ const double r_1ort3 = 0.577350269189625765;
 
 //dup1
 
-void Element::getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DesignVariable* dvAr[]) {
+void Element::getLayerThkZ(DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0& zOffset, DesignVariable* dvAr[]) {
 	//zOffset = 1: upper Z surface is reference plane
 	//zOffset = -1: lower Z surface is reference plane
 	int layi = 0;
-	Doub dvVal;
-	Doub coef;
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
 	DesignVariable* thisDVpt;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
-	Doub totThk;
-	Doub tmp;
-	Doub zCrd;
-	Doub zNext;
-	Doub zMid;
+	DiffDoub0 totThk;
+	DiffDoub0 tmp;
+	DiffDoub0 zCrd;
+	DiffDoub0 zNext;
+	DiffDoub0 zMid;
 
 	totThk.setVal(0.0);
 	Layer* thisLay = sectPtr->getFirstLayer();
@@ -94,7 +94,7 @@ void Element::getLayerThkZ(Doub layThk[], Doub layZ[], Doub& zOffset, DesignVari
 	return;
 }
 
-void Element::getLayerQ(Doub layQ[], DesignVariable* dvAr[]) {
+void Element::getLayerQ(DiffDoub0 layQ[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
@@ -105,15 +105,15 @@ void Element::getLayerQ(Doub layQ[], DesignVariable* dvAr[]) {
 	double* Emod;
 	double* pr;
 	double* shMod;
-	Doub modulusDV[3];
-	Doub poissonDV[3];
-	Doub shearModDV[3];
-	Doub Smat[9];
-	Doub Qmat[9];
-	Doub dvVal;
-	Doub coef;
-	Doub xVec[3];
-	Doub bVec[3];
+	DiffDoub0 modulusDV[3];
+	DiffDoub0 poissonDV[3];
+	DiffDoub0 shearModDV[3];
+	DiffDoub0 Smat[9];
+	DiffDoub0 Qmat[9];
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
+	DiffDoub0 xVec[3];
+	DiffDoub0 bVec[3];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -192,7 +192,7 @@ void Element::getLayerQ(Doub layQ[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerD(Doub layD[], DesignVariable* dvAr[]) {
+void Element::getLayerD(DiffDoub0 layD[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -205,9 +205,9 @@ void Element::getLayerD(Doub layD[], DesignVariable* dvAr[]) {
 	Material* matPt;
 	Layer* thisLay;
 	double* dampMat;
-	Doub dampMatDV[36];
-	Doub dvVal;
-	Doub coef;
+	DiffDoub0 dampMatDV[36];
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -268,14 +268,14 @@ void Element::getLayerD(Doub layD[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerAngle(Doub layAng[], DesignVariable* dvAr[]) {
+void Element::getLayerAngle(DiffDoub0 layAng[], DesignVariable* dvAr[]) {
 	int i2;
 	int layi;
 	int dvInd;
 	Layer* thisLay;
-	Doub angle;
-	Doub dvVal;
-	Doub coef;
+	DiffDoub0 angle;
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -312,20 +312,20 @@ void Element::getLayerAngle(Doub layAng[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerThExp(Doub layThExp[], DesignVariable* dvAr[]) {
+void Element::getLayerThExp(DiffDoub0 layThExp[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
 	double* matExp;
-	Doub tExpDV[6];
+	DiffDoub0 tExpDV[6];
 	Material* thisMat;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	int dvComp;
-	Doub tmp;
-	Doub dvVal;
+	DiffDoub0 tmp;
+	DiffDoub0 dvVal;
 	
 	layi = 0;
 	i2 = 0;
@@ -361,19 +361,19 @@ void Element::getLayerThExp(Doub layThExp[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerEinit(Doub layEinit[], DesignVariable* dvAr[]) {
+void Element::getLayerEinit(DiffDoub0 layEinit[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
-	Doub E0DV[6];
+	DiffDoub0 E0DV[6];
 	Material* thisMat;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	int dvComp;
-	Doub tmp;
-	Doub dvVal;
+	DiffDoub0 tmp;
+	DiffDoub0 dvVal;
 
 	layi = 0;
 	i2 = 0;
@@ -408,16 +408,16 @@ void Element::getLayerEinit(Doub layEinit[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerDen(Doub layerDen[], DesignVariable* dvAr[]) {
+void Element::getLayerDen(DiffDoub0 layerDen[], DesignVariable* dvAr[]) {
 	int layi;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	double matDen;
-	Doub denDV;
+	DiffDoub0 denDV;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
-	Doub tmp;
-	Doub dvVal;
+	DiffDoub0 tmp;
+	DiffDoub0 dvVal;
 
 	layi = 0;
 	while (thisLay) {
@@ -444,18 +444,18 @@ void Element::getLayerDen(Doub layerDen[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerCond(Doub layCond[], DesignVariable* dvAr[]) {
+void Element::getLayerCond(DiffDoub0 layCond[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	double* matCond;
-	Doub condDV[6];
+	DiffDoub0 condDV[6];
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
-	Doub tmp;
-	Doub dvVal;
+	DiffDoub0 tmp;
+	DiffDoub0 dvVal;
 	int dvComp;
 
 	i1 = 0;
@@ -496,16 +496,16 @@ void Element::getLayerCond(Doub layCond[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerSpecHeat(Doub laySH[], DesignVariable* dvAr[]) {
+void Element::getLayerSpecHeat(DiffDoub0 laySH[], DesignVariable* dvAr[]) {
 	int layi;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	double matSH;
-	Doub shDV;
+	DiffDoub0 shDV;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
-	Doub tmp;
-	Doub dvVal;
+	DiffDoub0 tmp;
+	DiffDoub0 dvVal;
 
 	layi = 0;
 	while (thisLay) {
@@ -532,14 +532,14 @@ void Element::getLayerSpecHeat(Doub laySH[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::transformStrain(Doub stnNew[], Doub stnOrig[], Doub& angle) {
-	Doub angleRad;
-	Doub a11;
-	Doub a12;
-	Doub a21;
-	Doub a22;
-	Doub tmp;
-	Doub Te[9];
+void Element::transformStrain(DiffDoub0 stnNew[], DiffDoub0 stnOrig[], DiffDoub0& angle) {
+	DiffDoub0 angleRad;
+	DiffDoub0 a11;
+	DiffDoub0 a12;
+	DiffDoub0 a21;
+	DiffDoub0 a22;
+	DiffDoub0 tmp;
+	DiffDoub0 Te[9];
 
 
 	angleRad.setVal(r_pio180);
@@ -581,20 +581,20 @@ void Element::transformStrain(Doub stnNew[], Doub stnOrig[], Doub& angle) {
 	return;
 }
 
-void Element::transformQ(Doub qNew[], Doub qOrig[], Doub& angle) {
+void Element::transformQ(DiffDoub0 qNew[], DiffDoub0 qOrig[], DiffDoub0& angle) {
 	int i1;
-	Doub angleRad;
-	Doub a11;
-	Doub a12;
-	Doub a21;
-	Doub a22;
-	Doub tmp;
-	Doub coef;
-	Doub Ts[9];
-	Doub Te[9];
-	Doub TeInv[9];
-	Doub xVec[3];
-	Doub bVec[3];
+	DiffDoub0 angleRad;
+	DiffDoub0 a11;
+	DiffDoub0 a12;
+	DiffDoub0 a21;
+	DiffDoub0 a22;
+	DiffDoub0 tmp;
+	DiffDoub0 coef;
+	DiffDoub0 Ts[9];
+	DiffDoub0 Te[9];
+	DiffDoub0 TeInv[9];
+	DiffDoub0 xVec[3];
+	DiffDoub0 bVec[3];
 
 
 	angleRad.setVal(r_pio180);
@@ -649,7 +649,7 @@ void Element::transformQ(Doub qNew[], Doub qOrig[], Doub& angle) {
 	return;
 }
 
-void Element::getSolidStiff(Doub Cmat[], DesignVariable* dvAr[]) {
+void Element::getSolidStiff(DiffDoub0 Cmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i4;
@@ -661,14 +661,14 @@ void Element::getSolidStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 	double* Emod;
 	double* pr;
 	double* shMod;
-	Doub modulusDV[3];
-	Doub poissonDV[3];
-	Doub shearModDV[3];
-	Doub Smat[36];
-	Doub dvVal;
-	Doub coef;
-	Doub xVec[6];
-	Doub bVec[6];
+	DiffDoub0 modulusDV[3];
+	DiffDoub0 poissonDV[3];
+	DiffDoub0 shearModDV[3];
+	DiffDoub0 Smat[36];
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
+	DiffDoub0 xVec[6];
+	DiffDoub0 bVec[6];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -780,7 +780,7 @@ void Element::getSolidStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub layAng[]) {
+void Element::getABD(DiffDoub0 Cmat[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layQ[], DiffDoub0 layAng[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -788,12 +788,12 @@ void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub 
 	int i5;
 	int i6;
 	int numLay;
-	Doub zMax;
-	Doub zMin;
-	Doub thk;
-	Doub Qmat[9];
-	Doub tmp;
-	Doub tmp2;
+	DiffDoub0 zMax;
+	DiffDoub0 zMin;
+	DiffDoub0 thk;
+	DiffDoub0 Qmat[9];
+	DiffDoub0 tmp;
+	DiffDoub0 tmp2;
 
 	for (i1 = 0; i1 < 81; i1++) {
 		Cmat[i1].setVal(0.0);
@@ -892,7 +892,7 @@ void Element::getABD(Doub Cmat[], Doub layThk[], Doub layZ[], Doub layQ[], Doub 
 	return;
 }
 
-void Element::getBeamStiff(Doub Cmat[], DesignVariable* dvAr[]) {
+void Element::getBeamStiff(DiffDoub0 Cmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -905,15 +905,15 @@ void Element::getBeamStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 	double* Emod;
 	double* shMod;
 	double* areaMom;
-	Doub modulusDV[3];
-	Doub shearModDV[3];
-	Doub areaDV;
-	Doub IDV[5];
-	Doub JDV;
-	Doub dvVal;
-	Doub coef;
-	Doub xVec[6];
-	Doub bVec[6];
+	DiffDoub0 modulusDV[3];
+	DiffDoub0 shearModDV[3];
+	DiffDoub0 areaDV;
+	DiffDoub0 IDV[5];
+	DiffDoub0 JDV;
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
+	DiffDoub0 xVec[6];
+	DiffDoub0 bVec[6];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -1056,14 +1056,14 @@ void Element::getBeamStiff(Doub Cmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getThermalExp(Doub thExp[], Doub Einit[], DesignVariable* dvAr[]) {
+void Element::getThermalExp(DiffDoub0 thExp[], DiffDoub0 Einit[], DesignVariable* dvAr[]) {
 	int i1;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	int dvComp;
-	Doub dvVal;
-	Doub tmp;
+	DiffDoub0 dvVal;
+	DiffDoub0 tmp;
 	
 	double* matTExp = sectPtr->getMatPtr()->getThermExp();
 	for (i1 = 0; i1 < 6; i1++) {
@@ -1096,21 +1096,21 @@ void Element::getThermalExp(Doub thExp[], Doub Einit[], DesignVariable* dvAr[]) 
 	return;
 }
 
-void Element::getShellExpLoad(Doub expLd[], Doub E0Ld[], Doub layThk[], Doub layZ[], Doub layQ[], Doub layThExp[], Doub layEinit[], Doub layAng[]) {
+void Element::getShellExpLoad(DiffDoub0 expLd[], DiffDoub0 E0Ld[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layQ[], DiffDoub0 layThExp[], DiffDoub0 layEinit[], DiffDoub0 layAng[]) {
 	int i1;
 	int numLay;
 	int layi;
 	int qi;
 	int exi;
-	Doub sectQ[9];
-	Doub sectTE[3];
-	Doub sectE0[3];
-	Doub QTeProd[3];
-	Doub QE0Prod[3];
-	Doub zMin;
-	Doub zMax;
-	Doub tmp;
-	Doub tmp2;
+	DiffDoub0 sectQ[9];
+	DiffDoub0 sectTE[3];
+	DiffDoub0 sectE0[3];
+	DiffDoub0 QTeProd[3];
+	DiffDoub0 QE0Prod[3];
+	DiffDoub0 zMin;
+	DiffDoub0 zMax;
+	DiffDoub0 tmp;
+	DiffDoub0 tmp2;
 
 	for (i1 = 0; i1 < 6; i1++) {
 		expLd[i1].setVal(0.0);
@@ -1163,32 +1163,32 @@ void Element::getShellExpLoad(Doub expLd[], Doub E0Ld[], Doub layThk[], Doub lay
 	return;
 }
 
-void Element::getBeamExpLoad(Doub expLd[], Doub E0Ld[], DesignVariable* dvAr[]) {
+void Element::getBeamExpLoad(DiffDoub0 expLd[], DiffDoub0 E0Ld[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVPt;
-	Doub dvVal;
+	DiffDoub0 dvVal;
 	string cat;
 	string catList;
-	Doub tmp;
+	DiffDoub0 tmp;
 	Material* matPt;
 	int dvComp;
 	double* matMod;
-	Doub modDV[3];
+	DiffDoub0 modDV[3];
 	double* matG;
-	Doub shrModDV[3];
+	DiffDoub0 shrModDV[3];
 	double* matTE;
-	Doub teCoefDV[6];
-	Doub E0DV[6];
-	Doub areaDV;
+	DiffDoub0 teCoefDV[6];
+	DiffDoub0 E0DV[6];
+	DiffDoub0 areaDV;
 	double* sectI;
-	Doub IDV[5];
-	Doub Qmat[9];
-	Doub QTE[3];
-	Doub QE0[3];
-	Doub dedgu[18];
+	DiffDoub0 IDV[5];
+	DiffDoub0 Qmat[9];
+	DiffDoub0 QTE[3];
+	DiffDoub0 QE0[3];
+	DiffDoub0 dedgu[18];
 	double* secExpLd = sectPtr->getExpLoad();
 	
 	if (secExpLd[0] > 0.0) {
@@ -1303,7 +1303,7 @@ void Element::getBeamExpLoad(Doub expLd[], Doub E0Ld[], DesignVariable* dvAr[]) 
 	return;
 }
 
-void Element::getDensity(Doub& den, int layer, DesignVariable* dvAr[]) {
+void Element::getDensity(DiffDoub0& den, int layer, DesignVariable* dvAr[]) {
 	int layi;
 	Layer* thisLay;
 	Material* thisMat;
@@ -1312,8 +1312,8 @@ void Element::getDensity(Doub& den, int layer, DesignVariable* dvAr[]) {
 	DesignVariable* thisDVPt;
 	string cat;
 	int dvLay;
-	Doub coef;
-	Doub dvVal;
+	DiffDoub0 coef;
+	DiffDoub0 dvVal;
 
 	if (type == 3 || type == 41) {
 		thisLay = sectPtr->getFirstLayer();
@@ -1362,15 +1362,15 @@ void Element::getDensity(Doub& den, int layer, DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], Doub layDen[], DesignVariable* dvAr[]) {
+void Element::getShellMass(DiffDoub0 Mmat[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layDen[], DesignVariable* dvAr[]) {
 	int i1;
 	int layi;
-	Doub tmp;
-	Doub tmp2;
-	Doub zMin;
-	Doub zMin2;
-	Doub zMax;
-	Doub zMax2;
+	DiffDoub0 tmp;
+	DiffDoub0 tmp2;
+	DiffDoub0 zMin;
+	DiffDoub0 zMin2;
+	DiffDoub0 zMax;
+	DiffDoub0 zMax2;
 
 	for (i1 = 0; i1 < 36; i1++) {
 		Mmat[i1].setVal(0.0);
@@ -1419,7 +1419,7 @@ void Element::getShellMass(Doub Mmat[], Doub layThk[], Doub layZ[], Doub layDen[
 	return;
 }
 
-void Element::getBeamMass(Doub Mmat[], DesignVariable* dvAr[]) {
+void Element::getBeamMass(DiffDoub0 Mmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1427,19 +1427,19 @@ void Element::getBeamMass(Doub Mmat[], DesignVariable* dvAr[]) {
 	int dvComp;
 
 	DesignVariable* thisDV;
-	Doub dvVal;
+	DiffDoub0 dvVal;
 	DoubListEnt* coefEnt;
-	Doub coef;
+	DiffDoub0 coef;
 	IntListEnt* dvEnt;
 
 	string dCat;
 	Material* matPt;
 	double* areaMom;
-	Doub denDV;
-	Doub areaDV;
-	Doub IDV[5];
-	Doub JDV;
-	Doub tmp;
+	DiffDoub0 denDV;
+	DiffDoub0 areaDV;
+	DiffDoub0 IDV[5];
+	DiffDoub0 JDV;
+	DiffDoub0 tmp;
 
 	double* massMat = sectPtr->getMassMat();
 	if (massMat[0] > 0.0) {
@@ -1557,7 +1557,7 @@ void Element::getBeamMass(Doub Mmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getSolidDamp(Doub Dmat[], DesignVariable* dvAr[]) {
+void Element::getSolidDamp(DiffDoub0 Dmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1565,8 +1565,8 @@ void Element::getSolidDamp(Doub Dmat[], DesignVariable* dvAr[]) {
 	DesignVariable* thisDV;
 	IntListEnt* thisDVEnt = designVars->getFirst();
 	DoubListEnt* thisCEnt = dvCoef->getFirst();
-	Doub temp;
-	Doub dvVal;
+	DiffDoub0 temp;
+	DiffDoub0 dvVal;
 	int dvComp;
 	double* matDamp = sectPtr->getMatPtr()->getDamping();
 
@@ -1600,7 +1600,7 @@ void Element::getSolidDamp(Doub Dmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellDamp(Doub Dmat[], Doub layThk[], Doub layZ[], Doub layD[], Doub layAng[]) {
+void Element::getShellDamp(DiffDoub0 Dmat[], DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0 layD[], DiffDoub0 layAng[]) {
 	getABD(Dmat, layThk, layZ, layD, layAng);
 	Dmat[60].setVal(0.0);
 	Dmat[70].setVal(0.0);
@@ -1608,7 +1608,7 @@ void Element::getShellDamp(Doub Dmat[], Doub layThk[], Doub layZ[], Doub layD[],
 	return;
 }
 
-void Element::getBeamDamp(Doub Dmat[], DesignVariable* dvAr[]) {
+void Element::getBeamDamp(DiffDoub0 Dmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1619,14 +1619,14 @@ void Element::getBeamDamp(Doub Dmat[], DesignVariable* dvAr[]) {
 	Material* matPt;
 	double* dampMat;
 	double* areaMom;
-	Doub DmatDV[36];
-	Doub areaDV;
-	Doub IDV[5];
-	Doub JDV;
-	Doub dvVal;
-	Doub coef;
-	Doub xVec[6];
-	Doub bVec[6];
+	DiffDoub0 DmatDV[36];
+	DiffDoub0 areaDV;
+	DiffDoub0 IDV[5];
+	DiffDoub0 JDV;
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
+	DiffDoub0 xVec[6];
+	DiffDoub0 bVec[6];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -1760,16 +1760,16 @@ void Element::getBeamDamp(Doub Dmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getConductivity(Doub tCond[], DesignVariable* dvAr[]) {
+void Element::getConductivity(DiffDoub0 tCond[], DesignVariable* dvAr[]) {
 	int i1;
 	Material* matPt = sectPtr->getMatPtr();
 	double* secCond = matPt->getConductivity();
-	Doub condDV[6];
+	DiffDoub0 condDV[6];
 	DesignVariable* thisDV;
 	IntListEnt* thisDVEnt = designVars->getFirst();
 	DoubListEnt* thisCEnt = dvCoef->getFirst();
-	Doub temp;
-	Doub dvVal;
+	DiffDoub0 temp;
+	DiffDoub0 dvVal;
 	int dvComp;
 
 	for (i1 = 0; i1 < 6; i1++) {
@@ -1802,16 +1802,16 @@ void Element::getConductivity(Doub tCond[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellCond(Doub tCond[], Doub layThk[], Doub layAng[], Doub layCond[], DesignVariable* dvAr[]) {
+void Element::getShellCond(DiffDoub0 tCond[], DiffDoub0 layThk[], DiffDoub0 layAng[], DiffDoub0 layCond[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int numLay = sectPtr->getNumLayers();
 	double* matCond;
-	Doub condDV[6];
-	Doub layerMat[9];
-	Doub alMat[9];
-	Doub alT[9];
-	Doub tmp[9];
+	DiffDoub0 condDV[6];
+	DiffDoub0 layerMat[9];
+	DiffDoub0 alMat[9];
+	DiffDoub0 alT[9];
+	DiffDoub0 tmp[9];
 
 	for (i1 = 0; i1 < 9; i1++) {
 		tCond[i1].setVal(0.0);
@@ -1841,16 +1841,16 @@ void Element::getShellCond(Doub tCond[], Doub layThk[], Doub layAng[], Doub layC
 	return;
 }
 
-void Element::getBeamCond(Doub tCond[], DesignVariable* dvAr[]) {
+void Element::getBeamCond(DiffDoub0 tCond[], DesignVariable* dvAr[]) {
 	int i1;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	string cat;
-	Doub condDV;
-	Doub areaDV;
-	Doub tmp;
-	Doub dvVal;
+	DiffDoub0 condDV;
+	DiffDoub0 areaDV;
+	DiffDoub0 tmp;
+	DiffDoub0 dvVal;
 	double secCon = sectPtr->getConductivity();
 	double* matCon = sectPtr->getMatPtr()->getConductivity();
 	
@@ -1907,16 +1907,16 @@ void Element::getBeamCond(Doub tCond[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getSpecificHeat(Doub& specHeat, DesignVariable* dvAr[]) {
+void Element::getSpecificHeat(DiffDoub0& specHeat, DesignVariable* dvAr[]) {
 	int i1;
 	Material* matPt = sectPtr->getMatPtr();
 	double secSpecHeat = matPt->getSpecificHeat();
-	Doub specHeatDV;
+	DiffDoub0 specHeatDV;
 	DesignVariable* thisDV;
 	IntListEnt* thisDVEnt = designVars->getFirst();
 	DoubListEnt* thisCEnt = dvCoef->getFirst();
-	Doub temp;
-	Doub dvVal;
+	DiffDoub0 temp;
+	DiffDoub0 dvVal;
 	int dvComp;
 
 	specHeat.setVal(secSpecHeat);
@@ -1936,10 +1936,10 @@ void Element::getSpecificHeat(Doub& specHeat, DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellSpecHeat(Doub& specHeat, Doub layThk[], Doub laySH[], Doub layDen[]) {
+void Element::getShellSpecHeat(DiffDoub0& specHeat, DiffDoub0 layThk[], DiffDoub0 laySH[], DiffDoub0 layDen[]) {
 	int i1;
 	int numLay;
-	Doub tmp;
+	DiffDoub0 tmp;
 
 	specHeat.setVal(0.0);
 	numLay = sectPtr->getNumLayers();
@@ -1953,16 +1953,16 @@ void Element::getShellSpecHeat(Doub& specHeat, Doub layThk[], Doub laySH[], Doub
 	return;
 }
 
-void Element::getBeamSpecHeat(Doub& specHeat, DesignVariable* dvAr[]) {
+void Element::getBeamSpecHeat(DiffDoub0& specHeat, DesignVariable* dvAr[]) {
 	int i1;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	string cat;
-	Doub densityDV;
-	Doub areaDV;
-	Doub tmp;
-	Doub dvVal;
+	DiffDoub0 densityDV;
+	DiffDoub0 areaDV;
+	DiffDoub0 tmp;
+	DiffDoub0 dvVal;
 	double secSH = sectPtr->getSpecificHeat();
 	double matSH = sectPtr->getMatPtr()->getSpecificHeat();
 	double matDen = sectPtr->getMatPtr()->getDensity();
@@ -2020,9 +2020,9 @@ void Element::getBeamSpecHeat(Doub& specHeat, DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getNdCrds(Doub xGlob[], Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getNdCrds(DiffDoub0 xGlob[], Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
-	Doub ndCrd[3];
+	DiffDoub0 ndCrd[3];
 	Node *nPtr;
 	
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -2036,17 +2036,17 @@ void Element::getNdCrds(Doub xGlob[], Node* ndAr[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLocOri(Doub locOri[], DesignVariable* dvAr[]) {
+void Element::getLocOri(DiffDoub0 locOri[], DesignVariable* dvAr[]) {
 	int i1;
 	int dvInd;
 	IntListEnt *thisDV;
 	DoubListEnt *thisCoef;
 	DesignVariable *thisDVpt;
 	string dvCat;
-	Doub rot[3];
-	Doub dvVal;
-	Doub coef;
-	Doub oriCopy[9];
+	DiffDoub0 rot[3];
+	DiffDoub0 dvVal;
+	DiffDoub0 coef;
+	DiffDoub0 oriCopy[9];
 	
 	double *sectnOri = sectPtr->getOrientation();
 	for (i1 = 0; i1 < 9; i1++) {
@@ -2078,19 +2078,19 @@ void Element::getLocOri(Doub locOri[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::correctOrient(Doub locOri[], Doub xGlob[]) {
+void Element::correctOrient(DiffDoub0 locOri[], DiffDoub0 xGlob[]) {
 	int i1;
-	Doub v1[3];
-	Doub v2[3];
-	Doub v3[3];
-	Doub rot[3];
-	Doub oriCopy[9];
+	DiffDoub0 v1[3];
+	DiffDoub0 v2[3];
+	DiffDoub0 v3[3];
+	DiffDoub0 rot[3];
+	DiffDoub0 oriCopy[9];
 	
-	Doub dp;
-	Doub magv3;
-	Doub magCp;
-	Doub theta;
-	Doub tmp;
+	DiffDoub0 dp;
+	DiffDoub0 magv3;
+	DiffDoub0 magCp;
+	DiffDoub0 theta;
+	DiffDoub0 tmp;
 	
 	for (i1 = 0; i1 < 9; i1++) {
 		oriCopy[i1].setVal(locOri[i1]);
@@ -2184,12 +2184,12 @@ void Element::correctOrient(Doub locOri[], Doub xGlob[]) {
 	return;
 }
 
-void Element::getFrcFldConst(Doub coef[], Doub exp[], DesignVariable* dvAr[]) {
+void Element::getFrcFldConst(DiffDoub0 coef[], DiffDoub0 exp[], DesignVariable* dvAr[]) {
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	DoubListEnt* thisCoef;
-	Doub dvVal;
-	Doub tmp;
+	DiffDoub0 dvVal;
+	DiffDoub0 tmp;
 	string cat;
 
 	coef[0].setVal(sectPtr->getPotCoef());
@@ -2221,12 +2221,12 @@ void Element::getFrcFldConst(Doub coef[], Doub exp[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getMassPerEl(Doub& massPerEl, DesignVariable* dvAr[]) {
+void Element::getMassPerEl(DiffDoub0& massPerEl, DesignVariable* dvAr[]) {
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	DoubListEnt* thisCoef;
-	Doub dvVal;
-	Doub tmp;
+	DiffDoub0 dvVal;
+	DiffDoub0 tmp;
 	string cat;
 
 	massPerEl.setVal(sectPtr->getMassPerEl());
@@ -2256,20 +2256,20 @@ void Element::getMassPerEl(Doub& massPerEl, DesignVariable* dvAr[]) {
 //DiffDoub versions: 
 //dup1
 
-void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset, DesignVariable* dvAr[]) {
+void Element::getLayerThkZ(DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1& zOffset, DesignVariable* dvAr[]) {
 	//zOffset = 1: upper Z surface is reference plane
 	//zOffset = -1: lower Z surface is reference plane
 	int layi = 0;
-	DiffDoub dvVal;
-	DiffDoub coef;
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
 	DesignVariable* thisDVpt;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
-	DiffDoub totThk;
-	DiffDoub tmp;
-	DiffDoub zCrd;
-	DiffDoub zNext;
-	DiffDoub zMid;
+	DiffDoub1 totThk;
+	DiffDoub1 tmp;
+	DiffDoub1 zCrd;
+	DiffDoub1 zNext;
+	DiffDoub1 zMid;
 
 	totThk.setVal(0.0);
 	Layer* thisLay = sectPtr->getFirstLayer();
@@ -2332,7 +2332,7 @@ void Element::getLayerThkZ(DiffDoub layThk[], DiffDoub layZ[], DiffDoub& zOffset
 	return;
 }
 
-void Element::getLayerQ(DiffDoub layQ[], DesignVariable* dvAr[]) {
+void Element::getLayerQ(DiffDoub1 layQ[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
@@ -2343,15 +2343,15 @@ void Element::getLayerQ(DiffDoub layQ[], DesignVariable* dvAr[]) {
 	double* Emod;
 	double* pr;
 	double* shMod;
-	DiffDoub modulusDV[3];
-	DiffDoub poissonDV[3];
-	DiffDoub shearModDV[3];
-	DiffDoub Smat[9];
-	DiffDoub Qmat[9];
-	DiffDoub dvVal;
-	DiffDoub coef;
-	DiffDoub xVec[3];
-	DiffDoub bVec[3];
+	DiffDoub1 modulusDV[3];
+	DiffDoub1 poissonDV[3];
+	DiffDoub1 shearModDV[3];
+	DiffDoub1 Smat[9];
+	DiffDoub1 Qmat[9];
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
+	DiffDoub1 xVec[3];
+	DiffDoub1 bVec[3];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -2430,7 +2430,7 @@ void Element::getLayerQ(DiffDoub layQ[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerD(DiffDoub layD[], DesignVariable* dvAr[]) {
+void Element::getLayerD(DiffDoub1 layD[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2443,9 +2443,9 @@ void Element::getLayerD(DiffDoub layD[], DesignVariable* dvAr[]) {
 	Material* matPt;
 	Layer* thisLay;
 	double* dampMat;
-	DiffDoub dampMatDV[36];
-	DiffDoub dvVal;
-	DiffDoub coef;
+	DiffDoub1 dampMatDV[36];
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -2506,14 +2506,14 @@ void Element::getLayerD(DiffDoub layD[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerAngle(DiffDoub layAng[], DesignVariable* dvAr[]) {
+void Element::getLayerAngle(DiffDoub1 layAng[], DesignVariable* dvAr[]) {
 	int i2;
 	int layi;
 	int dvInd;
 	Layer* thisLay;
-	DiffDoub angle;
-	DiffDoub dvVal;
-	DiffDoub coef;
+	DiffDoub1 angle;
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -2550,20 +2550,20 @@ void Element::getLayerAngle(DiffDoub layAng[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerThExp(DiffDoub layThExp[], DesignVariable* dvAr[]) {
+void Element::getLayerThExp(DiffDoub1 layThExp[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
 	double* matExp;
-	DiffDoub tExpDV[6];
+	DiffDoub1 tExpDV[6];
 	Material* thisMat;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	int dvComp;
-	DiffDoub tmp;
-	DiffDoub dvVal;
+	DiffDoub1 tmp;
+	DiffDoub1 dvVal;
 	
 	layi = 0;
 	i2 = 0;
@@ -2599,19 +2599,19 @@ void Element::getLayerThExp(DiffDoub layThExp[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerEinit(DiffDoub layEinit[], DesignVariable* dvAr[]) {
+void Element::getLayerEinit(DiffDoub1 layEinit[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
-	DiffDoub E0DV[6];
+	DiffDoub1 E0DV[6];
 	Material* thisMat;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	int dvComp;
-	DiffDoub tmp;
-	DiffDoub dvVal;
+	DiffDoub1 tmp;
+	DiffDoub1 dvVal;
 
 	layi = 0;
 	i2 = 0;
@@ -2646,16 +2646,16 @@ void Element::getLayerEinit(DiffDoub layEinit[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerDen(DiffDoub layerDen[], DesignVariable* dvAr[]) {
+void Element::getLayerDen(DiffDoub1 layerDen[], DesignVariable* dvAr[]) {
 	int layi;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	double matDen;
-	DiffDoub denDV;
+	DiffDoub1 denDV;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
-	DiffDoub tmp;
-	DiffDoub dvVal;
+	DiffDoub1 tmp;
+	DiffDoub1 dvVal;
 
 	layi = 0;
 	while (thisLay) {
@@ -2682,18 +2682,18 @@ void Element::getLayerDen(DiffDoub layerDen[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerCond(DiffDoub layCond[], DesignVariable* dvAr[]) {
+void Element::getLayerCond(DiffDoub1 layCond[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int layi;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	double* matCond;
-	DiffDoub condDV[6];
+	DiffDoub1 condDV[6];
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
-	DiffDoub tmp;
-	DiffDoub dvVal;
+	DiffDoub1 tmp;
+	DiffDoub1 dvVal;
 	int dvComp;
 
 	i1 = 0;
@@ -2734,16 +2734,16 @@ void Element::getLayerCond(DiffDoub layCond[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getLayerSpecHeat(DiffDoub laySH[], DesignVariable* dvAr[]) {
+void Element::getLayerSpecHeat(DiffDoub1 laySH[], DesignVariable* dvAr[]) {
 	int layi;
 	Layer* thisLay = sectPtr->getFirstLayer();
 	double matSH;
-	DiffDoub shDV;
+	DiffDoub1 shDV;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
-	DiffDoub tmp;
-	DiffDoub dvVal;
+	DiffDoub1 tmp;
+	DiffDoub1 dvVal;
 
 	layi = 0;
 	while (thisLay) {
@@ -2770,14 +2770,14 @@ void Element::getLayerSpecHeat(DiffDoub laySH[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::transformStrain(DiffDoub stnNew[], DiffDoub stnOrig[], DiffDoub& angle) {
-	DiffDoub angleRad;
-	DiffDoub a11;
-	DiffDoub a12;
-	DiffDoub a21;
-	DiffDoub a22;
-	DiffDoub tmp;
-	DiffDoub Te[9];
+void Element::transformStrain(DiffDoub1 stnNew[], DiffDoub1 stnOrig[], DiffDoub1& angle) {
+	DiffDoub1 angleRad;
+	DiffDoub1 a11;
+	DiffDoub1 a12;
+	DiffDoub1 a21;
+	DiffDoub1 a22;
+	DiffDoub1 tmp;
+	DiffDoub1 Te[9];
 
 
 	angleRad.setVal(r_pio180);
@@ -2819,20 +2819,20 @@ void Element::transformStrain(DiffDoub stnNew[], DiffDoub stnOrig[], DiffDoub& a
 	return;
 }
 
-void Element::transformQ(DiffDoub qNew[], DiffDoub qOrig[], DiffDoub& angle) {
+void Element::transformQ(DiffDoub1 qNew[], DiffDoub1 qOrig[], DiffDoub1& angle) {
 	int i1;
-	DiffDoub angleRad;
-	DiffDoub a11;
-	DiffDoub a12;
-	DiffDoub a21;
-	DiffDoub a22;
-	DiffDoub tmp;
-	DiffDoub coef;
-	DiffDoub Ts[9];
-	DiffDoub Te[9];
-	DiffDoub TeInv[9];
-	DiffDoub xVec[3];
-	DiffDoub bVec[3];
+	DiffDoub1 angleRad;
+	DiffDoub1 a11;
+	DiffDoub1 a12;
+	DiffDoub1 a21;
+	DiffDoub1 a22;
+	DiffDoub1 tmp;
+	DiffDoub1 coef;
+	DiffDoub1 Ts[9];
+	DiffDoub1 Te[9];
+	DiffDoub1 TeInv[9];
+	DiffDoub1 xVec[3];
+	DiffDoub1 bVec[3];
 
 
 	angleRad.setVal(r_pio180);
@@ -2887,7 +2887,7 @@ void Element::transformQ(DiffDoub qNew[], DiffDoub qOrig[], DiffDoub& angle) {
 	return;
 }
 
-void Element::getSolidStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
+void Element::getSolidStiff(DiffDoub1 Cmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i4;
@@ -2899,14 +2899,14 @@ void Element::getSolidStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 	double* Emod;
 	double* pr;
 	double* shMod;
-	DiffDoub modulusDV[3];
-	DiffDoub poissonDV[3];
-	DiffDoub shearModDV[3];
-	DiffDoub Smat[36];
-	DiffDoub dvVal;
-	DiffDoub coef;
-	DiffDoub xVec[6];
-	DiffDoub bVec[6];
+	DiffDoub1 modulusDV[3];
+	DiffDoub1 poissonDV[3];
+	DiffDoub1 shearModDV[3];
+	DiffDoub1 Smat[36];
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
+	DiffDoub1 xVec[6];
+	DiffDoub1 bVec[6];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -3018,7 +3018,7 @@ void Element::getSolidStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layQ[], DiffDoub layAng[]) {
+void Element::getABD(DiffDoub1 Cmat[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layQ[], DiffDoub1 layAng[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -3026,12 +3026,12 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 	int i5;
 	int i6;
 	int numLay;
-	DiffDoub zMax;
-	DiffDoub zMin;
-	DiffDoub thk;
-	DiffDoub Qmat[9];
-	DiffDoub tmp;
-	DiffDoub tmp2;
+	DiffDoub1 zMax;
+	DiffDoub1 zMin;
+	DiffDoub1 thk;
+	DiffDoub1 Qmat[9];
+	DiffDoub1 tmp;
+	DiffDoub1 tmp2;
 
 	for (i1 = 0; i1 < 81; i1++) {
 		Cmat[i1].setVal(0.0);
@@ -3130,7 +3130,7 @@ void Element::getABD(DiffDoub Cmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDo
 	return;
 }
 
-void Element::getBeamStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
+void Element::getBeamStiff(DiffDoub1 Cmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -3143,15 +3143,15 @@ void Element::getBeamStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 	double* Emod;
 	double* shMod;
 	double* areaMom;
-	DiffDoub modulusDV[3];
-	DiffDoub shearModDV[3];
-	DiffDoub areaDV;
-	DiffDoub IDV[5];
-	DiffDoub JDV;
-	DiffDoub dvVal;
-	DiffDoub coef;
-	DiffDoub xVec[6];
-	DiffDoub bVec[6];
+	DiffDoub1 modulusDV[3];
+	DiffDoub1 shearModDV[3];
+	DiffDoub1 areaDV;
+	DiffDoub1 IDV[5];
+	DiffDoub1 JDV;
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
+	DiffDoub1 xVec[6];
+	DiffDoub1 bVec[6];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -3294,14 +3294,14 @@ void Element::getBeamStiff(DiffDoub Cmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getThermalExp(DiffDoub thExp[], DiffDoub Einit[], DesignVariable* dvAr[]) {
+void Element::getThermalExp(DiffDoub1 thExp[], DiffDoub1 Einit[], DesignVariable* dvAr[]) {
 	int i1;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	int dvComp;
-	DiffDoub dvVal;
-	DiffDoub tmp;
+	DiffDoub1 dvVal;
+	DiffDoub1 tmp;
 	
 	double* matTExp = sectPtr->getMatPtr()->getThermExp();
 	for (i1 = 0; i1 < 6; i1++) {
@@ -3334,21 +3334,21 @@ void Element::getThermalExp(DiffDoub thExp[], DiffDoub Einit[], DesignVariable* 
 	return;
 }
 
-void Element::getShellExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layQ[], DiffDoub layThExp[], DiffDoub layEinit[], DiffDoub layAng[]) {
+void Element::getShellExpLoad(DiffDoub1 expLd[], DiffDoub1 E0Ld[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layQ[], DiffDoub1 layThExp[], DiffDoub1 layEinit[], DiffDoub1 layAng[]) {
 	int i1;
 	int numLay;
 	int layi;
 	int qi;
 	int exi;
-	DiffDoub sectQ[9];
-	DiffDoub sectTE[3];
-	DiffDoub sectE0[3];
-	DiffDoub QTeProd[3];
-	DiffDoub QE0Prod[3];
-	DiffDoub zMin;
-	DiffDoub zMax;
-	DiffDoub tmp;
-	DiffDoub tmp2;
+	DiffDoub1 sectQ[9];
+	DiffDoub1 sectTE[3];
+	DiffDoub1 sectE0[3];
+	DiffDoub1 QTeProd[3];
+	DiffDoub1 QE0Prod[3];
+	DiffDoub1 zMin;
+	DiffDoub1 zMax;
+	DiffDoub1 tmp;
+	DiffDoub1 tmp2;
 
 	for (i1 = 0; i1 < 6; i1++) {
 		expLd[i1].setVal(0.0);
@@ -3401,32 +3401,32 @@ void Element::getShellExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DiffDoub layThk
 	return;
 }
 
-void Element::getBeamExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DesignVariable* dvAr[]) {
+void Element::getBeamExpLoad(DiffDoub1 expLd[], DiffDoub1 E0Ld[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVPt;
-	DiffDoub dvVal;
+	DiffDoub1 dvVal;
 	string cat;
 	string catList;
-	DiffDoub tmp;
+	DiffDoub1 tmp;
 	Material* matPt;
 	int dvComp;
 	double* matMod;
-	DiffDoub modDV[3];
+	DiffDoub1 modDV[3];
 	double* matG;
-	DiffDoub shrModDV[3];
+	DiffDoub1 shrModDV[3];
 	double* matTE;
-	DiffDoub teCoefDV[6];
-	DiffDoub E0DV[6];
-	DiffDoub areaDV;
+	DiffDoub1 teCoefDV[6];
+	DiffDoub1 E0DV[6];
+	DiffDoub1 areaDV;
 	double* sectI;
-	DiffDoub IDV[5];
-	DiffDoub Qmat[9];
-	DiffDoub QTE[3];
-	DiffDoub QE0[3];
-	DiffDoub dedgu[18];
+	DiffDoub1 IDV[5];
+	DiffDoub1 Qmat[9];
+	DiffDoub1 QTE[3];
+	DiffDoub1 QE0[3];
+	DiffDoub1 dedgu[18];
 	double* secExpLd = sectPtr->getExpLoad();
 	
 	if (secExpLd[0] > 0.0) {
@@ -3541,7 +3541,7 @@ void Element::getBeamExpLoad(DiffDoub expLd[], DiffDoub E0Ld[], DesignVariable* 
 	return;
 }
 
-void Element::getDensity(DiffDoub& den, int layer, DesignVariable* dvAr[]) {
+void Element::getDensity(DiffDoub1& den, int layer, DesignVariable* dvAr[]) {
 	int layi;
 	Layer* thisLay;
 	Material* thisMat;
@@ -3550,8 +3550,8 @@ void Element::getDensity(DiffDoub& den, int layer, DesignVariable* dvAr[]) {
 	DesignVariable* thisDVPt;
 	string cat;
 	int dvLay;
-	DiffDoub coef;
-	DiffDoub dvVal;
+	DiffDoub1 coef;
+	DiffDoub1 dvVal;
 
 	if (type == 3 || type == 41) {
 		thisLay = sectPtr->getFirstLayer();
@@ -3600,15 +3600,15 @@ void Element::getDensity(DiffDoub& den, int layer, DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellMass(DiffDoub Mmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layDen[], DesignVariable* dvAr[]) {
+void Element::getShellMass(DiffDoub1 Mmat[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layDen[], DesignVariable* dvAr[]) {
 	int i1;
 	int layi;
-	DiffDoub tmp;
-	DiffDoub tmp2;
-	DiffDoub zMin;
-	DiffDoub zMin2;
-	DiffDoub zMax;
-	DiffDoub zMax2;
+	DiffDoub1 tmp;
+	DiffDoub1 tmp2;
+	DiffDoub1 zMin;
+	DiffDoub1 zMin2;
+	DiffDoub1 zMax;
+	DiffDoub1 zMax2;
 
 	for (i1 = 0; i1 < 36; i1++) {
 		Mmat[i1].setVal(0.0);
@@ -3657,7 +3657,7 @@ void Element::getShellMass(DiffDoub Mmat[], DiffDoub layThk[], DiffDoub layZ[], 
 	return;
 }
 
-void Element::getBeamMass(DiffDoub Mmat[], DesignVariable* dvAr[]) {
+void Element::getBeamMass(DiffDoub1 Mmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -3665,19 +3665,19 @@ void Element::getBeamMass(DiffDoub Mmat[], DesignVariable* dvAr[]) {
 	int dvComp;
 
 	DesignVariable* thisDV;
-	DiffDoub dvVal;
+	DiffDoub1 dvVal;
 	DoubListEnt* coefEnt;
-	DiffDoub coef;
+	DiffDoub1 coef;
 	IntListEnt* dvEnt;
 
 	string dCat;
 	Material* matPt;
 	double* areaMom;
-	DiffDoub denDV;
-	DiffDoub areaDV;
-	DiffDoub IDV[5];
-	DiffDoub JDV;
-	DiffDoub tmp;
+	DiffDoub1 denDV;
+	DiffDoub1 areaDV;
+	DiffDoub1 IDV[5];
+	DiffDoub1 JDV;
+	DiffDoub1 tmp;
 
 	double* massMat = sectPtr->getMassMat();
 	if (massMat[0] > 0.0) {
@@ -3795,7 +3795,7 @@ void Element::getBeamMass(DiffDoub Mmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getSolidDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
+void Element::getSolidDamp(DiffDoub1 Dmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -3803,8 +3803,8 @@ void Element::getSolidDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
 	DesignVariable* thisDV;
 	IntListEnt* thisDVEnt = designVars->getFirst();
 	DoubListEnt* thisCEnt = dvCoef->getFirst();
-	DiffDoub temp;
-	DiffDoub dvVal;
+	DiffDoub1 temp;
+	DiffDoub1 dvVal;
 	int dvComp;
 	double* matDamp = sectPtr->getMatPtr()->getDamping();
 
@@ -3838,7 +3838,7 @@ void Element::getSolidDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellDamp(DiffDoub Dmat[], DiffDoub layThk[], DiffDoub layZ[], DiffDoub layD[], DiffDoub layAng[]) {
+void Element::getShellDamp(DiffDoub1 Dmat[], DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1 layD[], DiffDoub1 layAng[]) {
 	getABD(Dmat, layThk, layZ, layD, layAng);
 	Dmat[60].setVal(0.0);
 	Dmat[70].setVal(0.0);
@@ -3846,7 +3846,7 @@ void Element::getShellDamp(DiffDoub Dmat[], DiffDoub layThk[], DiffDoub layZ[], 
 	return;
 }
 
-void Element::getBeamDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
+void Element::getBeamDamp(DiffDoub1 Dmat[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -3857,14 +3857,14 @@ void Element::getBeamDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
 	Material* matPt;
 	double* dampMat;
 	double* areaMom;
-	DiffDoub DmatDV[36];
-	DiffDoub areaDV;
-	DiffDoub IDV[5];
-	DiffDoub JDV;
-	DiffDoub dvVal;
-	DiffDoub coef;
-	DiffDoub xVec[6];
-	DiffDoub bVec[6];
+	DiffDoub1 DmatDV[36];
+	DiffDoub1 areaDV;
+	DiffDoub1 IDV[5];
+	DiffDoub1 JDV;
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
+	DiffDoub1 xVec[6];
+	DiffDoub1 bVec[6];
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* thisDVpt;
@@ -3998,16 +3998,16 @@ void Element::getBeamDamp(DiffDoub Dmat[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getConductivity(DiffDoub tCond[], DesignVariable* dvAr[]) {
+void Element::getConductivity(DiffDoub1 tCond[], DesignVariable* dvAr[]) {
 	int i1;
 	Material* matPt = sectPtr->getMatPtr();
 	double* secCond = matPt->getConductivity();
-	DiffDoub condDV[6];
+	DiffDoub1 condDV[6];
 	DesignVariable* thisDV;
 	IntListEnt* thisDVEnt = designVars->getFirst();
 	DoubListEnt* thisCEnt = dvCoef->getFirst();
-	DiffDoub temp;
-	DiffDoub dvVal;
+	DiffDoub1 temp;
+	DiffDoub1 dvVal;
 	int dvComp;
 
 	for (i1 = 0; i1 < 6; i1++) {
@@ -4040,16 +4040,16 @@ void Element::getConductivity(DiffDoub tCond[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellCond(DiffDoub tCond[], DiffDoub layThk[], DiffDoub layAng[], DiffDoub layCond[], DesignVariable* dvAr[]) {
+void Element::getShellCond(DiffDoub1 tCond[], DiffDoub1 layThk[], DiffDoub1 layAng[], DiffDoub1 layCond[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int numLay = sectPtr->getNumLayers();
 	double* matCond;
-	DiffDoub condDV[6];
-	DiffDoub layerMat[9];
-	DiffDoub alMat[9];
-	DiffDoub alT[9];
-	DiffDoub tmp[9];
+	DiffDoub1 condDV[6];
+	DiffDoub1 layerMat[9];
+	DiffDoub1 alMat[9];
+	DiffDoub1 alT[9];
+	DiffDoub1 tmp[9];
 
 	for (i1 = 0; i1 < 9; i1++) {
 		tCond[i1].setVal(0.0);
@@ -4079,16 +4079,16 @@ void Element::getShellCond(DiffDoub tCond[], DiffDoub layThk[], DiffDoub layAng[
 	return;
 }
 
-void Element::getBeamCond(DiffDoub tCond[], DesignVariable* dvAr[]) {
+void Element::getBeamCond(DiffDoub1 tCond[], DesignVariable* dvAr[]) {
 	int i1;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	string cat;
-	DiffDoub condDV;
-	DiffDoub areaDV;
-	DiffDoub tmp;
-	DiffDoub dvVal;
+	DiffDoub1 condDV;
+	DiffDoub1 areaDV;
+	DiffDoub1 tmp;
+	DiffDoub1 dvVal;
 	double secCon = sectPtr->getConductivity();
 	double* matCon = sectPtr->getMatPtr()->getConductivity();
 	
@@ -4145,16 +4145,16 @@ void Element::getBeamCond(DiffDoub tCond[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getSpecificHeat(DiffDoub& specHeat, DesignVariable* dvAr[]) {
+void Element::getSpecificHeat(DiffDoub1& specHeat, DesignVariable* dvAr[]) {
 	int i1;
 	Material* matPt = sectPtr->getMatPtr();
 	double secSpecHeat = matPt->getSpecificHeat();
-	DiffDoub specHeatDV;
+	DiffDoub1 specHeatDV;
 	DesignVariable* thisDV;
 	IntListEnt* thisDVEnt = designVars->getFirst();
 	DoubListEnt* thisCEnt = dvCoef->getFirst();
-	DiffDoub temp;
-	DiffDoub dvVal;
+	DiffDoub1 temp;
+	DiffDoub1 dvVal;
 	int dvComp;
 
 	specHeat.setVal(secSpecHeat);
@@ -4174,10 +4174,10 @@ void Element::getSpecificHeat(DiffDoub& specHeat, DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getShellSpecHeat(DiffDoub& specHeat, DiffDoub layThk[], DiffDoub laySH[], DiffDoub layDen[]) {
+void Element::getShellSpecHeat(DiffDoub1& specHeat, DiffDoub1 layThk[], DiffDoub1 laySH[], DiffDoub1 layDen[]) {
 	int i1;
 	int numLay;
-	DiffDoub tmp;
+	DiffDoub1 tmp;
 
 	specHeat.setVal(0.0);
 	numLay = sectPtr->getNumLayers();
@@ -4191,16 +4191,16 @@ void Element::getShellSpecHeat(DiffDoub& specHeat, DiffDoub layThk[], DiffDoub l
 	return;
 }
 
-void Element::getBeamSpecHeat(DiffDoub& specHeat, DesignVariable* dvAr[]) {
+void Element::getBeamSpecHeat(DiffDoub1& specHeat, DesignVariable* dvAr[]) {
 	int i1;
 	IntListEnt* thisDVEnt;
 	DoubListEnt* thisCEnt;
 	DesignVariable* thisDV;
 	string cat;
-	DiffDoub densityDV;
-	DiffDoub areaDV;
-	DiffDoub tmp;
-	DiffDoub dvVal;
+	DiffDoub1 densityDV;
+	DiffDoub1 areaDV;
+	DiffDoub1 tmp;
+	DiffDoub1 dvVal;
 	double secSH = sectPtr->getSpecificHeat();
 	double matSH = sectPtr->getMatPtr()->getSpecificHeat();
 	double matDen = sectPtr->getMatPtr()->getDensity();
@@ -4258,9 +4258,9 @@ void Element::getBeamSpecHeat(DiffDoub& specHeat, DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::getNdCrds(DiffDoub xGlob[], Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getNdCrds(DiffDoub1 xGlob[], Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
-	DiffDoub ndCrd[3];
+	DiffDoub1 ndCrd[3];
 	Node *nPtr;
 	
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -4274,17 +4274,17 @@ void Element::getNdCrds(DiffDoub xGlob[], Node* ndAr[], DesignVariable* dvAr[]) 
 	return;
 }
 
-void Element::getLocOri(DiffDoub locOri[], DesignVariable* dvAr[]) {
+void Element::getLocOri(DiffDoub1 locOri[], DesignVariable* dvAr[]) {
 	int i1;
 	int dvInd;
 	IntListEnt *thisDV;
 	DoubListEnt *thisCoef;
 	DesignVariable *thisDVpt;
 	string dvCat;
-	DiffDoub rot[3];
-	DiffDoub dvVal;
-	DiffDoub coef;
-	DiffDoub oriCopy[9];
+	DiffDoub1 rot[3];
+	DiffDoub1 dvVal;
+	DiffDoub1 coef;
+	DiffDoub1 oriCopy[9];
 	
 	double *sectnOri = sectPtr->getOrientation();
 	for (i1 = 0; i1 < 9; i1++) {
@@ -4316,19 +4316,19 @@ void Element::getLocOri(DiffDoub locOri[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Element::correctOrient(DiffDoub locOri[], DiffDoub xGlob[]) {
+void Element::correctOrient(DiffDoub1 locOri[], DiffDoub1 xGlob[]) {
 	int i1;
-	DiffDoub v1[3];
-	DiffDoub v2[3];
-	DiffDoub v3[3];
-	DiffDoub rot[3];
-	DiffDoub oriCopy[9];
+	DiffDoub1 v1[3];
+	DiffDoub1 v2[3];
+	DiffDoub1 v3[3];
+	DiffDoub1 rot[3];
+	DiffDoub1 oriCopy[9];
 	
-	DiffDoub dp;
-	DiffDoub magv3;
-	DiffDoub magCp;
-	DiffDoub theta;
-	DiffDoub tmp;
+	DiffDoub1 dp;
+	DiffDoub1 magv3;
+	DiffDoub1 magCp;
+	DiffDoub1 theta;
+	DiffDoub1 tmp;
 	
 	for (i1 = 0; i1 < 9; i1++) {
 		oriCopy[i1].setVal(locOri[i1]);
@@ -4422,12 +4422,12 @@ void Element::correctOrient(DiffDoub locOri[], DiffDoub xGlob[]) {
 	return;
 }
 
-void Element::getFrcFldConst(DiffDoub coef[], DiffDoub exp[], DesignVariable* dvAr[]) {
+void Element::getFrcFldConst(DiffDoub1 coef[], DiffDoub1 exp[], DesignVariable* dvAr[]) {
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	DoubListEnt* thisCoef;
-	DiffDoub dvVal;
-	DiffDoub tmp;
+	DiffDoub1 dvVal;
+	DiffDoub1 tmp;
 	string cat;
 
 	coef[0].setVal(sectPtr->getPotCoef());
@@ -4459,12 +4459,12 @@ void Element::getFrcFldConst(DiffDoub coef[], DiffDoub exp[], DesignVariable* dv
 	return;
 }
 
-void Element::getMassPerEl(DiffDoub& massPerEl, DesignVariable* dvAr[]) {
+void Element::getMassPerEl(DiffDoub1& massPerEl, DesignVariable* dvAr[]) {
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	DoubListEnt* thisCoef;
-	DiffDoub dvVal;
-	DiffDoub tmp;
+	DiffDoub1 dvVal;
+	DiffDoub1 tmp;
 	string cat;
 
 	massPerEl.setVal(sectPtr->getMassPerEl());

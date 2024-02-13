@@ -26,6 +26,10 @@ Element::Element(int newType) {
 	int i3;
 	int i4;
 	int i5;
+
+	sCent[0] = 0.0;
+	sCent[1] = 0.0;
+	sCent[2] = 0.0;
 	if(type == 4) {
 		numNds = 4;
 		dofPerNd = 3;
@@ -62,6 +66,9 @@ Element::Element(int newType) {
 		intPts[5] = r_1ort3;
 		ipWt[0] = 0.5;
 		ipWt[1] = 0.5;
+		sCent[0] = r_1o3;
+		sCent[1] = r_1o3;
+		sCent[2] = 0.0;
 	} else if(type == 8 || type == 81) {
 		numNds = 8;
 		dofPerNd = 3;
@@ -108,7 +115,7 @@ Element::Element(int newType) {
 		}
 	}
 	else if (type == 10) {
-		numNds = 3;
+		numNds = 10;
 		dofPerNd = 3;
 		numIntDof = 0;
 		nDim = 10;
@@ -135,6 +142,9 @@ Element::Element(int newType) {
 		ipWt[1] = r_1o24;
 		ipWt[2] = r_1o24;
 		ipWt[3] = r_1o24;
+		sCent[0] = 0.25;
+		sCent[1] = 0.25;
+		sCent[2] = 0.25;
 	}
 	else if (type == 3) {
 		numNds = 3;
@@ -166,6 +176,9 @@ Element::Element(int newType) {
 		dofTable[39] = 2;
 		dofTable[40] = 5;
 		dofTable[41] = 2;
+		sCent[0] = r_1o3;
+		sCent[1] = r_1o3;
+		sCent[2] = r_1o3;
 	} else if(type == 41) {
 		numNds = 4;
 		dofPerNd = 6;
@@ -281,7 +294,7 @@ Element::Element(int newType) {
 		intPrevDisp = new double[numIntDof];
 		internaldLdu = new double[numIntDof];
 		internalAdj = new double[numIntDof];
-		internalRu = new DiffDoub[numIntDof];
+		internalRu = new DiffDoub1[numIntDof];
 		i1 = (numNds*dofPerNd + numIntDof)*numIntDof;
 		internalMat = new double[i1];
 	}
@@ -567,6 +580,10 @@ double* Element::getIP() {
 	return intPts;
 }
 
+double* Element::getSCent() {
+	return &sCent[0];
+}
+
 double* Element::getIntAdj() {
 	return internalAdj;
 }
@@ -667,24 +684,24 @@ ElementList::~ElementList() {
 // Stress prerequisite classes
 
 //dup1
- DoubStressPrereq::DoubStressPrereq() {
-	globNds = new Doub[30];
-	locNds = new Doub[30];
-	locOri = new Doub[9];
-	instOri = new Doub[720];
-	globDisp = new Doub[60];
-	globVel = new Doub[30];
-	globAcc = new Doub[30];
-	globTemp = new Doub[10];
-	globTdot = new Doub[10];
-	Cmat = new Doub[81];
-	Mmat = new Doub[36];
-	Dmat = new Doub[81];
-	thermExp = new Doub[6];
-	Einit = new Doub[6];
-	TCmat = new Doub[9];
-	BMat = new Doub[288];
-	CBMat = new Doub[288];
+ DiffDoub0StressPrereq::DiffDoub0StressPrereq() {
+	globNds = new DiffDoub0[30];
+	locNds = new DiffDoub0[30];
+	locOri = new DiffDoub0[9];
+	instOri = new DiffDoub0[720];
+	globDisp = new DiffDoub0[60];
+	globVel = new DiffDoub0[30];
+	globAcc = new DiffDoub0[30];
+	globTemp = new DiffDoub0[10];
+	globTdot = new DiffDoub0[10];
+	Cmat = new DiffDoub0[81];
+	Mmat = new DiffDoub0[36];
+	Dmat = new DiffDoub0[81];
+	thermExp = new DiffDoub0[6];
+	Einit = new DiffDoub0[6];
+	TCmat = new DiffDoub0[9];
+	BMat = new DiffDoub0[288];
+	CBMat = new DiffDoub0[288];
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
@@ -695,14 +712,14 @@ ElementList::~ElementList() {
 	layerDen = nullptr;
 	layerTC = nullptr;
 	layerSH = nullptr;
-	frcFldCoef = new Doub[2];
-	frcFldExp = new Doub[2];
+	frcFldCoef = new DiffDoub0[2];
+	frcFldExp = new DiffDoub0[2];
 	scratch = new double[4096];
 	currentLayLen = 0;
 	return;
 }
 
- DoubStressPrereq::~DoubStressPrereq() {
+ DiffDoub0StressPrereq::~DiffDoub0StressPrereq() {
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;
@@ -755,24 +772,24 @@ ElementList::~ElementList() {
  
 //DiffDoub versions: 
 //dup1
- DiffDoubStressPrereq::DiffDoubStressPrereq() {
-	globNds = new DiffDoub[30];
-	locNds = new DiffDoub[30];
-	locOri = new DiffDoub[9];
-	instOri = new DiffDoub[720];
-	globDisp = new DiffDoub[60];
-	globVel = new DiffDoub[30];
-	globAcc = new DiffDoub[30];
-	globTemp = new DiffDoub[10];
-	globTdot = new DiffDoub[10];
-	Cmat = new DiffDoub[81];
-	Mmat = new DiffDoub[36];
-	Dmat = new DiffDoub[81];
-	thermExp = new DiffDoub[6];
-	Einit = new DiffDoub[6];
-	TCmat = new DiffDoub[9];
-	BMat = new DiffDoub[288];
-	CBMat = new DiffDoub[288];
+ DiffDoub1StressPrereq::DiffDoub1StressPrereq() {
+	globNds = new DiffDoub1[30];
+	locNds = new DiffDoub1[30];
+	locOri = new DiffDoub1[9];
+	instOri = new DiffDoub1[720];
+	globDisp = new DiffDoub1[60];
+	globVel = new DiffDoub1[30];
+	globAcc = new DiffDoub1[30];
+	globTemp = new DiffDoub1[10];
+	globTdot = new DiffDoub1[10];
+	Cmat = new DiffDoub1[81];
+	Mmat = new DiffDoub1[36];
+	Dmat = new DiffDoub1[81];
+	thermExp = new DiffDoub1[6];
+	Einit = new DiffDoub1[6];
+	TCmat = new DiffDoub1[9];
+	BMat = new DiffDoub1[288];
+	CBMat = new DiffDoub1[288];
 	layerZ = nullptr;
 	layerThk = nullptr;
 	layerAng = nullptr;
@@ -783,14 +800,14 @@ ElementList::~ElementList() {
 	layerDen = nullptr;
 	layerTC = nullptr;
 	layerSH = nullptr;
-	frcFldCoef = new DiffDoub[2];
-	frcFldExp = new DiffDoub[2];
+	frcFldCoef = new DiffDoub1[2];
+	frcFldExp = new DiffDoub1[2];
 	scratch = new double[4096];
 	currentLayLen = 0;
 	return;
 }
 
- DiffDoubStressPrereq::~DoubStressPrereq() {
+ DiffDoub1StressPrereq::~DiffDoub1StressPrereq() {
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;

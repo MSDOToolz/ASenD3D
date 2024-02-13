@@ -35,7 +35,7 @@ class Face {
 
 		//dup1
 
-		void getAreaNormal(Doub& area, Doub norm[], Node* ndAr[], DesignVariable* dvAr[]);
+		void getAreaNormal(DiffDoub0& area, DiffDoub0 norm[], Node* ndAr[], DesignVariable* dvAr[]);
 
 		//end dup
  
@@ -44,7 +44,7 @@ class Face {
 //DiffDoub versions: 
 		//dup1
 
-		void getAreaNormal(DiffDoub& area, DiffDoub norm[], Node* ndAr[], DesignVariable* dvAr[]);
+		void getAreaNormal(DiffDoub1& area, DiffDoub1 norm[], Node* ndAr[], DesignVariable* dvAr[]);
 
 		//end dup
  

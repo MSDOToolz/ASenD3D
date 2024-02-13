@@ -195,7 +195,7 @@ double Element::getIntAdjdRdD() {
 
 //dup1
 
-void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRuk(DiffDoub0 Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -205,22 +205,22 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 	int i7;
 	int totDof;
 	
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub dJwt;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 dJwt;
 	
-	Doub strain[6];
-	Doub stress[6];
-	Doub thrmStn[6];
-	Doub ipTemp;
-	Doub CTE[6];
-	Doub CTEN[90];
-	Doub ux[9];
-	Doub secDef[9];
-	Doub secFcMom[9];
+	DiffDoub0 strain[6];
+	DiffDoub0 stress[6];
+	DiffDoub0 thrmStn[6];
+	DiffDoub0 ipTemp;
+	DiffDoub0 CTE[6];
+	DiffDoub0 CTEN[90];
+	DiffDoub0 ux[9];
+	DiffDoub0 secDef[9];
+	DiffDoub0 secFcMom[9];
 	
-	Doub tmp;
+	DiffDoub0 tmp;
 	
 	totDof = numNds*dofPerNd + numIntDof;
 
@@ -383,7 +383,7 @@ void Element::getRuk(Doub Rvec[], double dRdu[], double dRdT[], bool getMatrix, 
 	return;
 }
 
-void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRum(DiffDoub0 Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -399,19 +399,19 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 	int dof2;
 	int ndDof = numNds * dofPerNd;
 
-	Doub instDisp[60];
+	DiffDoub0 instDisp[60];
 
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub dJwt;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 dJwt;
 
-	Doub tmp;
-	Doub tmp61[6];
-	Doub tmp62[6];
-	Doub detJwt;
+	DiffDoub0 tmp;
+	DiffDoub0 tmp61[6];
+	DiffDoub0 tmp62[6];
+	DiffDoub0 detJwt;
 
-	Doub Rtmp[30];
+	DiffDoub0 Rtmp[30];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -550,7 +550,7 @@ void Element::getRum(Doub Rvec[], double dRdA[], bool getMatrix, bool actualProp
 	return;
 }
 
-void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRud(DiffDoub0 Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -561,22 +561,22 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 	int nd;
 	int dof;
 	int ndDof = numNds * dofPerNd;
-	Doub tmp;
-	Doub Rtmp[33];
+	DiffDoub0 tmp;
+	DiffDoub0 Rtmp[33];
 	//double dRtmp[1089];
 	double* dRtmp = &pre.scratch[2508];
 	//double dRdT[330];
 	double* dRdT = &pre.scratch[3597];
 	bool dNonZero;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub wtDetJ;
-	Doub strain[6];
-	Doub secDef[9];
-	Doub ux[9];
-	Doub Bvel[9];
-	Doub DBvel[9];
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 wtDetJ;
+	DiffDoub0 strain[6];
+	DiffDoub0 secDef[9];
+	DiffDoub0 ux[9];
+	DiffDoub0 Bvel[9];
+	DiffDoub0 DBvel[9];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -742,7 +742,7 @@ void Element::getRud(Doub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd
 }
 
 
-void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRu(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -756,17 +756,17 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	int globInd2;
 	int ndDof;
 	int totDof;
-	Doub Rvec[33];
+	DiffDoub0 Rvec[33];
 	//double dRdu[1089];
 	double* dRdu = &pre.scratch[0];
 	//double dRdT[330];
 	double* dRdT = &pre.scratch[1089];
-	Doub Rtmp[33];
+	DiffDoub0 Rtmp[33];
 	//double dRtmp[1089];
 	double* dRtmp = &pre.scratch[1419];
 	double c1;
 	double c2;
-	Doub tmp;
+	DiffDoub0 tmp;
 	
 	ndDof = numNds*dofPerNd;
 	totDof = ndDof + numIntDof;
@@ -876,19 +876,19 @@ void Element::getRu(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobComman
 	return;
 }
 
-void Element::getRtk(Doub Rvec[], double dRdT[], bool getMatrix, DoubStressPrereq& pre) {
+void Element::getRtk(DiffDoub0 Rvec[], double dRdT[], bool getMatrix, DiffDoub0StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub dNT[33];
-	Doub detJ;
-	Doub tmp;
-	Doub gradT[3];
-	Doub qVec[3];
-	Doub Rtmp[10];
-	Doub dRtmp[100];
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 dNT[33];
+	DiffDoub0 detJ;
+	DiffDoub0 tmp;
+	DiffDoub0 gradT[3];
+	DiffDoub0 qVec[3];
+	DiffDoub0 Rtmp[10];
+	DiffDoub0 dRtmp[100];
 
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -926,18 +926,18 @@ void Element::getRtk(Doub Rvec[], double dRdT[], bool getMatrix, DoubStressPrere
 	return;
 }
 
-void Element::getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DoubStressPrereq& pre) {
+void Element::getRtm(DiffDoub0 Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoub0StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub tmp;
-	Doub ptTdot;
-	Doub Rtmp[10];
-	Doub dRtmp[100];
-	Doub saveCp;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 tmp;
+	DiffDoub0 ptTdot;
+	DiffDoub0 Rtmp[10];
+	DiffDoub0 dRtmp[100];
+	DiffDoub0 saveCp;
 
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -994,16 +994,16 @@ void Element::getRtm(Doub Rvec[], double dRdTdot[], bool getMatrix, bool actualP
 	return;
 }
 
-void Element::getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[]) {
+void Element::getRt(DiffDoub0 globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
 	int globInd1;
 	int globInd2;
 	double c1 = 1.0/(cmd->timeStep*cmd->newmarkGamma);
-	Doub Rvec[10];
+	DiffDoub0 Rvec[10];
 	double dRdT[100];
-	Doub Rtmp[10];
+	DiffDoub0 Rtmp[10];
 	double dRtmp[100];
 
 	getRtk(Rvec, dRdT, getMatrix, pre);
@@ -1038,7 +1038,7 @@ void Element::getRt(Doub globR[], SparseMat& globdRdT, bool getMatrix, JobComman
 	return;
 }
 
-void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DoubStressPrereq& pre, Node* ndAr[]) {
+void Element::getRuFrcFld(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1052,20 +1052,20 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 	int dof2;
 	int globInd;
 	int globInd2;
-	Doub Rvec[6];
+	DiffDoub0 Rvec[6];
 	double dRdU[36];
-	Doub dVec[3];
-	Doub dist;
-	Doub dvVec[3];
-	Doub dDvecdU[18];
-	Doub dDistdU[6];
-	Doub fN1[3];
-	Doub dfN1dU[18];
-	Doub dtoP;
-	Doub dtoP1;
-	Doub dtoP2;
-	Doub tmp;
-	Doub tmp2;
+	DiffDoub0 dVec[3];
+	DiffDoub0 dist;
+	DiffDoub0 dvVec[3];
+	DiffDoub0 dDvecdU[18];
+	DiffDoub0 dDistdU[6];
+	DiffDoub0 fN1[3];
+	DiffDoub0 dfN1dU[18];
+	DiffDoub0 dtoP;
+	DiffDoub0 dtoP1;
+	DiffDoub0 dtoP2;
+	DiffDoub0 tmp;
+	DiffDoub0 tmp2;
 
 	// Potential force
 	for (i1 = 0; i1 < 3; i1++) {
@@ -1222,7 +1222,7 @@ void Element::getRuFrcFld(Doub globR[], SparseMat& globdRdu, bool getMatrix, Job
 	return;
 }
 
-void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getAppLoad(DiffDoub0 AppLd[], Load* ldPt, bool nLGeom, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1243,22 +1243,22 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq
 	int* fcLocNd;
 	int fcNumNds;
 	bool ndInFace;
-	Doub elAppLd[30];
-	Doub totNdF[6];
-	Doub inpMag;
-	Doub vecMag;
-	Doub elVol;
-	Doub scFact;
-	Doub elCent[3];
-	Doub centToEl[3];
-	Doub axToEl[3];
-	Doub angVel2;
-	Doub nnInv;
-	Doub fcArea;
-	Doub fcNorm[3];
-	Doub trac[3];
-	Doub dp;
-	Doub tmp;
+	DiffDoub0 elAppLd[30];
+	DiffDoub0 totNdF[6];
+	DiffDoub0 inpMag;
+	DiffDoub0 vecMag;
+	DiffDoub0 elVol;
+	DiffDoub0 scFact;
+	DiffDoub0 elCent[3];
+	DiffDoub0 centToEl[3];
+	DiffDoub0 axToEl[3];
+	DiffDoub0 angVel2;
+	DiffDoub0 nnInv;
+	DiffDoub0 fcArea;
+	DiffDoub0 fcNorm[3];
+	DiffDoub0 trac[3];
+	DiffDoub0 dp;
+	DiffDoub0 tmp;
 
 	for (i1 = 0; i1 < ndDof; i1++) {
 		pre.globAcc[i1].setVal(0.0);
@@ -1454,7 +1454,7 @@ void Element::getAppLoad(Doub AppLd[], Load* ldPt, bool nLGeom, DoubStressPrereq
 	return;
 }
 
-void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getAppThermLoad(DiffDoub0 AppLd[], Load* ldPt, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int globInd;
@@ -1462,18 +1462,18 @@ void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, N
 	string ldType = ldPt->getType();
 	double ldLoad[6];
 	double ldNorm[3];
-	Doub elAppLd[10];
+	DiffDoub0 elAppLd[10];
 	double dRdT[2];
 	Face* fcPt;
 	int fcNumNds;
 	int* fcLocNds;
 	bool ndInFace;
-	Doub fcArea;
-	Doub fcNorm[3];
-	Doub totHG;
-	Doub elVol;
-	Doub dp;
-	Doub tmp;
+	DiffDoub0 fcArea;
+	DiffDoub0 fcNorm[3];
+	DiffDoub0 totHG;
+	DiffDoub0 elVol;
+	DiffDoub0 dp;
+	DiffDoub0 tmp;
 
 	for (i1 = 0; i1 < numNds; i1++) {
 		pre.globTdot[i1].setVal(0.0);
@@ -1567,7 +1567,7 @@ void Element::getAppThermLoad(Doub AppLd[], Load* ldPt, DoubStressPrereq& pre, N
 //DiffDoub versions: 
 //dup1
 
-void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRuk(DiffDoub1 Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1577,22 +1577,22 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 	int i7;
 	int totDof;
 	
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub dJwt;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 dJwt;
 	
-	DiffDoub strain[6];
-	DiffDoub stress[6];
-	DiffDoub thrmStn[6];
-	DiffDoub ipTemp;
-	DiffDoub CTE[6];
-	DiffDoub CTEN[90];
-	DiffDoub ux[9];
-	DiffDoub secDef[9];
-	DiffDoub secFcMom[9];
+	DiffDoub1 strain[6];
+	DiffDoub1 stress[6];
+	DiffDoub1 thrmStn[6];
+	DiffDoub1 ipTemp;
+	DiffDoub1 CTE[6];
+	DiffDoub1 CTEN[90];
+	DiffDoub1 ux[9];
+	DiffDoub1 secDef[9];
+	DiffDoub1 secFcMom[9];
 	
-	DiffDoub tmp;
+	DiffDoub1 tmp;
 	
 	totDof = numNds*dofPerNd + numIntDof;
 
@@ -1755,7 +1755,7 @@ void Element::getRuk(DiffDoub Rvec[], double dRdu[], double dRdT[], bool getMatr
 	return;
 }
 
-void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRum(DiffDoub1 Rvec[], double dRdA[], bool getMatrix, bool actualProps, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1771,19 +1771,19 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 	int dof2;
 	int ndDof = numNds * dofPerNd;
 
-	DiffDoub instDisp[60];
+	DiffDoub1 instDisp[60];
 
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub dJwt;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 dJwt;
 
-	DiffDoub tmp;
-	DiffDoub tmp61[6];
-	DiffDoub tmp62[6];
-	DiffDoub detJwt;
+	DiffDoub1 tmp;
+	DiffDoub1 tmp61[6];
+	DiffDoub1 tmp62[6];
+	DiffDoub1 detJwt;
 
-	DiffDoub Rtmp[30];
+	DiffDoub1 Rtmp[30];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -1922,7 +1922,7 @@ void Element::getRum(DiffDoub Rvec[], double dRdA[], bool getMatrix, bool actual
 	return;
 }
 
-void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRud(DiffDoub1 Rvec[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1933,22 +1933,22 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 	int nd;
 	int dof;
 	int ndDof = numNds * dofPerNd;
-	DiffDoub tmp;
-	DiffDoub Rtmp[33];
+	DiffDoub1 tmp;
+	DiffDoub1 Rtmp[33];
 	//double dRtmp[1089];
 	double* dRtmp = &pre.scratch[2508];
 	//double dRdT[330];
 	double* dRdT = &pre.scratch[3597];
 	bool dNonZero;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub wtDetJ;
-	DiffDoub strain[6];
-	DiffDoub secDef[9];
-	DiffDoub ux[9];
-	DiffDoub Bvel[9];
-	DiffDoub DBvel[9];
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 wtDetJ;
+	DiffDoub1 strain[6];
+	DiffDoub1 secDef[9];
+	DiffDoub1 ux[9];
+	DiffDoub1 Bvel[9];
+	DiffDoub1 DBvel[9];
 
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
@@ -2114,7 +2114,7 @@ void Element::getRud(DiffDoub Rvec[], double dRdV[], bool getMatrix, JobCommand*
 }
 
 
-void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getRu(DiffDoub1 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2128,17 +2128,17 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 	int globInd2;
 	int ndDof;
 	int totDof;
-	DiffDoub Rvec[33];
+	DiffDoub1 Rvec[33];
 	//double dRdu[1089];
 	double* dRdu = &pre.scratch[0];
 	//double dRdT[330];
 	double* dRdT = &pre.scratch[1089];
-	DiffDoub Rtmp[33];
+	DiffDoub1 Rtmp[33];
 	//double dRtmp[1089];
 	double* dRtmp = &pre.scratch[1419];
 	double c1;
 	double c2;
-	DiffDoub tmp;
+	DiffDoub1 tmp;
 	
 	ndDof = numNds*dofPerNd;
 	totDof = ndDof + numIntDof;
@@ -2248,19 +2248,19 @@ void Element::getRu(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCo
 	return;
 }
 
-void Element::getRtk(DiffDoub Rvec[], double dRdT[], bool getMatrix, DiffDoubStressPrereq& pre) {
+void Element::getRtk(DiffDoub1 Rvec[], double dRdT[], bool getMatrix, DiffDoub1StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub dNT[33];
-	DiffDoub detJ;
-	DiffDoub tmp;
-	DiffDoub gradT[3];
-	DiffDoub qVec[3];
-	DiffDoub Rtmp[10];
-	DiffDoub dRtmp[100];
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 dNT[33];
+	DiffDoub1 detJ;
+	DiffDoub1 tmp;
+	DiffDoub1 gradT[3];
+	DiffDoub1 qVec[3];
+	DiffDoub1 Rtmp[10];
+	DiffDoub1 dRtmp[100];
 
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -2298,18 +2298,18 @@ void Element::getRtk(DiffDoub Rvec[], double dRdT[], bool getMatrix, DiffDoubStr
 	return;
 }
 
-void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoubStressPrereq& pre) {
+void Element::getRtm(DiffDoub1 Rvec[], double dRdTdot[], bool getMatrix, bool actualProps, DiffDoub1StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub tmp;
-	DiffDoub ptTdot;
-	DiffDoub Rtmp[10];
-	DiffDoub dRtmp[100];
-	DiffDoub saveCp;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 tmp;
+	DiffDoub1 ptTdot;
+	DiffDoub1 Rtmp[10];
+	DiffDoub1 dRtmp[100];
+	DiffDoub1 saveCp;
 
 	i3 = 0;
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -2366,16 +2366,16 @@ void Element::getRtm(DiffDoub Rvec[], double dRdTdot[], bool getMatrix, bool act
 	return;
 }
 
-void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[]) {
+void Element::getRt(DiffDoub1 globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
 	int globInd1;
 	int globInd2;
 	double c1 = 1.0/(cmd->timeStep*cmd->newmarkGamma);
-	DiffDoub Rvec[10];
+	DiffDoub1 Rvec[10];
 	double dRdT[100];
-	DiffDoub Rtmp[10];
+	DiffDoub1 Rtmp[10];
 	double dRtmp[100];
 
 	getRtk(Rvec, dRdT, getMatrix, pre);
@@ -2410,7 +2410,7 @@ void Element::getRt(DiffDoub globR[], SparseMat& globdRdT, bool getMatrix, JobCo
 	return;
 }
 
-void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoubStressPrereq& pre, Node* ndAr[]) {
+void Element::getRuFrcFld(DiffDoub1 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub1StressPrereq& pre, Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2424,20 +2424,20 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 	int dof2;
 	int globInd;
 	int globInd2;
-	DiffDoub Rvec[6];
+	DiffDoub1 Rvec[6];
 	double dRdU[36];
-	DiffDoub dVec[3];
-	DiffDoub dist;
-	DiffDoub dvVec[3];
-	DiffDoub dDvecdU[18];
-	DiffDoub dDistdU[6];
-	DiffDoub fN1[3];
-	DiffDoub dfN1dU[18];
-	DiffDoub dtoP;
-	DiffDoub dtoP1;
-	DiffDoub dtoP2;
-	DiffDoub tmp;
-	DiffDoub tmp2;
+	DiffDoub1 dVec[3];
+	DiffDoub1 dist;
+	DiffDoub1 dvVec[3];
+	DiffDoub1 dDvecdU[18];
+	DiffDoub1 dDistdU[6];
+	DiffDoub1 fN1[3];
+	DiffDoub1 dfN1dU[18];
+	DiffDoub1 dtoP;
+	DiffDoub1 dtoP1;
+	DiffDoub1 dtoP2;
+	DiffDoub1 tmp;
+	DiffDoub1 tmp2;
 
 	// Potential force
 	for (i1 = 0; i1 < 3; i1++) {
@@ -2594,7 +2594,7 @@ void Element::getRuFrcFld(DiffDoub globR[], SparseMat& globdRdu, bool getMatrix,
 	return;
 }
 
-void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getAppLoad(DiffDoub1 AppLd[], Load* ldPt, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -2615,22 +2615,22 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStre
 	int* fcLocNd;
 	int fcNumNds;
 	bool ndInFace;
-	DiffDoub elAppLd[30];
-	DiffDoub totNdF[6];
-	DiffDoub inpMag;
-	DiffDoub vecMag;
-	DiffDoub elVol;
-	DiffDoub scFact;
-	DiffDoub elCent[3];
-	DiffDoub centToEl[3];
-	DiffDoub axToEl[3];
-	DiffDoub angVel2;
-	DiffDoub nnInv;
-	DiffDoub fcArea;
-	DiffDoub fcNorm[3];
-	DiffDoub trac[3];
-	DiffDoub dp;
-	DiffDoub tmp;
+	DiffDoub1 elAppLd[30];
+	DiffDoub1 totNdF[6];
+	DiffDoub1 inpMag;
+	DiffDoub1 vecMag;
+	DiffDoub1 elVol;
+	DiffDoub1 scFact;
+	DiffDoub1 elCent[3];
+	DiffDoub1 centToEl[3];
+	DiffDoub1 axToEl[3];
+	DiffDoub1 angVel2;
+	DiffDoub1 nnInv;
+	DiffDoub1 fcArea;
+	DiffDoub1 fcNorm[3];
+	DiffDoub1 trac[3];
+	DiffDoub1 dp;
+	DiffDoub1 tmp;
 
 	for (i1 = 0; i1 < ndDof; i1++) {
 		pre.globAcc[i1].setVal(0.0);
@@ -2826,7 +2826,7 @@ void Element::getAppLoad(DiffDoub AppLd[], Load* ldPt, bool nLGeom, DiffDoubStre
 	return;
 }
 
-void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getAppThermLoad(DiffDoub1 AppLd[], Load* ldPt, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int i1;
 	int i2;
 	int globInd;
@@ -2834,18 +2834,18 @@ void Element::getAppThermLoad(DiffDoub AppLd[], Load* ldPt, DiffDoubStressPrereq
 	string ldType = ldPt->getType();
 	double ldLoad[6];
 	double ldNorm[3];
-	DiffDoub elAppLd[10];
+	DiffDoub1 elAppLd[10];
 	double dRdT[2];
 	Face* fcPt;
 	int fcNumNds;
 	int* fcLocNds;
 	bool ndInFace;
-	DiffDoub fcArea;
-	DiffDoub fcNorm[3];
-	DiffDoub totHG;
-	DiffDoub elVol;
-	DiffDoub dp;
-	DiffDoub tmp;
+	DiffDoub1 fcArea;
+	DiffDoub1 fcNorm[3];
+	DiffDoub1 totHG;
+	DiffDoub1 elVol;
+	DiffDoub1 dp;
+	DiffDoub1 tmp;
 
 	for (i1 = 0; i1 < numNds; i1++) {
 		pre.globTdot[i1].setVal(0.0);

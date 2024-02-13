@@ -65,6 +65,7 @@ surfMesh = splitToTri(surfMesh)
 
 beam = Mesh3D(surfMesh['nodes'],surfMesh['elements'])
 beamMesh = beam.createUnstructuredMesh()
+beamMesh = convertToQuadratic(beamMesh)
 ##beamMesh = beam.createSweptMesh('inDirection',1,sweepDistance=0.1,axis=[0.0,0.0,1.0])
 
 beamMesh = getNodeSetInXYZRange(beamMesh,'xMin',xRange=[-0.01,0.01])
@@ -110,4 +111,4 @@ myMod.addConstraint(blkConst)
 
 ## Write Input file
 
-myMod.writeModelInput('hexBeam.yaml')
+myMod.writeModelInput('tetBeam.yaml')

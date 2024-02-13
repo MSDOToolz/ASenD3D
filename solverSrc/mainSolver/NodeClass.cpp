@@ -335,7 +335,7 @@ double Node::getPrevTdot() {
 }
 
 //dup1
-void Node::getCrd(Doub crdOut[], DesignVariable* dvAr[]) {
+void Node::getCrd(DiffDoub0 crdOut[], DesignVariable* dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
 	crdOut[2].setVal(coord[2]);
@@ -343,10 +343,10 @@ void Node::getCrd(Doub crdOut[], DesignVariable* dvAr[]) {
 	DoubListEnt *currCoef = coefs->getFirst();
 	int dIndex;
 	DesignVariable *dPtr;
-	Doub dVal;
+	DiffDoub0 dVal;
 	int comp;
 	string cat;
-	Doub coef;
+	DiffDoub0 coef;
 	while(currD) {
 		dIndex = currD->value;
 		dPtr = dvAr[dIndex];
@@ -364,7 +364,7 @@ void Node::getCrd(Doub crdOut[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Node::getDisp(Doub disp[]) {
+void Node::getDisp(DiffDoub0 disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
 	    disp[i1].setVal(displacement[i1]);
@@ -372,14 +372,14 @@ void Node::getDisp(Doub disp[]) {
 	return;
 }
 
-void Node::getElasticDVLoad(Doub ld[], DesignVariable* dvAr[]) {
+void Node::getElasticDVLoad(DiffDoub0 ld[], DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt *thisDV;
 	DoubListEnt *thisCoef;
 	DesignVariable *dPtr;
-	Doub dVal;
-	Doub coef;
+	DiffDoub0 dVal;
+	DiffDoub0 coef;
 	string cat;
 	int comp;
 	for (i1 = 0; i1 < 6; i1++) {
@@ -404,14 +404,14 @@ void Node::getElasticDVLoad(Doub ld[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Node::getThermalDVLoad(Doub& ld, DesignVariable* dvAr[]) {
+void Node::getThermalDVLoad(DiffDoub0& ld, DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* dPtr;
-	Doub dVal;
-	Doub coef;
+	DiffDoub0 dVal;
+	DiffDoub0 coef;
 	string cat;
 	int comp;
 	
@@ -440,7 +440,7 @@ void Node::getThermalDVLoad(Doub& ld, DesignVariable* dvAr[]) {
  
 //DiffDoub versions: 
 //dup1
-void Node::getCrd(DiffDoub crdOut[], DesignVariable* dvAr[]) {
+void Node::getCrd(DiffDoub1 crdOut[], DesignVariable* dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
 	crdOut[2].setVal(coord[2]);
@@ -448,10 +448,10 @@ void Node::getCrd(DiffDoub crdOut[], DesignVariable* dvAr[]) {
 	DoubListEnt *currCoef = coefs->getFirst();
 	int dIndex;
 	DesignVariable *dPtr;
-	DiffDoub dVal;
+	DiffDoub1 dVal;
 	int comp;
 	string cat;
-	DiffDoub coef;
+	DiffDoub1 coef;
 	while(currD) {
 		dIndex = currD->value;
 		dPtr = dvAr[dIndex];
@@ -469,7 +469,7 @@ void Node::getCrd(DiffDoub crdOut[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Node::getDisp(DiffDoub disp[]) {
+void Node::getDisp(DiffDoub1 disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
 	    disp[i1].setVal(displacement[i1]);
@@ -477,14 +477,14 @@ void Node::getDisp(DiffDoub disp[]) {
 	return;
 }
 
-void Node::getElasticDVLoad(DiffDoub ld[], DesignVariable* dvAr[]) {
+void Node::getElasticDVLoad(DiffDoub1 ld[], DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt *thisDV;
 	DoubListEnt *thisCoef;
 	DesignVariable *dPtr;
-	DiffDoub dVal;
-	DiffDoub coef;
+	DiffDoub1 dVal;
+	DiffDoub1 coef;
 	string cat;
 	int comp;
 	for (i1 = 0; i1 < 6; i1++) {
@@ -509,14 +509,14 @@ void Node::getElasticDVLoad(DiffDoub ld[], DesignVariable* dvAr[]) {
 	return;
 }
 
-void Node::getThermalDVLoad(DiffDoub& ld, DesignVariable* dvAr[]) {
+void Node::getThermalDVLoad(DiffDoub1& ld, DesignVariable* dvAr[]) {
 	int i1;
 	int dIndex;
 	IntListEnt* thisDV;
 	DoubListEnt* thisCoef;
 	DesignVariable* dPtr;
-	DiffDoub dVal;
-	DiffDoub coef;
+	DiffDoub1 dVal;
+	DiffDoub1 coef;
 	string cat;
 	int comp;
 	

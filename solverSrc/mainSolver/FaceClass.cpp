@@ -80,11 +80,11 @@ Face* Face::getNext() {
 
 //dup1
 
-void Face::getAreaNormal(Doub& area, Doub norm[], Node* ndAr[], DesignVariable* dvAr[]) {
-	Doub v1[3];
-	Doub v2[3];
-	Doub tmpV[3];
-	Doub tmp;
+void Face::getAreaNormal(DiffDoub0& area, DiffDoub0 norm[], Node* ndAr[], DesignVariable* dvAr[]) {
+	DiffDoub0 v1[3];
+	DiffDoub0 v2[3];
+	DiffDoub0 tmpV[3];
+	DiffDoub0 tmp;
 
 	if (numNds == 4) {
 		ndAr[globNodes[2]]->getCrd(v1, dvAr);
@@ -141,11 +141,11 @@ void Face::getAreaNormal(Doub& area, Doub norm[], Node* ndAr[], DesignVariable* 
 //DiffDoub versions: 
 //dup1
 
-void Face::getAreaNormal(DiffDoub& area, DiffDoub norm[], Node* ndAr[], DesignVariable* dvAr[]) {
-	DiffDoub v1[3];
-	DiffDoub v2[3];
-	DiffDoub tmpV[3];
-	DiffDoub tmp;
+void Face::getAreaNormal(DiffDoub1& area, DiffDoub1 norm[], Node* ndAr[], DesignVariable* dvAr[]) {
+	DiffDoub1 v1[3];
+	DiffDoub1 v2[3];
+	DiffDoub1 tmpV[3];
+	DiffDoub1 tmp;
 
 	if (numNds == 4) {
 		ndAr[globNodes[2]]->getCrd(v1, dvAr);

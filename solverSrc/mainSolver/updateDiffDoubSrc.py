@@ -8,20 +8,6 @@ fileNames = ['ElementClass.cpp','ElementClass.h',
 
 ##fileNames = ['matrixFunctions.cpp','matrixFunctions.h']
 
-leadingStrings = [' ','(',',',':','\t']
-trailingStrings = [' ','&','*','[','(','Stress']
-
-strings = list()
-repStrings1 = list()
-repStrings2 = list()
-
-for ls in leadingStrings:
-    for ts in trailingStrings:
-        lst = [ls,ts]
-        strings.append('Doub'.join(lst))
-        repStrings1.append('DiffDoub'.join(lst))
-        repStrings2.append('Diff2Doub'.join(lst))
-
 for fn in fileNames:
     inFile = open(fn,'r')
     outFile = open('temp.out','w')
@@ -41,7 +27,7 @@ for fn in fileNames:
             outFile.write(' \n')
             outFile.write('//skip \n')
             outFile.write(' \n')
-            outFile.write('//DiffDoub versions: \n')
+            outFile.write('//DiffDoub1 versions: \n')
             
             preserve = False
             for ln in lineList:
@@ -53,8 +39,7 @@ for fn in fileNames:
                     if(preserve):
                         outFile.write(ln)
                     else:
-                        for i in range(0,len(strings)):
-                            ln = ln.replace(strings[i],repStrings1[i])
+                        ln = ln.replace('DiffDoub0','DiffDoub1')
                         outFile.write(ln)
                     
             outFile.write(' \n')
@@ -73,7 +58,7 @@ for fn in fileNames:
             outFile.write(' \n')            
             outFile.write('//skip \n')
             outFile.write(' \n')
-            outFile.write('//DiffDoub versions: \n')
+            outFile.write('//DiffDoub1 versions: \n')
             
             preserve = False
             for ln in lineList:
@@ -85,12 +70,11 @@ for fn in fileNames:
                     if(preserve):
                         outFile.write(ln)
                     else:
-                        for i in range(0,len(strings)):
-                            ln = ln.replace(strings[i],repStrings1[i])
+                        ln = ln.replace('DiffDoub0','DiffDoub1')
                         outFile.write(ln)
                     
             outFile.write(' \n')
-            outFile.write('//Diff2Doub versions: \n')
+            outFile.write('//DiffDoub2 versions: \n')
                     
             preserve = False
             for ln in lineList:
@@ -102,8 +86,7 @@ for fn in fileNames:
                     if(preserve):
                         outFile.write(ln)
                     else:
-                        for i in range(0,len(strings)):
-                            ln = ln.replace(strings[i],repStrings2[i])
+                        ln = ln.replace('DiffDoub0','DiffDoub2')
                         outFile.write(ln)
             
             outFile.write(' \n')            

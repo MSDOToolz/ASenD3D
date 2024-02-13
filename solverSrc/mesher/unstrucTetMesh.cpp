@@ -4,13 +4,13 @@
 
 using namespace std;
 
-//int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 //--------------------------------
-int main() {
-	int argc = 3;
-	string argv[3];
-	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/tetBeam/unstructInp.yaml";
-	argv[2] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/tetBeam/tetMesh.yaml";
+//int main() {
+//	int argc = 3;
+//	string argv[3];
+//	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/tetBeam/unstructInp.yaml";
+//	argv[2] = "C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/tetBeam/tetMesh.yaml";
 //-------------------------------------
 	Mesher mesher;
 	string inputFile;

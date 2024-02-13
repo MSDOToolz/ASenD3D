@@ -16,14 +16,14 @@ const double r_pio180 = 0.0174532925199432958;
 const double r_1ort3 = 0.577350269189625765;
 
 //dup1
-void Element::getNdDisp(Doub globDisp[], Node* ndAr[]) {
+void Element::getNdDisp(DiffDoub0 globDisp[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
 	int i5;
 	int i6;
-	Doub ndDisp[6];
+	DiffDoub0 ndDisp[6];
 	Node *nPtr;
 	
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -50,7 +50,7 @@ void Element::getNdDisp(Doub globDisp[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdVel(Doub globVel[], Node* ndAr[]) {
+void Element::getNdVel(DiffDoub0 globVel[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -70,7 +70,7 @@ void Element::getNdVel(Doub globVel[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdAcc(Doub globAcc[], Node* ndAr[]) {
+void Element::getNdAcc(DiffDoub0 globAcc[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -90,7 +90,7 @@ void Element::getNdAcc(Doub globAcc[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdTemp(Doub globTemp[], Node* ndAr[]) {
+void Element::getNdTemp(DiffDoub0 globTemp[], Node* ndAr[]) {
 	int i1;
 	double temp;
 	Node* nPtr;
@@ -103,7 +103,7 @@ void Element::getNdTemp(Doub globTemp[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdTdot(Doub globTdot[], Node* ndAr[]) {
+void Element::getNdTdot(DiffDoub0 globTdot[], Node* ndAr[]) {
 	int i1;
 	double tdot;
 	Node* nPtr;
@@ -116,7 +116,7 @@ void Element::getNdTdot(Doub globTdot[], Node* ndAr[]) {
 	return;
 }
 
-void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
+void Element::evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]) {
 	if(type == 4) {
 		nVec[0].setVal(1.0-spt[0]-spt[1]-spt[2]);
 		dNds[0].setVal(-1.0);
@@ -379,22 +379,22 @@ void Element::evalN(Doub nVec[], Doub dNds[], double spt[]) {
 	return;
 }
 
-void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], double spt[]) {
+void Element::getIpData(DiffDoub0 nVec[], DiffDoub0 dNdx[], DiffDoub0& detJ, DiffDoub0 locNds[], double spt[]) {
 	int i1;
 	int i2;
-	Doub nCent[11];
-	Doub dNds[33];
-	Doub dNdsCent[33];
-	Doub jMat[9];
-	Doub jCent[9];
-	Doub detCent;
-	Doub jInv[9];
-	Doub jInvCent[9];
+	DiffDoub0 nCent[11];
+	DiffDoub0 dNds[33];
+	DiffDoub0 dNdsCent[33];
+	DiffDoub0 jMat[9];
+	DiffDoub0 jCent[9];
+	DiffDoub0 detCent;
+	DiffDoub0 jInv[9];
+	DiffDoub0 jInvCent[9];
 	double sCent[3] = { 0.0,0.0,0.0 };
-	Doub xVec[3];
-	Doub bVec[3];
-	Doub zDir;
-	Doub tmp;
+	DiffDoub0 xVec[3];
+	DiffDoub0 bVec[3];
+	DiffDoub0 zDir;
+	DiffDoub0 tmp;
 	
 	evalN(nVec, dNds, spt);
 	matMul(jMat,locNds,dNds,3,numNds,3);
@@ -461,12 +461,12 @@ void Element::getIpData(Doub nVec[], Doub dNdx[], Doub& detJ, Doub locNds[], dou
 	return;
 }
 
-void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int stat) {
+void Element::getInstOri(DiffDoub0 instOriMat[], DiffDoub0 locOri[], DiffDoub0 globDisp[], int stat) {
 	// stat = 1: nonlinear geometry, element ori from nodal theta, no derivatives, 1st order diff for nodes
-	// stat = 2: nonlinear geometry, 2nd order diff for Doub version, 1st order for DiffDoub version
-	Doub rot[3];
-	Doub nnds;
-	Doub one;
+	// stat = 2: nonlinear geometry, 2nd order diff for DiffDoub0 version, 1st order for DiffDoub1 version
+	DiffDoub0 rot[3];
+	DiffDoub0 nnds;
+	DiffDoub0 one;
     int i1;
 	int i2;
 	int i3;
@@ -603,7 +603,7 @@ void Element::getInstOri(Doub instOriMat[], Doub locOri[], Doub globDisp[], int 
 	return;
 }
 
-void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], Doub locOri[], Doub xGlob[], bool nLGeom, int dv1, int dv2) {
+void Element::getInstDisp(DiffDoub0 instDisp[], DiffDoub0 globDisp[], DiffDoub0 instOriMat[], DiffDoub0 locOri[], DiffDoub0 xGlob[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -618,10 +618,10 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 	int nd2;
 	int dof2;
 	int dof2OInd;
-	Doub tmp;
-	Doub tmp2;
-	Doub nnInv;
-	Doub nnInv2;
+	DiffDoub0 tmp;
+	DiffDoub0 tmp2;
+	DiffDoub0 nnInv;
+	DiffDoub0 nnInv2;
 	
 	i2 = 6*nDim;
 	for (i1 = 0; i1 < i2; i1++) {
@@ -989,9 +989,9 @@ void Element::getInstDisp(Doub instDisp[], Doub globDisp[], Doub instOriMat[], D
 	return;
 }
 
-void Element::getStressPrereq(DoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getStressPrereq(DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int numLay;
-	Doub offset;
+	DiffDoub0 offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
 	getLocOri(pre.locOri, dvAr);
 	getNdDisp(pre.globDisp, ndAr);
@@ -1016,16 +1016,16 @@ void Element::getStressPrereq(DoubStressPrereq& pre, Node* ndAr[], DesignVariabl
 					delete[] pre.layerTC;
 					delete[] pre.layerSH;
 				}
-				pre.layerZ = new Doub[numLay];
-				pre.layerThk = new Doub[numLay];
-				pre.layerAng = new Doub[numLay];
-				pre.layerQ = new Doub[9 * numLay];
-				pre.layerD = new Doub[9 * numLay];
-				pre.layerTE = new Doub[3 * numLay];
-				pre.layerE0 = new Doub[3 * numLay];
-				pre.layerDen = new Doub[numLay];
-				pre.layerTC = new Doub[9 * numLay];
-				pre.layerSH = new Doub[numLay];
+				pre.layerZ = new DiffDoub0[numLay];
+				pre.layerThk = new DiffDoub0[numLay];
+				pre.layerAng = new DiffDoub0[numLay];
+				pre.layerQ = new DiffDoub0[9 * numLay];
+				pre.layerD = new DiffDoub0[9 * numLay];
+				pre.layerTE = new DiffDoub0[3 * numLay];
+				pre.layerE0 = new DiffDoub0[3 * numLay];
+				pre.layerDen = new DiffDoub0[numLay];
+				pre.layerTC = new DiffDoub0[9 * numLay];
+				pre.layerSH = new DiffDoub0[numLay];
 				pre.currentLayLen = numLay;
 			}
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
@@ -1073,13 +1073,13 @@ void Element::getStressPrereq(DoubStressPrereq& pre, Node* ndAr[], DesignVariabl
 	return;
 }
 
-void Element::getVolume(Doub& vol, DoubStressPrereq& pre, int layer) {
+void Element::getVolume(DiffDoub0& vol, DiffDoub0StressPrereq& pre, int layer) {
 	int i1;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub thk;
-	Doub tmp;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 thk;
+	DiffDoub0 tmp;
 
 	if (type == 2) {
 		thk.setVal(sectPtr->getArea()); //rem: update to factor in dvars;
@@ -1101,7 +1101,7 @@ void Element::getVolume(Doub& vol, DoubStressPrereq& pre, int layer) {
 	return;
 }
 
-void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], Doub locOri[], Doub xGlob[], Doub dNdx[], Doub nVec[], bool nLGeom, int dv1, int dv2) {
+void Element::getSectionDef(DiffDoub0 secDef[], DiffDoub0 globDisp[],  DiffDoub0 instOriMat[], DiffDoub0 locOri[], DiffDoub0 xGlob[], DiffDoub0 dNdx[], DiffDoub0 nVec[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -1113,11 +1113,11 @@ void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], 
 	int dof;
 	int nd2;
 	int dof2;
-	Doub instDisp[60];
-	Doub ux[9];
-	Doub rx[9];
-	Doub rot[3];
-	Doub tmp;
+	DiffDoub0 instDisp[60];
+	DiffDoub0 ux[9];
+	DiffDoub0 rx[9];
+	DiffDoub0 rot[3];
+	DiffDoub0 tmp;
 
 	if (dofPerNd != 6) {
 		for (i1 = 0; i1 < 9; i1++) {
@@ -1286,7 +1286,7 @@ void Element::getSectionDef(Doub secDef[], Doub globDisp[],  Doub instOriMat[], 
 	return;
 }
 
-void Element::getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[], int dv1, int dv2, bool nLGeom) {
+void Element::getSolidStrain(DiffDoub0 strain[], DiffDoub0 ux[], DiffDoub0 dNdx[], DiffDoub0 locOri[], int dv1, int dv2, bool nLGeom) {
 	int i1;
 	int i2;
 	int i3;
@@ -1298,9 +1298,9 @@ void Element::getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[
 	int dof;
 	int nd2;
 	int dof2;
-	Doub uxL[9];
-	Doub strnMat[9];
-	Doub tmp;
+	DiffDoub0 uxL[9];
+	DiffDoub0 strnMat[9];
+	DiffDoub0 tmp;
 	
 	for (i1 = 0; i1 < 9; i1++) {
 		strnMat[i1].setVal(0.0);
@@ -1405,18 +1405,18 @@ void Element::getSolidStrain(Doub strain[], Doub ux[], Doub dNdx[], Doub locOri[
 	return;
 }
 
-void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre) {
+void Element::getStressStrain(DiffDoub0 stress[], DiffDoub0 strain[], double spt[], int layer, bool nLGeom, DiffDoub0StressPrereq& pre) {
 	int i1;
 	int i2;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub ux[9];
-	Doub secDef[9];
-	Doub sectStrn[3];
-	Doub adjStn[6];
-	Doub tmp;
-	Doub ipTemp;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 ux[9];
+	DiffDoub0 secDef[9];
+	DiffDoub0 sectStrn[3];
+	DiffDoub0 adjStn[6];
+	DiffDoub0 tmp;
+	DiffDoub0 ipTemp;
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 
@@ -1488,21 +1488,21 @@ void Element::getStressStrain(Doub stress[], Doub strain[], double spt[], int la
 	return;
 }
 
-void Element::dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[], int layer, bool nLGeom, DoubStressPrereq& pre) {
+void Element::dStressStraindU(DiffDoub0 dsdU[], DiffDoub0 dedU[], DiffDoub0 dsdT[], double spt[], int layer, bool nLGeom, DiffDoub0StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub ux[9];
-	Doub secDef[9];
-	Doub sectStrn[3];
-	Doub dStrain[6];
-	Doub dStress[6];
-	Doub CTE[6];
-	Doub CTEN[60];
-	Doub tmp;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 ux[9];
+	DiffDoub0 secDef[9];
+	DiffDoub0 sectStrn[3];
+	DiffDoub0 dStrain[6];
+	DiffDoub0 dStress[6];
+	DiffDoub0 CTE[6];
+	DiffDoub0 CTEN[60];
+	DiffDoub0 tmp;
 
 	int totDof = numNds * dofPerNd + numIntDof;
 	i2 = 6 * totDof;
@@ -1586,13 +1586,13 @@ void Element::dStressStraindU(Doub dsdU[], Doub dedU[], Doub dsdT[], double spt[
 	return;
 }
 
-void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], bool nLGeom, DoubStressPrereq& pre) {
+void Element::getDefFrcMom(DiffDoub0 def[], DiffDoub0 frcMom[], double spt[], bool nLGeom, DiffDoub0StressPrereq& pre) {
 	int i1;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub ptTemp;
-	Doub tmp;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 ptTemp;
+	DiffDoub0 tmp;
 
 	if (dofPerNd != 6) {
 		for (i1 = 0; i1 < 9; i1++) {
@@ -1627,17 +1627,17 @@ void Element::getDefFrcMom(Doub def[], Doub frcMom[], double spt[], bool nLGeom,
 	return;
 }
 
-void Element::dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], double spt[], bool nLGeom, DoubStressPrereq& pre) {
+void Element::dDefFrcMomdU(DiffDoub0 dDefdU[], DiffDoub0 dFrcMomdU[], DiffDoub0 dFrcMomdT[], double spt[], bool nLGeom, DiffDoub0StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
 	int totDof;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
-	Doub ptTemp;
-	Doub tmp;
-	Doub def[9];
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
+	DiffDoub0 ptTemp;
+	DiffDoub0 tmp;
+	DiffDoub0 def[9];
 
 	if (nLGeom) {
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
@@ -1662,11 +1662,11 @@ void Element::dDefFrcMomdU(Doub dDefdU[], Doub dFrcMomdU[], Doub dFrcMomdT[], do
 	return;
 }
 
-void Element::getFluxTGrad(Doub flux[], Doub tGrad[], double spt[], int layer, DoubStressPrereq& pre) {
+void Element::getFluxTGrad(DiffDoub0 flux[], DiffDoub0 tGrad[], double spt[], int layer, DiffDoub0StressPrereq& pre) {
 	int i1;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	matMul(tGrad, pre.globTemp, dNdx, 1, numNds, 3);
@@ -1684,12 +1684,12 @@ void Element::getFluxTGrad(Doub flux[], Doub tGrad[], double spt[], int layer, D
 	return;
 }
 
-void Element::dFluxTGraddT(Doub dFdT[], Doub dTG[], double spt[], int layer, DoubStressPrereq& pre) {
+void Element::dFluxTGraddT(DiffDoub0 dFdT[], DiffDoub0 dTG[], double spt[], int layer, DiffDoub0StressPrereq& pre) {
 	int i1;
 	int i2;
-	Doub nVec[11];
-	Doub dNdx[33];
-	Doub detJ;
+	DiffDoub0 nVec[11];
+	DiffDoub0 dNdx[33];
+	DiffDoub0 detJ;
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	transpose(dTG, dNdx, numNds, 3);
@@ -1708,7 +1708,7 @@ void Element::dFluxTGraddT(Doub dFdT[], Doub dTG[], double spt[], int layer, Dou
 	return;
 }
 
-void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int matRow, Node* ndAr[]) {
+void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub0 elQVec[], bool forTherm, int matRow, Node* ndAr[]) {
 	int i1;
 	int ndDof = numNds*dofPerNd;
 	int totDof = ndDof + numIntDof;
@@ -1748,14 +1748,14 @@ void Element::putVecToGlobMat(SparseMat& qMat, Doub elQVec[], bool forTherm, int
  
 //DiffDoub versions: 
 //dup1
-void Element::getNdDisp(DiffDoub globDisp[], Node* ndAr[]) {
+void Element::getNdDisp(DiffDoub1 globDisp[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
 	int i5;
 	int i6;
-	DiffDoub ndDisp[6];
+	DiffDoub1 ndDisp[6];
 	Node *nPtr;
 	
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -1782,7 +1782,7 @@ void Element::getNdDisp(DiffDoub globDisp[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdVel(DiffDoub globVel[], Node* ndAr[]) {
+void Element::getNdVel(DiffDoub1 globVel[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1802,7 +1802,7 @@ void Element::getNdVel(DiffDoub globVel[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdAcc(DiffDoub globAcc[], Node* ndAr[]) {
+void Element::getNdAcc(DiffDoub1 globAcc[], Node* ndAr[]) {
 	int i1;
 	int i2;
 	int i3;
@@ -1822,7 +1822,7 @@ void Element::getNdAcc(DiffDoub globAcc[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdTemp(DiffDoub globTemp[], Node* ndAr[]) {
+void Element::getNdTemp(DiffDoub1 globTemp[], Node* ndAr[]) {
 	int i1;
 	double temp;
 	Node* nPtr;
@@ -1835,7 +1835,7 @@ void Element::getNdTemp(DiffDoub globTemp[], Node* ndAr[]) {
 	return;
 }
 
-void Element::getNdTdot(DiffDoub globTdot[], Node* ndAr[]) {
+void Element::getNdTdot(DiffDoub1 globTdot[], Node* ndAr[]) {
 	int i1;
 	double tdot;
 	Node* nPtr;
@@ -1848,7 +1848,7 @@ void Element::getNdTdot(DiffDoub globTdot[], Node* ndAr[]) {
 	return;
 }
 
-void Element::evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]) {
+void Element::evalN(DiffDoub1 nVec[], DiffDoub1 dNds[], double spt[]) {
 	if(type == 4) {
 		nVec[0].setVal(1.0-spt[0]-spt[1]-spt[2]);
 		dNds[0].setVal(-1.0);
@@ -2111,22 +2111,22 @@ void Element::evalN(DiffDoub nVec[], DiffDoub dNds[], double spt[]) {
 	return;
 }
 
-void Element::getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDoub locNds[], double spt[]) {
+void Element::getIpData(DiffDoub1 nVec[], DiffDoub1 dNdx[], DiffDoub1& detJ, DiffDoub1 locNds[], double spt[]) {
 	int i1;
 	int i2;
-	DiffDoub nCent[11];
-	DiffDoub dNds[33];
-	DiffDoub dNdsCent[33];
-	DiffDoub jMat[9];
-	DiffDoub jCent[9];
-	DiffDoub detCent;
-	DiffDoub jInv[9];
-	DiffDoub jInvCent[9];
+	DiffDoub1 nCent[11];
+	DiffDoub1 dNds[33];
+	DiffDoub1 dNdsCent[33];
+	DiffDoub1 jMat[9];
+	DiffDoub1 jCent[9];
+	DiffDoub1 detCent;
+	DiffDoub1 jInv[9];
+	DiffDoub1 jInvCent[9];
 	double sCent[3] = { 0.0,0.0,0.0 };
-	DiffDoub xVec[3];
-	DiffDoub bVec[3];
-	DiffDoub zDir;
-	DiffDoub tmp;
+	DiffDoub1 xVec[3];
+	DiffDoub1 bVec[3];
+	DiffDoub1 zDir;
+	DiffDoub1 tmp;
 	
 	evalN(nVec, dNds, spt);
 	matMul(jMat,locNds,dNds,3,numNds,3);
@@ -2193,12 +2193,12 @@ void Element::getIpData(DiffDoub nVec[], DiffDoub dNdx[], DiffDoub& detJ, DiffDo
 	return;
 }
 
-void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub globDisp[], int stat) {
+void Element::getInstOri(DiffDoub1 instOriMat[], DiffDoub1 locOri[], DiffDoub1 globDisp[], int stat) {
 	// stat = 1: nonlinear geometry, element ori from nodal theta, no derivatives, 1st order diff for nodes
-	// stat = 2: nonlinear geometry, 2nd order diff for DiffDoub version, 1st order for DiffDoub version
-	DiffDoub rot[3];
-	DiffDoub nnds;
-	DiffDoub one;
+	// stat = 2: nonlinear geometry, 2nd order diff for DiffDoub1 version, 1st order for DiffDoub1 version
+	DiffDoub1 rot[3];
+	DiffDoub1 nnds;
+	DiffDoub1 one;
     int i1;
 	int i2;
 	int i3;
@@ -2335,7 +2335,7 @@ void Element::getInstOri(DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub glob
 	return;
 }
 
-void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], bool nLGeom, int dv1, int dv2) {
+void Element::getInstDisp(DiffDoub1 instDisp[], DiffDoub1 globDisp[], DiffDoub1 instOriMat[], DiffDoub1 locOri[], DiffDoub1 xGlob[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -2350,10 +2350,10 @@ void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub ins
 	int nd2;
 	int dof2;
 	int dof2OInd;
-	DiffDoub tmp;
-	DiffDoub tmp2;
-	DiffDoub nnInv;
-	DiffDoub nnInv2;
+	DiffDoub1 tmp;
+	DiffDoub1 tmp2;
+	DiffDoub1 nnInv;
+	DiffDoub1 nnInv2;
 	
 	i2 = 6*nDim;
 	for (i1 = 0; i1 < i2; i1++) {
@@ -2721,9 +2721,9 @@ void Element::getInstDisp(DiffDoub instDisp[], DiffDoub globDisp[], DiffDoub ins
 	return;
 }
 
-void Element::getStressPrereq(DiffDoubStressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
+void Element::getStressPrereq(DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 	int numLay;
-	DiffDoub offset;
+	DiffDoub1 offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
 	getLocOri(pre.locOri, dvAr);
 	getNdDisp(pre.globDisp, ndAr);
@@ -2748,16 +2748,16 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, Node* ndAr[], DesignVar
 					delete[] pre.layerTC;
 					delete[] pre.layerSH;
 				}
-				pre.layerZ = new DiffDoub[numLay];
-				pre.layerThk = new DiffDoub[numLay];
-				pre.layerAng = new DiffDoub[numLay];
-				pre.layerQ = new DiffDoub[9 * numLay];
-				pre.layerD = new DiffDoub[9 * numLay];
-				pre.layerTE = new DiffDoub[3 * numLay];
-				pre.layerE0 = new DiffDoub[3 * numLay];
-				pre.layerDen = new DiffDoub[numLay];
-				pre.layerTC = new DiffDoub[9 * numLay];
-				pre.layerSH = new DiffDoub[numLay];
+				pre.layerZ = new DiffDoub1[numLay];
+				pre.layerThk = new DiffDoub1[numLay];
+				pre.layerAng = new DiffDoub1[numLay];
+				pre.layerQ = new DiffDoub1[9 * numLay];
+				pre.layerD = new DiffDoub1[9 * numLay];
+				pre.layerTE = new DiffDoub1[3 * numLay];
+				pre.layerE0 = new DiffDoub1[3 * numLay];
+				pre.layerDen = new DiffDoub1[numLay];
+				pre.layerTC = new DiffDoub1[9 * numLay];
+				pre.layerSH = new DiffDoub1[numLay];
 				pre.currentLayLen = numLay;
 			}
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
@@ -2805,13 +2805,13 @@ void Element::getStressPrereq(DiffDoubStressPrereq& pre, Node* ndAr[], DesignVar
 	return;
 }
 
-void Element::getVolume(DiffDoub& vol, DiffDoubStressPrereq& pre, int layer) {
+void Element::getVolume(DiffDoub1& vol, DiffDoub1StressPrereq& pre, int layer) {
 	int i1;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub thk;
-	DiffDoub tmp;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 thk;
+	DiffDoub1 tmp;
 
 	if (type == 2) {
 		thk.setVal(sectPtr->getArea()); //rem: update to factor in dvars;
@@ -2833,7 +2833,7 @@ void Element::getVolume(DiffDoub& vol, DiffDoubStressPrereq& pre, int layer) {
 	return;
 }
 
-void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub instOriMat[], DiffDoub locOri[], DiffDoub xGlob[], DiffDoub dNdx[], DiffDoub nVec[], bool nLGeom, int dv1, int dv2) {
+void Element::getSectionDef(DiffDoub1 secDef[], DiffDoub1 globDisp[],  DiffDoub1 instOriMat[], DiffDoub1 locOri[], DiffDoub1 xGlob[], DiffDoub1 dNdx[], DiffDoub1 nVec[], bool nLGeom, int dv1, int dv2) {
 	int i1;
 	int i2;
 	int i3;
@@ -2845,11 +2845,11 @@ void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub in
 	int dof;
 	int nd2;
 	int dof2;
-	DiffDoub instDisp[60];
-	DiffDoub ux[9];
-	DiffDoub rx[9];
-	DiffDoub rot[3];
-	DiffDoub tmp;
+	DiffDoub1 instDisp[60];
+	DiffDoub1 ux[9];
+	DiffDoub1 rx[9];
+	DiffDoub1 rot[3];
+	DiffDoub1 tmp;
 
 	if (dofPerNd != 6) {
 		for (i1 = 0; i1 < 9; i1++) {
@@ -3018,7 +3018,7 @@ void Element::getSectionDef(DiffDoub secDef[], DiffDoub globDisp[],  DiffDoub in
 	return;
 }
 
-void Element::getSolidStrain(DiffDoub strain[], DiffDoub ux[], DiffDoub dNdx[], DiffDoub locOri[], int dv1, int dv2, bool nLGeom) {
+void Element::getSolidStrain(DiffDoub1 strain[], DiffDoub1 ux[], DiffDoub1 dNdx[], DiffDoub1 locOri[], int dv1, int dv2, bool nLGeom) {
 	int i1;
 	int i2;
 	int i3;
@@ -3030,9 +3030,9 @@ void Element::getSolidStrain(DiffDoub strain[], DiffDoub ux[], DiffDoub dNdx[], 
 	int dof;
 	int nd2;
 	int dof2;
-	DiffDoub uxL[9];
-	DiffDoub strnMat[9];
-	DiffDoub tmp;
+	DiffDoub1 uxL[9];
+	DiffDoub1 strnMat[9];
+	DiffDoub1 tmp;
 	
 	for (i1 = 0; i1 < 9; i1++) {
 		strnMat[i1].setVal(0.0);
@@ -3137,18 +3137,18 @@ void Element::getSolidStrain(DiffDoub strain[], DiffDoub ux[], DiffDoub dNdx[], 
 	return;
 }
 
-void Element::getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre) {
+void Element::getStressStrain(DiffDoub1 stress[], DiffDoub1 strain[], double spt[], int layer, bool nLGeom, DiffDoub1StressPrereq& pre) {
 	int i1;
 	int i2;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub ux[9];
-	DiffDoub secDef[9];
-	DiffDoub sectStrn[3];
-	DiffDoub adjStn[6];
-	DiffDoub tmp;
-	DiffDoub ipTemp;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 ux[9];
+	DiffDoub1 secDef[9];
+	DiffDoub1 sectStrn[3];
+	DiffDoub1 adjStn[6];
+	DiffDoub1 tmp;
+	DiffDoub1 ipTemp;
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 
@@ -3220,21 +3220,21 @@ void Element::getStressStrain(DiffDoub stress[], DiffDoub strain[], double spt[]
 	return;
 }
 
-void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[], double spt[], int layer, bool nLGeom, DiffDoubStressPrereq& pre) {
+void Element::dStressStraindU(DiffDoub1 dsdU[], DiffDoub1 dedU[], DiffDoub1 dsdT[], double spt[], int layer, bool nLGeom, DiffDoub1StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub ux[9];
-	DiffDoub secDef[9];
-	DiffDoub sectStrn[3];
-	DiffDoub dStrain[6];
-	DiffDoub dStress[6];
-	DiffDoub CTE[6];
-	DiffDoub CTEN[60];
-	DiffDoub tmp;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 ux[9];
+	DiffDoub1 secDef[9];
+	DiffDoub1 sectStrn[3];
+	DiffDoub1 dStrain[6];
+	DiffDoub1 dStress[6];
+	DiffDoub1 CTE[6];
+	DiffDoub1 CTEN[60];
+	DiffDoub1 tmp;
 
 	int totDof = numNds * dofPerNd + numIntDof;
 	i2 = 6 * totDof;
@@ -3318,13 +3318,13 @@ void Element::dStressStraindU(DiffDoub dsdU[], DiffDoub dedU[], DiffDoub dsdT[],
 	return;
 }
 
-void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre) {
+void Element::getDefFrcMom(DiffDoub1 def[], DiffDoub1 frcMom[], double spt[], bool nLGeom, DiffDoub1StressPrereq& pre) {
 	int i1;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub ptTemp;
-	DiffDoub tmp;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 ptTemp;
+	DiffDoub1 tmp;
 
 	if (dofPerNd != 6) {
 		for (i1 = 0; i1 < 9; i1++) {
@@ -3359,17 +3359,17 @@ void Element::getDefFrcMom(DiffDoub def[], DiffDoub frcMom[], double spt[], bool
 	return;
 }
 
-void Element::dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFrcMomdT[], double spt[], bool nLGeom, DiffDoubStressPrereq& pre) {
+void Element::dDefFrcMomdU(DiffDoub1 dDefdU[], DiffDoub1 dFrcMomdU[], DiffDoub1 dFrcMomdT[], double spt[], bool nLGeom, DiffDoub1StressPrereq& pre) {
 	int i1;
 	int i2;
 	int i3;
 	int totDof;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
-	DiffDoub ptTemp;
-	DiffDoub tmp;
-	DiffDoub def[9];
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
+	DiffDoub1 ptTemp;
+	DiffDoub1 tmp;
+	DiffDoub1 def[9];
 
 	if (nLGeom) {
 		getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
@@ -3394,11 +3394,11 @@ void Element::dDefFrcMomdU(DiffDoub dDefdU[], DiffDoub dFrcMomdU[], DiffDoub dFr
 	return;
 }
 
-void Element::getFluxTGrad(DiffDoub flux[], DiffDoub tGrad[], double spt[], int layer, DiffDoubStressPrereq& pre) {
+void Element::getFluxTGrad(DiffDoub1 flux[], DiffDoub1 tGrad[], double spt[], int layer, DiffDoub1StressPrereq& pre) {
 	int i1;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	matMul(tGrad, pre.globTemp, dNdx, 1, numNds, 3);
@@ -3416,12 +3416,12 @@ void Element::getFluxTGrad(DiffDoub flux[], DiffDoub tGrad[], double spt[], int 
 	return;
 }
 
-void Element::dFluxTGraddT(DiffDoub dFdT[], DiffDoub dTG[], double spt[], int layer, DiffDoubStressPrereq& pre) {
+void Element::dFluxTGraddT(DiffDoub1 dFdT[], DiffDoub1 dTG[], double spt[], int layer, DiffDoub1StressPrereq& pre) {
 	int i1;
 	int i2;
-	DiffDoub nVec[11];
-	DiffDoub dNdx[33];
-	DiffDoub detJ;
+	DiffDoub1 nVec[11];
+	DiffDoub1 dNdx[33];
+	DiffDoub1 detJ;
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	transpose(dTG, dNdx, numNds, 3);
@@ -3440,7 +3440,7 @@ void Element::dFluxTGraddT(DiffDoub dFdT[], DiffDoub dTG[], double spt[], int la
 	return;
 }
 
-void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub elQVec[], bool forTherm, int matRow, Node* ndAr[]) {
+void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub1 elQVec[], bool forTherm, int matRow, Node* ndAr[]) {
 	int i1;
 	int ndDof = numNds*dofPerNd;
 	int totDof = ndDof + numIntDof;

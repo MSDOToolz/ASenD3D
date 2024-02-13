@@ -162,7 +162,7 @@ void Model::reorderNodes(int blockDim) {
 	tempV4 = new double[elMatDim];
 	tempV5 = new double[elMatDim];
 	tempV6 = new double[elMatDim];
-	tempD1 = new Doub[elMatDim];
+	tempD1 = new DiffDoub0[elMatDim];
 
 	i3 = nodes->getLength();
 	dLdU = new double[totGlobDof];
@@ -176,8 +176,8 @@ void Model::reorderNodes(int blockDim) {
 	tAdj = new double[i3];
 	tdotAdj = new double[i3];
 
-	dRudD = new DiffDoub[elMatDim];
-	dRtdD = new DiffDoub[i3];
+	dRudD = new DiffDoub1[elMatDim];
+	dRtdD = new DiffDoub1[i3];
 
 	elInD = new int[elements->getLength()];
 
@@ -512,10 +512,10 @@ void Model::buildElasticAppLoad(double appLd[], double time) {
 	string ldType;
 	double actTime[2];
 	double ndLoad[6];
-	Doub ndDVLd[6];
+	DiffDoub0 ndDVLd[6];
 	Set *thisSet;
 	IntListEnt *thisEnt;
-	DoubStressPrereq* pre = new DoubStressPrereq;
+	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq;
 
 	for (i1 = 0; i1 < elMatDim; i1++) {
 		tempD1[i1].setVal(0.0);
@@ -587,10 +587,10 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 	string ldType;
 	double actTime[2];
 	double ndLoad[6];
-	Doub ndDVLd;
+	DiffDoub0 ndDVLd;
 	Set* thisSet;
 	IntListEnt* thisEnt;
-	DoubStressPrereq* pre = new DoubStressPrereq;
+	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq;
 
 	totNodes = nodes->getLength();
 	for (i1 = 0; i1 < totNodes; i1++) {
@@ -648,7 +648,7 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 	int i1;
 	Element *thisEl;
-	DoubStressPrereq* pre = new DoubStressPrereq();
+	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq();
 	
 	for (i1 = 0; i1 < elMatDim; i1++) {
 		tempD1[i1].setVal(0.0);
@@ -677,7 +677,7 @@ void Model::buildThermalSolnLoad(double solnLd[], bool buildMat) {
 	int i1;
 	int numNodes;
 	Element* thisEl;
-	DoubStressPrereq* pre = new DoubStressPrereq;
+	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq;
 
 	numNodes = nodes->getLength();
 	for (i1 = 0; i1 < numNodes; i1++) {
@@ -991,12 +991,12 @@ void Model::eigenSolve(JobCommand* cmd) {
 	int i3;
 	Element* thisEl;
 	Node* thisNd;
-	Doub Rvec[33];
+	DiffDoub0 Rvec[33];
 	double Rv2[33];
 	double dRdA[2];
 	double zeros[9] = {0.0, 0.0, 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0};
 	double vKv;
-	DoubStressPrereq* pre = new DoubStressPrereq;
+	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq;
 
 	if (!anPrepRun) {
 		analysisPrep();
@@ -1189,7 +1189,7 @@ void Model::augmentdLdU() {
 	double c3 = dt * (1.0 - gam);
 	double c4 = 1.0 / (dt*(bet - gam));
 
-	Doub Rvec[30];
+	DiffDoub0 Rvec[30];
 	double* Mmat = new double[900];
 	double* Dmat = new double[900];
 	double elAdj[30];
@@ -1198,7 +1198,7 @@ void Model::augmentdLdU() {
 	double eldLdU[30];
 	double eldLdV[30];
 	double eldLdA[30];
-	DoubStressPrereq* pre = new DoubStressPrereq;
+	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq;
 
 	Element* thisEl;
 
@@ -1282,8 +1282,8 @@ void Model::solveForAdjoint() {
 	double c2;
 	double c3;
 	Element* thisEl;
-	DoubStressPrereq* pre = new DoubStressPrereq;
-	Doub Rvec[33];
+	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq;
+	DiffDoub0 Rvec[33];
 	double dRdU[1089];
 	double dRdT[330];
 	double eldLdT[10];
@@ -1382,8 +1382,8 @@ void Model::dRthermaldD(int dVarNum) {
 	int totNodes;
 	int numDof;
 	int globInd;
-	Doub dvVal;
-	DiffDoubStressPrereq* pre = new DiffDoubStressPrereq;
+	DiffDoub0 dvVal;
+	DiffDoub1StressPrereq* pre = new DiffDoub1StressPrereq;
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	Element* thisElPt;
@@ -1443,7 +1443,7 @@ void Model::dRthermaldD(int dVarNum) {
 	// Design variable dependent contribution
 	thisEnt = thisDV->getFirstNd();
 	Node* thisNdPt;
-	DiffDoub ndLd;
+	DiffDoub1 ndLd;
 	while (thisEnt) {
 		thisNdPt = nodeArray[thisEnt->value];
 		thisNdPt->getThermalDVLoad(ndLd, dVarArray);
@@ -1462,8 +1462,8 @@ void Model::dRelasticdD(int dVarNum) {
 	int i1;
 	int numDof;
 	int globInd;
-	Doub dvVal;
-	DiffDoubStressPrereq* pre = new DiffDoubStressPrereq;
+	DiffDoub0 dvVal;
+	DiffDoub1StressPrereq* pre = new DiffDoub1StressPrereq;
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;
 	Element* thisElPt;
@@ -1523,7 +1523,7 @@ void Model::dRelasticdD(int dVarNum) {
 	// Design variable dependent contribution
 	thisEnt = thisDV->getFirstNd();
 	Node* thisNdPt;
-	DiffDoub ndLd[6];
+	DiffDoub1 ndLd[6];
 	while (thisEnt) {
 		thisNdPt = nodeArray[thisEnt->value];
 		thisNdPt->getElasticDVLoad(ndLd, dVarArray);

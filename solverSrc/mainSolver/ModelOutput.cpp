@@ -219,16 +219,16 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	int numLay;
 	double* intPts;
 	double cent[3] = { 0.0,0.0,0.0 };
-	Doub strain[6];
-	Doub stress[6];
+	DiffDoub0 strain[6];
+	DiffDoub0 stress[6];
 	double SEDen;
-	Doub def[9];
-	Doub frcMom[9];
-	Doub tGrad[3];
-	Doub flux[3];
+	DiffDoub0 def[9];
+	DiffDoub0 frcMom[9];
+	DiffDoub0 tGrad[3];
+	DiffDoub0 flux[3];
 	string fieldList;
 	double time;
-	DoubStressPrereq* stPre = new DoubStressPrereq;
+	DiffDoub0StressPrereq* stPre = new DiffDoub0StressPrereq;
 
 	if (timeStep >= 0) {
 		// Read the results from the time step file and store them in nodes
@@ -293,6 +293,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 		while (thisEnt) {
 			elLabel = thisEnt->value;
 			elPt = elementArray[elLabel];
+			type = elPt->getType();
 			
 			fieldList = "stress strain strainEnergyDen";
 			i2 = fieldList.find(thisField);
@@ -304,10 +305,9 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 				}
 				else {
 					numIP = 1;
-					intPts = &cent[0];
+					intPts = elPt->getSCent();
 				}
 				for (i1 = 0; i1 < numIP; i1++) {
-					type = elPt->getType();
 					if (type == 3 || type == 41) {
 						numLay = elPt->getNumLayers();
 					} else {
@@ -350,7 +350,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 				}
 				else {
 					numIP = 1;
-					intPts = &cent[0];
+					intPts = elPt->getSCent();
 				}
 				for (i1 = 0; i1 < numIP; i1++) {
 					type = elPt->getType();
@@ -384,7 +384,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 				}
 				else {
 					numIP = 1;
-					intPts = &cent[0];
+					intPts = elPt->getSCent();
 				}
 				for (i1 = 0; i1 < numIP; i1++) {
 					type = elPt->getType();

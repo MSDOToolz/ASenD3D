@@ -65,5 +65,35 @@ else:
         raise Exception(errSt)
     
     setEnvPath('solverpath',solveDir)
+    
+    meshDir = thisDir + '/bin/unstrucTetMesh.exe'
 
+    ## Compile the 3D unstructured mesher 
+    print('compiling unstructured 3D mesher...')
+    
+    srcDir = thisDir + '/solverSrc/mesher'
+    os.chdir(srcDir)
+    
+    sourceFiles = ['unstrucTetMesh.cpp',
+                   'MeshElement.cpp', 'MeshElement.h',
+                   'Mesher.cpp', 'Mesher.h',
+                   'MeshFace.cpp', 'MeshFace.h',
+                   'MeshNode.cpp', 'MeshNode.h',
+                   'SpatialGrid.cpp', 'SpatialGrid.h',
+                   'utilities.cpp', 'utilities.h']
+    
+    args = [CC,'-o',meshDir]
+    
+    args.extend(sourceFiles)
+    
+    procRes = subprocess.run(args,capture_output=True,text=True)
+    
+    print(procRes.stdout)
+    
+    if(procRes.returncode != 0):
+        errSt = 'Error: Problem compiling the unstructured 3D mesh generator.  Check to make sure ' + CC + ' compiler is properly installed'
+        raise Exception(errSt)
+    
+    setEnvPath('mesherpath',meshDir)
+    
     os.chdir(wkDir)

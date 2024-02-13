@@ -2,12 +2,12 @@
 #define DIFFDOUB
 #include <cmath>
 
-class Doub {
+class DiffDoub0 {
     public:
 	    double val;
 		double dval;
 	
-	    Doub();
+	    DiffDoub0();
 		
 		bool diffType();
 		
@@ -15,15 +15,15 @@ class Doub {
 
 		void setVal(double inp, double dinp);
 		
-		void setVal(Doub& inp);
+		void setVal(DiffDoub0& inp);
 		
-		void add(Doub& inp);
+		void add(DiffDoub0& inp);
 		
-		void sub(Doub& inp);
+		void sub(DiffDoub0& inp);
 		
-		void mult(Doub& inp);
+		void mult(DiffDoub0& inp);
 		
-		void dvd(Doub& inp);
+		void dvd(DiffDoub0& inp);
 		
 		void sqt();
 		
@@ -40,14 +40,14 @@ class Doub {
 		void neg();
 };
 
-class DiffDoub {
+class DiffDoub1 {
     public:
 	    double val;
 		double dval;
 		double tmp;
 		double tmp2;
 	
-	    DiffDoub();
+	    DiffDoub1();
 		
 		bool diffType();
 		
@@ -55,17 +55,17 @@ class DiffDoub {
 		
 		void setVal(double inp, double dinp);
 
-		void setVal(Doub& inp);
+		void setVal(DiffDoub0& inp);
 		
-		void setVal(DiffDoub& inp);
+		void setVal(DiffDoub1& inp);
 		
-		void add(DiffDoub& inp);
+		void add(DiffDoub1& inp);
 		
-		void sub(DiffDoub& inp);
+		void sub(DiffDoub1& inp);
 		
-		void mult(DiffDoub& inp);
+		void mult(DiffDoub1& inp);
 		
-		void dvd(DiffDoub& inp);
+		void dvd(DiffDoub1& inp);
 
 		void sqt();
 		
@@ -82,7 +82,7 @@ class DiffDoub {
 		void neg();
 };
 
-class Diff2Doub {
+class DiffDoub2 {
     public:
 	    double val;
 		double dv1;
@@ -93,7 +93,7 @@ class Diff2Doub {
 		double tmp3;
 		double tmp4;
 	
-	    Diff2Doub();
+	    DiffDoub2();
 		
 		bool diffType();
 		
@@ -103,15 +103,15 @@ class Diff2Doub {
 		
 		void setVal(double inp, double dinp1, double dinp2);
 		
-		void setVal(Diff2Doub& inp);
+		void setVal(DiffDoub2& inp);
 		
-		void add(Diff2Doub& inp);
+		void add(DiffDoub2& inp);
 		
-		void sub(Diff2Doub& inp);
+		void sub(DiffDoub2& inp);
 		
-		void mult(Diff2Doub& inp);
+		void mult(DiffDoub2& inp);
 		
-		void dvd(Diff2Doub& inp);
+		void dvd(DiffDoub2& inp);
 
 		void sqt();
 		
