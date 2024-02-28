@@ -123,6 +123,17 @@ def checkJacobian(elCrd,elType):
             return False
     return True
 
+def getElCoord(ndLabs,ndList):
+    xC = []
+    yC = []
+    zC = []
+    for nd in ndLabs:
+        if(nd > -1):
+            xC.append(ndList[nd,0])
+            yC.append(ndList[nd,1])
+            zC.append(ndList[nd,2])
+    return np.array([xC,yC,zC])
+
 def getElCentroid(elCrd):
     elCent = np.zeros(3,dtype=float)
     nnds = len(elCrd[0])

@@ -211,6 +211,37 @@ class Mesh2D():
         invSkew = np.linalg.inv(skewMat)
         self.nodes = np.matmul(self.nodes,invSkew)
         
+    def getBoundaryEdgeNormals2(self):
+        for i in range(0,self.numEdges):
+            n1i = self.edgeNodes[i,0]
+            n2i = self.edgeNodes[i,1]
+            eCent = 0.5*(self.nodes[n1i] + self.nodes[n2i])
+            nrm = self.edgeUnitNorms[i]
+            marg = 0.6*self.maxEdgeLen
+            if(np.abs(nrm[0]) > np.abs(nrm[1])):
+                v1 = np.array([1.0,8.249052e-5])
+                nearEdges = self.edgeGL.findInXYMargin(eCent,-1,marg)
+            else:
+                v1 = np.array([3.802852e-5,1.0])
+                nearEdges = self.edgeGL.findInXYMargin(eCent,marg,-1)
+            intCt = 1
+            tol = 1.0e-6*self.minEdgeLen
+            for ne in nearEdges:
+                n1i = self.edgeNodes[ne,0]
+                n2i = self.edgeNodes[ne,1]
+                v2 = self.nodes[n2i] - self.nodes[n1i]
+                mat = np.array([[v1[0],-v2[0]],[v1[1],-v2[1]]])
+                matNrm = np.linalg.norm(mat)
+                det = np.linalg.det(mat)
+                if(np.abs(det) > 1.0e-6*matNrm*matNrm):
+                    bVec = self.nodes[n1i] - eCent
+                    soln = np.linalg.solve(mat,bVec)
+                    if(soln[1] > 0.000001 and soln[1] < 0.999999 and soln[0] > tol):
+                        intCt = -1*intCt
+            dp = np.dot(nrm,v1)
+            if((intCt > 0 and dp > 0.0) or (intCt < 0 and dp < 0.0)):
+                self.edgeUnitNorms[i] = -1.0*nrm
+        
     def getBoundaryEdgeNormals(self):
         stepLen = self.minEdgeLen/np.sqrt(3.0)
         numSteps = int(np.ceil(self.edgeGL.xGSz*self.edgeGL.xRows/stepLen))
@@ -388,7 +419,7 @@ class Mesh2D():
         
         self.triElGL = SpatialGridList2D(xMin,xMax,yMin,yMax,xGS,yGS)
         
-        self.getBoundaryEdgeNormals()
+        self.getBoundaryEdgeNormals2()
         
     def edgesIntersect(self,e1Nds,e2Nds):
         e1n1 = e1Nds[0]
@@ -870,16 +901,16 @@ class Mesh2D():
         elsCreated = True
         while(elsCreated):
             # if(self.numTriEls > 0):
-                # self.plot2DMesh()
+            #     self.plot2DMesh()
             # cnt = input('continue?\n')
             # if(cnt != 'y'):
-                # break
+            #     break
             elsCreated = False
             nEd = self.numEdges
-            print('numEdges')
-            print(nEd)
-            self.plot2DMesh()
-            inp = input('continue?\n')
+            # print('numEdges')
+            # print(nEd)
+            # self.plot2DMesh()
+            # inp = input('continue?\n')
             for edi in range(0,nEd):
                 if(self.edgeElements[edi,1] == -1):
                     n1 = self.edgeNodes[edi,0]

@@ -13,6 +13,7 @@ import subprocess
 wkDir = os.getcwd()
 thisDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 thisDir = thisDir.replace('\\','/')
+setEnvPath('rootpath',thisDir)
 
 pf = os.sys.platform
 if('win' in pf):

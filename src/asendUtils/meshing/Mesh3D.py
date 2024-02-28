@@ -9,7 +9,7 @@ from asendUtils.syst.pathTools import *
 
 class Mesh3D():
 
-    def __init__(self,boundaryNodes,boundaryFaces=[]):
+    def __init__(self,boundaryNodes,boundaryFaces):
         self.nodeGL = None
         self.faceGL = None
         self.tetElGL = None
@@ -42,7 +42,7 @@ class Mesh3D():
         self.hexElSize = 0
         self.hexElements = np.array([])
         
-    def createSweptMesh(self, sweepMethod, sweepElements, sweepDistance=1.0, point=[], axis=[], followNormal=False, destNodes=[], interpMethod='linear'):
+    def createSweptMesh(self, sweepMethod, sweepElements, sweepDistance=1.0, point=None, axis=None, followNormal=False, destNodes=None, interpMethod='linear'):
         ## sweepMethod = inDirection, toPoint, fromPoint, toDestNodes, revolve
         """Object data modified: self.quadElements, self.nodes, self.quadElements
         Parameters
@@ -287,7 +287,7 @@ class Mesh3D():
         meshOut['elements'] = allEls
         return meshOut
     
-    def createUnstructuredMesh(self,globProjWt=0.75):
+    def createUnstructuredMesh(self,globProjWt=0.75,maxNumEls=None):
         inp = dict()
         nodes = list()
         for nd in self.nodes:
@@ -300,6 +300,9 @@ class Mesh3D():
         inp['faces'] = faces
         if(globProjWt != 0.75):
             inp['globProjWt'] = globProjWt
+            
+        if(maxNumEls != None):
+            inp['maxNumEls'] = maxNumEls
             
         fileStr = yaml.dump(inp,sort_keys=False)
         

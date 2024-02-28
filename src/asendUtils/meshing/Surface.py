@@ -4,17 +4,21 @@ from asendUtils.meshing.ShellRegion import *
 
 class Surface():
 
-    def __init__(self,regionList=[],regionNames=[],meshList=[],meshNames=[]):
+    def __init__(self,regionList=None,regionNames=None,meshList=None,meshNames=None):
         self.shellRegions = list()
-        self.shellRegions.extend(regionList)
+        if(regionList != None):
+            self.shellRegions.extend(regionList)
         self.regionNames = list()
-        self.regionNames.extend(regionNames)
+        if(regionNames != None):
+            self.regionNames.extend(regionNames)
         self.meshes = list()
-        self.meshes.extend(meshList) 
+        if(meshList != None):
+            self.meshes.extend(meshList)
         self.meshNames = list()
-        self.meshNames.extend(meshNames)
+        if(meshNames != None):
+            self.meshNames.extend(meshNames)
         
-    def addShellRegion(self,regType,keyPts,numEls,name=None,natSpaceCrds=[],elType='quad',meshMethod='free'):
+    def addShellRegion(self,regType,keyPts,numEls,name=None,natSpaceCrds=None,elType='quad',meshMethod='free'):
         self.shellRegions.append(ShellRegion(regType,keyPts,numEls,natSpaceCrds,elType,meshMethod))
         if(name == None):
             numReg = len(self.shellRegions)

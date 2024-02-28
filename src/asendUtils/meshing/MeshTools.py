@@ -10,6 +10,53 @@ def meshFromScratch(nodes,elements):
     meshData['elements'] = np.array(elements)
     return meshData
 
+def rotateVector(vec,axis,angle):
+    if(angle < 0.0000000001):
+        return vec.copy()
+    else:
+        mag = np.linalg.norm(axis)
+        unitAxis = (1.0/axis)*axis
+        alp1 = np.zeros((3,3),dtype=float)
+        alp1[0] = unitAxis
+        i1 = 0
+        if(abs(unitAxis[1]) < abs(unitAxis[0])):
+            i1 = 1
+        if(abs(unitAxis[2]) < abs(unitAxis[i1])):
+            i1 = 2
+        alp1[1,i1] = np.sqrt(1.0 - alp1[0,i1]*alp1[0,i1])
+        for i2 in range(0,3):
+            if(i2 != i1):
+                alp1[1,i2] = -alp1[0,i1]*alp1[0,i2]/alp1[1,i1]
+        alp1[2] = crossProd(alp1[0], alp1[1])
+        theta = angle*np.pi/180.0
+        cs = np.cos(theta)
+        sn = np.sin(theta)
+        alp2 = np.array([[1.0,0.0,0.0],
+                         [0.0,cs,-sn],
+                         [0.0,sn,cs]])
+        rV = np.matmul(alp1,vec)
+        rV = np.matmul(alp2,rV)
+        rV = np.matmul(rV,alp1)
+        return rV
+
+def translateMesh(meshData,tVec):
+    nLen = len(meshData['nodes'])
+    newNds = np.zeros((nLen,3),dtype=float)
+    for i, nd in enumerate(meshData['nodes']):
+        newNds[i] = nd + tVec
+    meshData['nodes'] = newNds
+    return meshData
+
+def rotateMesh(meshData,pt,axis,angle):
+    nLen = len(meshData['nodes'])
+    newNds = np.zeros((nLen,3),dtype=float)
+    for i, nd in enumerate(meshData['nodes']):
+        tCrd = nd - pt
+        rCrd = rotateVector(tCrd,axis,angle)
+        newNds[i] = pt + rCrd
+    meshData['nodes'] = newNds
+    return meshData
+
 def getDirectionCosines(xDir,xyDir):
     mag = np.linalg.norm(xDir)
     a1 = (1.0/mag)*xDir
@@ -124,7 +171,9 @@ def mergeDuplicateNodes(meshData):
     totEls = len(allEls)
     elDim = len(allEls[0])
 
-    nodeGL = getMeshSpatialList(allNds)
+    avgSp = getAverageNodeSpacing(meshData['nodes'], meshData['elements'])
+    sp = 2*avgSp
+    nodeGL = getMeshSpatialList(allNds,sp,sp,sp)
     glDim = nodeGL.getDim()
     mag = np.linalg.norm(glDim)
     nto1_3 = np.power(len(allNds),0.3333333333)
@@ -166,7 +215,85 @@ def mergeDuplicateNodes(meshData):
     meshData['nodes'] = nodesFinal
     meshData['elements'] = allEls
     
+    try:
+        newSets = list()
+        for ns in meshData['sets']['node']:
+            newSet = dict()
+            newSet['name'] = ns['name']
+            newLabs = set()
+            for nd in ns['labels']:
+                if(ndElem[nd] == -1):
+                    newLabs.add(ndNewInd[nd])
+                else:
+                    newLabs.add(ndNewInd[ndElim[nd]])
+            newSet['labels'] = list(newLabs)
+            newSets.append(newSet)
+        meshData['sets']['node'] = newSets
+    except:
+        pass
+    
     return meshData
+
+def mergeMeshes(mData1,mData2):
+    mergedData = dict()
+    nds1 = mData1['nodes']
+    nLen1 = len(nds1)
+    nds2 = mData2['nodes']
+    nLen2 = len(nds2)
+    totNds = nLen1 + nLen2
+    mrgNds = np.zeros((totNds,3),dtype=float)
+    mrgNds[0:nLen1] = nds1
+    mrgNds[nLen1:totNds] = nds2
+    els1 = mData1['elements']
+    eLen1 = len(els1)
+    els2 = mData2['elements']
+    eLen2 = len(els2)
+    totEls = eLen1 + eLen2
+    eCols = len(els1[0])
+    mrgEls = -1*np.ones((totEls,eCols),dtype=int)
+    mrgEls[0:eLen1] = els1
+    for i, el in enumerate(els2,start=eLen1):
+        addVec = np.zeros(eCols,dtype=int)
+        for j, nd in enumerate(el):
+            if(nd > -1):
+                addVec[j] = nLen1
+        mrgEls[i] = el + addVec
+    mergedData['nodes'] = mrgNds
+    mergedData['elements'] = mrgEls
+    mergedData['sets'] = dict()
+    mergedData['sets']['node'] = list()
+    mergedData['sets']['element'] = list()
+    try:
+        mergedData['sets']['node'].extend(mData1['sets']['node'])
+    except:
+        pass
+    try:
+        mergedData['sets']['element'].extend(mData1['sets']['element'])
+    except:
+        pass
+    try:
+        for ns in mData2['sets']['node']:
+            newSet = dict()
+            newSet['name'] = ns['name']
+            labs = list()
+            for nd in ns['labels']:
+                labs.append(nd+nLen1)
+            newSet['labels'] = labs
+            mergedData['sets']['node'].append(newSet)
+    except:
+        pass
+    try:
+        for es in mData2['sets']['element']:
+            newSet = dict()
+            newSet['name'] = es['name']
+            labs = list()
+            for el in es['labels']:
+                labs.append(el+eLen1)
+            newSet['labels'] = labs
+            mergedData['sets']['element'].append(newSet)
+    except:
+        pass
+    return mergeDuplicateNodes(mergedData)
     
 def splitToTri(meshData):
     newEList = list()
@@ -295,13 +422,42 @@ def getNodeSetInRadius(meshData,pt,rad,setName):
     newSet['name'] = setName
     labs = list()
     ptAr = np.array(pt)
-    i = 0
-    for nd in meshData['nodes']:
-        vec = nd - pt
+    for i, nd in enumerate(meshData['nodes']):
+        vec = nd - ptAr
         dist = np.linalg.norm(vec)
         if(dist < rad):
             labs.append(i)
-        i = i + 1
+    newSet['labels'] = labs
+    return addNodeSet(meshData,newSet)
+
+def getNodeSetNearLine(meshData,pt,dirVec,rad,setName):
+    mag = np.linalg.norm(dirVec)
+    unitDir = (1.0/mag)*dirVec
+    ptAr = np.array(pt)
+    newSet = dict()
+    newSet['name'] = setName
+    labs = list()
+    for i, nd in enumerate(meshData['nodes']):
+        ptond = nd - ptAr
+        dp = np.dot(ptond,unitDir)
+        normVec = ptond - dp*unitDir
+        dist = np.linalg.norm(normVec)
+        if(dist < rad):
+            labs.append(i)
+    newSet['labels'] = labs
+    return addNodeSet(meshData,newSet)
+
+def getNodeSetNearPlane(meshData,pt,normDir,dist,setName):
+    mag = np.linalg.norm(normDir)
+    unitNorm = (1.0/mag)*normDir
+    newSet = dict()
+    newSet['name'] = setName
+    labs = list()
+    for i, nd in enumerate(meshData['nodes']):
+        ptond = nd - pt
+        dp = np.dot(ptond,unitNorm)
+        if(abs(dp) < dist):
+            labs.append(i)
     newSet['labels'] = labs
     return addNodeSet(meshData,newSet)
 
@@ -321,17 +477,15 @@ def getNodeSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
     newSet = dict()
     newSet['name'] = setName
     labs = list()
-    i = 0
-    for nd in meshData['nodes']:
+    for i, nd in enumerate(meshData['nodes']):
         if(nd[0] >= xRng[0] and nd[0] <= xRng[1]):
             if(nd[1] >= yRng[0] and nd[1] <= yRng[1]):
                 if(nd[2] >= zRng[0] and nd[2] <= zRng[1]):
                     labs.append(i)
-        i = i + 1
     newSet['labels'] = labs
     return addNodeSet(meshData,newSet)
 
-def getElementSetInRadius(meshData,pt,rad,setName,optn='allNodes'):
+def getElementSetInRadius(meshData,pt,rad,setName):
     ## optn='allNodes': elements whose nodes are all in range
     ## optn='anyNode': elements with any node in range
     ## optn='centroid': elements with centroid in range
@@ -340,41 +494,108 @@ def getElementSetInRadius(meshData,pt,rad,setName,optn='allNodes'):
     newSet = dict()
     newSet['name'] = setName
     labs = list()
-    if(optn == 'allNodes'):
-        for i, eRow in enumerate(meshData['elements']):
-            inRng = True
-            for nd in eRow:
-                if(nd != -1):
-                    distVec = allNds[nd] - ptAr
-                    dist = np.linalg.norm(distVec)
-                    if(dist > rad):
-                        inRng = False
-            if(inRng):
-                labs.append(i)
-    elif(optn == 'anyNode'):
-        for i, eRow in enumerate(meshData['elements']):
-            inRng = False
-            for nd in eRow:
-                if(nd != -1):
-                    distVec = allNds[nd] - ptAr
-                    dist = np.linalg.norm(distVec)
-                    if(dist < rad):
-                        inRng = True
-            if(inRng):
-                labs.append(i)
+    # if(optn == 'allNodes'):
+    #     for i, eRow in enumerate(meshData['elements']):
+    #         inRng = True
+    #         for nd in eRow:
+    #             if(nd != -1):
+    #                 distVec = allNds[nd] - ptAr
+    #                 dist = np.linalg.norm(distVec)
+    #                 if(dist > rad):
+    #                     inRng = False
+    #         if(inRng):
+    #             labs.append(i)
+    # elif(optn == 'anyNode'):
+    #     for i, eRow in enumerate(meshData['elements']):
+    #         inRng = False
+    #         for nd in eRow:
+    #             if(nd != -1):
+    #                 distVec = allNds[nd] - ptAr
+    #                 dist = np.linalg.norm(distVec)
+    #                 if(dist < rad):
+    #                     inRng = True
+    #         if(inRng):
+    #             labs.append(i)
+    # else:
+    for i, eRow in enumerate(meshData['elements']):
+        # cent = np.zeros(3,dtype=float)
+        # ct = 0
+        # for nd in eRow:
+        #     if(nd != -1):
+        #         cent = cent + allNds[nd]
+        #         ct = ct + 1
+        # cent = (1.0/ct)*cent
+        eCrd = getElCoord(eRow,allNds)
+        cent = getElCentroid(eCrd)
+        distVec = cent - ptAr
+        dist = np.linalg.norm(distVec)
+        if(dist < rad):
+            labs.append(i)
+    newSet['labels'] = labs
+    return addElementSet(meshData,newSet)
+
+def getElementSetNearLine(meshData,pt,dirVec,rad,setName):
+    nodes = meshData['nodes']
+    mag = np.linalg.norm(dirVec)
+    unitDir = (1.0/mag)*dirVec
+    ptAr = np.array(pt)
+    newSet = dict()
+    newSet['name'] = setName
+    labs = list()
+    for i, el in enumerate(meshData['elements']):
+        eCrd = getElCoord(el,nodes)
+        cent = getElCent(eCrd)
+        ptoel = cent - ptAr
+        dp = np.dot(ptoel,unitDir)
+        normVec = ptoel - dp*unitDir
+        dist = np.linalg.norm(normVec)
+        if(dist < rad):
+            labs.append(i)
+    newSet['labels'] = labs
+    return addElementSet(meshData,newSet)
+
+def getElementSetNearPlane(meshData,pt,normDir,dist,setName):
+    nodes = meshData['nodes']
+    mag = np.linalg.norm(normDir)
+    unitNorm = (1.0/mag)*normDir
+    ptAr = np.array(pt)
+    newSet = dict()
+    newSet['name'] = setName
+    labs = list()
+    for i, el in enumerate(meshData['elements']):
+        eCrd = getElCoord(el,nodes)
+        cent = getElCentroid(eCrd)
+        ptoel = cent - pt
+        dp = np.dot(ptoel,unitNorm)
+        if(abs(dp) < dist):
+            labs.append(i)
+    newSet['labels'] = labs
+    return addElementSet(meshData,newSet)
+
+def getElementSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
+    if(xRange == None):
+        xRng = [-1.0e+100,1.0e+100]
     else:
-        for i, eRow in enumerate(meshData['elements']):
-            cent = np.zeros(3,dtype=float)
-            ct = 0
-            for nd in eRow:
-                if(nd != -1):
-                    cent = cent + allNds[nd]
-                    ct = ct + 1
-            cent = (1.0/ct)*cent
-            distVec = cent - ptAr
-            dist = np.linalg.norm(distVec)
-            if(dist < rad):
-                labs.append(i)
+        xRng = xRange
+    if(yRange == None):
+        yRng = [-1.0e+100,1.0e+100]
+    else:
+        yRng = yRange
+    if(zRange == None):
+        zRng = [-1.0e+100,1.0e+100]
+    else:
+        zRng = zRange
+    nodes = meshData['nodes']
+    newSet = dict()
+    newSet['name'] = setName
+    labs = list()
+    for i, el in enumerate(meshData['elements']):
+        eCrd = getElCoord(el,nodes)
+        cent = getElCentroid(eCrd)
+        if(cent[0] >= xRng[0] and cent[0] <= xRng[1]):
+            if(cent[1] >= yRng[0] and cent[1] <= yRng[1]):
+                if(cent[2] >= zRng[0] and cent[2] <= zRng[1]):
+                    labs.append(i)
     newSet['labels'] = labs
     return addElementSet(meshData,newSet)
 
@@ -440,7 +661,45 @@ def getMeshInterfaceNodes(mesh1Data,mesh2Data,nodeSet1,nodeSet2,newSet1Name,newS
     mesh2Data['sets']['node'].append(newSet)
     return [mesh1Data,mesh2Data]
 
-def getMatchingNodeSets(meshData):
+def getMatchingNodeSet(meshData,elSet,ndSetName):
+    elements = meshData['elements']
+    elSets = meshData['sets']['element']
+    for es in elSets:
+        if(es['name'] == elSet):
+            ns = set()
+            for ei in es['labels']:
+                for elnd in elements[ei]:
+                    if(elnd > -1):
+                        ns.add(elnd)
+            newSet = dict()
+            newSet['name'] = ndSetName
+            newSet['labels'] = list(ns)
+            return addNodeSet(meshData,newSet)
+    return meshData
+
+def getMatchingElementSet(meshData,nodeSet,elSetName,optn='allNodes'):
+    ## optn = 'allNodes' or 'anyNode'
+    for ns in meshData['sets']['nodeSets']:
+        if(ns['name'] == nodeSet):
+            es = list()
+            nsLabs = set(ns['labels'])
+            for eli, el in enumerate(meshData['elements']):
+                hit = 0
+                ct = 0
+                for elNd in el:
+                    if(elNd != -1):
+                        if(elNd in nsLabs):
+                            hit = hit + 1
+                        ct = ct
+                if((optn == 'allNodes' and hit == ct) or (optn == 'anyNode' and hit > 0)):
+                    es.append(eli)
+            newSet = dict()
+            newSet['name'] = elSetName
+            newSet['labels'] = es
+            return addElementSet(meshData,newSet)
+    return meshData
+
+def getAllMatchingNodeSets(meshData): ## Name changed from getMatchingNodeSets
     elements = meshData['elements']
     elSets = meshData['sets']['element']
     nodeSets = list()
@@ -500,6 +759,94 @@ def getExtrudedSets(meshData,numLayers):
         pass        
         
     return extSets
+
+def getNodeSetUnion(meshData,set1,set2,newSetName):
+    union = set()
+    for ns in meshData['sets']['node']:
+        if(ns['name'] == set1 or ns['name'] == set2):
+            for nd in ns['labels']:
+                union.add(nd)
+    newSet = dict()
+    newSet['name'] = newSetName
+    newSet['labels'] = list(union)
+    meshData['sets']['node'].append(newSet)
+    return meshData
+
+def getNodeSetIntersection(meshData,set1,set2,newSetName):
+    intsct = list()
+    for ns in meshData['sets']['node']:
+        if(ns['name'] == set1):
+            s1 = ns
+        if(ns['name'] == set2):
+            s2 = set(ns['labels'])
+    for nd in s1['labels']:
+        if(nd in s2):
+            intsct.append(nd)
+    newSet = dict()
+    newSet['name'] = newSetName
+    newSet['labels'] = intsct
+    meshData['sets']['node'].append(newSet)
+    return meshData
+
+def subtractNodeSet(meshData,set1,set2,newSetName):
+    labs = list()
+    for ns in meshData['sets']['node']:
+        if(ns['name'] == set1):
+            s1 = ns
+        if(ns['name'] == set2):
+            s2 = set(ns['labels'])
+    for nd in s1['labels']:
+        if(nd not in s2):
+            labs.append(nd)
+    newSet = dict()
+    newSet['name'] = newSetName
+    newSet['labels'] = labs
+    meshData['sets']['node'].append(newSet)
+    return meshData
+
+def getElementSetUnion(meshData,set1,set2,newSetName):
+    union = set()
+    for ns in meshData['sets']['element']:
+        if(ns['name'] == set1 or ns['name'] == set2):
+            for nd in ns['labels']:
+                union.add(nd)
+    newSet = dict()
+    newSet['name'] = newSetName
+    newSet['labels'] = list(union)
+    meshData['sets']['element'].append(newSet)
+    return meshData
+
+def getElementSetIntersection(meshData,set1,set2,newSetName):
+    intsct = list()
+    for ns in meshData['sets']['element']:
+        if(ns['name'] == set1):
+            s1 = ns
+        if(ns['name'] == set2):
+            s2 = set(ns['labels'])
+    for nd in s1['labels']:
+        if(nd in s2):
+            intsct.append(nd)
+    newSet = dict()
+    newSet['name'] = newSetName
+    newSet['labels'] = intsct
+    meshData['sets']['element'].append(newSet)
+    return meshData
+
+def subtractElementSet(meshData,set1,set2,newSetName):
+    labs = list()
+    for ns in meshData['sets']['element']:
+        if(ns['name'] == set1):
+            s1 = ns
+        if(ns['name'] == set2):
+            s2 = set(ns['labels'])
+    for nd in s1['labels']:
+        if(nd not in s2):
+            labs.append(nd)
+    newSet = dict()
+    newSet['name'] = newSetName
+    newSet['labels'] = labs
+    meshData['sets']['element'].append(newSet)
+    return meshData
     
 def make3D(meshData):
     numNodes = len(meshData['nodes'])
@@ -703,183 +1050,203 @@ def tie2SetsConstraints(mesh,tiedSetName,tgtSetName,maxDist):
             constraints.append(newConst)
     
     return constraints
+
+def getNodeFieldFunction(meshData,funType,params,nodeSet=None):
+    nodes = meshData['nodes']
+    if(nodeSet == None):
+        ns = dict()
+        ns['name'] = 'all'
+        nLen = len(nodes)
+        ns['labels'] = list(range(0,nLen))
+    else:
+        ns = dict()
+        ns['labels'] = list()
+        for ndset in meshData['sets']['node']:
+            if(ndset['name'] == nodeSet):
+                ns = ndset
+    if(funType == 'radialShift'):
+        pt = np.array(params['pt'])
+        maxR = params['radius']
+    elif(funType == 'boxShift'):
+        xRange = params['xRange']
+        yRange = params['yRange']
+        zRange = params['zRange']
+        xMid = 0.5*(xRange[1] + xRange[0])
+        xhL = 0.5*(xRange[1] - xRange[0])
+        yMid = 0.5*(yRange[1] + yRange[0])
+        yhL = 0.5*(yRange[1] - yRange[0])
+        zMid = 0.5*(zRange[1] + zRange[0])
+        zhL = 0.5*(zRange[1] - zRange[0])
+    elif(funType == 'planeShift'):
+        pt = np.array(params['pt'])
+        vec = np.array(params['vec'])
+        mag = np.linalg.norm(vec)
+        vec = (1.0/mag)*vec
+        maxR = params['radius']
+    elif(funType == 'pointPolar'):
+        pt = np.array(params['pt'])
+        vec = np.array(params['vec'])
+        mag = np.linalg.norm(vec)
+        vec = (1.0/mag)*vec
+        maxR = params['radius']
+        coef = 3.4938562148434
+    elif(funType == 'planePolar'):
+        pt = np.array(params['pt'])
+        vec = np.array(params['vec'])
+        mag = np.linalg.norm(vec)
+        vec = (1.0/mag)*vec
+        maxR = params['radius']
+        coef = 3.4938562148434
+    fVals = list()
+    for ndi in ns['labels']:
+        nCrd = nodes[ndi]
+        if(funType == 'radialShift'):
+            dVec = nCrd - pt
+            rad = np.linalg.norm(dVec)
+            x = rad/maxR
+            if(abs(x) <= 1.0):
+                f = (x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'boxShift'):
+            x = (nCrd[0] - xMid)/xhL
+            y = (nCrd[1] - yMid)/yhL
+            z = (nCrd[2] - zMid)/zhL
+            if(abs(x) <= 1.0 and abs(y) <= 1.0 and abs(z) <= 1.0):
+                fx = (x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fy = (y+1.0)*(y+1.0)*(1.0-y)*(1.0-y)
+                fz = (z+1.0)*(z+1.0)*(1.0-z)*(1.0-z)
+                f = fx*fy*fz
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'planeShift'):
+            dVec = nCrd - pt
+            x = np.dot(dVec,vec)/maxR
+            if(abs(x) <= 1.0):
+                f = (x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'pointPolar'):
+            dVec = nCrd - pt
+            rad = np.linalg.norm(dVec)
+            dp = np.dot(dVec,vec)
+            x = rad/maxR
+            if(abs(x) <= 1.0):
+                f = (dp/rad)*coef*x*(x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'planePolar'):
+            dVec = nCrd - pt
+            dp = np.dot(dVec,vec)
+            x = dp/maxR
+            if(abs(x) <= 1.0):
+                f = coef*x*(x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+    return fVals
  
-def plotShellMesh(meshData):
-    xLst = meshData['nodes'][:,0]
-    yLst = meshData['nodes'][:,1]
-    try:
-        zLst = meshData['nodes'][:,2]
-    except:
-        zLst = np.zeros(len(xLst))
-    value = list()
-    v1 = list()
-    v2 = list()
-    v3 = list()
-    i = 0
-    for el in meshData['elements']:
-        v1.append(el[0])
-        v2.append(el[1])
-        v3.append(el[2])
-        value.append(np.sin(i))
-        if(el[3] != -1):
-            v1.append(el[0])
-            v2.append(el[2])
-            v3.append(el[3])
-            value.append(np.sin(i))
-        i = i + 1
-    fig = go.Figure(data=[
-        go.Mesh3d(
-            x=xLst,
-            y=yLst,
-            z=zLst,
-            colorbar_title = '',
-            colorscale=[[0.0, 'white'],
-                        [0.5, 'gray'],
-                        [1.0, 'black']],
-            intensity=value,
-            intensitymode='cell',
-            i=v1,
-            j=v2,
-            k=v3,
-            name='',
-            showscale=True
-        )
-    ])
-
-    fig.show()
-    
-def plotSolidMesh(meshData):
-    xLst = meshData['nodes'][:,0]
-    yLst = meshData['nodes'][:,1]
-    zLst = meshData['nodes'][:,2]
-    value = list()
-    v1 = list()
-    v2 = list()
-    v3 = list()
-    i = 0
-    for el in meshData['elements']:
-        si = np.sin(i)
-        if(el[4] == -1):
-            v1.append(el[0])
-            v2.append(el[1])
-            v3.append(el[2])
-            value.append(si)
-            v1.append(el[0])
-            v2.append(el[1])
-            v3.append(el[3])
-            value.append(si)
-            v1.append(el[0])
-            v2.append(el[2])
-            v3.append(el[3])
-            value.append(si)
-            v1.append(el[1])
-            v2.append(el[2])
-            v3.append(el[3])
-            value.append(si)
-        elif(el[6] == -1):
-            v1.append(el[0])
-            v2.append(el[1])
-            v3.append(el[2])
-            value.append(si)
-            v1.append(el[3])
-            v2.append(el[4])
-            v3.append(el[5])
-            value.append(si)
-            v1.append(el[0])
-            v2.append(el[1])
-            v3.append(el[3])
-            value.append(si)
-            v1.append(el[1])
-            v2.append(el[3])
-            v3.append(el[4])
-            value.append(si)
-            
-            v1.append(el[0])
-            v2.append(el[2])
-            v3.append(el[3])
-            value.append(si)
-            v1.append(el[2])
-            v2.append(el[3])
-            v3.append(el[5])
-            value.append(si)
-            v1.append(el[1])
-            v2.append(el[2])
-            v3.append(el[4])
-            value.append(si)
-            v1.append(el[2])
-            v2.append(el[4])
-            v3.append(el[5])
-            value.append(si)
-        else:
-            v1.append(el[0])
-            v2.append(el[3])
-            v3.append(el[4])
-            value.append(si)
-            v1.append(el[3])
-            v2.append(el[4])
-            v3.append(el[7])
-            value.append(si)
-            v1.append(el[1])
-            v2.append(el[2])
-            v3.append(el[5])
-            value.append(si)
-            v1.append(el[2])
-            v2.append(el[5])
-            v3.append(el[6])
-            value.append(si)
-            
-            v1.append(el[0])
-            v2.append(el[1])
-            v3.append(el[4])
-            value.append(si)
-            v1.append(el[1])
-            v2.append(el[4])
-            v3.append(el[5])
-            value.append(si)
-            v1.append(el[2])
-            v2.append(el[3])
-            v3.append(el[6])
-            value.append(si)
-            v1.append(el[3])
-            v2.append(el[6])
-            v3.append(el[7])
-            value.append(si)
-            
-            v1.append(el[0])
-            v2.append(el[1])
-            v3.append(el[2])
-            value.append(si)
-            v1.append(el[0])
-            v2.append(el[2])
-            v3.append(el[3])
-            value.append(si)
-            v1.append(el[4])
-            v2.append(el[5])
-            v3.append(el[6])
-            value.append(si)
-            v1.append(el[4])
-            v2.append(el[6])
-            v3.append(el[7])
-            value.append(si)
-        i = i + 1
-    fig = go.Figure(data=[
-        go.Mesh3d(
-            x=xLst,
-            y=yLst,
-            z=zLst,
-            colorbar_title = '',
-            colorscale=[[0.0, 'white'],
-                        [0.5, 'gray'],
-                        [1.0, 'black']],
-            intensity=value,
-            intensitymode='cell',
-            i=v1,
-            j=v2,
-            k=v3,
-            name='',
-            showscale=True
-        )
-    ])
-
-    fig.show()
-## -Create node/element set within a spatial range or radius
+def getElementFieldFunction(meshData,funType,params,elementSet=None):
+    nodes = meshData['nodes']
+    elements = meshData['elements']
+    if(elementSet == None):
+        es = dict()
+        es['name'] = 'all'
+        eLen = len(elements)
+        es['labels'] = list(range(0,eLen))
+    else:
+        es = dict()
+        es['labels'] = list()
+        for elset in meshData['sets']['element']:
+            if(elset['name'] == elementSet):
+                es = elset
+    if(funType == 'radialShift'):
+        pt = np.array(params['pt'])
+        maxR = params['radius']
+    elif(funType == 'boxShift'):
+        xRange = params['xRange']
+        yRange = params['yRange']
+        zRange = params['zRange']
+        xMid = 0.5*(xRange[1] + xRange[0])
+        xhL = 0.5*(xRange[1] - xRange[0])
+        yMid = 0.5*(yRange[1] + yRange[0])
+        yhL = 0.5*(yRange[1] - yRange[0])
+        zMid = 0.5*(zRange[1] + zRange[0])
+        zhL = 0.5*(zRange[1] - zRange[0])
+    elif(funType == 'planeShift'):
+        pt = np.array(params['pt'])
+        vec = np.array(params['vec'])
+        mag = np.linalg.norm(vec)
+        vec = (1.0/mag)*vec
+        maxR = params['radius']
+    elif(funType == 'pointPolar'):
+        pt = np.array(params['pt'])
+        vec = np.array(params['vec'])
+        mag = np.linalg.norm(vec)
+        vec = (1.0/mag)*vec
+        maxR = params['radius']
+        coef = 3.4938562148434
+    elif(funType == 'planePolar'):
+        pt = np.array(params['pt'])
+        vec = np.array(params['vec'])
+        mag = np.linalg.norm(vec)
+        vec = (1.0/mag)*vec
+        maxR = params['radius']
+        coef = 3.4938562148434
+    fVals = list()
+    for eli in es['labels']:
+        eCrd = getElCoord(elements[eli],nodes)
+        eCent = getElCentroid(eCrd)
+        if(funType == 'radialShift'):
+            dVec = eCent - pt
+            rad = np.linalg.norm(dVec)
+            x = rad/maxR
+            if(abs(x) <= 1.0):
+                f = (x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'boxShift'):
+            x = (eCent[0] - xMid)/xhL
+            y = (eCent[1] - yMid)/yhL
+            z = (eCent[2] - zMid)/zhL
+            if(abs(x) <= 1.0 and abs(y) <= 1.0 and abs(z) <= 1.0):
+                fx = (x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fy = (y+1.0)*(y+1.0)*(1.0-y)*(1.0-y)
+                fz = (z+1.0)*(z+1.0)*(1.0-z)*(1.0-z)
+                f = fx*fy*fz
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'planeShift'):
+            dVec = eCent - pt
+            x = np.dot(dVec,vec)/maxR
+            if(abs(x) <= 1.0):
+                f = (x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'pointPolar'):
+            dVec = eCent - pt
+            rad = np.linalg.norm(dVec)
+            dp = np.dot(dVec,vec)
+            x = rad/maxR
+            if(abs(x) <= 1.0):
+                f = (dp/rad)*coef*x*(x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+        elif(funType == 'planePolar'):
+            dVec = eCent - pt
+            dp = np.dot(dVec,vec)
+            x = dp/maxR
+            if(abs(x) <= 1.0):
+                f = coef*x*(x+1.0)*(x+1.0)*(1.0-x)*(1.0-x)
+                fVals.append(f)
+            else:
+                fVals.append(0.0)
+    return fVals

@@ -23,7 +23,15 @@ class SpatialGridList2D():
     
     def addEntry(self, val, coord):
         xRow = int(np.floor((coord[0] - self.xMin)/self.xGSz))
+        if(xRow >= self.xRows):
+            xRow = self.xRows - 1
+        if(xRow < 0):
+            xRow = 0
         yRow = int(np.floor((coord[1] - self.yMin)/self.yGSz))
+        if(yRow >= self.yRows):
+            yRow = self.yRows - 1
+        if(yRow < 0):
+            yRow = 0
         self.fullList[xRow][yRow].append(val)
         
     def findInXYMargin(self,point,Xmargin,Ymargin):
