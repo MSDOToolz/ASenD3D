@@ -847,6 +847,8 @@ void Model::readInitialState(string fileName) {
 	int i2;
 	int i3;
 	int ndi;
+	int seti;
+	IntListEnt* thisNd;
 	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
 	string dispHdings = " displacement velocity acceleration";
 	
@@ -857,29 +859,47 @@ void Model::readInitialState(string fileName) {
 			if(headings[0] == "initialState") {
 				i3 = dispHdings.find(headings[1]);
 				if(i3 > -1 && dataLen > 3) {
-					ndi = stoi(data[0]);
-					i2 = 1;
-					for (i1 = 0; i1 < 6; i1++) {
-						if(i2 < dataLen) {
-							doubInp[i1] = stod(data[i2]);
-						} else {
-							doubInp[i1] = 0.0;
+					seti = nsMap.at(data[0]);
+					thisNd = nsArray[seti]->getFirstEntry();
+					while (thisNd) {
+						ndi = thisNd->value;
+						i2 = 1;
+						for (i1 = 0; i1 < 6; i1++) {
+							if (i2 < dataLen) {
+								doubInp[i1] = stod(data[i2]);
+							}
+							else {
+								doubInp[i1] = 0.0;
+							}
+							i2++;
 						}
-						i2++;
-					}
-					if(headings[1] == "displacement") {
-						nodeArray[ndi]->setInitialDisp(doubInp);
-					} else if(headings[1] == "velocity") {
-						nodeArray[ndi]->setInitialVel(doubInp);
-					} else if(headings[1] == "acceleration") {
-						nodeArray[ndi]->setInitialAcc(doubInp);
+						if (headings[1] == "displacement") {
+							nodeArray[ndi]->setInitialDisp(doubInp);
+						}
+						else if (headings[1] == "velocity") {
+							nodeArray[ndi]->setInitialVel(doubInp);
+						}
+						else if (headings[1] == "acceleration") {
+							nodeArray[ndi]->setInitialAcc(doubInp);
+						}
+						thisNd = thisNd->next;
 					}
 				} else if(headings[1] == "temperature" && dataLen == 2) {
-					ndi = stoi(data[0]);
-					nodeArray[ndi]->setInitialTemp(stod(data[1]));
+					seti = nsMap.at(data[0]);
+					thisNd = nsArray[seti]->getFirstEntry();
+					while (thisNd) {
+						ndi = thisNd->value;
+						nodeArray[ndi]->setInitialTemp(stod(data[1]));
+						thisNd = thisNd->next;
+					}
 				} else if(headings[1] == "tdot" && dataLen == 2) {
-					ndi = stoi(data[0]);
-					nodeArray[ndi]->setInitialTdot(stod(data[1]));
+					seti = nsMap.at(data[0]);
+					thisNd = nsArray[seti]->getFirstEntry();
+					while (thisNd) {
+						ndi = thisNd->value;
+						nodeArray[ndi]->setInitialTdot(stod(data[1]));
+						thisNd = thisNd->next;
+					}
 				}
 			}
 		}
