@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar  1 16:28:25 2024
+Created on Fri Mar  8 19:15:32 2024
 
 @author: evans
 """
@@ -38,10 +38,6 @@ meshData = getNodeSetInRadius(meshData,[0.0,0.0,0.0],1.01,'allDiskNodes')
 meshData = getNodeSetInRadius(meshData,[0.0,0.0,0.0],0.99,'innerNodes')
 meshData = subtractNodeSet(meshData,'allDiskNodes','innerNodes','boundaryNodes')
 
-meshData = addFreeNodes(meshData,[[0.0,0.0,1.0]],'projectileNode')
-meshData = addMassElements(meshData,'projectileNode','projectileElement')
-meshData = addForceElements(meshData,'projectileNode','impactNodes','forceElements')
-
 model = Model()
 model.addMeshData(meshData,'shell')
 
@@ -49,17 +45,6 @@ diskSec = Section('shell')
 diskSec.setElementSet('allDiskEls')
 diskSec.addLayer('nylon',0.001)
 model.addSection(diskSec)
-
-forceSec = Section('forceField')
-forceSec.setElementSet('forceElements')
-potCoef = -1.0*getPotFrcCoef(0.01,10.0,3,0.1)
-forceSec.setPotentialField(potCoef,3)
-model.addSection(forceSec)
-
-massSec = Section('mass')
-massSec.setElementSet('projectileElement')
-massSec.setMassPerElement(0.01)
-model.addSection(massSec)
 
 mat = Material('nylon')
 mat.setDensity(1140.0)

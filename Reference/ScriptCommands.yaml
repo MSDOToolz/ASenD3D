@@ -16,6 +16,9 @@ jobCommands:
     fileName:
   - command: readNodeResults X
     fileName:
+    
+  - command: setSolveOptions
+    (all options for solve)
 
   - command: solve X
     elastic: yes

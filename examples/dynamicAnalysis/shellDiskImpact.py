@@ -9,6 +9,7 @@ import sys
 from asendUtils.model.Model import *
 from asendUtils.syst.pathTools import *
 from asendUtils.job.ASenDJob import *
+from asendUtils.ResultsProcessor import *
 
 if(not os.path.exists('shellDiskImpact')):
     os.mkdir('shellDiskImpact')
@@ -17,7 +18,7 @@ if(not os.path.exists('shellDiskImpact/results')):
     os.mkdir('shellDiskImpact/results')
     
 rtDir = getEnvPath('rootpath')
-modFile = rtDir + '/examples/common/shellDisk.yaml'
+modFile = rtDir + '/examples/common/shellDiskProjectile.yaml'
 modScrDir = rtDir + '/examples/modelGeneration'
 if(not os.path.exists(modFile)):
     sys.path.append(modScrDir)
@@ -38,9 +39,15 @@ job = ASenDJob()
 job.readModelInput(modFile)
 job.readConstraints(constFile)
 job.readInitialState(initFile)
-job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.2,saveSolnHist=True)
+job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.2,saveSolnHist=True,solnHistDir='shellDiskImpact/results/')
 resFile = 'shellDiskImpact/results/nodeResults.yaml'
-job.writeNodeResults(resFile,['displacement'])
+ts = list(range(0,40))
+job.writeNodeResults(resFile,['displacement'],timeSteps=ts)
 jobFile = 'shellDiskImpact/job.yaml'
 job.writeJobInput(jobFile)
-#job.executeJob()
+job.executeJob()
+
+rp = ResultsProcessor(modFile)
+ndResFile = 'shellDiskImpact/results/nodeResults.yaml'
+rp.animateNodeResults(ndResFile,'displacement',ts,component=3,elementSet='allDiskEls',deformed=True,defScaleFact=50.0)
+rp.plotNodeHistory(ndResFile,'displacement',ts,'projectileNode',component=3)

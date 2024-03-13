@@ -21,6 +21,10 @@ class Material:
         elastic['G'] = str([G12,G13,G23])
         self.matData['elastic'] = elastic
         
+    def setIsotropic(self,E,nu):
+        G = E/(2.0*(1.0+nu))
+        self.setOrthotropic(E,E,E,nu,nu,nu,G,G,G)
+        
     def setThermalConductivity(self,k11,k22,k33,k12=0.0,k13=0.0,k23=0.0):
         try:
             self.matData['thermal']['conductivity'] = str([k11,k22,k33,k12,k13,k23])

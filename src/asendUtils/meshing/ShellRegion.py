@@ -12,12 +12,12 @@ class ShellRegion:
     keyPts : list
     edgeEls : list
     """
-    def __init__(self, regType, keyPoints, numEdgeEls, natSpaceCrd=[], elType='quad', meshMethod='free'): 
+    def __init__(self, regType, keyPoints, numEdgeEls, natSpaceCrd=None, elType='quad', meshMethod='free'): 
 
         self.regType = regType
         self.keyPts = np.array(keyPoints)
         self.edgeEls = numEdgeEls
-        if(len(natSpaceCrd) == 0):
+        if(natSpaceCrd == None):
             if(regType == 'quad1'):
                 self.natSpaceCrd = np.array([[-1.0,-1.0],[1.0,-1.0],[1.0,1.0],[-1.0,1.0]])
             elif(regType == 'quad2'):

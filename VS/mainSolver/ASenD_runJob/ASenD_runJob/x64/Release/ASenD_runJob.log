@@ -33,8 +33,8 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(437,6): 
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(582,6): warning C4101: 'numDof': unreferenced local variable
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(741,6): warning C4101: 'i1': unreferenced local variable
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(761,6): warning C4101: 'ideb': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1140,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1383,6): warning C4101: 'numDof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1151,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1394,6): warning C4101: 'numDof': unreferenced local variable
   ModelClass.cpp
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(218,32): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   ModelInput.cpp

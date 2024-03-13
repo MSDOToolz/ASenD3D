@@ -222,8 +222,10 @@ def plotSolidMesh(meshData):
     fig.update_layout(scene=scn)
 
     fig.show()
+    
 
-def plotMeshSolution(nodeCrd,values,faceVerts,title=''):
+def plotMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',title=''):
+    ## valMode = 'vertex' or 'cell'
     fig = go.Figure(data=[
         go.Mesh3d(
             x=nodeCrd['xLst'],
@@ -232,6 +234,7 @@ def plotMeshSolution(nodeCrd,values,faceVerts,title=''):
             colorbar_title = title,
             colorscale='turbo',
             intensity=values,
+            intensitymode=valMode,
             i=faceVerts['v1'],
             j=faceVerts['v2'],
             k=faceVerts['v3'],
@@ -254,13 +257,86 @@ def plotMeshSolution(nodeCrd,values,faceVerts,title=''):
     zMid = 0.5*(zMax+zMin)
     
     maxLen = np.max([xLen,yLen,zLen])
-    hL = 0.5*maxLen
+    hL = 0.75*maxLen
     scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
            'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
            'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
     fig.update_layout(scene=scn)
 
     fig.show()
+    return
+
+def animateMeshSolution(nodeCrd,values,faceVerts,frameDuration=1000,title=''):
+    frameList = list()
+    for ni, nC in enumerate(nodeCrd):
+        if(ni > 0):
+            frm = go.Frame(data=[go.Mesh3d(
+                x=nC['xLst'],
+                y=nC['yLst'],
+                z=nC['zLst'],
+                colorbar_title = title,
+                colorscale='turbo',
+                intensity=values[ni],
+                i=faceVerts['v1'],
+                j=faceVerts['v2'],
+                k=faceVerts['v3'],
+                name='',
+                showscale=True
+                )],
+                )
+            frameList.append(frm)
+    
+    fig = go.Figure(
+        data=[go.Mesh3d(
+            x=nodeCrd[0]['xLst'],
+            y=nodeCrd[0]['yLst'],
+            z=nodeCrd[0]['zLst'],
+            colorbar_title = title,
+            colorscale='turbo',
+            intensity=values[0],
+            i=faceVerts['v1'],
+            j=faceVerts['v2'],
+            k=faceVerts['v3'],
+            name='',
+            showscale=True
+            )],
+        layout=go.Layout(
+            updatemenus=[dict(
+                type='buttons',
+                buttons=[dict(label='Play',
+                              method='animate',
+                              args=[None])])]
+                # buttons=[dict(label='Play',
+                #               method='animate',
+                #               args=[None,{'frame': {'duration': frameDuration, 'redraw': False},
+                #                           'fromcurrent': True, 'transition': {'duration': 0}}])])]
+            ),
+        frames=frameList
+        )
+    
+    xMax = np.max(nodeCrd[0]['xLst'])
+    xMin = np.min(nodeCrd[0]['xLst'])
+    xLen = xMax - xMin
+    xMid = 0.5*(xMax+xMin)
+    yMax = np.max(nodeCrd[0]['yLst'])
+    yMin = np.min(nodeCrd[0]['yLst'])
+    yLen = yMax - yMin
+    yMid = 0.5*(yMax+yMin)
+    zMax = np.max(nodeCrd[0]['zLst'])
+    zMin = np.min(nodeCrd[0]['zLst'])
+    zLen = zMax - zMin
+    zMid = 0.5*(zMax+zMin)
+    
+    maxLen = np.max([xLen,yLen,zLen])
+    hL = 0.75*maxLen
+    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
+            'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
+            'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
+    
+    fig.update_layout(scene=scn)
+    
+    fig.show()
+    
     return
 
 def plotTimeHistory(seriesData,timePts,field='',title=''):

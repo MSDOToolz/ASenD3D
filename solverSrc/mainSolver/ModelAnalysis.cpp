@@ -922,8 +922,12 @@ void Model::solve(JobCommand *cmd) {
 			thisEl->setIntPrevDisp(zeroAr);
 			thisEl = thisEl->getNext();
 		}
+		if (!elasticLT->isAllocated() || !cmd->nonlinearGeom) {
+			cout << "building stiffness matrix" << endl;
+			buildElasticSolnLoad(tempV1, true);
+			cout << "finished building matrix" << endl;
+		}
 		if(!elasticLT->isAllocated()) {
-			buildElasticSolnLoad(tempV1,true);
 			elasticLT->allocateFromSparseMat(*elasticMat,*elasticConst,6*cmd->solverBlockDim);
 		}
 		if(!cmd->nonlinearGeom) {
@@ -931,7 +935,9 @@ void Model::solve(JobCommand *cmd) {
 				scaleElasticConst();
 			}
 			elasticLT->populateFromSparseMat(*elasticMat, *elasticConst);
+			cout << "factoring stiffness matrix" << endl;
 			elasticLT->ldlFactor();
+			cout << "finished factoring" << endl;
 		}
 	}
 	
@@ -1037,11 +1043,16 @@ void Model::eigenSolve(JobCommand* cmd) {
 	cmd->dynamic = solveCmd->dynamic;
 	solveCmd->nonlinearGeom = true;
 	solveCmd->dynamic = false;
+	cout << "building stiffness matrix" << endl;
 	buildElasticSolnLoad(tempV1, true);
+	cout << "finished building matrix" << endl;
 	if (cmd->solverMethod == "direct") {
 		elasticLT->populateFromSparseMat(*elasticMat, *elasticConst);
+		cout << "factoring stiffness matrix" << endl;
 		elasticLT->ldlFactor();
+		cout << "finished factoring.  beginning eigensolve" << endl;
 		eigenSparseDirect(eigVals, eigVecs, cmd->numModes, *elasticLT, diagMass, elMatDim);
+		cout << "finished eigensolve" << endl;
 	}
 	else {
 

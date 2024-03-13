@@ -343,4 +343,8 @@ def getSolidSurfProj(elCrd,elType,ptCrd):
     projOut['distance'] = minDist
     projOut['nVec'] = nVec
     return projOut
-            
+
+def getPotFrcCoef(mass,velMax,exp,contactDist):
+    em1 = exp - 1
+    dtoem1 = np.math.pow(contactDist,em1)
+    return 0.5*em1*dtoem1*mass*velMax*velMax

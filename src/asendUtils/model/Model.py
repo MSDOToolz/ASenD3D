@@ -195,6 +195,44 @@ class Model():
             constraints.append(newConstraint.constData)
             self.modelData['constraints'] = constraints
             
+    def fixDisplacement(self,nodeSet,ux=None,uy=None,uz=None,rx=None,ry=None,rz=None):
+        if(ux != None):
+            newConst = Constraint('displacement')
+            newConst.addTerm(nodeSet,1,1.0)
+            newConst.setRHS(ux)
+            self.addConstraint(newConst)
+        if(uy != None):
+            newConst = Constraint('displacement')
+            newConst.addTerm(nodeSet,2,1.0)
+            newConst.setRHS(uy)
+            self.addConstraint(newConst)
+        if(uz != None):
+            newConst = Constraint('displacement')
+            newConst.addTerm(nodeSet,3,1.0)
+            newConst.setRHS(uz)
+            self.addConstraint(newConst)
+        if(rx != None):
+            newConst = Constraint('displacement')
+            newConst.addTerm(nodeSet,4,1.0)
+            newConst.setRHS(rx)
+            self.addConstraint(newConst)
+        if(ry != None):
+            newConst = Constraint('displacement')
+            newConst.addTerm(nodeSet,5,1.0)
+            newConst.setRHS(ry)
+            self.addConstraint(newConst)
+        if(rz != None):
+            newConst = Constraint('displacement')
+            newConst.addTerm(nodeSet,6,1.0)
+            newConst.setRHS(rz)
+            self.addConstraint(newConst)
+            
+    def fixTemperature(self,nodeSet,T):
+        newConst = Constraint('temperature')
+        newConst.addTerm(nodeSet,1,1.0)
+        newConst.setRHS(T)
+        self.addConstraint(newConst)
+            
     def addAnyLoad(self,newLd):
        try:
            self.modelData['loads'].append(newLd)

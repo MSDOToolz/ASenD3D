@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 
 class Mesh2D():
 
-    def __init__(self,boundaryNodes,boundaryEdges=[]):
+    def __init__(self,boundaryNodes,boundaryEdges):
         self.nodeGL = None
         self.edgeGL = None
         self.triElGL = None
@@ -135,7 +135,7 @@ class Mesh2D():
                     for ndi in range(0,nbNds):
                         vec = (1.0/sweepElements[stg])*(dNds[ndi] - prevDest[ndi])
                         ndDir.append(vec)
-                    ndDir = np.array([ndDir])
+                    ndDir = np.array(ndDir)
                     for i in range(0,sweepElements[stg]):
                         for ndi in range(0,nbNds):
                             self.nodes[nNds] = self.nodes[ndi] + (i+1)*ndDir[ndi]
@@ -907,10 +907,6 @@ class Mesh2D():
             #     break
             elsCreated = False
             nEd = self.numEdges
-            # print('numEdges')
-            # print(nEd)
-            # self.plot2DMesh()
-            # inp = input('continue?\n')
             for edi in range(0,nEd):
                 if(self.edgeElements[edi,1] == -1):
                     n1 = self.edgeNodes[edi,0]
@@ -924,20 +920,23 @@ class Mesh2D():
                     srchRad = 0.5*np.sqrt(edLen*edLen + projLen*projLen)
                     found = self.adoptConnectedNode(edi,srchPt,srchRad)
                     if(not found):
+                        found = self.adoptAnyNode(edi,srchPt,srchRad)
+                    # found = self.adoptConnectedNode(edi,srchPt,srchRad)
+                    # if(not found):
+                    #     srchPt = midPt + projLen*uNorm
+                    #     found = self.adoptConnectedNode(edi,srchPt,srchRad)
+                    # if(not found):
+                    #     srchPt = midPt + 0.5*projLen*uNorm
+                    #     found = self.adoptAnyNode(edi,srchPt,srchRad)
+                    # if(not found):
+                    #     srchPt = midPt + projLen*uNorm
+                    #     found = self.adoptAnyNode(edi,srchPt,srchRad)
+                    if(not found):
                         srchPt = midPt + projLen*uNorm
-                        found = self.adoptConnectedNode(edi,srchPt,srchRad)
+                        found = self.createNode(edi,srchPt)
                     if(not found):
                         srchPt = midPt + 0.5*projLen*uNorm
-                        found = self.adoptAnyNode(edi,srchPt,srchRad)
-                    if(not found):
-                        srchPt = midPt + projLen*uNorm
-                        found = self.adoptAnyNode(edi,srchPt,srchRad)
-                    if(not found):
-                        srchPt = midPt + projLen*uNorm
-                        self.createNode(edi,srchPt)
-                    if(not found):
-                        srchPt = midPt + 0.5*projLen*uNorm
-                        self.createNode(edi,srchPt)
+                        found = self.createNode(edi,srchPt)
                     if(found):
                         elsCreated = True
             for edi in range(0,self.numEdges):

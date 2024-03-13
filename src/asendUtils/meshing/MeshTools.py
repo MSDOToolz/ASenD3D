@@ -14,8 +14,9 @@ def rotateVector(vec,axis,angle):
     if(angle < 0.0000000001):
         return vec.copy()
     else:
+        axAr = np.array(axis)
         mag = np.linalg.norm(axis)
-        unitAxis = (1.0/axis)*axis
+        unitAxis = (1.0/mag)*axAr
         alp1 = np.zeros((3,3),dtype=float)
         alp1[0] = unitAxis
         i1 = 0
@@ -164,7 +165,7 @@ def getMeshSpatialList(nodes,xSpacing=0,ySpacing=0,zSpacing=0):
     return meshGL
 
 ## - Convert list of mesh objects into a single merged mesh, returning sets representing the elements/nodes from the original meshes     
-def mergeDuplicateNodes(meshData):
+def mergeDuplicateNodes(meshData,tolerance=None):
     allNds = meshData['nodes']
     allEls = meshData['elements']
     totNds = len(allNds)
@@ -174,10 +175,13 @@ def mergeDuplicateNodes(meshData):
     avgSp = getAverageNodeSpacing(meshData['nodes'], meshData['elements'])
     sp = 2*avgSp
     nodeGL = getMeshSpatialList(allNds,sp,sp,sp)
-    glDim = nodeGL.getDim()
-    mag = np.linalg.norm(glDim)
-    nto1_3 = np.power(len(allNds),0.3333333333)
-    tol = 1.0e-6*mag/nto1_3
+    if(tolerance == None):
+        glDim = nodeGL.getDim()
+        mag = np.linalg.norm(glDim)
+        nto1_3 = np.power(len(allNds),0.3333333333)
+        tol = 1.0e-6*mag/nto1_3
+    else:
+        tol = tolerance
     
     i = 0
     for nd in allNds:
@@ -234,7 +238,7 @@ def mergeDuplicateNodes(meshData):
     
     return meshData
 
-def mergeMeshes(mData1,mData2):
+def mergeMeshes(mData1,mData2,tolerance=None):
     mergedData = dict()
     nds1 = mData1['nodes']
     nLen1 = len(nds1)
@@ -293,7 +297,7 @@ def mergeMeshes(mData1,mData2):
             mergedData['sets']['element'].append(newSet)
     except:
         pass
-    return mergeDuplicateNodes(mergedData)
+    return mergeDuplicateNodes(mergedData,tolerance)
     
 def splitToTri(meshData):
     newEList = list()
@@ -417,6 +421,34 @@ def addForceElements(meshData,nodeSet1,nodeSet2,elSetName):
         meshData['forceElements'] = [newSet]
     return meshData
 
+def getNearestNodes(meshData,pt,numNds,setName):
+    newSet = dict()
+    newSet['name'] = setName
+    ptAr = np.array(pt)
+    nearLst = list()
+    for i, nd in enumerate(meshData['nodes']):
+        vec = nd - ptAr
+        dist = np.linalg.norm(vec)
+        inserted = False
+        if(len(nearLst) == 0):
+            nearLst.append([i,dist])
+            inserted = True
+        else:
+            for j, nrNd in enumerate(nearLst):
+                if((not inserted) and dist < nrNd[1]):
+                    nearLst.insert(j,[i,dist])
+                    inserted = True
+        if((not inserted) and (len(nearLst) < numNds)):
+            nearLst.append([i,dist])
+        if(len(nearLst) > numNds):
+            nearLst.pop(numNds)
+    minLab = list()
+    for nd in nearLst:
+        minLab.append(nd[0])
+        
+    newSet['labels'] = minLab
+    return addNodeSet(meshData,newSet)
+
 def getNodeSetInRadius(meshData,pt,rad,setName):
     newSet = dict()
     newSet['name'] = setName
@@ -483,6 +515,37 @@ def getNodeSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
                 if(nd[2] >= zRng[0] and nd[2] <= zRng[1]):
                     labs.append(i)
     newSet['labels'] = labs
+    return addNodeSet(meshData,newSet)
+
+def getNearestElements(meshData,pt,numEls,setName):
+    nodes = meshData['nodes']
+    newSet = dict()
+    newSet['name'] = setName
+    ptAr = np.array(pt)
+    nearLst = list()
+    for i, el in enumerate(meshData['elements']):
+        eCrd = getElCoord(el,nodes)
+        eCent = getElCentroid(eCrd)
+        vec = eCent - ptAr
+        dist = np.linalg.norm(vec)
+        inserted = False
+        if(len(nearLst) == 0):
+            nearLst.append([i,dist])
+            inserted = True
+        else:
+            for j, nrEl in enumerate(nearLst):
+                if((not inserted) and dist < nrEl[1]):
+                    nearLst.insert(j,[i,dist])
+                    inserted = True
+        if((not inserted) and (len(nearLst) < numEls)):
+            nearLst.append([i,dist])
+        if(len(nearLst) > numEls):
+            nearLst.pop(numEls)
+    minLab = list()
+    for el in nearLst:
+        minLab.append(el[0])
+        
+    newSet['labels'] = minLab
     return addNodeSet(meshData,newSet)
 
 def getElementSetInRadius(meshData,pt,rad,setName):
@@ -760,31 +823,27 @@ def getExtrudedSets(meshData,numLayers):
         
     return extSets
 
-def getNodeSetUnion(meshData,set1,set2,newSetName):
-    union = set()
+def getNodeSetUnion(meshData,setList,newSetName):
+    un = set()
     for ns in meshData['sets']['node']:
-        if(ns['name'] == set1 or ns['name'] == set2):
-            for nd in ns['labels']:
-                union.add(nd)
+        if(ns['name'] in setList):
+            thisSet = set(ns['labels'])
+            un = un.union(thisSet)
     newSet = dict()
     newSet['name'] = newSetName
-    newSet['labels'] = list(union)
+    newSet['labels'] = list(un)
     meshData['sets']['node'].append(newSet)
     return meshData
 
-def getNodeSetIntersection(meshData,set1,set2,newSetName):
-    intsct = list()
+def getNodeSetIntersection(meshData,setList,newSetName):
+    intsct = set(range(0,len(meshData['nodes'])))
     for ns in meshData['sets']['node']:
-        if(ns['name'] == set1):
-            s1 = ns
-        if(ns['name'] == set2):
-            s2 = set(ns['labels'])
-    for nd in s1['labels']:
-        if(nd in s2):
-            intsct.append(nd)
+        if(ns['name'] in setList):
+            thisSet = set(ns['labels'])
+            intsct = intsct.intersection(thisSet)
     newSet = dict()
     newSet['name'] = newSetName
-    newSet['labels'] = intsct
+    newSet['labels'] = list(intsct)
     meshData['sets']['node'].append(newSet)
     return meshData
 
@@ -804,31 +863,27 @@ def subtractNodeSet(meshData,set1,set2,newSetName):
     meshData['sets']['node'].append(newSet)
     return meshData
 
-def getElementSetUnion(meshData,set1,set2,newSetName):
-    union = set()
-    for ns in meshData['sets']['element']:
-        if(ns['name'] == set1 or ns['name'] == set2):
-            for nd in ns['labels']:
-                union.add(nd)
+def getElementSetUnion(meshData,setList,newSetName):
+    un = set()
+    for es in meshData['sets']['element']:
+        if(es['name'] in setList):
+            thisSet = set(es['labels'])
+            un = un.union(thisSet)
     newSet = dict()
     newSet['name'] = newSetName
-    newSet['labels'] = list(union)
+    newSet['labels'] = list(un)
     meshData['sets']['element'].append(newSet)
     return meshData
 
-def getElementSetIntersection(meshData,set1,set2,newSetName):
-    intsct = list()
-    for ns in meshData['sets']['element']:
-        if(ns['name'] == set1):
-            s1 = ns
-        if(ns['name'] == set2):
-            s2 = set(ns['labels'])
-    for nd in s1['labels']:
-        if(nd in s2):
-            intsct.append(nd)
+def getElementSetIntersection(meshData,setList,newSetName):
+    intsct = set(range(0,len(meshData['elements'])))
+    for es in meshData['sets']['element']:
+        if(es['name'] in setList):
+            thisSet = set(es['labels'])
+            intsct = intsct.intersection(thisSet)
     newSet = dict()
     newSet['name'] = newSetName
-    newSet['labels'] = intsct
+    newSet['labels'] = list(intsct)
     meshData['sets']['element'].append(newSet)
     return meshData
 
