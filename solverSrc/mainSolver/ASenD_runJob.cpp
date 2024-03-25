@@ -4,12 +4,12 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+//int main(int argc, char* argv[]) {
 // ------------------------------------
-//int main() {
-//	int argc = 2;
-//	string argv[2];
-//	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/dynamicAnalysis/shellDiskImpact/job.yaml";
+int main() {
+	int argc = 2;
+	string argv[2];
+	argv[1] = "C:/Users/evans/ASenDHome/working/BlockTest/job.yaml";
 // --------------------------------------
 
 	if(argc < 2) {

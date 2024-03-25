@@ -68,6 +68,37 @@ class ASenDJob:
         newCmd['fileName'] = makeAbsolute(fileName)
         self.jobData['jobCommands'].append(newCmd)
         
+    def solvePrep(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
+              loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
+              simPeriod=1.0,saveSolnHist=False,solnHistDir='',solverMethod='direct',
+              solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
+        newCmd = dict()
+        newCmd['command'] = 'setSolveOptions'
+        if(not elastic):
+            newCmd['elastic'] = 'no'
+        if(thermal):
+            newCmd['thermal'] = 'yes'
+        if(nonlinearGeom):
+            newCmd['nonlinearGeom'] = 'yes'
+        newCmd['staticLoadTime'] = staticLoadTime
+        newCmd['loadRampSteps'] = loadRampSteps
+        if(dynamic):
+            newCmd['dynamic'] = 'yes'
+        newCmd['timeStep'] = timeStep
+        newCmd['newmarkBeta'] = newmarkBeta
+        newCmd['newmarkGamma'] = newmarkGamma
+        newCmd['simPeriod'] = simPeriod
+        if(saveSolnHist):
+            newCmd['saveSolnHist'] = 'yes'
+        newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
+        newCmd['solverMethod'] = solverMethod
+        newCmd['solverBlockDim'] = solverBlockDim
+        if(maxIt != 0):
+            newCmd['maxIterations'] = maxIt
+        if(convTol != 1.0e-12):
+            newCmd['convergenceTol'] = convTol
+        self.jobData['jobCommands'].append(newCmd)
+        
     def solve(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
               simPeriod=1.0,saveSolnHist=False,solnHistDir='',solverMethod='direct',

@@ -31,6 +31,7 @@ class JobCommand {
 		// modal
 		std::string type;
 		int numModes;
+		double tgtEval;
 		
 		// setSolnToMode
 		std::string solnField;

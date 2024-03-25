@@ -770,7 +770,7 @@ ElementList::~ElementList() {
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
  DiffDoub1StressPrereq::DiffDoub1StressPrereq() {
 	globNds = new DiffDoub1[30];
@@ -857,6 +857,7 @@ ElementList::~ElementList() {
 //end dup 
  
 //end skip 
+ 
  
  
  

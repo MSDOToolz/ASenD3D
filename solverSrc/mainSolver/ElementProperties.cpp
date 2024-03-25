@@ -2253,7 +2253,7 @@ void Element::getMassPerEl(DiffDoub0& massPerEl, DesignVariable* dvAr[]) {
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 
 void Element::getLayerThkZ(DiffDoub1 layThk[], DiffDoub1 layZ[], DiffDoub1& zOffset, DesignVariable* dvAr[]) {
@@ -4490,6 +4490,7 @@ void Element::getMassPerEl(DiffDoub1& massPerEl, DesignVariable* dvAr[]) {
 //end dup
  
 //end skip 
+ 
  
  
  

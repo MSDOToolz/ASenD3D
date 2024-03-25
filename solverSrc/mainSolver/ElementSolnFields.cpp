@@ -146,7 +146,7 @@ void Element::evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]) {
 	    nVec[1].setVal(0.5*spt[0]*(1.0-spt[2]));
 		dNds[3].setVal(0.5*(1.0-spt[2]));
 		dNds[4].setVal(0.0);
-		dNds[5].setVal(-0.5);
+		dNds[5].setVal(-0.5*spt[0]);
 		
 	    nVec[2].setVal(0.5*spt[1]*(1.0-spt[2]));
 		dNds[6].setVal(0.0);
@@ -1746,7 +1746,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub0 elQVec[], bool forTherm
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 void Element::getNdDisp(DiffDoub1 globDisp[], Node* ndAr[]) {
 	int i1;
@@ -1878,7 +1878,7 @@ void Element::evalN(DiffDoub1 nVec[], DiffDoub1 dNds[], double spt[]) {
 	    nVec[1].setVal(0.5*spt[0]*(1.0-spt[2]));
 		dNds[3].setVal(0.5*(1.0-spt[2]));
 		dNds[4].setVal(0.0);
-		dNds[5].setVal(-0.5);
+		dNds[5].setVal(-0.5*spt[0]);
 		
 	    nVec[2].setVal(0.5*spt[1]*(1.0-spt[2]));
 		dNds[6].setVal(0.0);
@@ -3477,6 +3477,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub1 elQVec[], bool forTherm
 //end dup
  
 //end skip 
+ 
  
  
  

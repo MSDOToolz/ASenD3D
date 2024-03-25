@@ -138,7 +138,7 @@ void Face::getAreaNormal(DiffDoub0& area, DiffDoub0 norm[], Node* ndAr[], Design
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 
 void Face::getAreaNormal(DiffDoub1& area, DiffDoub1 norm[], Node* ndAr[], DesignVariable* dvAr[]) {
@@ -198,6 +198,7 @@ void Face::getAreaNormal(DiffDoub1& area, DiffDoub1 norm[], Node* ndAr[], Design
 //end dup
  
 //end skip 
+ 
  
 
 // FacePt

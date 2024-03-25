@@ -54,8 +54,9 @@ class ResultsProcessor:
         
     def getPlotNdElSet(self,elementSet):
         numNds = len(self.modelData['nodes'])
+        ndSet = set(range(0,numNds))
         if(elementSet == 'all'):
-            ndSet = set(range(0,numNds))
+            #ndSet = set(range(0,numNds))
             elSet = set()
             for et in self.modelData['elements']:
                 for el in et['connectivity']:
@@ -64,14 +65,14 @@ class ResultsProcessor:
             for es in self.modelData['sets']['element']:
                 if(es['name'] == elementSet):
                     elSet = set(es['labels'])
-                    ndSet = set()
-                    for et in self.modelData['elements']:
-                        for el in et['connectivity']:
-                            lab = el[0]
-                            if(lab in elSet):
-                                for ni, nd in enumerate(el):
-                                    if(ni > 0):
-                                        ndSet.add(nd)
+                    # ndSet = set()
+                    # for et in self.modelData['elements']:
+                    #     for el in et['connectivity']:
+                    #         lab = el[0]
+                    #         if(lab in elSet):
+                    #             for ni, nd in enumerate(el):
+                    #                 if(ni > 0):
+                    #                     ndSet.add(nd)
         return ndSet, elSet
         
     def buildNodalPlotCrd(self,ndSet,deformed=False,defScaleFact=1.0):
@@ -166,6 +167,48 @@ class ResultsProcessor:
                         v1.append(n5)
                         v2.append(n7)
                         v3.append(n8)
+            elif('wedge' in et['type']):
+                for el in et['connectivity']:
+                    eli = el[0]
+                    if(eli in elSet):
+                        n1 = el[1]
+                        n2 = el[2]
+                        n3 = el[3]
+                        n4 = el[4]
+                        n5 = el[5]
+                        n6 = el[6]
+                        
+                        v1.append(n1)
+                        v2.append(n2)
+                        v3.append(n3)
+                        
+                        v1.append(n4)
+                        v2.append(n5)
+                        v3.append(n6)
+                        
+                        v1.append(n1)
+                        v2.append(n2)
+                        v3.append(n4)
+                        
+                        v1.append(n2)
+                        v2.append(n4)
+                        v3.append(n5)
+                        
+                        v1.append(n1)
+                        v2.append(n3)
+                        v3.append(n4)
+                        
+                        v1.append(n3)
+                        v2.append(n4)
+                        v3.append(n6)
+                        
+                        v1.append(n2)
+                        v2.append(n3)
+                        v3.append(n5)
+                        
+                        v1.append(n3)
+                        v2.append(n5)
+                        v3.append(n6)
             elif('tet' in et['type']):
                 for el in et['connectivity']:
                     eli = el[0]

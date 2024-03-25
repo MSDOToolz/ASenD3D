@@ -17,7 +17,7 @@ jobCommands:
   - command: readNodeResults X
     fileName:
     
-  - command: setSolveOptions
+  - command: solvePrep
     (all options for solve)
 
   - command: solve X
@@ -41,6 +41,7 @@ jobCommands:
   - command: modalAnalysis X
     type: buckling
     numModes: 10
+    targetEigenvalue: 0.0
     solverMethod: 
     
   - command: setSolnToMode X

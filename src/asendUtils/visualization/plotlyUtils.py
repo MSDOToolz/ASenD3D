@@ -8,13 +8,23 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
+def plotNodes(meshData):
+    xLst = meshData['nodes'][:,0]
+    yLst = meshData['nodes'][:,1]
+    zLst = meshData['nodes'][:,2]
+    
+    fig = go.Figure(data=[go.Scatter3d(x=xLst,y=yLst,z=zLst,mode='markers')])
+    
+    fig.show()
+    
+
 def plotShellMesh(meshData):
     xLst = meshData['nodes'][:,0]
     yLst = meshData['nodes'][:,1]
     try:
         zLst = meshData['nodes'][:,2]
     except:
-        zLst = np.zeros(len(xLst))
+        zLst = np.zeros(len(xLst),dtype=float)
     value = list()
     v1 = list()
     v2 = list()
@@ -64,8 +74,8 @@ def plotShellMesh(meshData):
     maxLen = np.max([xLen,yLen,zLen])
     hL = 0.5*maxLen
     scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
-           'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
-           'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
+            'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
+            'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
     fig.update_layout(scene=scn)
 
     fig.show()

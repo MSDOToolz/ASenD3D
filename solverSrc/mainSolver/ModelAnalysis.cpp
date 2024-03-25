@@ -27,6 +27,11 @@ void Model::reorderNodes(int blockDim) {
 	double p2[3];
 	double dist;
 	Element *thisEl;
+	Constraint* thisConst;
+	ConstraintTerm* term1;
+	ConstraintTerm* term2;
+	IntListEnt* ndEnt1;
+	IntListEnt* ndEnt2;
 	int *elNodes;
 	int elNumNds;
 	int elDofPerNd;
@@ -53,6 +58,66 @@ void Model::reorderNodes(int blockDim) {
 			}
 		}
 		thisEl = thisEl->getNext();
+	}
+
+	thisConst = elasticConst->getFirst();
+	while (thisConst) {
+		term1 = thisConst->getFirst();
+		while (term1) {
+			i1 = term1->getSetPtr()->getLength();
+			term2 = thisConst->getFirst();
+			while (term2) {
+				i2 = term2->getSetPtr()->getLength();
+				if (i1 > 1 && i2 > 1) {
+					ndEnt1 = term1->getSetPtr()->getFirstEntry();
+					ndEnt2 = term2->getSetPtr()->getFirstEntry();
+					while (ndEnt1 && ndEnt2) {
+						nodalConn[ndEnt1->value].addIfAbsent(ndEnt2->value);
+						nodalConn[ndEnt2->value].addIfAbsent(ndEnt1->value);
+						ndEnt1 = ndEnt1->next;
+						ndEnt2 = ndEnt2->next;
+					}
+				}
+				else {
+					ndEnt1 = term1->getSetPtr()->getFirstEntry();
+					while (ndEnt1) {
+						ndEnt2 = term2->getSetPtr()->getFirstEntry();
+						while (ndEnt2) {
+							nodalConn[ndEnt1->value].addIfAbsent(ndEnt2->value);
+							nodalConn[ndEnt2->value].addIfAbsent(ndEnt1->value);
+							ndEnt2 = ndEnt2->next;
+						}
+						ndEnt1 = ndEnt1->next;
+					}
+				}
+				term2 = term2->getNext();
+			}
+			term1 = term1->getNext();
+		}
+		thisConst = thisConst->getNext();
+	}
+
+	thisConst = thermalConst->getFirst();
+	while (thisConst) {
+		term1 = thisConst->getFirst();
+		while (term1) {
+			ndEnt1 = term1->getSetPtr()->getFirstEntry();
+			while (ndEnt1) {
+				term2 = thisConst->getFirst();
+				while (term2) {
+					ndEnt2 = term2->getSetPtr()->getFirstEntry();
+					while (ndEnt2) {
+						nodalConn[ndEnt1->value].addIfAbsent(ndEnt2->value);
+						nodalConn[ndEnt2->value].addIfAbsent(ndEnt1->value);
+						ndEnt2 = ndEnt2->next;
+					}
+					term2 = term2->getNext();
+				}
+				ndEnt1 = ndEnt1->next;
+			}
+			term1 = term1->getNext();
+		}
+		thisConst = thisConst->getNext();
 	}
 	
 	// Find node with least connectivity
@@ -820,7 +885,9 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 			if (!elasticScaled) {
 				scaleElasticConst();
 			}
+			cout << "check 1" << endl;
 			buildElasticConstLoad(tempV1);
+			cout << "check 2" << endl;
 			thisEl = elements->getFirst();
 			while(thisEl) {
 				if(thisEl->getNumIntDof() > 0) {
@@ -1001,6 +1068,7 @@ void Model::eigenSolve(JobCommand* cmd) {
 	double Rv2[33];
 	double dRdA[2];
 	double zeros[9] = {0.0, 0.0, 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0};
+	double shft;
 	double vKv;
 	DiffDoub0StressPrereq* pre = new DiffDoub0StressPrereq;
 
@@ -1046,6 +1114,10 @@ void Model::eigenSolve(JobCommand* cmd) {
 	cout << "building stiffness matrix" << endl;
 	buildElasticSolnLoad(tempV1, true);
 	cout << "finished building matrix" << endl;
+	for (i1 = 0; i1 < elMatDim; i1++) {
+		shft = -cmd->tgtEval * diagMass[i1];
+		elasticMat->addEntry(i1, i1, shft);
+	}
 	if (cmd->solverMethod == "direct") {
 		elasticLT->populateFromSparseMat(*elasticMat, *elasticConst);
 		cout << "factoring stiffness matrix" << endl;
@@ -1056,6 +1128,9 @@ void Model::eigenSolve(JobCommand* cmd) {
 	}
 	else {
 
+	}
+	for (i1 = 0; i1 < cmd->numModes; i1++) {
+		eigVals[i1] += cmd->tgtEval;
 	}
 
 	if (cmd->type == "buckling") {

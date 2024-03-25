@@ -438,7 +438,7 @@ void Node::getThermalDVLoad(DiffDoub0& ld, DesignVariable* dvAr[]) {
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 void Node::getCrd(DiffDoub1 crdOut[], DesignVariable* dvAr[]) {
 	crdOut[0].setVal(coord[0]);
@@ -542,6 +542,7 @@ void Node::getThermalDVLoad(DiffDoub1& ld, DesignVariable* dvAr[]) {
 //end dup
  
 //end skip 
+ 
  
  
  

@@ -135,7 +135,7 @@ class Node {
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 		void getCrd(DiffDoub1 crdOut[], DesignVariable* dvAr[]);
 		
@@ -147,6 +147,7 @@ class Node {
 //end dup		
  
 //end skip 
+ 
  
  
  

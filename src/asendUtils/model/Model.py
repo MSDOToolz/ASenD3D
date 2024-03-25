@@ -232,6 +232,44 @@ class Model():
         newConst.addTerm(nodeSet,1,1.0)
         newConst.setRHS(T)
         self.addConstraint(newConst)
+        
+    def periodicDisplacement(self,ndSets=None):
+        if(ndSets is None):
+            sN = ['periodicXMin','periodicXMax',
+                  'periodicYMin','periodicYMax',
+                  'periodicZMax','periodicZMax',
+                  'xMinRef','xMaxRef',
+                  'yMinRef','yMaxRef',
+                  'zMinRef','zMaxRef']
+        else:
+            sN = ndSets
+        for i in range(0,3):
+            dof = i + 1
+            # x periodic constraint
+            newConst = Constraint('displacement')
+            newConst.addTerm(sN[1],dof,1.0)
+            newConst.addTerm(sN[6],dof,1.0)
+            newConst.addTerm(sN[0],dof,-1.0)
+            newConst.addTerm(sN[7],dof,-1.0)
+            newConst.setRHS(0.0)
+            self.addConstraint(newConst)
+            # y periodic constraint
+            newConst = Constraint('displacement')
+            newConst.addTerm(sN[3],dof,1.0)
+            newConst.addTerm(sN[8],dof,1.0)
+            newConst.addTerm(sN[2],dof,-1.0)
+            newConst.addTerm(sN[9],dof,-1.0)
+            newConst.setRHS(0.0)
+            self.addConstraint(newConst)
+            # z periodic constraint
+            newConst = Constraint('displacement')
+            newConst.addTerm(sN[5],dof,1.0)
+            newConst.addTerm(sN[10],dof,1.0)
+            newConst.addTerm(sN[4],dof,-1.0)
+            newConst.addTerm(sN[11],dof,-1.0)
+            newConst.setRHS(0.0)
+            self.addConstraint(newConst)
+            
             
     def addAnyLoad(self,newLd):
        try:

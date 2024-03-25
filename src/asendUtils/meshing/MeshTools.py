@@ -41,20 +41,22 @@ def rotateVector(vec,axis,angle):
         return rV
 
 def translateMesh(meshData,tVec):
+    tAr = np.array(tVec)
     nLen = len(meshData['nodes'])
     newNds = np.zeros((nLen,3),dtype=float)
     for i, nd in enumerate(meshData['nodes']):
-        newNds[i] = nd + tVec
+        newNds[i] = nd + tAr
     meshData['nodes'] = newNds
     return meshData
 
 def rotateMesh(meshData,pt,axis,angle):
+    ptAr = np.array(pt)
     nLen = len(meshData['nodes'])
     newNds = np.zeros((nLen,3),dtype=float)
     for i, nd in enumerate(meshData['nodes']):
-        tCrd = nd - pt
+        tCrd = nd - ptAr
         rCrd = rotateVector(tCrd,axis,angle)
-        newNds[i] = pt + rCrd
+        newNds[i] = ptAr + rCrd
     meshData['nodes'] = newNds
     return meshData
 
@@ -176,10 +178,7 @@ def mergeDuplicateNodes(meshData,tolerance=None):
     sp = 2*avgSp
     nodeGL = getMeshSpatialList(allNds,sp,sp,sp)
     if(tolerance == None):
-        glDim = nodeGL.getDim()
-        mag = np.linalg.norm(glDim)
-        nto1_3 = np.power(len(allNds),0.3333333333)
-        tol = 1.0e-6*mag/nto1_3
+        tol = 1.0e-2*avgSp
     else:
         tol = tolerance
     
@@ -480,13 +479,15 @@ def getNodeSetNearLine(meshData,pt,dirVec,rad,setName):
     return addNodeSet(meshData,newSet)
 
 def getNodeSetNearPlane(meshData,pt,normDir,dist,setName):
-    mag = np.linalg.norm(normDir)
-    unitNorm = (1.0/mag)*normDir
+    ptAr = np.array(pt)
+    nAr = np.array(normDir)
+    mag = np.linalg.norm(nAr)
+    unitNorm = (1.0/mag)*nAr
     newSet = dict()
     newSet['name'] = setName
     labs = list()
     for i, nd in enumerate(meshData['nodes']):
-        ptond = nd - pt
+        ptond = nd - ptAr
         dp = np.dot(ptond,unitNorm)
         if(abs(dp) < dist):
             labs.append(i)
@@ -516,6 +517,89 @@ def getNodeSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
                     labs.append(i)
     newSet['labels'] = labs
     return addNodeSet(meshData,newSet)
+
+def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
+    if(setNames is None):
+        sN = ['periodicXMin','periodicXMax',
+              'periodicYMin','periodicYMax',
+              'periodicZMax','periodicZMax',
+              'xMinRef','xMaxRef',
+              'yMinRef','yMaxRef',
+              'zMinRef','zMaxRef']
+    else:
+        sN = setNames
+    nodes = meshData['nodes']
+    nSp = getAverageNodeSpacing(nodes,meshData['elements'])
+    gSp = 2.0*nSp
+    gL = getMeshSpatialList(nodes,gSp,gSp,gSp)
+    srcTol = 1.0e-4*nSp
+    for i, nd in enumerate(nodes):
+        gL.addEntry(i,nd)
+    xMinSet = list()
+    xMaxSet = list()
+    yMinSet = list()
+    yMaxSet = list()
+    zMinSet = list()
+    zMaxSet = list()
+    xMinR = None
+    xMaxR = None
+    yMinR = None
+    yMaxR = None
+    zMinR = None
+    zMaxR = None
+    xV = np.array([xDim,0.,0.])
+    yV = np.array([0.,yDim,0.])
+    zV = np.array([0.,0.,zDim])
+    for i, nd in enumerate(nodes):
+        srchPt = nd + xV
+        nearNds = gL.findInRadius(srchPt,nSp)
+        for nrNd in nearNds:
+            dVec = srchPt - nodes[nrNd]
+            dist = np.linalg.norm(dVec)
+            if(dist < srcTol):
+                if(xMinR is None):
+                    xMinR = i
+                    xMaxR = nrNd
+                else:
+                    xMinSet.append(i)
+                    xMaxSet.append(nrNd)
+        srchPt = nd + yV
+        nearNds = gL.findInRadius(srchPt,nSp)
+        for nrNd in nearNds:
+            dVec = srchPt - nodes[nrNd]
+            dist = np.linalg.norm(dVec)
+            if(dist < srcTol):
+                if(yMinR is None):
+                    yMinR = i
+                    yMaxR = nrNd
+                else:
+                    yMinSet.append(i)
+                    yMaxSet.append(nrNd)
+        srchPt = nd + zV
+        nearNds = gL.findInRadius(srchPt,nSp)
+        for nrNd in nearNds:
+            dVec = srchPt - nodes[nrNd]
+            dist = np.linalg.norm(dVec)
+            if(dist < srcTol):
+                if(zMinR is None):
+                    zMinR = i
+                    zMaxR = nrNd
+                else:
+                    zMinSet.append(i)
+                    zMaxSet.append(nrNd)
+    meshData = addNodeSet(meshData,{'name': sN[0], 'labels': xMinSet})
+    meshData = addNodeSet(meshData,{'name': sN[1], 'labels': xMaxSet})
+    meshData = addNodeSet(meshData,{'name': sN[2], 'labels': yMinSet})
+    meshData = addNodeSet(meshData,{'name': sN[3], 'labels': yMaxSet})
+    meshData = addNodeSet(meshData,{'name': sN[4], 'labels': zMinSet})
+    meshData = addNodeSet(meshData,{'name': sN[5], 'labels': zMaxSet})
+    meshData = addNodeSet(meshData,{'name': sN[6], 'labels': [xMinR]})
+    meshData = addNodeSet(meshData,{'name': sN[7], 'labels': [xMaxR]})
+    meshData = addNodeSet(meshData,{'name': sN[8], 'labels': [yMinR]})
+    meshData = addNodeSet(meshData,{'name': sN[9], 'labels': [yMaxR]})
+    meshData = addNodeSet(meshData,{'name': sN[10], 'labels': [zMinR]})
+    meshData = addNodeSet(meshData,{'name': sN[11], 'labels': [zMaxR]})
+    return meshData
 
 def getNearestElements(meshData,pt,numEls,setName):
     nodes = meshData['nodes']
@@ -742,7 +826,7 @@ def getMatchingNodeSet(meshData,elSet,ndSetName):
 
 def getMatchingElementSet(meshData,nodeSet,elSetName,optn='allNodes'):
     ## optn = 'allNodes' or 'anyNode'
-    for ns in meshData['sets']['nodeSets']:
+    for ns in meshData['sets']['node']:
         if(ns['name'] == nodeSet):
             es = list()
             nsLabs = set(ns['labels'])
@@ -752,8 +836,8 @@ def getMatchingElementSet(meshData,nodeSet,elSetName,optn='allNodes'):
                 for elNd in el:
                     if(elNd != -1):
                         if(elNd in nsLabs):
-                            hit = hit + 1
-                        ct = ct
+                            hit += 1
+                        ct += 1
                 if((optn == 'allNodes' and hit == ct) or (optn == 'anyNode' and hit > 0)):
                     es.append(eli)
             newSet = dict()

@@ -104,7 +104,7 @@ void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList,
 	
 	allocated = true;
 
-	//cout << "maxBandwidth: " << maxBandwidth << endl;
+	cout << "maxBandwidth: " << maxBandwidth << endl;
 	
 	return;
 }

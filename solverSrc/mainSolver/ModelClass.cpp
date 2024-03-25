@@ -153,6 +153,10 @@ void Model::executeJob() {
 		else if (cmdStr == "readNodeResults") {
 			readNodeResults(thisCmd->fileName);
 		}
+		else if (cmdStr == "solvePrep") {
+			solveCmd = thisCmd;
+			analysisPrep();
+		}
 		else if (cmdStr == "solve") {
 			cout << "running main analysis " << endl;
 			solveCmd = thisCmd;

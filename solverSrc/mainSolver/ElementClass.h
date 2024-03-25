@@ -56,7 +56,7 @@ public:
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 class DiffDoub1StressPrereq {
 public:
@@ -102,6 +102,7 @@ public:
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -317,7 +318,7 @@ class Element {
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 
 // Properties
@@ -439,6 +440,7 @@ class Element {
  
  
  
+ 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
@@ -478,7 +480,7 @@ class Element {
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
         void getRuk(DiffDoub1 Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
@@ -503,6 +505,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
  
  

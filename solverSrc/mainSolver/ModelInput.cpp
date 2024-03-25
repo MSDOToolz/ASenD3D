@@ -188,7 +188,11 @@ void Model::readJob(string fileName) {
 				newCmd->type = data[0];
 			} else if(headings[1] == "numModes" && dataLen == 1) {
 				newCmd->numModes = stoi(data[0]);
-			} else if(headings[1] == "solnField" && dataLen == 1) {
+			}
+			else if (headings[1] == "targetEigenvalue" && dataLen == 1) {
+				newCmd->tgtEval = stod(data[0]);
+			}
+			else if (headings[1] == "solnField" && dataLen == 1) {
 				newCmd->solnField = data[0];
 			} else if(headings[1] == "mode" && dataLen == 1) {
 				newCmd->mode = stoi(data[0]);

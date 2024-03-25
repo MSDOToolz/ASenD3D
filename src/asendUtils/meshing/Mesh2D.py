@@ -227,17 +227,18 @@ class Mesh2D():
             intCt = 1
             tol = 1.0e-6*self.minEdgeLen
             for ne in nearEdges:
-                n1i = self.edgeNodes[ne,0]
-                n2i = self.edgeNodes[ne,1]
-                v2 = self.nodes[n2i] - self.nodes[n1i]
-                mat = np.array([[v1[0],-v2[0]],[v1[1],-v2[1]]])
-                matNrm = np.linalg.norm(mat)
-                det = np.linalg.det(mat)
-                if(np.abs(det) > 1.0e-6*matNrm*matNrm):
-                    bVec = self.nodes[n1i] - eCent
-                    soln = np.linalg.solve(mat,bVec)
-                    if(soln[1] > 0.000001 and soln[1] < 0.999999 and soln[0] > tol):
-                        intCt = -1*intCt
+                if(ne != i):
+                    n1i = self.edgeNodes[ne,0]
+                    n2i = self.edgeNodes[ne,1]
+                    v2 = self.nodes[n2i] - self.nodes[n1i]
+                    mat = np.array([[v1[0],-v2[0]],[v1[1],-v2[1]]])
+                    matNrm = np.linalg.norm(mat)
+                    det = np.linalg.det(mat)
+                    if(np.abs(det) > 1.0e-6*matNrm*matNrm):
+                        bVec = self.nodes[n1i] - eCent
+                        soln = np.linalg.solve(mat,bVec)
+                        if(soln[1] > 0.000001 and soln[1] < 0.999999 and soln[0] > tol):
+                            intCt = -1*intCt
             dp = np.dot(nrm,v1)
             if((intCt > 0 and dp > 0.0) or (intCt < 0 and dp < 0.0)):
                 self.edgeUnitNorms[i] = -1.0*nrm
@@ -704,6 +705,7 @@ class Mesh2D():
         for i in range(self.numBndNodes,self.numNodes):
             j = i*2
             self.nodes[i] = xVec[j:j+2]
+                
             
     def mergePairsAbove(self,edgeFactor,elElim,elLongEdge):
         nQuad = self.numQuadEls
@@ -886,59 +888,29 @@ class Mesh2D():
     def unstructuredPost(self,elType):
         #self.plot2DMesh()
         self.distributeNodes()
+        for edi in range(0,self.numEdges):
+            if(self.edgeElements[edi,1] == -1):
+                self.edgeUnitNorms[edi] = 0.0
+        self.mainMeshLoop()
         #self.plot2DMesh()
         if(elType == 'quad'):
             self.unskewNodes()
         #self.plot2DMesh()
         self.mergeTriEls(elType)
         #self.plot2DMesh()
-                        
-    ## !! rename any calls to creating unstructured mesh as necessary, createPlanarMesh
-    def createUnstructuredMesh(self,elType):
-        self.unstructuredPrep(elType)
         
-        print('creating unstructured mesh')
+    def mainMeshLoop(self):
         elsCreated = True
         while(elsCreated):
             # if(self.numTriEls > 0):
             #     self.plot2DMesh()
+            #     print('number of elements')
+            #     print(self.numTriEls)
             # cnt = input('continue?\n')
             # if(cnt != 'y'):
             #     break
             elsCreated = False
             nEd = self.numEdges
-            for edi in range(0,nEd):
-                if(self.edgeElements[edi,1] == -1):
-                    n1 = self.edgeNodes[edi,0]
-                    n2 = self.edgeNodes[edi,1]
-                    uNorm = self.edgeUnitNorms[edi]
-                    midPt = 0.5*(self.nodes[n1] + self.nodes[n2])
-                    vec = self.nodes[n1] - self.nodes[n2]
-                    edLen = np.linalg.norm(vec)
-                    projLen = 0.2165*edLen + 0.75*self.avgProjLen ## 0.25(sqrt(3)/2)edLen + 0.75avgProjLen
-                    srchPt = midPt + 0.5*projLen*uNorm
-                    srchRad = 0.5*np.sqrt(edLen*edLen + projLen*projLen)
-                    found = self.adoptConnectedNode(edi,srchPt,srchRad)
-                    if(not found):
-                        found = self.adoptAnyNode(edi,srchPt,srchRad)
-                    # found = self.adoptConnectedNode(edi,srchPt,srchRad)
-                    # if(not found):
-                    #     srchPt = midPt + projLen*uNorm
-                    #     found = self.adoptConnectedNode(edi,srchPt,srchRad)
-                    # if(not found):
-                    #     srchPt = midPt + 0.5*projLen*uNorm
-                    #     found = self.adoptAnyNode(edi,srchPt,srchRad)
-                    # if(not found):
-                    #     srchPt = midPt + projLen*uNorm
-                    #     found = self.adoptAnyNode(edi,srchPt,srchRad)
-                    if(not found):
-                        srchPt = midPt + projLen*uNorm
-                        found = self.createNode(edi,srchPt)
-                    if(not found):
-                        srchPt = midPt + 0.5*projLen*uNorm
-                        found = self.createNode(edi,srchPt)
-                    if(found):
-                        elsCreated = True
             for edi in range(0,self.numEdges):
                 uNMag = np.linalg.norm(self.edgeUnitNorms[edi])
                 if(uNMag < 1.0e-6):
@@ -959,8 +931,47 @@ class Mesh2D():
                                 self.edgeUnitNorms[edi] = uNorm
                             else:
                                 self.edgeUnitNorms[edi] = -uNorm
+            for edi in range(0,nEd):
+                if(self.edgeElements[edi,1] == -1):
+                    n1 = self.edgeNodes[edi,0]
+                    n2 = self.edgeNodes[edi,1]
+                    uNorm = self.edgeUnitNorms[edi]
+                    midPt = 0.5*(self.nodes[n1] + self.nodes[n2])
+                    vec = self.nodes[n1] - self.nodes[n2]
+                    edLen = np.linalg.norm(vec)
+                    projLen = 0.2165*edLen + 0.75*self.avgProjLen ## 0.25(sqrt(3)/2)edLen + 0.75avgProjLen
+                    srchPt = midPt + 0.5*projLen*uNorm
+                    srchRad = 0.5*np.sqrt(edLen*edLen + projLen*projLen)
+                    found = self.adoptConnectedNode(edi,srchPt,srchRad)
+                    if(not found):
+                        srchPt = midPt + projLen*uNorm
+                        found = self.adoptConnectedNode(edi,srchPt,srchRad)
+                    if(not found):
+                        srchPt = midPt + 0.5*projLen*uNorm
+                        found = self.adoptAnyNode(edi,srchPt,srchRad)
+                    if(not found):
+                        srchPt = midPt + projLen*uNorm
+                        found = self.adoptAnyNode(edi,srchPt,srchRad)
+                    if(not found):
+                        srchPt = midPt + projLen*uNorm
+                        found = self.createNode(edi,srchPt)
+                    if(not found):
+                        srchPt = midPt + 0.5*projLen*uNorm
+                        found = self.createNode(edi,srchPt)
+                    if(found):
+                        elsCreated = True
+            
+                        
+    ## !! rename any calls to creating unstructured mesh as necessary, createPlanarMesh
+    def createUnstructuredMesh(self,elType):
+        self.unstructuredPrep(elType)
         
+        print('creating unstructured mesh')
+        self.mainMeshLoop()
+        
+        #self.plot2DMesh()
         self.unstructuredPost(elType)
+        #self.plot2DMesh()
         
         meshOut = dict()
         meshOut['nodes'] = self.nodes
@@ -969,6 +980,8 @@ class Mesh2D():
         allEls[0:self.numTriEls,0:3] = self.triElements[0:self.numTriEls]
         allEls[self.numTriEls:totalEls,:] = self.quadElements[0:self.numQuadEls]
         meshOut['elements'] = allEls
+        
+        #self.plot2DMesh()
         
         return meshOut
         

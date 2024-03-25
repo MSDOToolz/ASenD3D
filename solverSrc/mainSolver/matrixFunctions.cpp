@@ -185,6 +185,7 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 		resNrm += resVec[i1] * resVec[i1];
 	}
 	resNrm = sqrt(resNrm);
+	cout << "Initial residual norm: " << resNrm << endl;
 
 	itCt = 0;
 	while (resNrm > convTol && itCt < maxIt) {
@@ -269,6 +270,7 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 		}
 		resNrm = sqrt(resNrm);
 		itCt += restart;
+		cout << "Iteration: " << itCt << ",  Residual Norm: " << resNrm << endl;
 	}
 
 	if (resNrm > convTol) {
@@ -1339,7 +1341,7 @@ void getDetInv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int colDim, int
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 void qRFactor(DiffDoub1 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
@@ -1525,6 +1527,7 @@ void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -1795,7 +1798,7 @@ void rotateOrient(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[]) {
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup2
 void matMul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
@@ -2058,7 +2061,7 @@ void rotateOrient(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[]) {
 }
 //end dup
  
-//Diff2Doub versions: 
+//DiffDoub2 versions: 
 //dup2
 void matMul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
@@ -2328,6 +2331,7 @@ void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]) {
  
  
  
+ 
 //dup1
 void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
@@ -2428,7 +2432,7 @@ void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1,
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
@@ -2526,6 +2530,7 @@ void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1,
 //end dup  
  
 //end skip 
+ 
  
  
  

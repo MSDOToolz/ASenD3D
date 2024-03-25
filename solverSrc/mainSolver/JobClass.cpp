@@ -30,6 +30,7 @@ JobCommand::JobCommand() {
 	// modal
 	type = "buckling";
 	numModes = 10;
+	tgtEval = 0.0;
 	
 	// setSolnToMode
 	solnField = "displacement";

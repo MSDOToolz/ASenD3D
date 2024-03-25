@@ -413,6 +413,8 @@ void Element::getRum(DiffDoub0 Rvec[], double dRdA[], bool getMatrix, bool actua
 
 	DiffDoub0 Rtmp[30];
 
+	DiffDoub0 saveM[36];
+
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
 		Rvec[i1].setVal(0.0);
@@ -443,6 +445,21 @@ void Element::getRum(DiffDoub0 Rvec[], double dRdA[], bool getMatrix, bool actua
 	if (dofPerNd == 6) {
 		if (nLGeom) {
 		    getInstOri(pre.instOri, pre.locOri, pre.globDisp, 1);
+		}
+		if (!actualProps) {
+			for (i1 = 0; i1 < 36; i1++) {
+				saveM[i1].setVal(pre.Mmat[i1]);
+				pre.Mmat[i1].setVal(0.0);
+			}
+			for (i1 = 0; i1 < 36; i1 += 7) {
+				pre.Mmat[i1].setVal(1.0);
+			}
+		}
+	}
+	else {
+		if (!actualProps) {
+			saveM[0].setVal(pre.Mmat[0]);
+			pre.Mmat[0].setVal(1.0);
 		}
 	}
 
@@ -544,6 +561,19 @@ void Element::getRum(DiffDoub0 Rvec[], double dRdA[], bool getMatrix, bool actua
 					}
 				}
 			}
+		}
+	}
+
+	if (dofPerNd == 6) {
+		if (!actualProps) {
+			for (i1 = 0; i1 < 36; i1++) {
+				pre.Mmat[i1].setVal(saveM[i1]);
+			}
+		}
+	}
+	else {
+		if (!actualProps) {
+			pre.Mmat[0].setVal(saveM[0]);
 		}
 	}
 
@@ -1564,7 +1594,7 @@ void Element::getAppThermLoad(DiffDoub0 AppLd[], Load* ldPt, DiffDoub0StressPrer
  
 //skip 
  
-//DiffDoub versions: 
+//DiffDoub1 versions: 
 //dup1
 
 void Element::getRuk(DiffDoub1 Rvec[], double dRdu[], double dRdT[], bool getMatrix, bool nLGeom, DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
@@ -1785,6 +1815,8 @@ void Element::getRum(DiffDoub1 Rvec[], double dRdA[], bool getMatrix, bool actua
 
 	DiffDoub1 Rtmp[30];
 
+	DiffDoub1 saveM[36];
+
 	i3 = 0;
 	for (i1 = 0; i1 < ndDof; i1++) {
 		Rvec[i1].setVal(0.0);
@@ -1815,6 +1847,21 @@ void Element::getRum(DiffDoub1 Rvec[], double dRdA[], bool getMatrix, bool actua
 	if (dofPerNd == 6) {
 		if (nLGeom) {
 		    getInstOri(pre.instOri, pre.locOri, pre.globDisp, 1);
+		}
+		if (!actualProps) {
+			for (i1 = 0; i1 < 36; i1++) {
+				saveM[i1].setVal(pre.Mmat[i1]);
+				pre.Mmat[i1].setVal(0.0);
+			}
+			for (i1 = 0; i1 < 36; i1 += 7) {
+				pre.Mmat[i1].setVal(1.0);
+			}
+		}
+	}
+	else {
+		if (!actualProps) {
+			saveM[0].setVal(pre.Mmat[0]);
+			pre.Mmat[0].setVal(1.0);
 		}
 	}
 
@@ -1916,6 +1963,19 @@ void Element::getRum(DiffDoub1 Rvec[], double dRdA[], bool getMatrix, bool actua
 					}
 				}
 			}
+		}
+	}
+
+	if (dofPerNd == 6) {
+		if (!actualProps) {
+			for (i1 = 0; i1 < 36; i1++) {
+				pre.Mmat[i1].setVal(saveM[i1]);
+			}
+		}
+	}
+	else {
+		if (!actualProps) {
+			pre.Mmat[0].setVal(saveM[0]);
 		}
 	}
 
@@ -2935,6 +2995,7 @@ void Element::getAppThermLoad(DiffDoub1 AppLd[], Load* ldPt, DiffDoub1StressPrer
 //end dup
  
 //end skip 
+ 
  
  
  

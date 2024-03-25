@@ -22,7 +22,7 @@ modFile = rtDir + '/examples/common/shellDiskProjectile.yaml'
 modScrDir = rtDir + '/examples/modelGeneration'
 if(not os.path.exists(modFile)):
     sys.path.append(modScrDir)
-    import shellDisk
+    import shellDiskProjectile
     
 constMod = Model()
 constMod.fixDisplacement('boundaryNodes',ux=0.0,uy=0.0,uz=0.0)
@@ -39,9 +39,9 @@ job = ASenDJob()
 job.readModelInput(modFile)
 job.readConstraints(constFile)
 job.readInitialState(initFile)
-job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.2,saveSolnHist=True,solnHistDir='shellDiskImpact/results/')
+job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.5,saveSolnHist=True,solnHistDir='shellDiskImpact/results/')
 resFile = 'shellDiskImpact/results/nodeResults.yaml'
-ts = list(range(0,40))
+ts = list(range(0,100))
 job.writeNodeResults(resFile,['displacement'],timeSteps=ts)
 jobFile = 'shellDiskImpact/job.yaml'
 job.writeJobInput(jobFile)
