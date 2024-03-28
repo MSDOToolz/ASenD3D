@@ -281,6 +281,21 @@ void LowerTriMat::ldlSolve(double solnVec[], double rhs[]) {
 	return;
 }
 
+bool LowerTriMat::posDef() {
+	int i1;
+	double dVal;
+	if (!allocated) {
+		return false;
+	}
+	for (i1 = 0; i1 < dim; i1++) {
+		dVal = mat[range[i1 + 1] - 1];
+		if (dVal < 0.0) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void LowerTriMat::writeToFile(ofstream& outFile) {
 	int i1;
 	int i2;

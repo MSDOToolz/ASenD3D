@@ -13,6 +13,8 @@ void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int en
 
 void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
 
+void conjGradSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt);
+
 void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt, int restart);
 
 void symFactor(double mat[], double qMat[], int matDim);

@@ -33,8 +33,9 @@ int main(int argc, char* argv[]) {
 	bool resolved = mesher.generateMesh();
 	cout << "finished mesh" << endl;
 	if (resolved) {
-		mesher.distributeNodes();
 		cout << "distributing nodes" << endl;
+		mesher.distributeNodes();
+		mesher.generateMesh();
 	}
 	else {
 		cout << "Warning: mesh reached maximum number of elements unresolved." << endl;

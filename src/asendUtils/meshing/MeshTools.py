@@ -529,6 +529,23 @@ def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
     else:
         sN = setNames
     nodes = meshData['nodes']
+    
+    xMin = np.min(nodes[:,0])
+    xMax = np.max(nodes[:,0])
+    xMid = 0.5*(xMin + xMax)
+    yMin = np.min(nodes[:,1])
+    yMax = np.max(nodes[:,1])
+    yMid = 0.5*(yMin + yMax)
+    zMin = np.min(nodes[:,2])
+    zMax = np.max(nodes[:,2])
+    zMid = 0.5*(zMin + zMax)
+    meshData = getNearestNodes(meshData,[xMin,yMid,zMid],1,sN[6])
+    meshData = getNearestNodes(meshData,[xMax,yMid,zMid],1,sN[7])
+    meshData = getNearestNodes(meshData,[xMid,yMin,zMid],1,sN[8])
+    meshData = getNearestNodes(meshData,[xMid,yMax,zMid],1,sN[9])
+    meshData = getNearestNodes(meshData,[xMid,yMid,zMin],1,sN[10])
+    meshData = getNearestNodes(meshData,[xMid,yMid,zMax],1,sN[11])
+    
     nSp = getAverageNodeSpacing(nodes,meshData['elements'])
     gSp = 2.0*nSp
     gL = getMeshSpatialList(nodes,gSp,gSp,gSp)
@@ -541,12 +558,6 @@ def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
     yMaxSet = list()
     zMinSet = list()
     zMaxSet = list()
-    xMinR = None
-    xMaxR = None
-    yMinR = None
-    yMaxR = None
-    zMinR = None
-    zMaxR = None
     xV = np.array([xDim,0.,0.])
     yV = np.array([0.,yDim,0.])
     zV = np.array([0.,0.,zDim])
@@ -557,48 +568,30 @@ def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
             dVec = srchPt - nodes[nrNd]
             dist = np.linalg.norm(dVec)
             if(dist < srcTol):
-                if(xMinR is None):
-                    xMinR = i
-                    xMaxR = nrNd
-                else:
-                    xMinSet.append(i)
-                    xMaxSet.append(nrNd)
+                xMinSet.append(i)
+                xMaxSet.append(nrNd)
         srchPt = nd + yV
         nearNds = gL.findInRadius(srchPt,nSp)
         for nrNd in nearNds:
             dVec = srchPt - nodes[nrNd]
             dist = np.linalg.norm(dVec)
             if(dist < srcTol):
-                if(yMinR is None):
-                    yMinR = i
-                    yMaxR = nrNd
-                else:
-                    yMinSet.append(i)
-                    yMaxSet.append(nrNd)
+                yMinSet.append(i)
+                yMaxSet.append(nrNd)
         srchPt = nd + zV
         nearNds = gL.findInRadius(srchPt,nSp)
         for nrNd in nearNds:
             dVec = srchPt - nodes[nrNd]
             dist = np.linalg.norm(dVec)
             if(dist < srcTol):
-                if(zMinR is None):
-                    zMinR = i
-                    zMaxR = nrNd
-                else:
-                    zMinSet.append(i)
-                    zMaxSet.append(nrNd)
+                zMinSet.append(i)
+                zMaxSet.append(nrNd)
     meshData = addNodeSet(meshData,{'name': sN[0], 'labels': xMinSet})
     meshData = addNodeSet(meshData,{'name': sN[1], 'labels': xMaxSet})
     meshData = addNodeSet(meshData,{'name': sN[2], 'labels': yMinSet})
     meshData = addNodeSet(meshData,{'name': sN[3], 'labels': yMaxSet})
     meshData = addNodeSet(meshData,{'name': sN[4], 'labels': zMinSet})
     meshData = addNodeSet(meshData,{'name': sN[5], 'labels': zMaxSet})
-    meshData = addNodeSet(meshData,{'name': sN[6], 'labels': [xMinR]})
-    meshData = addNodeSet(meshData,{'name': sN[7], 'labels': [xMaxR]})
-    meshData = addNodeSet(meshData,{'name': sN[8], 'labels': [yMinR]})
-    meshData = addNodeSet(meshData,{'name': sN[9], 'labels': [yMaxR]})
-    meshData = addNodeSet(meshData,{'name': sN[10], 'labels': [zMinR]})
-    meshData = addNodeSet(meshData,{'name': sN[11], 'labels': [zMaxR]})
     return meshData
 
 def getNearestElements(meshData,pt,numEls,setName):
@@ -994,6 +987,11 @@ def make3D(meshData):
     dataOut = dict()
     dataOut['nodes'] = nodes3D
     dataOut['elements'] = meshData['elements']
+    try:
+        inSets = meshData['sets']
+        dataOut['sets'] = inSets
+    except:
+        pass
     return dataOut
 
 def tie2MeshesConstraints(tiedMesh,tgtMesh,maxDist):

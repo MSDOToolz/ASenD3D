@@ -32,6 +32,8 @@ class LowerTriMat {
 		
 		void ldlSolve(double solnVec[], double rhs[]);
 
+		bool posDef();
+
 		void writeToFile(std::ofstream& outFile);
 		
 		~LowerTriMat();

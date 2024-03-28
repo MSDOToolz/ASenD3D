@@ -101,7 +101,7 @@ towBound.addSegment('line',kp,nEls,'e4')
 tbData = towBound.getBoundaryMesh()
 
 towMesher = Mesh2D(tbData['nodes'],tbData['elements'])
-towMesh = towMesher.createUnstructuredMesh('tri')
+towMesh = towMesher.createUnstructuredMesh('quad')
 
 towMesh = make3D(towMesh)
 
@@ -132,7 +132,7 @@ towBound.addSegment('line',kp,nEls,'outerE4')
 tbData = towBound.getBoundaryMesh()
 
 matrixMesher = Mesh2D(tbData['nodes'],tbData['elements'])
-matrixMesh = matrixMesher.createUnstructuredMesh('tri')
+matrixMesh = matrixMesher.createUnstructuredMesh('quad')
 matrixMesh = make3D(matrixMesh)
 
 xShft = 2.0*hW
@@ -154,7 +154,6 @@ for i in range(0,numXtows):
         ct = ct + 1
         
 xTFaceMesh = xSurf.getSurfaceMesh()
-plotShellMesh(xTFaceMesh)
 
 xTFaceMesh = rotateMesh(xTFaceMesh,[0.,0.,0.],[1.,0.,0.],90.0)
 xTFaceMesh = rotateMesh(xTFaceMesh,[0.,0.,0.],[0.,0.,1.],90.0)
@@ -223,7 +222,7 @@ towBound.addSegment('line',kp,nEls,'e4')
 tbData = towBound.getBoundaryMesh()
 
 towMesher = Mesh2D(tbData['nodes'],tbData['elements'])
-towMesh = towMesher.createUnstructuredMesh('tri')
+towMesh = towMesher.createUnstructuredMesh('quad')
 
 towMesh = make3D(towMesh)
 
@@ -254,7 +253,7 @@ towBound.addSegment('line',kp,nEls,'outerE4')
 tbData = towBound.getBoundaryMesh()
 
 matrixMesher = Mesh2D(tbData['nodes'],tbData['elements'])
-matrixMesh = matrixMesher.createUnstructuredMesh('tri')
+matrixMesh = matrixMesher.createUnstructuredMesh('quad')
 matrixMesh = make3D(matrixMesh)
 
 xShft = 2.0*hW
@@ -301,41 +300,6 @@ yTMesh['sets'] = exSets
 
 wholeMesh = mergeMeshes(xTMesh,yTMesh)
 
-## Debug
-
-# allEls = wholeMesh['elements']
-# totEls = len(allEls)
-# newEls = np.zeros((totEls,8),dtype=int)
-# for i, el in enumerate(allEls):
-#     if(el[6] == -1):
-#         newEls[i,0:3] = el[0:3]
-#         newEls[i,3] = el[2]
-#         newEls[i,4:7] = el[3:6]
-#         newEls[i,7] = el[5]
-#     else:
-#         newEls[i,0:8] = el[0:8]
-
-# wholeMesh['elements'] = newEls
-
-wholeMesh = getNodeSetInXYZRange(wholeMesh,'debugNodes',xRange=[-0.46,-0.08],yRange=[-0.46,-0.4],zRange=[0.14,0.16])
-wholeMesh = getMatchingElementSet(wholeMesh,'debugNodes','debugEls',optn='anyNode')
-
-# print('debug nodes:')
-# nodes = wholeMesh['nodes']
-# for ns in wholeMesh['sets']['node']:
-#     if(ns['name'] == 'debugNodes'):
-#         for nd in ns['labels']:
-#             print(nodes[nd])
-            
-# print('debug elements:')
-# elements = wholeMesh['elements']
-# for es in wholeMesh['sets']['element']:
-#     if(es['name'] == 'debugEls'):
-#         for el in es['labels']:
-#             print(elements[el])
-
-## End Debug
-
 ## Define additional sets
 
 xTowSets = list()
@@ -356,10 +320,6 @@ wholeMesh = getElementSetUnion(wholeMesh,yTowSets,'allYTows')
 wholeMesh = getElementSetUnion(wholeMesh,matrixSets,'allMatrix')
 
 wholeMesh = getPeriodicSets(wholeMesh,xLen,yLen,zLen)
-
-dimAr = np.array([xDim,yDim,zDim])
-center = 0.5*(dimAr[:,0] + dimAr[:,1])
-wholeMesh = getNearestNodes(wholeMesh,center,1,'bodyCenter')
 
 ## Create model and add data
 

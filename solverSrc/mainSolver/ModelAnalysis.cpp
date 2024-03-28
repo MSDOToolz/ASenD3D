@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include "ModelClass.h"
 #include "ListEntClass.h"
 #include "SetClass.h"
@@ -850,7 +851,8 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 			thermLT->ldlSolve(tempV2, tempV1);
 		}
 		else {
-			gMResSparse(tempV2, *thermMat, *thermalConst, *thermLT, tempV1, cmd->convTol, cmd->maxIt, cmd->solverBlockDim);
+			conjGradSparse(tempV2, *thermMat, *thermalConst, *thermLT, tempV1, cmd->convTol, cmd->maxIt);
+			//gMResSparse(tempV2, *thermMat, *thermalConst, *thermLT, tempV1, cmd->convTol, cmd->maxIt, cmd->solverBlockDim);
 		}
 		thisNd = nodes->getFirst();
 		while (thisNd) {
@@ -885,9 +887,7 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 			if (!elasticScaled) {
 				scaleElasticConst();
 			}
-			cout << "check 1" << endl;
 			buildElasticConstLoad(tempV1);
-			cout << "check 2" << endl;
 			thisEl = elements->getFirst();
 			while(thisEl) {
 				if(thisEl->getNumIntDof() > 0) {
@@ -903,7 +903,8 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				elasticLT->ldlSolve(tempV2,tempV1);
 			}
 			else {
-				gMResSparse(tempV2, *elasticMat, *elasticConst, *elasticLT, tempV1, cmd->convTol, cmd->maxIt, 6*cmd->solverBlockDim);
+				conjGradSparse(tempV2, *elasticMat, *elasticConst, *elasticLT, tempV1, cmd->convTol, cmd->maxIt);
+				//gMResSparse(tempV2, *elasticMat, *elasticConst, *elasticLT, tempV1, cmd->convTol, cmd->maxIt, 6*cmd->solverBlockDim);
 			}
 			thisNd = nodes->getFirst();
 			while(thisNd) {
@@ -931,6 +932,9 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 				if(absdU > dUnorm) {
 					dUnorm = absdU;
 				}
+			}
+			if (cmd->nonlinearGeom) {
+				cout << "Nonlinear iteration: " << i2 << ", max solution step: " << dUnorm << endl;
 			}
 			i2++;
 		}
@@ -1404,7 +1408,8 @@ void Model::solveForAdjoint() {
 			elasticLT->ldlSolve(uAdj, dLdU);
 		}
 		else {
-			gMResSparse(uAdj, *elasticMat, *elasticConst, *elasticLT, dLdU, solveCmd->convTol, solveCmd->maxIt, 6*solveCmd->solverBlockDim);
+			conjGradSparse(uAdj, *elasticMat, *elasticConst, *elasticLT, dLdU, solveCmd->convTol, solveCmd->maxIt);
+			//gMResSparse(uAdj, *elasticMat, *elasticConst, *elasticLT, dLdU, solveCmd->convTol, solveCmd->maxIt, 6*solveCmd->solverBlockDim);
 		}
 		thisEl = elements->getFirst();
 		while (thisEl) {
@@ -1454,7 +1459,8 @@ void Model::solveForAdjoint() {
 			thermLT->ldlSolve(tAdj, dLdT);
 		}
 		else {
-			gMResSparse(tAdj, *thermMat, *thermalConst, *thermLT, dLdT, solveCmd->convTol, solveCmd->maxIt, solveCmd->solverBlockDim);
+			conjGradSparse(tAdj, *thermMat, *thermalConst, *thermLT, dLdT, solveCmd->convTol, solveCmd->maxIt);
+			//gMResSparse(tAdj, *thermMat, *thermalConst, *thermLT, dLdT, solveCmd->convTol, solveCmd->maxIt, solveCmd->solverBlockDim);
 		}
 	}
 	

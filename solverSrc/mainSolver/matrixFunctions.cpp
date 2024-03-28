@@ -155,6 +155,90 @@ void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stR
 	return;
 }
 
+void conjGradSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt) {
+	int i1;
+	int i2;
+	int i3;
+	int dim = mat.getDim();
+	int statusFreq = dim / 24;
+	double res;
+	double rNext;
+	double alpha;
+	double dp;
+	double beta;
+	double* hVec = new double[dim];
+	double* gVec = new double[dim];
+	double* zVec = new double[dim];
+	double* wVec = new double[dim];
+	double* tVec = new double[dim];
+
+	if (!pcMat.posDef()) {
+		cout << "Warning: preconditioning matrix for conjugate gradient solver is not positive definite." << endl;
+	}
+
+	for (i1 = 0; i1 < dim; i1++) {
+		soln[i1] = 0.0;
+		gVec[i1] = -rhs[i1];
+	}
+
+	pcMat.ldlSolve(wVec, gVec);
+
+	res = 0.0;
+	for (i1 = 0; i1 < dim; i1++) {
+		hVec[i1] = -wVec[i1];
+		res += gVec[i1] * wVec[i1];
+	}
+
+	i1 = 0;
+	i3 = 0;
+	while (i1 < maxIt && res > convTol) {
+		for (i2 = 0; i2 < dim; i2++) {
+			zVec[i2] = 0.0;
+		}
+		mat.vectorMultiply(zVec, hVec, false);
+		cnst.getTotalVecMult(zVec, hVec, tVec);
+		dp = 0.0;
+		for (i2 = 0; i2 < dim; i2++) {
+			dp += hVec[i2] * zVec[i2];
+		}
+		alpha = res / dp;
+		for (i2 = 0; i2 < dim; i2++) {
+			soln[i2] += alpha * hVec[i2];
+			gVec[i2] += alpha * zVec[i2];
+		}
+		pcMat.ldlSolve(wVec, gVec);
+		rNext = 0.0;
+		for (i2 = 0; i2 < dim; i2++) {
+			rNext += gVec[i2] * wVec[i2];
+		}
+		beta = rNext / res;
+		for (i2 = 0; i2 < dim; i2++) {
+			hVec[i2] = -wVec[i2] + beta * hVec[i2];
+		}
+		res = rNext;
+
+		if (i3 == statusFreq) {
+			cout << "Conjugate gradient iteration: " << i1 << ", residual: " << res << endl;
+			i3 = 0;
+		}
+		i1++;
+		i3++;
+	}
+
+	if (i1 == maxIt) {
+		cout << "Warning: Conjugate gradient solver did not converge to specified tolerance, " << convTol << " within tne maximum number of iterations, " << maxIt << endl;
+		cout << "Final residual norm: " << res << endl;
+	}
+
+	delete[] hVec;
+	delete[] gVec;
+	delete[] zVec;
+	delete[] wVec;
+	delete[] tVec;
+
+	return;
+}
+
 void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt, int restart) {
 	int i1;
 	int i2;
