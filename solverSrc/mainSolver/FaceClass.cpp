@@ -200,6 +200,7 @@ void Face::getAreaNormal(DiffDoub1& area, DiffDoub1 norm[], Node* ndAr[], Design
 //end skip 
  
  
+ 
 
 // FacePt
 

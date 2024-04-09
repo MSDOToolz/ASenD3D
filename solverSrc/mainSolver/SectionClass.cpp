@@ -597,6 +597,20 @@ Section* SectionList::getFirst() {
 	return firstSec;
 }
 
+int SectionList::getMaxNumLayers() {
+	int maxNL = 0;
+	int nL;
+	Section* thisSec = firstSec;
+	while (thisSec) {
+		nL = thisSec->getNumLayers();
+		if (nL > maxNL) {
+			maxNL = nL;
+		}
+		thisSec = thisSec->getNext();
+	}
+	return maxNL;
+}
+
 SectionList::~SectionList() {
 	Section* thisSec = firstSec;
 	Section* nextSec;

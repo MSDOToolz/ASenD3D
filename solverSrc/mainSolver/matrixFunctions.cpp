@@ -849,6 +849,7 @@ void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int
 	int i3Min;
 	int i3Max;
 	int i4;
+	int i5;
 	int loopCt;
 	double tmp;
 	double mag;
@@ -857,7 +858,12 @@ void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int
 	double* tempV1 = new double[matDim];
 	double* tempV2 = new double[matDim];
 	double* eVtmp = new double[matDim * matDim];
+	double* qMat = new double[matDim * matDim];
 	int* srtOrder = new int[matDim];
+
+	if (triDiag == 0) {
+		symFactor(mat, qMat, matDim);
+	}
 
 	for (i1 = 0; i1 < matDim; i1++) {
 		for (i2 = 0; i2 < matDim; i2++) {
@@ -942,10 +948,23 @@ void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int
 			loopCt++;
 		}
 		eVals[i1] = dp;
-		i3 = i1 * matDim;
-		for (i2 = 0; i2 < matDim; i2++) {
-			eVtmp[i3] = tempV1[i2];
-			i3++;
+		if (triDiag == 0) {
+			i4 = 0;
+			for (i2 = 0; i2 < matDim; i2++) {
+				i5 = i1 * matDim + i2;
+				eVtmp[i5] = 0.0;
+				for (i3 = 0; i3 < matDim; i3++) {
+					eVtmp[i5] += qMat[i4] * tempV1[i3];
+					i4++;
+				}
+			}
+		}
+		else {
+			i3 = i1 * matDim;
+			for (i2 = 0; i2 < matDim; i2++) {
+				eVtmp[i3] = tempV1[i2];
+				i3++;
+			}
 		}
 	}
 
@@ -981,6 +1000,7 @@ void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int
 	delete[] tempV1;
 	delete[] tempV2;
 	delete[] eVtmp;
+	delete[] qMat;
 	delete[] srtOrder;
 
 	return;
@@ -1237,6 +1257,230 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	delete[] coefVecs;
 	
 	return;
+}
+
+double rayQuot(double grad[], double Kv[], double Mv[], SparseMat& mat, ConstraintList& cnst, double massMat[], double inVec[]) {
+	int i1;
+	double rC;
+	int dim = mat.getDim();
+	double vKv;
+	double vMv = 0.0;
+	for (i1 = 0; i1 < dim; i1++) {
+		Kv[i1] = 0.0;
+		Mv[i1] = massMat[i1] * inVec[i1];
+		vMv += inVec[i1] * Mv[i1];
+	}
+	mat.vectorMultiply(Kv, inVec, false);
+	cnst.getTotalVecMult(Kv, inVec, grad);
+	vKv = 0.0;
+	for (i1 = 0; i1 < dim; i1++) {
+		vKv += inVec[i1] * Kv[i1];
+	}
+	rC = vKv / vMv;
+	for (i1 = 0; i1 < dim; i1++) {
+		grad[i1] = 2.0 * ((Kv[i1] / vMv) - rC * (Mv[i1] / vMv));
+	}
+	return rC;
+}
+
+double unitizeVec(double vec[], int dim) {
+	int i1;
+	double mag;
+	double minv;
+	mag = 0.0;
+	for (i1 = 0; i1 < dim; i1++) {
+		mag += vec[i1] * vec[i1];
+	}
+	mag = sqrt(mag);
+	minv = 1.0 / mag;
+	for (i1 = 0; i1 < dim; i1++) {
+		vec[i1] *= minv;
+	}
+	return mag;
+}
+
+void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, double massMat[], double inVecs[], double eVals[], int numVecs, int maxIt) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int dim;
+	double dp;
+	double mag;
+	double minv;
+	double res;
+	double rQ0;
+	double rQ1;
+	double stepLen;
+	bool reduced;
+	
+	dim = mat.getDim();
+
+	double* grad0 = new double[dim];
+	double* grad1 = new double[dim];
+	double* d2RQ = new double[dim];
+	double* vStep = new double[dim];
+	double* Kv = new double[dim];
+	double* Mv = new double[dim];
+
+	for (i1 = 0; i1 < numVecs; i1++) {
+		i2 = i1 * dim;
+		unitizeVec(&inVecs[i2], dim);
+		rQ0 = rayQuot(grad0, Kv, Mv, mat, cnst, massMat, &inVecs[i2]);
+		res = 1.0;
+		i3 = 0;
+		while (i3 < maxIt && res > 1.0e-6) {
+			for (i4 = 0; i4 < dim; i4++) {
+				vStep[i4] = -grad0[i4];
+				if (vStep[i4] = 0.0) {
+					vStep[i4] = 1.0e-12;
+				}
+			}
+			unitizeVec(vStep, dim);
+			for (i4 = 0; i4 < dim; i4++) {
+				inVecs[i2 + i4] += 0.01*vStep[i4];
+			}
+			rQ1 = rayQuot(grad1, Kv, Mv, mat, cnst, massMat, &inVecs[i2]);
+			for (i4 = 0; i4 < dim; i4++) {
+				inVecs[i2 + i4] -= 0.01 * vStep[i4];
+			}
+			for (i4 = 0; i4 < dim; i4++) {
+				d2RQ[i4] = (grad1[i4] - grad0[i4]) / (0.01 * vStep[i4]);
+				if (d2RQ[i4] != 0.0) {
+					vStep[i4] = -grad0[i4] / d2RQ[i4];
+				}
+				else {
+					vStep[i4] = 0.0;
+				}
+				inVecs[i2 + i4] += vStep[i4];
+			}
+			unitizeVec(&inVecs[i2], dim);
+			rQ0 = rayQuot(grad0, Kv, Mv, mat, cnst, massMat, &inVecs[i2]);
+			unitizeVec(Kv, dim);
+			unitizeVec(Mv, dim);
+			dp = 0.0;
+			for (i4 = 0; i4 < dim; i4++) {
+				dp += Kv[i4] * Mv[i4];
+			}
+			res = 1.0 - abs(dp);
+			i3++;
+		}
+		cout << "Warning: eigenvector " << i1 << " did not converge within the max iterations." << endl;
+		eVals[i1] = rQ0;
+	}
+
+	delete[] grad0;
+	delete[] grad1;
+	delete[] d2RQ;
+	delete[] vStep;
+	delete[] Kv;
+	delete[] Mv;
+}
+
+void getNearestEvecSubspace(SparseMat& mat, ConstraintList& cnst, double massMat[], double inVecs[], double eVals[], int numVecs) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int i6;
+	double dp;
+	int dim = mat.getDim();
+	
+	double* gMat = new double[dim * numVecs];
+	i1 = numVecs * numVecs;
+	double* condMat = new double[i1];
+	double* condEvecs = new double[i1];
+	double* t1 = new double[dim];
+	double* t2 = new double[dim];
+	double* t3 = new double[dim];
+
+	for (i1 = 0; i1 < dim; i1++) {
+		massMat[i1] = sqrt(massMat[i1]);
+	}
+
+	for (i1 = 0; i1 < numVecs; i1++) {
+		i2 = dim * i1;
+		for (i3 = 0; i3 < dim; i3++) {
+			gMat[i2 + i3] = massMat[i3] * inVecs[i2 + i3];
+		}
+		for (i3 = 0; i3 < i1; i3++) {
+			i5 = dim * i3;
+			dp = 0.0;
+			for (i4 = 0; i4 < dim; i4++) {
+				dp += gMat[i5 + i4] * gMat[i2 + i4];
+			}
+			for (i4 = 0; i4 < dim; i4++) {
+				gMat[i2 + i4] -= dp * gMat[i5 + i4];
+			}
+		}
+		unitizeVec(&gMat[i2], dim);
+	}
+
+	for (i1 = 0; i1 < dim; i1++) {
+		massMat[i1] = 1.0/massMat[i1];
+	}
+
+	for (i1 = 0; i1 < numVecs; i1++) {
+		i3 = i1 * dim;
+		for (i2 = 0; i2 < dim; i2++) {
+			t1[i2] = massMat[i2] * gMat[i3 + i2];
+			t2[i2] = 0.0;
+		}
+		mat.vectorMultiply(t2, t1, false);
+		cnst.getTotalVecMult(t2, t1, t3);
+		for (i2 = 0; i2 < dim; i2++) {
+			t1[i2] = massMat[i2] * t2[i2];
+		}
+		i6 = i1 * numVecs;
+		i5 = 0;
+		for (i2 = 0; i2 < numVecs; i2++) {
+			//i6 = i1 * numVecs + i2;
+			condMat[i6] = 0.0;
+			//i5 = i2 * dim;
+			for (i4 = 0; i4 < dim; i4++) {
+				//i5 = i2 * dim + i4;
+				condMat[i6] += gMat[i5] * t1[i4];
+				i5++;
+			}
+			i6++;
+		}
+	}
+
+	symEigenSolve(eVals, condEvecs, condMat, numVecs, 0);
+
+	for (i1 = 0; i1 < numVecs; i1++) {
+		for (i2 = 0; i2 < dim; i2++) {
+			t1[i2] = 0.0;
+		}
+		i5 = 0;
+		i6 = i1 * numVecs;
+		for (i2 = 0; i2 < numVecs; i2++) {
+			//i6 = i1 * numVecs + i2;
+			for (i3 = 0; i3 < dim; i3++) {
+				t1[i3] += gMat[i5] * condEvecs[i6];
+				i5++;
+			}
+			i6++;
+		}
+		i3 = i1 * dim;
+		for (i2 = 0; i2 < dim; i2++) {
+			inVecs[i3 + i2] = massMat[i2] * t1[i2];
+		}
+		unitizeVec(&inVecs[i3], dim);
+	}
+
+	for (i1 = 0; i1 < dim; i1++) {
+		dp = 1.0 / massMat[i1];
+		massMat[i1] = dp * dp;
+	}
+
+	delete[] gMat;
+	delete[] condMat;
+	delete[] condEvecs;
+	delete[] t1;
+	delete[] t2;
+	delete[] t3;
 }
 
 //dup1
@@ -1611,6 +1855,7 @@ void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -2416,6 +2661,7 @@ void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]) {
  
  
  
+ 
 //dup1
 void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
@@ -2614,6 +2860,7 @@ void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1,
 //end dup  
  
 //end skip 
+ 
  
  
  

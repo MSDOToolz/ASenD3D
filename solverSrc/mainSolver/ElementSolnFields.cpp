@@ -1002,32 +1002,6 @@ void Element::getStressPrereq(DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVa
 	if (dofPerNd == 6) {
 		correctOrient(pre.locOri, pre.globNds);
 		if (type != 2) {
-			numLay = sectPtr->getNumLayers();
-			if (numLay > pre.currentLayLen) {
-				if (pre.currentLayLen > 0) {
-					delete[] pre.layerZ;
-					delete[] pre.layerThk;
-					delete[] pre.layerAng;
-					delete[] pre.layerQ;
-					delete[] pre.layerD;
-					delete[] pre.layerTE;
-					delete[] pre.layerE0;
-					delete[] pre.layerDen;
-					delete[] pre.layerTC;
-					delete[] pre.layerSH;
-				}
-				pre.layerZ = new DiffDoub0[numLay];
-				pre.layerThk = new DiffDoub0[numLay];
-				pre.layerAng = new DiffDoub0[numLay];
-				pre.layerQ = new DiffDoub0[9 * numLay];
-				pre.layerD = new DiffDoub0[9 * numLay];
-				pre.layerTE = new DiffDoub0[3 * numLay];
-				pre.layerE0 = new DiffDoub0[3 * numLay];
-				pre.layerDen = new DiffDoub0[numLay];
-				pre.layerTC = new DiffDoub0[9 * numLay];
-				pre.layerSH = new DiffDoub0[numLay];
-				pre.currentLayLen = numLay;
-			}
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
 			getLayerAngle(pre.layerAng, dvAr);
 			getLayerQ(pre.layerQ, dvAr);
@@ -2734,32 +2708,6 @@ void Element::getStressPrereq(DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVa
 	if (dofPerNd == 6) {
 		correctOrient(pre.locOri, pre.globNds);
 		if (type != 2) {
-			numLay = sectPtr->getNumLayers();
-			if (numLay > pre.currentLayLen) {
-				if (pre.currentLayLen > 0) {
-					delete[] pre.layerZ;
-					delete[] pre.layerThk;
-					delete[] pre.layerAng;
-					delete[] pre.layerQ;
-					delete[] pre.layerD;
-					delete[] pre.layerTE;
-					delete[] pre.layerE0;
-					delete[] pre.layerDen;
-					delete[] pre.layerTC;
-					delete[] pre.layerSH;
-				}
-				pre.layerZ = new DiffDoub1[numLay];
-				pre.layerThk = new DiffDoub1[numLay];
-				pre.layerAng = new DiffDoub1[numLay];
-				pre.layerQ = new DiffDoub1[9 * numLay];
-				pre.layerD = new DiffDoub1[9 * numLay];
-				pre.layerTE = new DiffDoub1[3 * numLay];
-				pre.layerE0 = new DiffDoub1[3 * numLay];
-				pre.layerDen = new DiffDoub1[numLay];
-				pre.layerTC = new DiffDoub1[9 * numLay];
-				pre.layerSH = new DiffDoub1[numLay];
-				pre.currentLayLen = numLay;
-			}
 			getLayerThkZ(pre.layerThk, pre.layerZ, offset, dvAr);
 			getLayerAngle(pre.layerAng, dvAr);
 			getLayerQ(pre.layerQ, dvAr);
@@ -3477,6 +3425,7 @@ void Element::putVecToGlobMat(SparseMat& qMat, DiffDoub1 elQVec[], bool forTherm
 //end dup
  
 //end skip 
+ 
  
  
  

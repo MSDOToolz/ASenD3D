@@ -334,7 +334,7 @@ class ResultsProcessor:
         cbTitle = field + str(component)
         plotMeshSolution(ndCrd,values,verts,valMode='vertex',title=cbTitle)
         
-    def plotElementResults(self,field,component=1,elementSet='all',deformed=False,defScaleFact=1.0):
+    def plotElementResults(self,field,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
                                         
         ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
@@ -347,28 +347,30 @@ class ResultsProcessor:
             numEls = numEls + len(et['connectivity'])
         elValues = np.zeros(numEls,dtype=float)
         for el in self.elementData['elementResults'][field]:
-            lab = el[0]
-            i = component + 2
-            val = el[i]
-            elValues[lab] = val
-        for et in self.modelData['elements']:
-            elst = et['connectivity']
-            for el in elst:
+            if(el[2] == layer):
                 lab = el[0]
-                v = elValues[lab]
-                for i, nd in enumerate(el):
-                    if(i > 0):
-                        ndValues[nd] = ndValues[nd] + v
-                        numHits[nd] = numHits[nd] + 1
-        nVLst = list()
-        for nd in self.modelData['nodes']:
-            lab = nd[0]
-            if(lab in ndSet):
-                nVLst.append(ndValues[lab]/numHits[lab])
+                i = component + 2
+                val = el[i]
+                elValues[lab] = val
+        # for et in self.modelData['elements']:
+        #     elst = et['connectivity']
+        #     for el in elst:
+        #         lab = el[0]
+        #         v = elValues[lab]
+        #         for i, nd in enumerate(el):
+        #             if(i > 0):
+        #                 ndValues[nd] = ndValues[nd] + v
+        #                 numHits[nd] = numHits[nd] + 1
+        # nVLst = list()
+        # for nd in self.modelData['nodes']:
+        #     lab = nd[0]
+        #     if(lab in ndSet):
+        #         nVLst.append(ndValues[lab]/numHits[lab])
         
+        fcVals = self.getFaceValues(elSet,elValues)
         verts = self.buildElementVertexList(elSet)
         cbTitle = field + str(component)
-        plotMeshSolution(ndCrd,nVLst,verts,valMode='vertex',title=cbTitle)
+        plotMeshSolution(ndCrd,fcVals,verts,valMode='cell',title=cbTitle)
         
     def plotModalResults(self,mode,elementSet='all',defScaleFact=1.0):
         nodeCopy = self.nodeData.copy()
@@ -388,13 +390,20 @@ class ResultsProcessor:
         fnLst = fileName.split('.')
         verts = self.buildElementVertexList(elSet)
         valAr = np.zeros(numNds,dtype=float)
+        firstStep = True
         for ts in timeSteps:
+            print('animate time step: ' + str(ts))
             fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
             self.loadNodeResults(fn)
             ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
             for nd in self.nodeData['nodeResults'][field]:
                 lab = nd[0]
-                valAr[lab] = nd[component]
+                if(component == 'mag'):
+                    vec = np.array(nd[1:4])
+                    val = np.linalg.norm(vec)
+                else:
+                    val = nd[component]
+                valAr[lab] = val
             ndValues = list()
             for nd in self.modelData['nodes']:
                 lab = nd[0]
@@ -402,14 +411,18 @@ class ResultsProcessor:
                     ndValues.append(valAr[lab])
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
+            if(firstStep):
+                allNdCrd.append(ndCrd)
+                allNdValues.append(ndValues)
+                firstStep = False
         cbTitle = field + str(component)
         animateMeshSolution(allNdCrd,allNdValues,verts,frameDuration,cbTitle)
         
-    def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',deformed=False,defScaleFact=1.0,nodeResFile=None,frameDuration=1000):
+    def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,frameDuration=1000):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
         
         allNdCrd = list()
-        allNdValues = list()
+        allFcValues = list()
         numNds = len(self.modelData['nodes'])
         fnLst = fileName.split('.')
         if(nodeResFile != None):
@@ -428,31 +441,34 @@ class ResultsProcessor:
             ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
             fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
             self.loadElementResults(fn)
+            elValues = 0.0
             for el in self.elementData['elementResults'][field]:
-                lab = el[0]
-                i = component + 2
-                val = el[i]
-                elValues[lab] = val
-            valAr = np.zeros(numNds,dtype=float)
-            numHits = np.zeros(numNds,dtype=int)
-            for et in self.modelData['elements']:
-                elst = et['connectivity']
-                for el in elst:
+                if(el[2] == layer):
                     lab = el[0]
-                    v = elValues[lab]
-                    for i, nd in enumerate(el):
-                        if(i > 0):
-                            valAr[nd] = valAr[nd] + v
-                            numHits[nd] = numHits[nd] + 1
-            ndValues = list()
-            for nd in self.modelData['nodes']:
-                lab = nd[0]
-                if(lab in ndSet):
-                    ndValues.append(valAr[lab]/numHits[lab])
+                    i = component + 2
+                    val = el[i]
+                    elValues[lab] = val
+            # valAr = np.zeros(numNds,dtype=float)
+            # numHits = np.zeros(numNds,dtype=int)
+            # for et in self.modelData['elements']:
+            #     elst = et['connectivity']
+            #     for el in elst:
+            #         lab = el[0]
+            #         v = elValues[lab]
+            #         for i, nd in enumerate(el):
+            #             if(i > 0):
+            #                 valAr[nd] = valAr[nd] + v
+            #                 numHits[nd] = numHits[nd] + 1
+            # ndValues = list()
+            # for nd in self.modelData['nodes']:
+            #     lab = nd[0]
+            #     if(lab in ndSet):
+            #         ndValues.append(valAr[lab]/numHits[lab])
+            fcVals = self.getFaceValues(elSet,elValues)
             allNdCrd.append(ndCrd)
-            allNdValues.append(ndValues)
+            allFcValues.append(fcVals)
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allNdValues,verts,frameDuration,cbTitle)
+        animateMeshSolution(allNdCrd,allFcValues,verts,'cell',frameDuration,cbTitle)
         
     def animateModalSolution(self,mode,elementSet='all',defScaleFact=1.0):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
@@ -489,7 +505,7 @@ class ResultsProcessor:
         animateMeshSolution(allNdCrd,allNdValues,verts,title=cbTitle)
         self.nodeData = nodeCopy
         
-    def plotNodeHistory(self,fileName,field,timeSteps,nodeSet,component=1):
+    def nodeHistorySeries(self,fileName,field,timeSteps,nodeSet,component=1):
         fnLst = fileName.split('.')
         try:
             ndI = int(nodeSet)
@@ -500,13 +516,16 @@ class ResultsProcessor:
                 self.loadNodeResults(fn)
                 for nd in self.nodeData['nodeResults'][field]:
                     if(nd[0] == ndI):
-                        vals.append(nd[component])
+                        if(component == 'mag'):
+                            vec = np.array(nd[1:4])
+                            val = np.linalg.norm(vec)
+                        else:
+                            val = nd[component]
+                        vals.append(val)
                         timePts.append(self.nodeData['nodeResults']['time'])
             series = dict()
             lab = 'node_' + str(ndI)
             series[lab] = vals
-            ytitle = field + str(component)
-            plotTimeHistory(series,timePts,ytitle)
         except:
             series = dict()
             for ns in self.modelData['sets']['node']:
@@ -522,11 +541,20 @@ class ResultsProcessor:
                 for nd in self.nodeData['nodeResults'][field]:
                     try:
                         lab = 'node_' + str(nd[0])
-                        series[lab].append(nd[component])
+                        if(component == 'mag'):
+                            vec = np.array(nd[1:4])
+                            val = np.linalg.norm(vec)
+                        else:
+                            val = nd[component]
+                        series[lab].append(val)
                     except:
                         pass
-            ytitle = field + str(component)
-            plotTimeHistory(series,timePts,ytitle)
+        return series, timePts
+        
+    def plotNodeHistory(self,fileName,field,timeSteps,nodeSet,component=1):
+        series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
+        ytitle = field + str(component)
+        plotTimeHistory(series,timePts,ytitle)
         
     def plotElementHistory(self,fileName,field,timeSteps,elementSet,component=1):
         fnLst = fileName.split('.')
@@ -566,3 +594,38 @@ class ResultsProcessor:
                         pass
             ytitle = field + str(component)
             plotTimeHistory(series,timePts,ytitle)
+            
+    def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
+        series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
+        npts = len(timePts)
+        totalPeriod = timePts[npts-1] - timePts[0]
+        lowFreq = 1.0/totalPeriod
+        timeStep = totalPeriod/npts
+        highFreq = 1.0/(2*timeStep)
+        nFreq = int(np.ceil(highFreq/lowFreq))
+        freq = list()
+        for fi in range(0,nFreq):
+            freq.append((fi+1)*lowFreq)
+        pi2 = 2.0*np.pi
+        tAr = np.array(timePts)
+        ons = np.ones(npts,dtype=float)
+        seriesAmp = dict()
+        for sLab in series:
+            vAr = np.array(series[sLab])
+            seriesAmp[sLab] = list()
+            for fi in range(0,nFreq):
+                omega = pi2*(fi+1)*lowFreq
+                sVec = np.sin(omega*tAr)
+                cVec = np.cos(omega*tAr)
+                mT = np.array([sVec,cVec,ons])
+                mat = np.transpose(mT)
+                Q, R = np.linalg.qr(mat)
+                rhs = np.matmul(vAr,Q)
+                soln = np.linalg.solve(R,rhs)
+                amp = np.linalg.norm(soln[0:2])
+                seriesAmp[sLab].append(amp)
+        return seriesAmp, freq
+    
+    def plotNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
+        seriesAmp, freq = self.extractNodeFrequencies(fileName, field, timeSteps, nodeSet, component)
+        plotFrequencySpectrum(seriesAmp,freq)

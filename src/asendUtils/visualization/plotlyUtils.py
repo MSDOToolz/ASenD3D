@@ -268,15 +268,15 @@ def plotMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',title=''):
     
     maxLen = np.max([xLen,yLen,zLen])
     hL = 0.75*maxLen
-    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
-           'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
-           'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
+    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)], 'showbackground': False},
+           'yaxis': {'range': [(yMid-hL), (yMid+hL)], 'showbackground': False},
+           'zaxis': {'range': [(zMid-hL), (zMid+hL)], 'showbackground': False}}
     fig.update_layout(scene=scn)
 
     fig.show()
     return
 
-def animateMeshSolution(nodeCrd,values,faceVerts,frameDuration=1000,title=''):
+def animateMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',frameDuration=1000,title=''):
     frameList = list()
     for ni, nC in enumerate(nodeCrd):
         if(ni > 0):
@@ -287,6 +287,7 @@ def animateMeshSolution(nodeCrd,values,faceVerts,frameDuration=1000,title=''):
                 colorbar_title = title,
                 colorscale='turbo',
                 intensity=values[ni],
+                intesitymode=valMode,
                 i=faceVerts['v1'],
                 j=faceVerts['v2'],
                 k=faceVerts['v3'],
@@ -304,6 +305,7 @@ def animateMeshSolution(nodeCrd,values,faceVerts,frameDuration=1000,title=''):
             colorbar_title = title,
             colorscale='turbo',
             intensity=values[0],
+            intensitymode=valMode,
             i=faceVerts['v1'],
             j=faceVerts['v2'],
             k=faceVerts['v3'],
@@ -339,9 +341,9 @@ def animateMeshSolution(nodeCrd,values,faceVerts,frameDuration=1000,title=''):
     
     maxLen = np.max([xLen,yLen,zLen])
     hL = 0.75*maxLen
-    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
-            'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
-            'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
+    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)], 'showbackground': False},
+            'yaxis': {'range': [(yMid-hL), (yMid+hL)], 'showbackground': False},
+            'zaxis': {'range': [(zMid-hL), (zMid+hL)], 'showbackground': False}}
     
     fig.update_layout(scene=scn)
     
@@ -360,3 +362,12 @@ def plotTimeHistory(seriesData,timePts,field='',title=''):
     fig.show()
     
     return
+
+def plotFrequencySpectrum(seriesData,frequencies,title=''):
+    fig = go.Figure()
+    fig.update_layout(title=title)
+    fig.update_xaxes(title='Frequency')
+    fig.update_yaxes(title='Amplitude')
+    for s in seriesData:
+        fig.add_trace(go.Bar(x=frequencies,y=seriesData[s],name=s))
+    fig.show()

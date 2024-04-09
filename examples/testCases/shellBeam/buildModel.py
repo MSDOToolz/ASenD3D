@@ -49,35 +49,8 @@ blkMat.setDensity(1.0)
 myMod.addMaterial(blkMat)
 
 ## Define constraints
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 1, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
 
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 2, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
-
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 3, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
-
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 4, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
-
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 5, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
-
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 6, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
+myMod.fixDisplacement('xMin',ux=0.,uy=0.,uz=0.,rx=0.,ry=0.,rz=0.)
 
 ## Write Input file
 

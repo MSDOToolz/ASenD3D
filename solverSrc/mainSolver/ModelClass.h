@@ -44,6 +44,8 @@ class Model {
 		int timeStepsSaved;
 		JobCommand* solveCmd;
 		JobCommand* modalCmd;
+		DiffDoub0StressPrereq* d0Pre;
+		DiffDoub1StressPrereq* d1Pre;
 		
 		SparseMat* elasticMat;
 		LowerTriMat* elasticLT;
@@ -140,6 +142,8 @@ class Model {
 		void updateReference();
 		
 		void findSurfaceFaces();
+
+		void prepMatrixFactorizations();
 		
 		void analysisPrep();
 		
@@ -162,6 +166,8 @@ class Model {
 		void solveStep(JobCommand *cmd, double time, double appLdFact);
 		
 		void solve(JobCommand *cmd);
+
+		void zeroSolution(StringList& fields);
 		
 		void eigenSolve(JobCommand* cmd);
 

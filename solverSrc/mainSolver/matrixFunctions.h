@@ -33,6 +33,14 @@ void eigenFull(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, d
 
 void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, double massMat[], int matDim);
 
+double rayQuot(double grad[], double Kv[], double Mv[], SparseMat& mat, ConstraintList& cnst, double massMat[], double inVec[]);
+
+double unitizeVec(double vec[], int dim);
+
+void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, double massMat[], double inVecs[], double eVals[], int numVecs, int maxIt);
+
+void getNearestEvecSubspace(SparseMat& mat, ConstraintList& cnst, double massMat[], double inVecs[], double eVals[], int numVecs);
+
 //dup1
 void qRFactor(DiffDoub0 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
 
@@ -53,6 +61,7 @@ void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -102,6 +111,7 @@ void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]);
  
  
  
+ 
 //dup1
 
 void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1, int v2);
@@ -118,6 +128,7 @@ void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1,
 //end dup
  
 //end skip 
+ 
  
  
  

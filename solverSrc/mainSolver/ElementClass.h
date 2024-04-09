@@ -48,7 +48,7 @@ public:
 
 	int currentLayLen;
 
-	DiffDoub0StressPrereq();
+	DiffDoub0StressPrereq(int numLayers);
 
 	~DiffDoub0StressPrereq();
 };
@@ -95,13 +95,14 @@ public:
 
 	int currentLayLen;
 
-	DiffDoub1StressPrereq();
+	DiffDoub1StressPrereq(int numLayers);
 
 	~DiffDoub1StressPrereq();
 };
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -441,6 +442,7 @@ class Element {
  
  
  
+ 
 		void getElVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
 
 		void addToGlobVec(double elVec[], double globVec[], bool forTherm, bool intnl, Node* ndAr[]);
@@ -505,6 +507,7 @@ class Element {
 //end dup
  
 //end skip 
+ 
  
  
  

@@ -285,6 +285,8 @@ class SectionList {
 		
 		Section* getFirst();
 
+		int getMaxNumLayers();
+
 		~SectionList();
 };
 

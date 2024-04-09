@@ -237,7 +237,7 @@ class Model():
         if(ndSets is None):
             sN = ['periodicXMin','periodicXMax',
                   'periodicYMin','periodicYMax',
-                  'periodicZMax','periodicZMax',
+                  'periodicZMin','periodicZMax',
                   'xMinRef','xMaxRef',
                   'yMinRef','yMaxRef',
                   'zMinRef','zMaxRef']
@@ -441,7 +441,7 @@ class Model():
         self.integrateForceElements()
         self.integrateMassElements()
         
-        fileStr = yaml.dump(self.modelData,sort_keys=False)
+        fileStr = yaml.dump(self.modelData,width=200,sort_keys=False)
         
         fileStr = fileStr.replace("'","")
         fileStr = fileStr.replace('"','')

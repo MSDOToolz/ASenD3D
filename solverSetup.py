@@ -76,12 +76,12 @@ else:
     os.chdir(srcDir)
     
     sourceFiles = ['unstrucTetMesh.cpp',
-                   'MeshElement.cpp', 'MeshElement.h',
-                   'Mesher.cpp', 'Mesher.h',
-                   'MeshFace.cpp', 'MeshFace.h',
-                   'MeshNode.cpp', 'MeshNode.h',
-                   'SpatialGrid.cpp', 'SpatialGrid.h',
-                   'utilities.cpp', 'utilities.h']
+                    'MeshElement.cpp', 'MeshElement.h',
+                    'Mesher.cpp', 'Mesher.h',
+                    'MeshFace.cpp', 'MeshFace.h',
+                    'MeshNode.cpp', 'MeshNode.h',
+                    'SpatialGrid.cpp', 'SpatialGrid.h',
+                    'utilities.cpp', 'utilities.h']
     
     args = [CC,'-o',meshDir]
     

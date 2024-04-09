@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 //int main() {
 //	int argc = 2;
 //	string argv[2];
-//	argv[1] = "C:/Users/evans/ASenDHome/ASenD3D/examples/staticAnalysis/biaxialComposite/job.yaml";
+//	argv[1] = "C:/Users/evans/ASenDHome/working/IEA_15/staticPressure/job.yaml";
 // --------------------------------------
 
 	if(argc < 2) {

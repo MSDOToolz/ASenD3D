@@ -37,12 +37,16 @@ jobCommands:
     solverBlockDim:
     maxIterations:
     convergenceTol:
+    
+  - command: zeroSolution
+    fields: 
 
   - command: modalAnalysis X
-    type: buckling
+    type: buckling , frequency, dynSoln
     numModes: 10
     targetEigenvalue: 0.0
     solverMethod: 
+    maxIterations:
     
   - command: setSolnToMode X
     solnField: displacement, velocity, acceleration

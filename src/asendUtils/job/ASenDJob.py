@@ -73,7 +73,7 @@ class ASenDJob:
               simPeriod=1.0,saveSolnHist=False,solnHistDir='',solverMethod='direct',
               solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
         newCmd = dict()
-        newCmd['command'] = 'setSolveOptions'
+        newCmd['command'] = 'solvePrep'
         if(not elastic):
             newCmd['elastic'] = 'no'
         if(thermal):
@@ -130,11 +130,21 @@ class ASenDJob:
             newCmd['convergenceTol'] = convTol
         self.jobData['jobCommands'].append(newCmd)
         
-    def modalAnalysis(self,analysisType='buckling',numModes=10,solverMethod='direct'):
+    def zeroSolution(self,fields='all'):
+        newCmd = dict()
+        newCmd['command'] = 'zeroSolution'
+        if(fields == 'all'):
+            newCmd['fields'] = ['temperature','tdot','displacement','velocity','acceleration']
+        else:
+            newCmd['fields'] = fields
+        self.jobData['jobCommands'].append(newCmd)
+        
+    def modalAnalysis(self,analysisType='buckling',numModes=10,targetEigenvalue=0.0,solverMethod='direct'):
         newCmd = dict()
         newCmd['command'] = 'modalAnalysis'
         newCmd['type'] = analysisType
         newCmd['numModes'] = numModes
+        newCmd['targetEigenvalue'] = targetEigenvalue
         newCmd['solverMethod'] = solverMethod
         self.jobData['jobCommands'].append(newCmd)
         

@@ -21,15 +21,15 @@ from asendUtils.ResultsProcessor import *
 
 ## Set laminate specifications
 
-xDim = [-0.5,0.5]
-yDim = [-0.5,0.5]
-zDim = [-0.15,0.15]
 numXtows = 1
 numYtows = 1
-thkRatio = 2
-numStacks = 1
-volFract = 0.6
-elSize = 0.035
+numStacks = 2
+thkRatio = 5.0
+xDim = [0.,numXtows*0.0035]
+yDim = [0.,numYtows*0.0035]
+zDim = [0.,numStacks*0.0006*1.25]
+volFract = 0.7
+elSize = 0.0001
 
 ## Calculate additional specs
 
@@ -286,6 +286,8 @@ yTFaceMesh = translateMesh(yTFaceMesh, transVec)
 
 # Extrude the x and y tow faces to make a 3D mesh
 
+print('extruding face meshes')
+
 xTMesher = Mesh3D(xTFaceMesh['nodes'],xTFaceMesh['elements'])
 xLen = xDim[1] - xDim[0]
 xTMesh = xTMesher.createSweptMesh('inDirection',xExtrudeEls,sweepDistance=xLen,axis=[-1.0,0.0,0.0])
@@ -297,6 +299,8 @@ yLen = yDim[1] - yDim[0]
 yTMesh = yTMesher.createSweptMesh('inDirection',yExtrudeEls,yLen,axis=[0.,-1.,0.])
 exSets = getExtrudedSets(yTFaceMesh,yExtrudeEls)
 yTMesh['sets'] = exSets
+
+print('merging meshes')
 
 wholeMesh = mergeMeshes(xTMesh,yTMesh)
 
@@ -314,14 +318,19 @@ for es in wholeMesh['sets']['element']:
         yTowSets.append(nm)
     elif('Matrix' in nm):
         matrixSets.append(nm)
+        
+print('getting set unions')
 
 wholeMesh = getElementSetUnion(wholeMesh,xTowSets,'allXTows')
 wholeMesh = getElementSetUnion(wholeMesh,yTowSets,'allYTows')
 wholeMesh = getElementSetUnion(wholeMesh,matrixSets,'allMatrix')
 
+print('getting periodic sets')
 wholeMesh = getPeriodicSets(wholeMesh,xLen,yLen,zLen)
 
 ## Create model and add data
+
+print('building model')
 
 mod = Model()
 
@@ -359,6 +368,8 @@ mod.addMaterial(newMat)
 rtDir = getEnvPath('rootpath')
 modFile = rtDir + '/examples/common/biaxialComposite.yaml'
 mod.writeModelInput(modFile)
+
+print('plotting')
 
 rp = ResultsProcessor(modFile)
 rp.plotElementProperty()

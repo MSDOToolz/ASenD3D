@@ -21,7 +21,8 @@ if(not os.path.exists('natFreq/results')):
 myJob = ASenDJob()
 myJob.readModelInput('shellBeam.yaml')
 
-myJob.solve()
+##myJob.solve()
+myJob.solvePrep()
 myJob.modalAnalysis(analysisType='frequency')
 
 myJob.writeModalResults('natFreq/results/natFreqResults.yaml')

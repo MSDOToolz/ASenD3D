@@ -44,6 +44,8 @@ Model::Model() {
 	thermScaled = false;
 	solveCmd = nullptr;
 	modalCmd = nullptr;
+	d0Pre = nullptr;
+	d1Pre = nullptr;
 
 	eigVecs = nullptr;
 	eigVals = nullptr;
@@ -162,6 +164,9 @@ void Model::executeJob() {
 			solveCmd = thisCmd;
 			solve(thisCmd);
 		}
+		else if (cmdStr == "zeroSolution") {
+			zeroSolution(*thisCmd->fields);
+		}
 		else if (cmdStr == "modalAnalysis") {
 			cout << "running modal analysis " << fileName << endl;
 			modalCmd = thisCmd;
@@ -177,7 +182,7 @@ void Model::executeJob() {
 					cout << "Warning: dynamic analysis was run but time history was not saved." << endl;
 					cout << "         The objective can only be computed based on the final state." << endl;
 					objective->clearValues();
-					objective->calculateTerms(solveCmd->simPeriod, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+					objective->calculateTerms(solveCmd->simPeriod, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray,d0Pre);
 				}
 				else {
 					objective->clearValues();
@@ -196,7 +201,7 @@ void Model::executeJob() {
 							thisNd = thisNd->getNext();
 						}
 						readTimeStepSoln(i1);
-						objective->calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+						objective->calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
 						i1--;
 						time -= solveCmd->timeStep;
 					}
@@ -204,7 +209,7 @@ void Model::executeJob() {
 			}
 			else {
 				objective->clearValues();
-				objective->calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray);
+				objective->calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
 			}
 		}
 		else if (cmdStr == "calcObjGradient") {
@@ -282,6 +287,11 @@ Model::~Model() {
 	delete[] dVarArray;
 	delete objective;
 	delete job;
+
+	if (d0Pre) {
+		delete d0Pre;
+		delete d1Pre;
+	}
 
 	delete elasticMat;
 	delete elasticLT;

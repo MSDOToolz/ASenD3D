@@ -228,7 +228,6 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	DiffDoub0 flux[3];
 	string fieldList;
 	double time;
-	DiffDoub0StressPrereq* stPre = new DiffDoub0StressPrereq;
 
 	if (timeStep >= 0) {
 		// Read the results from the time step file and store them in nodes
@@ -298,7 +297,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "stress strain strainEnergyDen";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
-				elPt->getStressPrereq(*stPre, nodeArray, dVarArray);
+				elPt->getStressPrereq(*d0Pre, nodeArray, dVarArray);
 				if (position == "intPts") {
 					numIP = elPt->getNumIP();
 					intPts = elPt->getIP();
@@ -314,7 +313,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 						numLay = 1;
 					}
 					for (i2 = 0; i2 < numLay; i2++) {
-						elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, *stPre);
+						elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, *d0Pre);
 						outFile << "        - [" << elLabel << ", ";
 						if (thisField == "strain") {
 							outFile << i1 << ", " << i2 << ", " << strain[0].val;
@@ -343,7 +342,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "sectionDef sectionFrcMom";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1 && elPt->getDofPerNd() == 6) {
-				elPt->getStressPrereq(*stPre, nodeArray, dVarArray);
+				elPt->getStressPrereq(*d0Pre, nodeArray, dVarArray);
 				if (position == "intPts") {
 					numIP = elPt->getNumIP();
 					intPts = elPt->getIP();
@@ -355,7 +354,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 				for (i1 = 0; i1 < numIP; i1++) {
 					type = elPt->getType();
 					//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
-					elPt->getDefFrcMom(def, frcMom, &intPts[3 * i1], solveCmd->nonlinearGeom, *stPre);
+					elPt->getDefFrcMom(def, frcMom, &intPts[3 * i1], solveCmd->nonlinearGeom, *d0Pre);
 					outFile << "        - [" << elLabel << ", ";
 					if (thisField == "sectionDef") {
 						outFile << i1 << ", " << def[0].val;
@@ -377,7 +376,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "tempGradient heatFlux";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
-				elPt->getStressPrereq(*stPre, nodeArray, dVarArray);
+				elPt->getStressPrereq(*d0Pre, nodeArray, dVarArray);
 				if (position == "intPts") {
 					numIP = elPt->getNumIP();
 					intPts = elPt->getIP();
@@ -396,7 +395,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 					}
 					for (i2 = 0; i2 < numLay; i2++) {
 						//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
-						elPt->getFluxTGrad(flux, tGrad, &intPts[3 * i1], i2, *stPre);
+						elPt->getFluxTGrad(flux, tGrad, &intPts[3 * i1], i2, *d0Pre);
 						outFile << "        - [" << elLabel << ", " << i1 << ", " << i2 << ", ";
 						if (thisField == "tempGradient") {
 							outFile << tGrad[0].val << ", " << tGrad[1].val << ", " << tGrad[2].val << "]\n";
@@ -414,8 +413,6 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	}
 
 	outFile.close();
-
-	delete stPre;
 
 	return;
 }

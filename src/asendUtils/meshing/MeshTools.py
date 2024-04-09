@@ -522,7 +522,7 @@ def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
     if(setNames is None):
         sN = ['periodicXMin','periodicXMax',
               'periodicYMin','periodicYMax',
-              'periodicZMax','periodicZMax',
+              'periodicZMin','periodicZMax',
               'xMinRef','xMaxRef',
               'yMinRef','yMaxRef',
               'zMinRef','zMaxRef']

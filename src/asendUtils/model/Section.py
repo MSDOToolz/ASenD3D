@@ -5,6 +5,8 @@ Created on Fri Nov 10 10:50:20 2023
 @author: evans
 """
 
+import numpy as np
+
 class Section:
     
     def __init__(self,secType):
@@ -15,8 +17,8 @@ class Section:
         self.secData['material'] = matName
         
     def setOrientation(self,xDir,xyVec):
-        oriLst = xDir
-        oriLst.extend(xyVec)
+        oriLst = list(xDir)
+        oriLst.extend(list(xyVec))
         self.secData['orientation'] = str(oriLst)
         
     def setZOffset(self,offset):

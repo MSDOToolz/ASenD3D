@@ -387,7 +387,7 @@ void ObjectiveTerm::dVolAveragedD(double dLdD[]) {
 	return;
 }
 
-void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
+void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre) {
 	if (time < activeTime[0] || time > activeTime[1]) {
 		return;
 	}
@@ -403,7 +403,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 	int qInd;
 	double ndData[6];
 	Element* thisEl;
-	DiffDoub0StressPrereq* stPre = new DiffDoub0StressPrereq;
 	double* spt = nullptr;
 	DiffDoub0 strain[6];
 	DiffDoub0 stress[6];
@@ -477,11 +476,9 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				value+= getVolIntegral();
 				return;
 			} else {
-				delete stPre;
 				value+= getVolAverage();
 				return;
 			}
@@ -543,7 +540,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			delete stPre;
 			value+= getPowerNorm();
 			return;
 		}
@@ -554,11 +550,9 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				value+= getVolIntegral();
 				return;
 			} else {
-				delete stPre;
 				value+= getVolAverage();
 				return;
 			}
@@ -626,7 +620,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			delete stPre;
 			value += getPowerNorm();
 			return;
 		}
@@ -638,12 +631,10 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				value += getVolIntegral();
 				return;
 			}
 			else {
-				delete stPre;
 				value += getVolAverage();
 				return;
 			}
@@ -700,7 +691,6 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 					qInd++;
 				}
 			}
-			delete stPre;
 			value += getPowerNorm();
 			return;
 		}
@@ -712,12 +702,10 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 				tgtVec[0] = tgtVals.getFirst()->value;
 			}
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				value += getVolIntegral();
 				return;
 			}
 			else {
-				delete stPre;
 				value += getVolAverage();
 				return;
 			}
@@ -753,17 +741,14 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* 
 		} else {
 			tgtVec[0] = tgtVals.getFirst()->value;
 		}
-		delete stPre;
 		value+= getVolIntegral();
 		return;
 	}
 
-	delete stPre;
-
 	return;
 }
 
-void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
+void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre) {
 	if (time < activeTime[0] || time > activeTime[1]) {
 		return;
 	}
@@ -779,7 +764,6 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 	int dofInd;
 	int currRank;
 	Element* thisEl;
-	DiffDoub0StressPrereq* stPre = new DiffDoub0StressPrereq;
 	double* spt = nullptr;
 	DiffDoub0 strain[6];
 	DiffDoub0 stress[6];
@@ -842,12 +826,10 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 		}
 		else if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
@@ -912,18 +894,15 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
@@ -968,18 +947,15 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
@@ -1017,30 +993,25 @@ void ObjectiveTerm::getdLdU(double dLdU[], double dLdV[], double dLdA[], double 
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			delete stPre;
 			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 			else {
-				delete stPre;
 				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
 				return;
 			}
 		}
 	}
 
-	delete stPre;
-
 	return;
 }
 
-void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
+void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq* stPre) {
 	if (time < activeTime[0] || time > activeTime[1]) {
 		return;
 	}
@@ -1055,7 +1026,6 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 	Element* thisEl;
 	DesignVariable* thisDV;
 	DiffDoub0 dvVal;
-	DiffDoub1StressPrereq* stPre = new DiffDoub1StressPrereq;
 	double* spt = nullptr;
 	DiffDoub1 strain[6];
 	DiffDoub1 stress[6];
@@ -1118,18 +1088,15 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
 			}
@@ -1188,18 +1155,15 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
 			}
@@ -1247,18 +1211,15 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			for (i1 = 0; i1 < qLen; i1++) {
 				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
 			}
-			delete stPre;
 			dPowerNormdD(dLdD);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				delete stPre;
 				dVolIntegraldD(dLdD);
 				return;
 			}
 			else {
-				delete stPre;
 				dVolAveragedD(dLdD);
 				return;
 			}
@@ -1296,12 +1257,9 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 			thisEnt = thisEnt->next;
 			qInd++;
 		}
-		delete stPre;
 		dVolIntegraldD(dLdD);
 		return;
 	}
-
-	delete stPre;
 
 	return;
 }
@@ -1364,28 +1322,28 @@ void Objective::clearValues() {
 	return;
 }
 
-void Objective::calculateTerms(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
+void Objective::calculateTerms(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre) {
 	ObjectiveTerm* thisTerm = firstTerm;
 	while (thisTerm) {
-		thisTerm->getObjVal(time, nLGeom, ndAr, elAr, dvAr);
+		thisTerm->getObjVal(time, nLGeom, ndAr, elAr, dvAr, stPre);
 		thisTerm = thisTerm->getNext();
 	}
 	return;
 }
 
-void Objective::calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
+void Objective::calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre) {
 	ObjectiveTerm* thisTerm = firstTerm;
 	while (thisTerm) {
-		thisTerm->getdLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, time, nLGeom, ndAr, elAr, dvAr);
+		thisTerm->getdLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, time, nLGeom, ndAr, elAr, dvAr, stPre);
 		thisTerm = thisTerm->getNext();
 	}
 	return;
 }
 
-void Objective::calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[]) {
+void Objective::calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq* stPre) {
 	ObjectiveTerm* thisTerm = firstTerm;
 	while (thisTerm) {
-		thisTerm->getdLdD(dLdD, time, nLGeom, ndAr, elAr, dvAr);
+		thisTerm->getdLdD(dLdD, time, nLGeom, ndAr, elAr, dvAr, stPre);
 		thisTerm = thisTerm->getNext();
 	}
 	return;
