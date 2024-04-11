@@ -6,7 +6,6 @@ using namespace std;
 
 Set::Set() {
     name = "";
-	labels = new IntList();
     nextSet = nullptr;
 	return;
 }
@@ -17,7 +16,7 @@ void Set::setName(string newNm) {
 }
 
 void Set::addEntry(int newLabel) {
-    labels->addEntry(newLabel);
+    labels.addEntry(newLabel);
 }
 
 string Set::getName() {
@@ -25,11 +24,11 @@ string Set::getName() {
 }
 
 int Set::getLength() {
-	return labels->getLength();
+	return labels.getLength();
 }
 
 IntListEnt* Set::getFirstEntry() {
-    return labels->getFirst();
+    return labels.getFirst();
 }
 
 Set* Set::getNext() {
@@ -39,12 +38,6 @@ Set* Set::getNext() {
 void Set::setNext(Set* newNext) {
     nextSet = newNext;
     return;
-}
-
-Set::~Set() {
-	delete labels;
-	labels = nullptr;
-	return;
 }
 
 SetList::SetList() {

@@ -161,7 +161,7 @@ class Section {
 		Material *matPtr;
 		double orientation[9];
 		double zOffset;
-		LayerList* layers;
+		LayerList layers;
 		double area;
 		double areaMoment[5];
 		double polarMoment;
@@ -266,8 +266,6 @@ class Section {
 		Section* getNext();
 		
 		void setNext(Section *newNext);
-
-		~Section();
 };
 
 class SectionList {

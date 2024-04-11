@@ -48,7 +48,9 @@ public:
 
 	int currentLayLen;
 
-	DiffDoub0StressPrereq(int numLayers);
+	DiffDoub0StressPrereq();
+
+	void allocateLayers(int numLayers);
 
 	~DiffDoub0StressPrereq();
 };
@@ -95,7 +97,9 @@ public:
 
 	int currentLayLen;
 
-	DiffDoub1StressPrereq(int numLayers);
+	DiffDoub1StressPrereq();
+
+	void allocateLayers(int numLayers);
 
 	~DiffDoub1StressPrereq();
 };
@@ -126,18 +130,18 @@ class Element {
 		double* ipWt;
 		double sCent[3];
 		int numIP;
-		FaceList* faces;
+		FaceList faces;
 		double *internalDisp;
 		double *intPrevDisp;
 		double *internaldLdu;
 		double *internalAdj;
-		DiffDoub1 *internalRu;
-		double *internalMat;
-		IntList* designVars;
-		DoubList* dvCoef;
-		IntList* compDVars;
-		Section *sectPtr;
-		Element *nextEl;
+		DiffDoub1* internalRu;
+		double* internalMat;
+		IntList designVars;
+		DoubList dvCoef;
+		IntList compDVars;
+		Section* sectPtr;
+		Element* nextEl;
 		
 	public:
 	    Element(int newType);

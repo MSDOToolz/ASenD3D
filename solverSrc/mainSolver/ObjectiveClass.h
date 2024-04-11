@@ -31,13 +31,13 @@ class ObjectiveTerm {
 
 		int qLen;
 
-		SparseMat* dQdU;
-		SparseMat* dQdV;
-		SparseMat* dQdA;
-		SparseMat* dQdT;
-		SparseMat* dQdTdot;
-		SparseMat* dQdD;
-		SparseMat* dVdD;
+		SparseMat dQdU;
+		SparseMat dQdV;
+		SparseMat dQdA;
+		SparseMat dQdT;
+		SparseMat dQdTdot;
+		SparseMat dQdD;
+		SparseMat dVdD;
 		
 	public:
 	    ObjectiveTerm(std::string newCat);
@@ -114,11 +114,11 @@ class ObjectiveTerm {
 
 		void dVolAveragedD(double dLdD[]);
 
-		void getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre);
+		void getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
 
-		void getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre);
+		void getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
 
-		void getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq* stPre);
+		void getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq& stPre);
 
 		~ObjectiveTerm();
 };
@@ -140,11 +140,11 @@ class Objective {
 
 		void clearValues();
 
-		void calculateTerms(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre);
+		void calculateTerms(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
 
-		void calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq* stPre);
+		void calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
 
-		void calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq* stPre);
+		void calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq& stPre);
 
 		~Objective();
 };

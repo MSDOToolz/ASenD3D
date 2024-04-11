@@ -6,8 +6,8 @@
 class Set {
 	private:
 	    std::string name;
-		IntList* labels;
-		Set *nextSet;
+		IntList labels;
+		Set* nextSet;
 		
     public:
 	     Set();
@@ -25,8 +25,6 @@ class Set {
 		 Set* getNext();
 		 
 		 void setNext(Set* newNext);
-
-		 ~Set();
 };
 
 class SetList {

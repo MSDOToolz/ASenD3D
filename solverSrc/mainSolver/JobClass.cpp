@@ -39,8 +39,6 @@ JobCommand::JobCommand() {
 	
 	// writeNodeResults
 	nodeSet = "all";
-	fields = new StringList;
-	timeSteps = new IntList;
 	timeStepTag = "";
 	
 	// writeElementResults
@@ -49,22 +47,11 @@ JobCommand::JobCommand() {
 	
 	// writeModalResults
 	writeModes = true;
-
-	properties = new StringList;
 	
 	// writeObjective
-	objInclude = new StringList;
 	writeGradient = true;	
 	
 	next = nullptr;
-	return;
-}
-
-JobCommand::~JobCommand() {
-	delete fields;
-	delete timeSteps;
-	delete properties;
-	delete objInclude;
 	return;
 }
 

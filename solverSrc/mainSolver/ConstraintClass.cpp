@@ -60,7 +60,6 @@ Constraint::Constraint() {
 	firstTerm = nullptr;
 	lastTerm = nullptr;
 	nextConst = nullptr;
-	mat = new SparseMat;
 	rhs = 0.0;
 	scaleFact = 0.0;
 	return;
@@ -124,7 +123,7 @@ void Constraint::buildMat(Node* ndAr[]) {
 		thisTerm = thisTerm->getNext();
 	}
 
-	mat->setDim(setLen);
+	mat.setDim(setLen);
 	thisTerm = firstTerm;
 	while(thisTerm) {
 		coef = thisTerm->getCoef();
@@ -140,7 +139,7 @@ void Constraint::buildMat(Node* ndAr[]) {
 				col = ndAr[ndIndex]->getSortedRank();
 			}
 			for (row = 0; row < setLen; row++) {
-				mat->addEntry(row, col, coef);
+				mat.addEntry(row, col, coef);
 			}
 		}
 		else {
@@ -154,7 +153,7 @@ void Constraint::buildMat(Node* ndAr[]) {
 				else {
 					col = ndAr[ndIndex]->getSortedRank();
 				}
-				mat->addEntry(row, col, coef);
+				mat.addEntry(row, col, coef);
 				thisNd = thisNd->next;
 				row++;
 			}
@@ -170,7 +169,7 @@ ConstraintTerm* Constraint::getFirst() {
 }
 
 int Constraint::getMatDim() {
-	return mat->getDim();
+	return mat.getDim();
 }
 
 double Constraint::getScaleFact() {
@@ -178,35 +177,35 @@ double Constraint::getScaleFact() {
 }
 
 MatrixEnt* Constraint::getMatFirst(int row) {
-	return mat->getFirstEnt(row);
+	return mat.getFirstEnt(row);
 }
 
 void Constraint::fullVecMultiply(double prod[], double vec[], double tmpV[]) {
 	// Compute scaleFact*[mat]^T*([mat]*vec + qVec)
 	int i1;
-	int dim = mat->getDim();
+	int dim = mat.getDim();
 	for (i1 = 0; i1 < dim; i1++) {
 		tmpV[i1] = 0.0;
 	}
-	mat->vectorMultiply(tmpV, vec, false);
+	mat.vectorMultiply(tmpV, vec, false);
 	for (i1 = 0; i1 < dim; i1++) {
 		tmpV[i1] *= scaleFact;
 	}
-	mat->vectorMultiply(prod, tmpV, true);
+	mat.vectorMultiply(prod, tmpV, true);
 	return;
 }
 
 void Constraint::getLoad(double cLd[], double uVec[], double qVec[], int resDim) {
 	int i1;
-	int dim = mat->getDim();
+	int dim = mat.getDim();
 	for (i1 = 0; i1 < dim; i1++) {
 		qVec[i1] = -rhs;
 	}
-	mat->vectorMultiply(qVec, uVec, false);
+	mat.vectorMultiply(qVec, uVec, false);
 	for (i1 = 0; i1 < dim; i1++) {
 		qVec[i1] *= -scaleFact;
 	}
-	mat->vectorMultiply(cLd, qVec, true);
+	mat.vectorMultiply(cLd, qVec, true);
 
 	return;
 }
@@ -216,12 +215,11 @@ void Constraint::writeToFile(ofstream& outFile) {
 	outFile << "scale factor: " << scaleFact << "\n";
 	outFile << "rhs: " << rhs << "\n";
 	outFile << "matrix: \n";
-	mat->writeToFile(outFile);
+	mat.writeToFile(outFile);
 	return;
 }
 
 Constraint::~Constraint() {
-	delete mat;
 	ConstraintTerm *thisTerm = firstTerm;
 	ConstraintTerm *nextTerm;
 	while(thisTerm) {

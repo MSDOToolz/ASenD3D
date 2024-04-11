@@ -299,11 +299,6 @@ Element::Element(int newType) {
 		internalMat = new double[i1];
 	}
 
-	faces = new FaceList;
-	designVars = new IntList;
-	dvCoef = new DoubList;
-	compDVars = new IntList;
-
 	intDofIndex = 0;
 	
 	sectPtr = nullptr;
@@ -338,88 +333,88 @@ void Element::initializeFaces() {
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(3);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,3,nodes[3]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(3);
 		newFc->setNode(0,1,nodes[1]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,3,nodes[3]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(3);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,3,nodes[3]);
 		newFc->setNode(2,2,nodes[2]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 	} else if(type == 6) {
         newFc = new Face(3);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(3);
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,4,nodes[4]);
 		newFc->setNode(2,5,nodes[5]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,4,nodes[4]);
 		newFc->setNode(3,3,nodes[3]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,1,nodes[1]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,5,nodes[5]);
 		newFc->setNode(3,4,nodes[4]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,3,nodes[3]);
 		newFc->setNode(2,5,nodes[5]);
 		newFc->setNode(3,2,nodes[2]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 	} else if(type == 8 || type == 81) {
 		newFc = new Face(4);
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
 		newFc->setNode(3,0,nodes[0]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,4,nodes[4]);
 		newFc->setNode(1,5,nodes[5]);
 		newFc->setNode(2,6,nodes[6]);
 		newFc->setNode(3,7,nodes[7]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,5,nodes[5]);
 		newFc->setNode(3,4,nodes[4]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,1,nodes[1]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,6,nodes[6]);
 		newFc->setNode(3,5,nodes[5]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,2,nodes[2]);
 		newFc->setNode(1,3,nodes[3]);
 		newFc->setNode(2,7,nodes[7]);
 		newFc->setNode(3,6,nodes[6]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,0,nodes[0]);
 		newFc->setNode(2,4,nodes[4]);
 		newFc->setNode(3,7,nodes[7]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 	}
 	else if (type == 10) {
 		newFc = new Face(6);
@@ -429,7 +424,7 @@ void Element::initializeFaces() {
 		newFc->setNode(3, 6, nodes[6]);
 		newFc->setNode(4, 5, nodes[5]);
 		newFc->setNode(5, 4, nodes[4]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(6);
 		newFc->setNode(0, 0, nodes[0]);
 		newFc->setNode(1, 1, nodes[1]);
@@ -437,7 +432,7 @@ void Element::initializeFaces() {
 		newFc->setNode(3, 4, nodes[4]);
 		newFc->setNode(4, 8, nodes[8]);
 		newFc->setNode(5, 7, nodes[7]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(6);
 		newFc->setNode(0, 1, nodes[1]);
 		newFc->setNode(1, 2, nodes[2]);
@@ -445,7 +440,7 @@ void Element::initializeFaces() {
 		newFc->setNode(3, 5, nodes[5]);
 		newFc->setNode(4, 9, nodes[9]);
 		newFc->setNode(5, 8, nodes[8]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(6);
 		newFc->setNode(0, 0, nodes[0]);
 		newFc->setNode(1, 3, nodes[3]);
@@ -453,32 +448,32 @@ void Element::initializeFaces() {
 		newFc->setNode(3, 7, nodes[7]);
 		newFc->setNode(4, 9, nodes[9]);
 		newFc->setNode(5, 6, nodes[6]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 	}
 	else if (type == 3) {
 		newFc = new Face(3);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,2,nodes[2]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(3);
 		newFc->setNode(0,2,nodes[2]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,0,nodes[0]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 	} else if(type == 41) {
 		newFc = new Face(4);
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,2,nodes[2]);
 		newFc->setNode(3,3,nodes[3]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 		newFc = new Face(4);
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
 		newFc->setNode(3,0,nodes[0]);
-		faces->addFace(newFc);
+		faces.addFace(newFc);
 	} 
 	
 	return;
@@ -597,15 +592,15 @@ int* Element::getNodes() {
 }
 
 IntList* Element::getDesignVars() {
-	return designVars;
+	return &designVars;
 }
 
 IntListEnt* Element::getFirstCompDV() {
-	return compDVars->getFirst();
+	return compDVars.getFirst();
 }
 
 Face* Element::getFirstFace() {
-	return faces->getFirst();
+	return faces.getFirst();
 }
 
 Element* Element::getNext() {
@@ -613,13 +608,13 @@ Element* Element::getNext() {
 }
 
 void Element::addDesignVariable(int dIndex, double coef) {
-	designVars->addEntry(dIndex);
-	dvCoef->addEntry(coef);
+	designVars.addEntry(dIndex);
+	dvCoef.addEntry(coef);
 	return;
 }
 
 void Element::addCompDVar(int dIndex) {
-	compDVars->addIfAbsent(dIndex);
+	compDVars.addIfAbsent(dIndex);
 	return;
 }
 
@@ -635,10 +630,6 @@ Element::~Element() {
 		delete[] internalRu;
 		delete[] internalMat;
 	}
-	delete faces;
-	delete designVars;
-	delete dvCoef;
-	delete compDVars;
 	return;
 }
 
@@ -684,7 +675,7 @@ ElementList::~ElementList() {
 // Stress prerequisite classes
 
 //dup1
- DiffDoub0StressPrereq::DiffDoub0StressPrereq(int numLayers) {
+DiffDoub0StressPrereq::DiffDoub0StressPrereq() {
 	globNds = new DiffDoub0[30];
 	locNds = new DiffDoub0[30];
 	locOri = new DiffDoub0[9];
@@ -702,6 +693,24 @@ ElementList::~ElementList() {
 	TCmat = new DiffDoub0[9];
 	BMat = new DiffDoub0[288];
 	CBMat = new DiffDoub0[288];
+	layerZ = nullptr;
+	layerThk = nullptr;
+	layerAng = nullptr;
+	layerQ = nullptr;
+	layerD = nullptr;
+	layerTE = nullptr;
+	layerE0 = nullptr;
+	layerDen = nullptr;
+	layerTC = nullptr;
+	layerSH = nullptr;
+	frcFldCoef = new DiffDoub0[2];
+	frcFldExp = new DiffDoub0[2];
+	scratch = new double[4096];
+	currentLayLen = 0;
+	return;
+}
+
+void DiffDoub0StressPrereq::allocateLayers(int numLayers) {
 	if (numLayers == 0) {
 		layerZ = nullptr;
 		layerThk = nullptr;
@@ -718,22 +727,19 @@ ElementList::~ElementList() {
 		layerZ = new DiffDoub0[numLayers];
 		layerThk = new DiffDoub0[numLayers];
 		layerAng = new DiffDoub0[numLayers];
-		layerQ = new DiffDoub0[9*numLayers];
-		layerD = new DiffDoub0[9*numLayers];
-		layerTE = new DiffDoub0[3*numLayers];
-		layerE0 = new DiffDoub0[3*numLayers];
+		layerQ = new DiffDoub0[9 * numLayers];
+		layerD = new DiffDoub0[9 * numLayers];
+		layerTE = new DiffDoub0[3 * numLayers];
+		layerE0 = new DiffDoub0[3 * numLayers];
 		layerDen = new DiffDoub0[numLayers];
-		layerTC = new DiffDoub0[9*numLayers];
+		layerTC = new DiffDoub0[9 * numLayers];
 		layerSH = new DiffDoub0[numLayers];
 	}
-	frcFldCoef = new DiffDoub0[2];
-	frcFldExp = new DiffDoub0[2];
-	scratch = new double[4096];
 	currentLayLen = numLayers;
 	return;
 }
 
- DiffDoub0StressPrereq::~DiffDoub0StressPrereq() {
+DiffDoub0StressPrereq::~DiffDoub0StressPrereq() {
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;
@@ -786,7 +792,7 @@ ElementList::~ElementList() {
  
 //DiffDoub1 versions: 
 //dup1
- DiffDoub1StressPrereq::DiffDoub1StressPrereq(int numLayers) {
+DiffDoub1StressPrereq::DiffDoub1StressPrereq() {
 	globNds = new DiffDoub1[30];
 	locNds = new DiffDoub1[30];
 	locOri = new DiffDoub1[9];
@@ -804,6 +810,24 @@ ElementList::~ElementList() {
 	TCmat = new DiffDoub1[9];
 	BMat = new DiffDoub1[288];
 	CBMat = new DiffDoub1[288];
+	layerZ = nullptr;
+	layerThk = nullptr;
+	layerAng = nullptr;
+	layerQ = nullptr;
+	layerD = nullptr;
+	layerTE = nullptr;
+	layerE0 = nullptr;
+	layerDen = nullptr;
+	layerTC = nullptr;
+	layerSH = nullptr;
+	frcFldCoef = new DiffDoub1[2];
+	frcFldExp = new DiffDoub1[2];
+	scratch = new double[4096];
+	currentLayLen = 0;
+	return;
+}
+
+void DiffDoub1StressPrereq::allocateLayers(int numLayers) {
 	if (numLayers == 0) {
 		layerZ = nullptr;
 		layerThk = nullptr;
@@ -820,22 +844,19 @@ ElementList::~ElementList() {
 		layerZ = new DiffDoub1[numLayers];
 		layerThk = new DiffDoub1[numLayers];
 		layerAng = new DiffDoub1[numLayers];
-		layerQ = new DiffDoub1[9*numLayers];
-		layerD = new DiffDoub1[9*numLayers];
-		layerTE = new DiffDoub1[3*numLayers];
-		layerE0 = new DiffDoub1[3*numLayers];
+		layerQ = new DiffDoub1[9 * numLayers];
+		layerD = new DiffDoub1[9 * numLayers];
+		layerTE = new DiffDoub1[3 * numLayers];
+		layerE0 = new DiffDoub1[3 * numLayers];
 		layerDen = new DiffDoub1[numLayers];
-		layerTC = new DiffDoub1[9*numLayers];
+		layerTC = new DiffDoub1[9 * numLayers];
 		layerSH = new DiffDoub1[numLayers];
 	}
-	frcFldCoef = new DiffDoub1[2];
-	frcFldExp = new DiffDoub1[2];
-	scratch = new double[4096];
 	currentLayLen = numLayers;
 	return;
 }
 
- DiffDoub1StressPrereq::~DiffDoub1StressPrereq() {
+DiffDoub1StressPrereq::~DiffDoub1StressPrereq() {
 	delete[] globNds;
 	delete[] locNds;
 	delete[] locOri;

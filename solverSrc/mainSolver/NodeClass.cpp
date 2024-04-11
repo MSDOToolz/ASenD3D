@@ -34,8 +34,6 @@ Node::Node(int newLab) {
 	prevTdot = 0.0;
 	initialTemp = 0.0;
 	initialTdot = 0.0;
-	dVars = new IntList;
-	coefs = new DoubList;
 	nextNd = nullptr;
 }
 
@@ -246,13 +244,13 @@ void Node::backstepTemp() {
 }
 
 void Node::addDesignVariable(int dIndex, double coef) {
-	dVars->addEntry(dIndex);
-	coefs->addEntry(coef);
+	dVars.addEntry(dIndex);
+	coefs.addEntry(coef);
 	return;
 }
 
 IntList* Node::getDesignVars() {
-	return dVars;
+	return &dVars;
 }
 
 void Node::getCrd(double crdOut[]) {
@@ -339,8 +337,8 @@ void Node::getCrd(DiffDoub0 crdOut[], DesignVariable* dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
 	crdOut[2].setVal(coord[2]);
-	IntListEnt *currD = dVars->getFirst();
-	DoubListEnt *currCoef = coefs->getFirst();
+	IntListEnt *currD = dVars.getFirst();
+	DoubListEnt *currCoef = coefs.getFirst();
 	int dIndex;
 	DesignVariable *dPtr;
 	DiffDoub0 dVal;
@@ -385,8 +383,8 @@ void Node::getElasticDVLoad(DiffDoub0 ld[], DesignVariable* dvAr[]) {
 	for (i1 = 0; i1 < 6; i1++) {
 		ld[i1].setVal(0.0);
 	}
-	thisDV = dVars->getFirst();
-	thisCoef = coefs->getFirst();
+	thisDV = dVars.getFirst();
+	thisCoef = coefs.getFirst();
 	while(thisDV) {
 		dIndex = thisDV->value;
 		dPtr = dvAr[dIndex];
@@ -416,8 +414,8 @@ void Node::getThermalDVLoad(DiffDoub0& ld, DesignVariable* dvAr[]) {
 	int comp;
 	
 	ld.setVal(0.0);
-	thisDV = dVars->getFirst();
-	thisCoef = coefs->getFirst();
+	thisDV = dVars.getFirst();
+	thisCoef = coefs.getFirst();
 	while (thisDV) {
 		dIndex = thisDV->value;
 		dPtr = dvAr[dIndex];
@@ -444,8 +442,8 @@ void Node::getCrd(DiffDoub1 crdOut[], DesignVariable* dvAr[]) {
 	crdOut[0].setVal(coord[0]);
 	crdOut[1].setVal(coord[1]);
 	crdOut[2].setVal(coord[2]);
-	IntListEnt *currD = dVars->getFirst();
-	DoubListEnt *currCoef = coefs->getFirst();
+	IntListEnt *currD = dVars.getFirst();
+	DoubListEnt *currCoef = coefs.getFirst();
 	int dIndex;
 	DesignVariable *dPtr;
 	DiffDoub1 dVal;
@@ -490,8 +488,8 @@ void Node::getElasticDVLoad(DiffDoub1 ld[], DesignVariable* dvAr[]) {
 	for (i1 = 0; i1 < 6; i1++) {
 		ld[i1].setVal(0.0);
 	}
-	thisDV = dVars->getFirst();
-	thisCoef = coefs->getFirst();
+	thisDV = dVars.getFirst();
+	thisCoef = coefs.getFirst();
 	while(thisDV) {
 		dIndex = thisDV->value;
 		dPtr = dvAr[dIndex];
@@ -521,8 +519,8 @@ void Node::getThermalDVLoad(DiffDoub1& ld, DesignVariable* dvAr[]) {
 	int comp;
 	
 	ld.setVal(0.0);
-	thisDV = dVars->getFirst();
-	thisCoef = coefs->getFirst();
+	thisDV = dVars.getFirst();
+	thisCoef = coefs.getFirst();
 	while (thisDV) {
 		dIndex = thisDV->value;
 		dPtr = dvAr[dIndex];
@@ -564,12 +562,6 @@ Node* Node::getNext() {
 
 void Node::setNext(Node *newNext) {
 	nextNd = newNext;
-}
-
-Node::~Node() {
-	delete dVars;
-	delete coefs;
-	return;
 }
 
 

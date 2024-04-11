@@ -17,26 +17,26 @@
 
 class Model {
 	private:
-	    NodeList* nodes;
+	    NodeList nodes;
 		Node** nodeArray;
-		ElementList* elements;
+		ElementList elements;
 		Element** elementArray;
-		SetList* nodeSets;
+		SetList nodeSets;
 		Set** nsArray;
 		std::map<std::string, int> nsMap;
-		SetList* elementSets;
+		SetList elementSets;
 		Set** esArray;
 		std::map<std::string, int> esMap;
-		SectionList* sections;
-		MaterialList* materials;
-		ConstraintList* elasticConst;
-		ConstraintList* thermalConst;
-		LoadList* elasticLoads;
-		LoadList* thermalLoads;
-		DesVarList* designVars;
+		SectionList sections;
+		MaterialList materials;
+		ConstraintList elasticConst;
+		ConstraintList thermalConst;
+		LoadList elasticLoads;
+		LoadList thermalLoads;
+		DesVarList designVars;
 		DesignVariable** dVarArray;
-		Objective* objective;
-		Job* job;
+		Objective objective;
+		Job job;
 		
 		int elMatDim;
 		int totGlobDof;
@@ -44,14 +44,14 @@ class Model {
 		int timeStepsSaved;
 		JobCommand* solveCmd;
 		JobCommand* modalCmd;
-		DiffDoub0StressPrereq* d0Pre;
-		DiffDoub1StressPrereq* d1Pre;
+		DiffDoub0StressPrereq d0Pre;
+		DiffDoub1StressPrereq d1Pre;
 		
-		SparseMat* elasticMat;
-		LowerTriMat* elasticLT;
+		SparseMat elasticMat;
+		LowerTriMat elasticLT;
 		bool elasticScaled;
-		SparseMat* thermMat;
-		LowerTriMat* thermLT;
+		SparseMat thermMat;
+		LowerTriMat thermLT;
 		bool thermScaled;
 
 		double* eigVecs;

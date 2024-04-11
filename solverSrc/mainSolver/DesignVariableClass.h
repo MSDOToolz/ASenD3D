@@ -15,10 +15,10 @@ class DesignVariable {
 		Set* elSetPtr;
 		std::string ndSetName;
 		Set* ndSetPtr;
-		DoubList* coefs;
+		DoubList coefs;
 		DiffDoub0 value;
 		DiffDoub1 diffVal;
-		IntList* compElList;
+		IntList compElList;
 		DesignVariable *nextDV;
 		
     public:
@@ -73,8 +73,6 @@ class DesignVariable {
 		IntListEnt* getFirstNd();
 		
 		DesignVariable* getNext();
-		
-		~DesignVariable();
 };
 
 class DesVarList {

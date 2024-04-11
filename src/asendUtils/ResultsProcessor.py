@@ -6,31 +6,39 @@ from asendUtils.visualization.plotlyUtils import *
 
 class ResultsProcessor:
 
-    def __init__(self,modelFile,nodeResFile='none',elementResFile='none',modalResFile='none',objResFile='none'):
+    def __init__(self,modelFile,dVarFile=None,nodeResFile=None,elementResFile=None,modalResFile=None,objResFile=None):
 
         inFile = open(modelFile,'r')
         self.modelData = yaml.load(inFile,Loader=Loader)
         inFile.close()
+        
+        if(not dVarFile == None):
+            self.loadDesignVariableInput(dVarFile)
 
-        if(not nodeResFile == 'none'):
+        if(not nodeResFile == None):
             self.loadNodeResults(nodeResFile)
         else:
             self.nodeData = dict()
 
-        if(not elementResFile == 'none'):
+        if(not elementResFile == None):
             self.loadElementResults(elementResFile)
         else:
             self.elementData = dict()
             
-        if(not modalResFile == 'none'):
+        if(not modalResFile == None):
             self.loadModalResults(modalResFile)
         else:
             self.modalData = dict()
             
-        if(not objResFile == 'none'):
+        if(not objResFile == None):
             self.loadObjectiveResults(objResFile)
         else:
             self.objectiveData = dict()
+            
+    def loadDesignVariableInput(self,dVarFile):
+        inFile = open(dVarFile)
+        self.dVarData = yaml.load(inFile,Loader=Loader)
+        inFile.close()
 
     def loadNodeResults(self,nodeResFile):
         inFile = open(nodeResFile,'r')
@@ -594,6 +602,48 @@ class ResultsProcessor:
                         pass
             ytitle = field + str(component)
             plotTimeHistory(series,timePts,ytitle)
+            
+    def plotElementSensitivity(self,elementSet='all',dVarSet='all',magnitude=False):
+        ndSet, elSet = self.getPlotNdElSet(elementSet)
+        if(dVarSet == 'all'):
+            lenD = len(self.dVarData['designVariables'])
+            dSet = set(range(0,lenD))
+        else:
+            dSet = set(dVarSet)
+        
+        numEls = 0
+        for et in self.modelData['elements']:
+            numEls = numEls + len(et['connectivity'])
+        elValues = np.zeros(numEls,dtype=float)
+        
+        modSets = self.modelData['sets']['element']
+        objGrad = self.objectiveData['objectiveGradient']
+        for di, d in enumerate(self.dVarData['designVariables']):
+            if(di in dSet):
+                try:
+                    dES = d['elementSet']
+                    try:
+                        eli = int(dES)
+                        if(magnitude):
+                            elValues[eli] = abs(objGrad[di][1])
+                        else:
+                            elValues[eli] = objGrad[di][1]
+                    except:
+                        for eS in modSets:
+                            if(eS['name'] == dES):
+                                for el in eS['labels']:
+                                    if(magnitude):
+                                        elValues[el] = abs(objGrad[di][1])
+                                    else:
+                                        elValues[el] = objGrad[di][1]
+                except:
+                    pass
+        
+        ndCrd = self.buildNodalPlotCrd(ndSet)
+        fcVals = self.getFaceValues(elSet,elValues)
+        verts = self.buildElementVertexList(elSet)
+        plotMeshSolution(ndCrd,fcVals,verts,valMode='cell')
+        
             
     def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
         series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)

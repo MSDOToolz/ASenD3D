@@ -1396,7 +1396,7 @@ void Element::getAppLoad(DiffDoub0 AppLd[], Load* ldPt, bool nLGeom, DiffDoub0St
 	else if (ldType == "surfaceTraction" || ldType == "surfacePressure") {
 		ldPt->getNormDir(ldNorm);
 		ldPt->getLoad(ldLoad);
-		fcPt = faces->getFirst();
+		fcPt = faces.getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				fcPt->getAreaNormal(fcArea, fcNorm, ndAr, dvAr);
@@ -1537,7 +1537,7 @@ void Element::getAppThermLoad(DiffDoub0 AppLd[], Load* ldPt, DiffDoub0StressPrer
 		}
 	}
 	else if (ldType == "surfaceFlux") {
-		fcPt = faces->getFirst();
+		fcPt = faces.getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				ldPt->getNormDir(ldNorm);
@@ -2798,7 +2798,7 @@ void Element::getAppLoad(DiffDoub1 AppLd[], Load* ldPt, bool nLGeom, DiffDoub1St
 	else if (ldType == "surfaceTraction" || ldType == "surfacePressure") {
 		ldPt->getNormDir(ldNorm);
 		ldPt->getLoad(ldLoad);
-		fcPt = faces->getFirst();
+		fcPt = faces.getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				fcPt->getAreaNormal(fcArea, fcNorm, ndAr, dvAr);
@@ -2939,7 +2939,7 @@ void Element::getAppThermLoad(DiffDoub1 AppLd[], Load* ldPt, DiffDoub1StressPrer
 		}
 	}
 	else if (ldType == "surfaceFlux") {
-		fcPt = faces->getFirst();
+		fcPt = faces.getFirst();
 		while (fcPt) {
 			if (fcPt->onSurface()) {
 				ldPt->getNormDir(ldNorm);
