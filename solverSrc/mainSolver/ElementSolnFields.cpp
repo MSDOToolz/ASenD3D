@@ -2696,7 +2696,6 @@ void Element::getInstDisp(DiffDoub1 instDisp[], DiffDoub1 globDisp[], DiffDoub1 
 }
 
 void Element::getStressPrereq(DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
-	int numLay;
 	DiffDoub1 offset;
 	getNdCrds(pre.globNds, ndAr, dvAr);
 	getLocOri(pre.locOri, dvAr);
@@ -2748,7 +2747,6 @@ void Element::getStressPrereq(DiffDoub1StressPrereq& pre, Node* ndAr[], DesignVa
 		getSpecificHeat(pre.SpecHeat, dvAr);
 	}
 	matMul(pre.locNds, pre.locOri, pre.globNds, 3, 3, numNds);
-
 
 	return;
 }

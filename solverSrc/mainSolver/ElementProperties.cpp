@@ -463,7 +463,7 @@ void Element::getLayerCond(DiffDoub0 layCond[], DesignVariable* dvAr[]) {
 	while (thisLay) {
 		matCond = thisLay->getMatPt()->getConductivity();
 		for (i2 = 0; i2 < 6; i2++) {
-			condDV[i1].setVal(matCond[i2]);
+			condDV[i2].setVal(matCond[i2]);
 		}
 		thisDVEnt = designVars.getFirst();
 		thisCEnt = dvCoef.getFirst();
@@ -2701,7 +2701,7 @@ void Element::getLayerCond(DiffDoub1 layCond[], DesignVariable* dvAr[]) {
 	while (thisLay) {
 		matCond = thisLay->getMatPt()->getConductivity();
 		for (i2 = 0; i2 < 6; i2++) {
-			condDV[i1].setVal(matCond[i2]);
+			condDV[i2].setVal(matCond[i2]);
 		}
 		thisDVEnt = designVars.getFirst();
 		thisCEnt = dvCoef.getFirst();

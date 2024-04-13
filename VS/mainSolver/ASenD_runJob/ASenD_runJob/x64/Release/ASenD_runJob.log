@@ -22,7 +22,6 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(4158
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(4195,6): warning C4101: 'i1': unreferenced local variable
   ElementSolnFields.cpp
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementSolnFields.cpp(993,6): warning C4101: 'numLay': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementSolnFields.cpp(2699,6): warning C4101: 'numLay': unreferenced local variable
   FaceClass.cpp
   JobClass.cpp
   ListEntClass.cpp
@@ -85,9 +84,9 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(833,19)
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(906,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(959,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1036,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1155,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1222,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1278,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1100,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1167,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1223,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   Compiling...
   SectionClass.cpp
   SetClass.cpp

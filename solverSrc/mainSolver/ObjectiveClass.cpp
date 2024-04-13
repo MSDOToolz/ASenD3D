@@ -1050,62 +1050,7 @@ void ObjectiveTerm::getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[
 				thisDV = dvAr[dvi];
 				thisDV->getValue(dvVal);
 				thisDV->setDiffVal(dvVal.val, 1.0);
-				//thisEl->getStressPrereq(stPre, ndAr, dvAr);
-				//-------------------------------------------------
-				
-				DiffDoub1 offset;
-				thisEl->getNdCrds(stPre.globNds, ndAr, dvAr);
-				thisEl->getLocOri(stPre.locOri, dvAr);
-				thisEl->getNdDisp(stPre.globDisp, ndAr);
-				thisEl->getNdVel(stPre.globVel, ndAr);
-				thisEl->getNdAcc(stPre.globAcc, ndAr);
-				thisEl->getNdTemp(stPre.globTemp, ndAr);
-				thisEl->getNdTdot(stPre.globTdot, ndAr);
-				if (thisEl->getDofPerNd() == 6) {
-					thisEl->correctOrient(stPre.locOri, stPre.globNds);
-					if (thisEl->getType() != 2) {
-						thisEl->getLayerThkZ(stPre.layerThk, stPre.layerZ, offset, dvAr);
-						thisEl->getLayerAngle(stPre.layerAng, dvAr);
-						thisEl->getLayerQ(stPre.layerQ, dvAr);
-						thisEl->getLayerD(stPre.layerD, dvAr);
-						thisEl->getLayerThExp(stPre.layerTE, dvAr);
-						thisEl->getLayerEinit(stPre.layerE0, dvAr);
-						thisEl->getLayerDen(stPre.layerDen, dvAr);
-						thisEl->getLayerCond(stPre.layerTC, dvAr);
-						thisEl->getLayerSpecHeat(stPre.layerSH, dvAr);
-						thisEl->getABD(stPre.Cmat, stPre.layerThk, stPre.layerZ, stPre.layerQ, stPre.layerAng);
-						thisEl->getShellDamp(stPre.Dmat, stPre.layerThk, stPre.layerZ, stPre.layerD, stPre.layerAng);
-						thisEl->getShellExpLoad(stPre.thermExp, stPre.Einit, stPre.layerThk, stPre.layerZ, stPre.layerQ, stPre.layerTE, stPre.layerE0, stPre.layerAng);
-						thisEl->getShellMass(stPre.Mmat, stPre.layerThk, stPre.layerZ, stPre.layerDen, dvAr);
-						thisEl->getShellCond(stPre.TCmat, stPre.layerThk, stPre.layerAng, stPre.layerTC, dvAr);
-						thisEl->getShellSpecHeat(stPre.SpecHeat, stPre.layerThk, stPre.layerSH, stPre.layerDen);
-					}
-					else {
-						thisEl->getBeamStiff(stPre.Cmat, dvAr);
-						thisEl->getBeamDamp(stPre.Dmat, dvAr);
-						thisEl->getBeamExpLoad(stPre.thermExp, stPre.Einit, dvAr);
-						thisEl->getBeamMass(stPre.Mmat, dvAr);
-						thisEl->getBeamCond(stPre.TCmat, dvAr);
-						thisEl->getBeamSpecHeat(stPre.SpecHeat, dvAr);
-					}
-				}
-				else if (thisEl->getType() == 21) {
-					thisEl->getFrcFldConst(stPre.frcFldCoef, stPre.frcFldExp, dvAr);
-				}
-				else if (thisEl->getType() == 1) {
-					thisEl->getMassPerEl(stPre.massPerEl, dvAr);
-				}
-				else {
-					thisEl->getSolidStiff(stPre.Cmat, dvAr);
-					thisEl->getSolidDamp(stPre.Dmat, dvAr);
-					thisEl->getThermalExp(stPre.thermExp, stPre.Einit, dvAr);
-					thisEl->getDensity(stPre.Mmat[0], 0, dvAr);
-					thisEl->getConductivity(stPre.TCmat, dvAr);
-					thisEl->getSpecificHeat(stPre.SpecHeat, dvAr);
-				}
-				matMul(stPre.locNds, stPre.locOri, stPre.globNds, 3, 3, thisEl->getNumNds());
-
-				//------------------------------------------------
+				thisEl->getStressPrereq(stPre, ndAr, dvAr);
 				spt = thisEl->getSCent();
 				thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
 				if (category == "stress") {
