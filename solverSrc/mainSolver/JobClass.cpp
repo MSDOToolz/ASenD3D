@@ -23,7 +23,6 @@ JobCommand::JobCommand() {
 	solverMethod = "direct";
 	maxIt = 0;
 	convTol = 1.0e-12;
-	staticLoadTime = 0.0;
 	thermal = false;
 	timeStep = 1.0;
 	

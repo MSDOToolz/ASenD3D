@@ -179,7 +179,7 @@ class Model {
 
 		void augmentdLdU();
 
-		void solveForAdjoint();
+		void solveForAdjoint(double time);
 
 		void dRthermaldD(int dVarNum);
 

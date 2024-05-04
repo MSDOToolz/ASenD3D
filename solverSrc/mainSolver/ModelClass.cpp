@@ -100,6 +100,8 @@ void Model::executeJob() {
 	IntListEnt* thisEnt;
 	JobCommand* thisCmd = job.getFirst();
 	Node* thisNd;
+	Element* thisEl;
+	DoubListEnt* thisLdTm;
 	string cmdStr;
 	string fileName;
 	string exten;
@@ -181,6 +183,13 @@ void Model::executeJob() {
 							}
 							thisNd = thisNd->getNext();
 						}
+						if (solveCmd->elastic) {
+							thisEl = elements.getFirst();
+							while (thisEl) {
+								thisEl->backstepIntDisp();
+								thisEl = thisEl->getNext();
+							}
+						}
 						readTimeStepSoln(i1);
 						objective.calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
 						i1--;
@@ -190,7 +199,31 @@ void Model::executeJob() {
 			}
 			else {
 				objective.clearValues();
-				objective.calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
+				thisLdTm = solveCmd->staticLoadTime.getFirst();
+				i1 = 0;
+				while (thisLdTm) {
+					readTimeStepSoln(i1);
+					thisNd = nodes.getFirst();
+					while (thisNd) {
+						if (solveCmd->elastic) {
+							thisNd->backstepDisp();
+						}
+						if (solveCmd->thermal) {
+							thisNd->backstepTemp();
+						}
+						thisNd = thisNd->getNext();
+					}
+					if (solveCmd->elastic) {
+						thisEl = elements.getFirst();
+						while (thisEl) {
+							thisEl->backstepIntDisp();
+							thisEl = thisEl->getNext();
+						}
+					}
+					objective.calculateTerms(thisLdTm->value, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
+					thisLdTm = thisLdTm->next;
+					i1++;
+				}
 			}
 		}
 		else if (cmdStr == "calcObjGradient") {

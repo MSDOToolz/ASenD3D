@@ -449,7 +449,7 @@ class ResultsProcessor:
             ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
             fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
             self.loadElementResults(fn)
-            elValues = 0.0
+            elValues = np.zeros(numEls,dtype=float)
             for el in self.elementData['elementResults'][field]:
                 if(el[2] == layer):
                     lab = el[0]

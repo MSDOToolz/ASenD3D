@@ -80,7 +80,10 @@ class ASenDJob:
             newCmd['thermal'] = 'yes'
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
-        newCmd['staticLoadTime'] = staticLoadTime
+        try:
+            newCmd['staticLoadTime'] = list(staticLoadTime)
+        except:
+            newCmd['staticLoadTime'] = [staticLoadTime]
         newCmd['loadRampSteps'] = loadRampSteps
         if(dynamic):
             newCmd['dynamic'] = 'yes'
@@ -111,7 +114,10 @@ class ASenDJob:
             newCmd['thermal'] = 'yes'
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
-        newCmd['staticLoadTime'] = staticLoadTime
+        try:
+            newCmd['staticLoadTime'] = list(staticLoadTime)
+        except:
+            newCmd['staticLoadTime'] = [staticLoadTime]
         newCmd['loadRampSteps'] = loadRampSteps
         if(dynamic):
             newCmd['dynamic'] = "yes"
@@ -209,7 +215,7 @@ class ASenDJob:
     def writeJobInput(self,fileName):
         self.fileName = makeAbsolute(fileName)
         
-        fileStr = yaml.dump(self.jobData,sort_keys=False)
+        fileStr = yaml.dump(self.jobData,sort_keys=False,)
         
         fileStr = fileStr.replace("'","")
         fileStr = fileStr.replace('"','')

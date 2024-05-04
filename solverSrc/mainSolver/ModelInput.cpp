@@ -175,7 +175,8 @@ void Model::readJob(string fileName) {
 				newCmd->convTol = stod(data[0]);
 			}
 			else if (headings[1] == "staticLoadTime" && dataLen == 1) {
-				newCmd->staticLoadTime = stod(data[0]);
+				newCmd->staticLoadTime.addEntry(stod(data[0]));
+				//newCmd->staticLoadTime = stod(data[0]);
 			} else if(headings[1] == "thermal" && dataLen == 1) {
 				if(data[0] == "yes") {
 					newCmd->thermal = true;

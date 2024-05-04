@@ -74,6 +74,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	string thisField;
 	IntListEnt *thisEnt;
 	Node *ndPt;
+	DoubListEnt* thisLdTm;
 	int ndLabel;
 	double ndDat[6];
 	int ndof;
@@ -93,12 +94,27 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 				}
 				ndPt = ndPt->getNext();
 			}
+			if (solveCmd->dynamic) {
+				time = solveCmd->timeStep * timeStep;
+			}
+			else {
+				thisLdTm = solveCmd->staticLoadTime.getFirst();
+				i1 = 0;
+				while (thisLdTm && i1 < timeStep) {
+					thisLdTm = thisLdTm->next;
+					i1++;
+				}
+				time = thisLdTm->value;
+			}
 		}
 		catch (...) {
 			cout << "Error: time step " << timeStep << " requested for node results is out of range, or solution history was not saved" << endl;
 			cout << "Aborting writeNodeResults" << endl;
 			return;
 		}
+	}
+	else {
+		time = -1.0;
 	}
 	
 	try {
@@ -117,7 +133,6 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	outFile << setprecision(12);
 	
 	outFile << "nodeResults:\n";
-	time = solveCmd->timeStep * timeStep;
 	outFile << "    time: " << time << "\n";
 	outFile << "    nodeSet: " << nodeSet << "\n";
 	
@@ -128,6 +143,9 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 		// -----------------
 		// Calculate reaction force if necessary
 		if (thisField == "reactionForce") {
+			for (i1 = 0; i1 < elMatDim; i1++) {
+				tempV1[i1] = 0.0;
+			}
 			buildElasticSolnLoad(tempV1, false);
 			thisEnt = setPt->getFirstEntry();
 			while (thisEnt) {
@@ -144,6 +162,9 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 			}
 		}
 		else if (thisField == "reactionHeatGen") {
+			for (i1 = 0; i1 < elMatDim; i1++) {
+				tempV1[i1] = 0.0;
+			}
 			buildThermalSolnLoad(tempV1, false);
 			thisEnt = setPt->getFirstEntry();
 			while (thisEnt) {
@@ -211,7 +232,9 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	string errStr;
 	string thisField;
 	IntListEnt* thisEnt;
+	Node* ndPt;
 	Element* elPt;
+	DoubListEnt* thisLdTm;
 	Set* setPt;
 	int type;
 	int elLabel;
@@ -233,12 +256,44 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 		// Read the results from the time step file and store them in nodes
 		try {
 			readTimeStepSoln(timeStep);
+			ndPt = nodes.getFirst();
+			while (ndPt) {
+				if (solveCmd->thermal) {
+					ndPt->backstepTemp();
+				}
+				if (solveCmd->elastic) {
+					ndPt->backstepDisp();
+				}
+				ndPt = ndPt->getNext();
+			}
+			if (solveCmd->elastic) {
+				elPt = elements.getFirst();
+				while (elPt) {
+					elPt->backstepIntDisp();
+					elPt = elPt->getNext();
+				}
+			}
+			if (solveCmd->dynamic) {
+				time = solveCmd->timeStep * timeStep;
+			}
+			else {
+				thisLdTm = solveCmd->staticLoadTime.getFirst();
+				i1 = 0;
+				while (thisLdTm && i1 < timeStep) {
+					thisLdTm = thisLdTm->next;
+					i1++;
+				}
+				time = thisLdTm->value;
+			}
 		}
 		catch (...) {
 			cout << "Error: time step " << timeStep << " requested for element results is out of range," << endl;
 			cout << "or solution history was not saved in the solve options. Aborting writeElementResults." << endl;
 			return;
 		}
+	}
+	else {
+		time = -1.0;
 	}
 
 	try {
@@ -257,7 +312,6 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	outFile << setprecision(12);
 
 	outFile << "elementResults:\n";
-	time = solveCmd->timeStep * timeStep;
 	outFile << "    time: " << time << "\n";
 	outFile << "    elSet: " << elSet << "\n";
 

@@ -24,7 +24,7 @@ class JobCommand {
 		std::string solverMethod;
 		int maxIt;
 		double convTol;
-		double staticLoadTime;
+		DoubList staticLoadTime;
 		bool thermal;
 		double timeStep;
 		

@@ -287,7 +287,7 @@ def animateMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',frameDuration=
                 colorbar_title = title,
                 colorscale='turbo',
                 intensity=values[ni],
-                intesitymode=valMode,
+                intensitymode=valMode,
                 i=faceVerts['v1'],
                 j=faceVerts['v2'],
                 k=faceVerts['v3'],

@@ -601,6 +601,10 @@ void Model::analysisPrep() {
 			}
 		}
 		blockDim = solveCmd->solverBlockDim;
+
+		if (solveCmd->staticLoadTime.getLength() == 0) {
+			solveCmd->staticLoadTime.addEntry(0.0);
+		}
 	}
 	else {
 		blockDim = 2000000000;
@@ -988,12 +992,14 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 void Model::solve(JobCommand *cmd) {
 	int i1;
 	int i2;
+	int i3;
 	double appLdFact;
 	double time;
 	int ldSteps = cmd->loadRampSteps;
 	double c1 = 1.0/(ldSteps*ldSteps);
 	Node *thisNd;
 	Element* thisEl;
+	DoubListEnt* thisLd;
 	double zeroAr[9] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
 	if(!anPrepRun) {
@@ -1047,15 +1053,42 @@ void Model::solve(JobCommand *cmd) {
 			time += cmd->timeStep;
 		}
 	} else {
-		if(cmd->nonlinearGeom) {
-			for (i1 = 0; i1 < ldSteps; i1++) {
-				i2 = ldSteps - i1 - 1;
-				appLdFact = 1.0 - c1*i2*i2;
-				solveStep(cmd,cmd->staticLoadTime,appLdFact);
+		thisLd = cmd->staticLoadTime.getFirst();
+		i3 = 0;
+		while (thisLd) {
+			if (cmd->nonlinearGeom) {
+				for (i1 = 0; i1 < ldSteps; i1++) {
+					i2 = ldSteps - i1 - 1;
+					appLdFact = 1.0 - c1 * i2 * i2;
+					solveStep(cmd, thisLd->value, appLdFact);
+				}
 			}
-		} else {
-			appLdFact = 1.0;
-			solveStep(cmd,cmd->staticLoadTime,appLdFact);
+			else {
+				appLdFact = 1.0;
+				solveStep(cmd, thisLd->value, appLdFact);
+			}
+			if (cmd->saveSolnHist) {
+				thisNd = nodes.getFirst();
+				while (thisNd) {
+					if (cmd->thermal) {
+						thisNd->advanceTemp();
+					}
+					if (cmd->elastic) {
+						thisNd->advanceDisp();
+					}
+					thisNd = thisNd->getNext();
+				}
+				if (cmd->elastic) {
+					thisEl = elements.getFirst();
+					while (thisEl) {
+						thisEl->advanceIntDisp();
+						thisEl = thisEl->getNext();
+					}
+				}
+				writeTimeStepSoln(i3);
+			}
+			thisLd = thisLd->next;
+			i3++;
 		}
 	}
 	
@@ -1459,7 +1492,7 @@ void Model::augmentdLdU() {
 	return;
 }
 
-void Model::solveForAdjoint() {
+void Model::solveForAdjoint(double time) {
 	int i1;
 	int i2;
 	int i3;
@@ -1479,7 +1512,7 @@ void Model::solveForAdjoint() {
 	double elAdj[33];
 	double* intAdj;
 
-	objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
+	objective.calculatedLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
     
 	if (solveCmd->elastic) {
 		if (solveCmd->dynamic) {
@@ -1731,10 +1764,12 @@ void Model::getObjGradient() {
 	int i1;
 	int i2;
 	int i3;
+	int i4;
 	double time;
 	int numDV = designVars.getLength();
 	Element* thisEl;
 	Node* thisNd;
+	DoubListEnt* thisLd;
 
 	objective.clearValues();
 	for (i1 = 0; i1 < numDV; i1++) {
@@ -1777,7 +1812,7 @@ void Model::getObjGradient() {
 			}
 			readTimeStepSoln(i1 - 1);
 			objective.calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
-			solveForAdjoint();
+			solveForAdjoint(time);
 			objective.calculatedLdD(dLdD, time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray,d1Pre);
 			for (i2 = 0; i2 < numDV; i2++) {
 				if (solveCmd->thermal) {
@@ -1802,38 +1837,60 @@ void Model::getObjGradient() {
 		}
 	}
 	else {
-		objective.calculateTerms(solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
-		for (i2 = 0; i2 < nodes.getLength(); i2++) {
-			dLdT[i2] = 0.0;
-			dLdTdot[i2] = 0.0;
-		}
-		for (i2 = 0; i2 < elMatDim; i2++) {
-			dLdA[i2] = 0.0;
-			dLdV[i2] = 0.0;
-		}
-		for (i2 = 0; i2 < totGlobDof; i2++) {
-			dLdU[i2] = 0.0;
-		}
-		solveForAdjoint();
-		objective.calculatedLdD(dLdD, solveCmd->staticLoadTime, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d1Pre);
-		for (i1 = 0; i1 < numDV; i1++) {
-			if (solveCmd->thermal) {
-				dRthermaldD(i1);
-				for (i3 = 0; i3 < nodes.getLength(); i3++) {
-					dLdD[i1] -= tAdj[i3] * dRtdD[i3].dval;
+		thisLd = solveCmd->staticLoadTime.getFirst();
+		i4 = 0;
+		while (thisLd) {
+			readTimeStepSoln(i4);
+			thisNd = nodes.getFirst();
+			while (thisNd) {
+				if (solveCmd->elastic) {
+					thisNd->backstepDisp();
+				}
+				if (solveCmd->thermal) {
+					thisNd->backstepTemp();
+				}
+				thisNd = thisNd->getNext();
+			}
+			thisEl = elements.getFirst();
+			while (thisEl) {
+				thisEl->backstepIntDisp();
+				thisEl = thisEl->getNext();
+			}
+			objective.calculateTerms(thisLd->value, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
+			for (i2 = 0; i2 < nodes.getLength(); i2++) {
+				dLdT[i2] = 0.0;
+				dLdTdot[i2] = 0.0;
+			}
+			for (i2 = 0; i2 < elMatDim; i2++) {
+				dLdA[i2] = 0.0;
+				dLdV[i2] = 0.0;
+			}
+			for (i2 = 0; i2 < totGlobDof; i2++) {
+				dLdU[i2] = 0.0;
+			}
+			solveForAdjoint(thisLd->value);
+			objective.calculatedLdD(dLdD, thisLd->value, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d1Pre);
+			for (i1 = 0; i1 < numDV; i1++) {
+				if (solveCmd->thermal) {
+					dRthermaldD(i1);
+					for (i3 = 0; i3 < nodes.getLength(); i3++) {
+						dLdD[i1] -= tAdj[i3] * dRtdD[i3].dval;
+					}
+				}
+				if (solveCmd->elastic) {
+					dRelasticdD(i1);
+					for (i2 = 0; i2 < elMatDim; i2++) {
+						dLdD[i1] -= uAdj[i2] * dRudD[i2].dval;
+					}
+					thisEl = elements.getFirst();
+					while (thisEl) {
+						dLdD[i1] -= thisEl->getIntAdjdRdD();
+						thisEl = thisEl->getNext();
+					}
 				}
 			}
-			if (solveCmd->elastic) {
-				dRelasticdD(i1);
-				for (i2 = 0; i2 < elMatDim; i2++) {
-					dLdD[i1] -= uAdj[i2] * dRudD[i2].dval;
-				}
-				thisEl = elements.getFirst();
-				while (thisEl) {
-					dLdD[i1] -= thisEl->getIntAdjdRdD();
-					thisEl = thisEl->getNext();
-				}
-			}
+			thisLd = thisLd->next;
+			i4++;
 		}
 	}
 	return;

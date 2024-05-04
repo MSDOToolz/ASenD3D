@@ -6,6 +6,7 @@ Created on Thu Apr  4 21:15:29 2024
 """
 
 import numpy as np
+import copy as cp
 from asendUtils.meshing.Boundary2D import *
 from asendUtils.meshing.Mesh2D import *
 from asendUtils.meshing.Mesh3D import *
@@ -18,70 +19,185 @@ from asendUtils.model.Material import *
 from asendUtils.syst.pathTools import *
 from asendUtils.ResultsProcessor import *
 
+## Input parameters
+
 volumeFraction = 0.6
+xDim = 0.05
+yDim = 1.0
+zDim = yDim*np.sqrt(3)
+elSize = 0.05
+elLayers = 1
 
-faceBd = Boundary2D()
-kp = [[0.,-0.5],
-      [0.,0.5],
-      [0.,-0.5]]
-nEls = 24
-faceBd.addSegment('arc',kp,nEls,'fiberBoundary')
-boundMesh = faceBd.getBoundaryMesh()
-fiberMesher = Mesh2D(boundMesh['nodes'],boundMesh['elements'])
-fibMesh = fiberMesher.createUnstructuredMesh('quad')
-fibMesh = make3D(fibMesh)
+## Calculated parameters
 
-kp = [[-1.,-1.],
-      [1.,-1.]]
-nEls = 12
-faceBd.addSegment('line',kp,nEls,'bottom')
-kp = [[1.,-1.],
-      [1.,1.]]
-nEls = 12
-faceBd.addSegment('line',kp,nEls,'right')
-kp = [[1.,1.],
-      [-1.,1.]]
-nEls = 12
-faceBd.addSegment('line',kp,nEls,'top')
-kp = [[-1.,1.],
-      [-1.,-1.]]
-nEls = 12
-faceBd.addSegment('line',kp,nEls,'left')
-
-boundMesh = faceBd.getBoundaryMesh()
-
-matrixMesher = Mesh2D(boundMesh['nodes'],boundMesh['elements'])
-matMesh = matrixMesher.createUnstructuredMesh('quad')
-matMesh = make3D(matMesh)
+totArea = yDim*zDim
+fibArea = totArea*volumeFraction
+fibRad = np.sqrt(0.5*fibArea/np.pi)
+hW = 0.5*yDim
+hHt = 0.5*zDim
 
 faceSurf = Surface()
-faceSurf.addMesh(fibMesh,name='fiberElements')
-faceSurf.addMesh(matMesh,name='matrixElements')
+
+## Mesh center fiber
+
+fiberBd = Boundary2D()
+kp = [[0.,-fibRad],
+      [0.,fibRad],
+      [0.,-fibRad]]
+nEl = int(np.ceil(2.0*np.pi*fibRad/elSize))
+fiberBd.addSegment('arc',kp,nEl)
+bdData = fiberBd.getBoundaryMesh()
+
+mesher = Mesh2D(bdData['nodes'],bdData['elements'])
+mesh = mesher.createUnstructuredMesh('quad')
+mesh = make3D(mesh)
+
+faceSurf.addMesh(mesh,name='centerFiber')
+
+## Mesh quarter fiber corners
+
+qtrBd = Boundary2D()
+
+kp = [[0.,0.],
+      [fibRad,0.]]
+nEl = int(np.ceil(fibRad/elSize))
+qtrBd.addSegment('line',kp,nEl)
+
+sr2 = fibRad/np.sqrt(2.0)
+kp = [[fibRad,0.], 
+      [sr2,sr2],
+      [0.,fibRad]]
+nEl = int(np.ceil(fibRad*0.5*np.pi/elSize))
+qtrBd.addSegment('arc',kp,nEl)
+
+kp = [[0.,fibRad],
+      [0.,0.]]
+nEl = int(np.ceil(fibRad/elSize))
+qtrBd.addSegment('line',kp,nEl)
+
+bdData = qtrBd.getBoundaryMesh()
+mesher = Mesh2D(bdData['nodes'],bdData['elements'])
+mesh = mesher.createUnstructuredMesh('quad')
+mesh = make3D(mesh)
+
+c1 = cp.deepcopy(mesh)
+c1 = translateMesh(c1,[-hW,-hHt,0.])
+faceSurf.addMesh(c1,'corner1Fiber')
+
+c2 = cp.deepcopy(mesh)
+c2 = translateMesh(c2,[hW,-hHt,0.])
+c2 = rotateMesh(c2,[hW,-hHt,0.],[0.,0.,1.],90)
+faceSurf.addMesh(c2,'corner2Fiber')
+
+c3 = cp.deepcopy(mesh)
+c3 = translateMesh(c3,[hW,hHt,0.])
+c3 = rotateMesh(c3,[hW,hHt,0.],[0.,0.,1.],180)
+faceSurf.addMesh(c3,'corner3Fiber')
+
+c4 = cp.deepcopy(mesh)
+c4 = translateMesh(c4,[-hW,hHt,0.])
+c4 = rotateMesh(c4,[-hW,hHt,0.],[0.,0.,1.],270)
+faceSurf.addMesh(c4,'corner4Fiber')
+
+## Mesh matrix
+
+matBd = Boundary2D()
+
+kp = [[0.,-fibRad],
+      [0.,fibRad],
+      [0.,-fibRad]]
+nEl = int(np.ceil(2.0*np.pi*fibRad/elSize))
+matBd.addSegment('arc',kp,nEl)
+
+kp = [[-hW,-hHt+fibRad],
+      [-hW+sr2,-hHt+sr2],
+      [-hW+fibRad,-hHt]]
+nEl = int(np.ceil(0.5*np.pi*fibRad/elSize))
+matBd.addSegment('arc',kp,nEl)
+
+kp = [[-hW+fibRad,-hHt],
+      [hW-fibRad,-hHt]]
+nEl = int(np.ceil((yDim-2.0*fibRad)/elSize))
+matBd.addSegment('line',kp,nEl)
+
+kp = [[hW-fibRad,-hHt],
+      [hW-sr2,-hHt+sr2],
+      [hW,-hHt+fibRad]]
+nEl = int(np.ceil(0.5*np.pi*fibRad/elSize))
+matBd.addSegment('arc',kp,nEl)
+
+kp = [[hW,-hHt+fibRad],
+      [hW,hHt-fibRad]]
+nEl = int(np.ceil((zDim-2.0*fibRad)/elSize))
+matBd.addSegment('line',kp,nEl)
+
+kp = [[hW,hHt-fibRad],
+      [hW-sr2,hHt-sr2],
+      [hW-fibRad,hHt]]
+nEl = int(np.ceil(0.5*np.pi*fibRad/elSize))
+matBd.addSegment('arc',kp,nEl)
+
+kp = [[hW-fibRad,hHt],
+      [-hW+fibRad,hHt]]
+nEl = int(np.ceil((yDim-2.0*fibRad)/elSize))
+matBd.addSegment('line',kp,nEl)
+
+kp = [[-hW+fibRad,hHt],
+      [-hW+sr2,hHt-sr2],
+      [-hW,hHt-fibRad]]
+nEl = int(np.ceil(0.5*np.pi*fibRad/elSize))
+matBd.addSegment('arc',kp,nEl)
+
+kp = [[-hW,hHt-fibRad],
+      [-hW,-hHt+fibRad]]
+nEl = int(np.ceil((zDim-2.0*fibRad)/elSize))
+matBd.addSegment('line',kp,nEl)
+
+bdData = matBd.getBoundaryMesh()
+mesher = Mesh2D(bdData['nodes'],bdData['elements'])
+mesh = mesher.createUnstructuredMesh('quad')
+mesh = make3D(mesh)
+
+faceSurf.addMesh(mesh,name='matrix')
+
+## Generate face mesh
 
 faceMesh = faceSurf.getSurfaceMesh()
 
-#plotShellMesh(faceMesh)
+faceMesh = rotateMesh(faceMesh,[0.,0.,0.],[0.,1.,0.],90.0)
+faceMesh = rotateMesh(faceMesh,[0.,0.,0.],[1.,0.,0.],90.0)
+
+## Generate 3D cell mesh
 
 cellMesher = Mesh3D(faceMesh['nodes'],faceMesh['elements'])
-cellMesh = cellMesher.createSweptMesh('inDirection',2,sweepDistance=0.1,axis=[0.,0.,1.])
+cellMesh = cellMesher.createSweptMesh('inDirection',elLayers,sweepDistance=xDim,axis=[1.,0.,0.])
 
-#plotSolidMesh(cellMesh)
+## Form additional sets
 
-extSets = getExtrudedSets(faceMesh,2)
+extSets = getExtrudedSets(faceMesh,elLayers)
 cellMesh['sets'] = extSets
 
-cellMesh = getPeriodicSets(cellMesh,2.,2.,0.1)
+cellMesh = getPeriodicSets(cellMesh,xDim,yDim,zDim)
+
+unSets = ['centerFiber',
+          'corner1Fiber',
+          'corner2Fiber',
+          'corner3Fiber',
+          'corner4Fiber']
+cellMesh = getElementSetUnion(cellMesh,unSets,'allFiber')
+
+## Build model
 
 myMod = Model()
 myMod.addMeshData(cellMesh,meshType='solid')
 
 newSec = Section('solid')
-newSec.setElementSet('fiberElements')
+newSec.setElementSet('allFiber')
 newSec.setMaterial('carbon')
 myMod.addSection(newSec)
 
 newSec = Section('matrix')
-newSec.setElementSet('matrixElements')
+newSec.setElementSet('matrix')
 newSec.setMaterial('epoxy')
 myMod.addSection(newSec)
 
