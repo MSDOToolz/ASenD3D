@@ -160,71 +160,7 @@ void Model::executeJob() {
 		}
 		else if (cmdStr == "calcObjective") {
 			cout << "calculating objective function " << fileName << endl;
-			if (solveCmd->dynamic) {
-				if (timeStepsSaved == 0) {
-					cout << "Warning: dynamic analysis was run but time history was not saved." << endl;
-					cout << "         The objective can only be computed based on the final state." << endl;
-					objective.clearValues();
-					objective.calculateTerms(solveCmd->simPeriod, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray,d0Pre);
-				}
-				else {
-					objective.clearValues();
-					readTimeStepSoln(timeStepsSaved);
-					i1 = timeStepsSaved - 1;
-					time = solveCmd->timeStep * timeStepsSaved;
-					while (i1 >= 0) {
-						thisNd = nodes.getFirst();
-						while (thisNd) {
-							if (solveCmd->elastic) {
-								thisNd->backstepDisp();
-							}
-							if (solveCmd->thermal) {
-								thisNd->backstepTemp();
-							}
-							thisNd = thisNd->getNext();
-						}
-						if (solveCmd->elastic) {
-							thisEl = elements.getFirst();
-							while (thisEl) {
-								thisEl->backstepIntDisp();
-								thisEl = thisEl->getNext();
-							}
-						}
-						readTimeStepSoln(i1);
-						objective.calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
-						i1--;
-						time -= solveCmd->timeStep;
-					}
-				}
-			}
-			else {
-				objective.clearValues();
-				thisLdTm = solveCmd->staticLoadTime.getFirst();
-				i1 = 0;
-				while (thisLdTm) {
-					readTimeStepSoln(i1);
-					thisNd = nodes.getFirst();
-					while (thisNd) {
-						if (solveCmd->elastic) {
-							thisNd->backstepDisp();
-						}
-						if (solveCmd->thermal) {
-							thisNd->backstepTemp();
-						}
-						thisNd = thisNd->getNext();
-					}
-					if (solveCmd->elastic) {
-						thisEl = elements.getFirst();
-						while (thisEl) {
-							thisEl->backstepIntDisp();
-							thisEl = thisEl->getNext();
-						}
-					}
-					objective.calculateTerms(thisLdTm->value, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
-					thisLdTm = thisLdTm->next;
-					i1++;
-				}
-			}
+			getObjective();
 		}
 		else if (cmdStr == "calcObjGradient") {
 			cout << "calculating objective gradient " << fileName << endl;

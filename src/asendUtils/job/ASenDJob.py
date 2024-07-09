@@ -70,7 +70,7 @@ class ASenDJob:
         
     def solvePrep(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
-              simPeriod=1.0,saveSolnHist=False,solnHistDir='',solverMethod='direct',
+              simPeriod=1.0,saveSolnHist=True,solnHistDir='',solverMethod='direct',
               solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
         newCmd = dict()
         newCmd['command'] = 'solvePrep'
@@ -104,7 +104,7 @@ class ASenDJob:
         
     def solve(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
-              simPeriod=1.0,saveSolnHist=False,solnHistDir='',solverMethod='direct',
+              simPeriod=1.0,saveSolnHist=True,solnHistDir='',solverMethod='direct',
               solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
         newCmd = dict()
         newCmd['command'] = 'solve'

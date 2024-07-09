@@ -801,6 +801,86 @@ def getMeshInterfaceNodes(mesh1Data,mesh2Data,nodeSet1,nodeSet2,newSet1Name,newS
     mesh2Data['sets']['node'].append(newSet)
     return [mesh1Data,mesh2Data]
 
+def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
+    nds = meshData['nodes']
+    els = meshData['elements']
+    mag = np.linalg.norm(normDir)
+    unitNorm = (1.0/mag)*normDir
+    cosTol = np.cos(normTol*np.pi/180.0)
+    faceDic = dict()
+    for es in meshData['sets']['element']:
+        if(es['name'] == elSet):
+            for ei in es['labels']:
+                fcStr, globFc = getSortedFaceStrings(els[ei])
+                for fi, fk in enumerate(fcStr):
+                    try:
+                        curr = faceDic[fk]
+                        faceDic[fk] = None
+                    except:
+                        faceDic[fk] = globFc[fi]
+    surfSet = set()
+    for fk in faceDic:
+        glob = faceDic[fk]
+        if(glob is not None):
+            gLen = len(glob)
+            if(gLen == 3):
+                v1 = nds[glob[1]] - nds[glob[0]]
+                v2 = nds[glob[2]] - nds[glob[1]]
+            elif(gLen == 4):
+                v1 = nds[glob[2]] - nds[glob[0]]
+                v2 = nds[glob[3]] - nds[glob[1]]
+            cp = crossProd(v1,v2)
+            mag = np.linalg.norm(cp)
+            fcNrm = (1.0/mag)*cp
+            dp = np.dot(fcNrm,unitNorm)
+            if(dp >= cosTol):
+                for nd in glob:
+                    surfSet.add(nd)
+    newSet = dict()
+    newSet['name'] = newSetName
+    newSet['labels'] = list(surfSet)
+    return addNodeSet(meshData,newSet)
+                
+def getForceElementCloud(meshData,nodeSet1,nodeSet2,elSetName,maxDist):
+    nds = meshData['nodes']
+    gL = getMeshSpatialList(nds)
+    for ns in meshData['sets']['node']:
+        if(ns['name'] == nodeSet2):
+            for s2 in ns['labels']:
+                crds = nds[s2]
+                gL.addEntry(s2,crds)
+    frcEls = list()
+    for ns in meshData['sets']['node']:
+        if(ns['name'] == nodeSet1):
+            for s1 in ns['labels']:
+                crd1 = nds[s1]
+                nearNds = gL.findInRadius(crd1,maxDist)
+                for nrNd in nearNds:
+                    if(nrNd != s1):
+                        crd2 = nds[nrNd]
+                        dVec = crd2 - crd1
+                        dist = np.linalg.norm(dVec)
+                        if(dist < maxDist):
+                            frcEls.append([s1,nrNd])
+    try:
+        stLen = len(meshData['elements'])
+        newLen = stLen + len(frcEls)
+        newEls = -1*np.ones((newLen,2),dtype=int)
+        newEls[0:stLen] = meshData['elements']
+        newEls[stLen:newLen] = np.array(frcEls)
+        meshData['elements'] = newEls
+        newSet = dict()
+        newSet['name'] = elSetName
+        newSet['labels'] = list(range(stLen,newLen))
+        return addElementSet(meshData,newSet)
+    except:
+        newLen = len(frcEls)
+        meshData['elements'] = np.array(frcEls)
+        newSet = dict()
+        newSet['name'] = elSetName
+        newSet['labels'] = list(range(0,newLen))
+        return addElementSet(meshData,newSet)
+
 def getMatchingNodeSet(meshData,elSet,ndSetName):
     elements = meshData['elements']
     elSets = meshData['sets']['element']

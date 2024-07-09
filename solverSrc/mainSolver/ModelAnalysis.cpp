@@ -211,6 +211,10 @@ void Model::reorderNodes(int blockDim) {
 	elasticMat.setDim(elMatDim);
 	thermMat.setDim(nodes.getLength());
 
+	if (solveCmd->solverMethod == "iterative" && solveCmd->maxIt == 0) {
+		solveCmd->maxIt = elMatDim;
+	}
+
 	thisEl = elements.getFirst();
 	while (thisEl) {
 		i3 = thisEl->getNumIntDof();
@@ -595,9 +599,6 @@ void Model::analysisPrep() {
 			}
 			if (solveCmd->solverBlockDim == 2000000000) {
 				solveCmd->solverBlockDim = i1;
-			}
-			if (solveCmd->maxIt == 0) {
-				solveCmd->maxIt = 3 * numNds;
 			}
 		}
 		blockDim = solveCmd->solverBlockDim;
@@ -1086,6 +1087,7 @@ void Model::solve(JobCommand *cmd) {
 					}
 				}
 				writeTimeStepSoln(i3);
+				timeStepsSaved = i3 + 1;
 			}
 			thisLd = thisLd->next;
 			i3++;
@@ -1760,6 +1762,80 @@ void Model::dRelasticdD(int dVarNum) {
 	return;
 }
 
+void Model::getObjective() {
+	int i1;
+	double time;
+	Node* thisNd;
+	Element* thisEl;
+	DoubListEnt* thisLdTm;
+	string erStr;
+
+	if (!solveCmd->saveSolnHist) {
+		erStr = "Error: The solution history must be saved to calculate the objective gradient.\n";
+		erStr += "Save history by setting saveSolnHist=True in the solve command.\n";
+		throw invalid_argument(erStr);
+	}
+
+	if (solveCmd->dynamic) {
+		objective.clearValues();
+		readTimeStepSoln(timeStepsSaved);
+		i1 = timeStepsSaved - 1;
+		time = solveCmd->timeStep * timeStepsSaved;
+		while (i1 >= 0) {
+			thisNd = nodes.getFirst();
+			while (thisNd) {
+				if (solveCmd->elastic) {
+					thisNd->backstepDisp();
+				}
+				if (solveCmd->thermal) {
+					thisNd->backstepTemp();
+				}
+				thisNd = thisNd->getNext();
+			}
+			if (solveCmd->elastic) {
+				thisEl = elements.getFirst();
+				while (thisEl) {
+					thisEl->backstepIntDisp();
+					thisEl = thisEl->getNext();
+				}
+			}
+			readTimeStepSoln(i1);
+			objective.calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
+			i1--;
+			time -= solveCmd->timeStep;
+		}
+	}
+	else {
+		objective.clearValues();
+		thisLdTm = solveCmd->staticLoadTime.getFirst();
+		i1 = 0;
+		while (thisLdTm) {
+			readTimeStepSoln(i1);
+			thisNd = nodes.getFirst();
+			while (thisNd) {
+				if (solveCmd->elastic) {
+					thisNd->backstepDisp();
+				}
+				if (solveCmd->thermal) {
+					thisNd->backstepTemp();
+				}
+				thisNd = thisNd->getNext();
+			}
+			if (solveCmd->elastic) {
+				thisEl = elements.getFirst();
+				while (thisEl) {
+					thisEl->backstepIntDisp();
+					thisEl = thisEl->getNext();
+				}
+			}
+			objective.calculateTerms(thisLdTm->value, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
+			thisLdTm = thisLdTm->next;
+			i1++;
+		}
+	}
+	return;
+}
+
 void Model::getObjGradient() {
 	int i1;
 	int i2;
@@ -1770,6 +1846,13 @@ void Model::getObjGradient() {
 	Element* thisEl;
 	Node* thisNd;
 	DoubListEnt* thisLd;
+	string erStr;
+
+	if (!solveCmd->saveSolnHist) {
+		erStr = "Error: The solution history must be saved to calculate the objective gradient.\n";
+		erStr += "Save history by setting saveSolnHist=True in the solve command.\n";
+		throw invalid_argument(erStr);
+	}
 
 	objective.clearValues();
 	for (i1 = 0; i1 < numDV; i1++) {

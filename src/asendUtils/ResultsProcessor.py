@@ -424,7 +424,7 @@ class ResultsProcessor:
                 allNdValues.append(ndValues)
                 firstStep = False
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allNdValues,verts,frameDuration,cbTitle)
+        animateMeshSolution(allNdCrd,allNdValues,verts,'vertex',frameDuration,cbTitle)
         
     def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,frameDuration=1000):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
@@ -559,12 +559,15 @@ class ResultsProcessor:
                         pass
         return series, timePts
         
-    def plotNodeHistory(self,fileName,field,timeSteps,nodeSet,component=1):
+    def plotNodeHistory(self,fileName,field,timeSteps,nodeSet,component=1,xTitle='Time',yTitle=None):
         series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
-        ytitle = field + str(component)
-        plotTimeHistory(series,timePts,ytitle)
+        if(yTitle == None):
+            ytitle = field + str(component)
+        else:
+            ytitle = yTitle
+        plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=ytitle)
         
-    def plotElementHistory(self,fileName,field,timeSteps,elementSet,component=1):
+    def plotElementHistory(self,fileName,field,timeSteps,elementSet,component=1,xTitle='Time',yTitle=None):
         fnLst = fileName.split('.')
         try:
             elI = int(elementSet)
@@ -580,8 +583,11 @@ class ResultsProcessor:
             series = dict()
             lab = 'element_' + str(ndI)
             series[lab] = vals
-            ytitle = field + str(component)
-            plotTimeHistory(series,timePts,ytitle)
+            if(yTitle == None):
+                ytitle = field + str(component)
+            else:
+                ytitle = yTitle
+            plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=yTitle)
         except:
             series = dict()
             for es in self.modelData['sets']['element']:
@@ -600,8 +606,11 @@ class ResultsProcessor:
                         series[lab].append(el[component+2])
                     except:
                         pass
-            ytitle = field + str(component)
-            plotTimeHistory(series,timePts,ytitle)
+            if(yTitle == None):
+                ytitle = field + str(component)
+            else:
+                ytitle = yTitle
+            plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=ytitle)
             
     def plotElementSensitivity(self,elementSet='all',dVarSet='all',magnitude=False):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
@@ -645,37 +654,94 @@ class ResultsProcessor:
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell')
         
             
-    def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
+    # def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
+    #     series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
+    #     npts = len(timePts)
+    #     totalPeriod = timePts[npts-1] - timePts[0]
+    #     lowFreq = 1.0/totalPeriod
+    #     timeStep = totalPeriod/npts
+    #     highFreq = 1.0/(2*timeStep)
+    #     nFreq = int(np.ceil(highFreq/lowFreq))
+    #     freq = list()
+    #     for fi in range(0,nFreq):
+    #         freq.append((fi+1)*lowFreq)
+    #     pi2 = 2.0*np.pi
+    #     tAr = np.array(timePts)
+    #     ons = np.ones(npts,dtype=float)
+    #     seriesAmp = dict()
+    #     for sLab in series:
+    #         vAr = np.array(series[sLab])
+    #         seriesAmp[sLab] = list()
+    #         for fi in range(0,nFreq):
+    #             omega = pi2*(fi+1)*lowFreq
+    #             sVec = np.sin(omega*tAr)
+    #             cVec = np.cos(omega*tAr)
+    #             mT = np.array([sVec,cVec,ons])
+    #             mat = np.transpose(mT)
+    #             Q, R = np.linalg.qr(mat)
+    #             rhs = np.matmul(vAr,Q)
+    #             soln = np.linalg.solve(R,rhs)
+    #             amp = np.linalg.norm(soln[0:2])
+    #             seriesAmp[sLab].append(amp)
+    #     return seriesAmp, freq
+    
+    def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,freq,component=1):
         series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
         npts = len(timePts)
-        totalPeriod = timePts[npts-1] - timePts[0]
-        lowFreq = 1.0/totalPeriod
-        timeStep = totalPeriod/npts
-        highFreq = 1.0/(2*timeStep)
-        nFreq = int(np.ceil(highFreq/lowFreq))
-        freq = list()
-        for fi in range(0,nFreq):
-            freq.append((fi+1)*lowFreq)
-        pi2 = 2.0*np.pi
         tAr = np.array(timePts)
+        pi2 = 2.0*np.pi
         ons = np.ones(npts,dtype=float)
         seriesAmp = dict()
         for sLab in series:
             vAr = np.array(series[sLab])
             seriesAmp[sLab] = list()
-            for fi in range(0,nFreq):
-                omega = pi2*(fi+1)*lowFreq
+            mT = [ons]
+            for f in freq:
+                omega = pi2*f
                 sVec = np.sin(omega*tAr)
                 cVec = np.cos(omega*tAr)
-                mT = np.array([sVec,cVec,ons])
-                mat = np.transpose(mT)
-                Q, R = np.linalg.qr(mat)
-                rhs = np.matmul(vAr,Q)
-                soln = np.linalg.solve(R,rhs)
-                amp = np.linalg.norm(soln[0:2])
+                mT.append(sVec)
+                mT.append(cVec)
+            mat = np.transpose(mT)
+            Q, R = np.linalg.qr(mat)
+            rhs = np.matmul(vAr,Q)
+            soln = np.linalg.solve(R,rhs)
+            j = 1
+            for f in freq:
+                amp = np.linalg.norm(soln[j:j+2])
                 seriesAmp[sLab].append(amp)
-        return seriesAmp, freq
+                j += 2
+        return seriesAmp
+        
+        # npts = len(timePts)
+        # totalPeriod = timePts[npts-1] - timePts[0]
+        # lowFreq = 1.0/totalPeriod
+        # timeStep = totalPeriod/npts
+        # highFreq = 1.0/(2*timeStep)
+        # nFreq = int(np.ceil(highFreq/lowFreq))
+        # freq = list()
+        # for fi in range(0,nFreq):
+        #     freq.append((fi+1)*lowFreq)
+        # pi2 = 2.0*np.pi
+        # tAr = np.array(timePts)
+        # ons = np.ones(npts,dtype=float)
+        # seriesAmp = dict()
+        # for sLab in series:
+        #     vAr = np.array(series[sLab])
+        #     seriesAmp[sLab] = list()
+        #     for fi in range(0,nFreq):
+        #         omega = pi2*(fi+1)*lowFreq
+        #         sVec = np.sin(omega*tAr)
+        #         cVec = np.cos(omega*tAr)
+        #         mT = np.array([sVec,cVec,ons])
+        #         mat = np.transpose(mT)
+        #         Q, R = np.linalg.qr(mat)
+        #         rhs = np.matmul(vAr,Q)
+        #         soln = np.linalg.solve(R,rhs)
+        #         amp = np.linalg.norm(soln[0:2])
+        #         seriesAmp[sLab].append(amp)
+        # return seriesAmp, freq
     
-    def plotNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
-        seriesAmp, freq = self.extractNodeFrequencies(fileName, field, timeSteps, nodeSet, component)
-        plotFrequencySpectrum(seriesAmp,freq)
+    def plotNodeFrequencies(self,fileName,field,timeSteps,nodeSet,freq,component=1,xTitle='Frequency',yTitle='Amplitude'):
+        seriesAmp = self.extractNodeFrequencies(fileName, field, timeSteps, nodeSet, freq, component)
+        plotFrequencySpectrum(seriesAmp,freq,xTitle=xTitle,yTitle=yTitle)

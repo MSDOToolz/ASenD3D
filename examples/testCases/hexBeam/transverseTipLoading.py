@@ -39,7 +39,7 @@ myJob.readLoads('transverseTipLoading/loads.yaml')
 myJob.readDesignVarInput('hexBeamDVars.yaml')
 myJob.readObjectiveInput('transverseTipLoading/objective.yaml')
 
-myJob.solve()
+myJob.solve(solnHistDir='transverseTipLoading/results')
 myJob.calcObjGradient()
 
 myJob.writeNodeResults('transverseTipLoading/results/nodeResults.yaml',['displacement'])

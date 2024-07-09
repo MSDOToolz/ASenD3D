@@ -351,11 +351,11 @@ def animateMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',frameDuration=
     
     return
 
-def plotTimeHistory(seriesData,timePts,field='',title=''):
+def plotTimeHistory(seriesData,timePts,title='',xTitle='Time',yTitle=''):
     fig = go.Figure()
     fig.update_layout(title=title)
-    fig.update_xaxes(title='Time')
-    fig.update_yaxes(title=field)
+    fig.update_xaxes(title=xTitle)
+    fig.update_yaxes(title=yTitle)
     for s in seriesData:
         fig.add_trace(go.Scatter(x=timePts,y=seriesData[s],mode='lines',name=s))
     
@@ -363,11 +363,14 @@ def plotTimeHistory(seriesData,timePts,field='',title=''):
     
     return
 
-def plotFrequencySpectrum(seriesData,frequencies,title=''):
+def plotFrequencySpectrum(seriesData,frequencies,title='',xTitle='Frequency',yTitle='Amplitude'):
     fig = go.Figure()
     fig.update_layout(title=title)
-    fig.update_xaxes(title='Frequency')
-    fig.update_yaxes(title='Amplitude')
+    fig.update_xaxes(title=xTitle)
+    fig.update_yaxes(title=yTitle)
+    freqLab = list()
+    for f in frequencies:
+        freqLab.append(str(f))
     for s in seriesData:
-        fig.add_trace(go.Bar(x=frequencies,y=seriesData[s],name=s))
+        fig.add_trace(go.Bar(x=freqLab,y=seriesData[s],name=s))
     fig.show()

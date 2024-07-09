@@ -97,6 +97,58 @@ def getElBasis(elType,sVec):
     
     return nOut
 
+def getElementFaces(elType):
+    if(elType == 'tet4'):
+        faces = [[0,2,1],
+                 [0,1,3],
+                 [1,2,3],
+                 [0,3,2]]
+    elif(elType == 'wedge6'):
+        faces = [[0,2,1],
+                 [3,4,5],
+                 [0,1,4,3],
+                 [1,2,5,4],
+                 [0,3,5,2]]
+    elif(elType == 'brick8'):
+        faces = [[3,2,1,0],
+                 [4,5,6,7],
+                 [0,1,5,4],
+                 [1,2,6,5],
+                 [2,3,7,6],
+                 [3,0,4,7]]
+    elif(elType == 'shell3'):
+        faces = [[0,1,2],
+                  [0,2,1]]
+    elif(elType == 'shell4'):
+        faces = [[0,1,2,3],
+                 [0,3,2,1]]
+    return faces
+
+def getSortedFaceStrings(elNds):
+    eLen = len(elNds)
+    if(eLen == 8):
+        if(elNds[4] == -1):
+            faces = getElementFaces('tet4')
+        elif(elNds[6] == -1):
+            faces = getElementFaces('wedge6')
+        else:
+            faces = getElementFaces('brick8')
+    elif(eLen == 4):
+        if(elNds[3] == -1):
+            faces = getElementFaces('shell3')
+        else:
+            faces = getElementFaces('shell4')
+    fcStr = list()
+    globFc = list()
+    for fc in faces:
+        glob = list()
+        for nd in fc:
+            glob.append(elNds[nd])
+        globFc.append(glob)
+        srted = np.sort(glob)
+        fcStr.append(str(srted))
+    return fcStr, globFc
+
 def checkJacobian(elCrd,elType):
     sPts = []
     if(elType == "brick8"):

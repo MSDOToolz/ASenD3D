@@ -34,17 +34,22 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1309,9
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1315,7): warning C4101: 'reduced': unreferenced local variable
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1310,9): warning C4101: 'minv': unreferenced local variable
   ModelAnalysis.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(503,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(702,6): warning C4101: 'numDof': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(852,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(872,6): warning C4101: 'ideb': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1156,6): warning C4101: 'i6': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1169,9): warning C4101: 'dp': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1155,6): warning C4101: 'i5': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1365,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1605,6): warning C4101: 'numDof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(507,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(703,6): warning C4101: 'numDof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(853,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(873,6): warning C4101: 'ideb': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1158,6): warning C4101: 'i6': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1171,9): warning C4101: 'dp': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1157,6): warning C4101: 'i5': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1367,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1607,6): warning C4101: 'numDof': unreferenced local variable
   ModelClass.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(241,32): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(177,32): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(102,8): warning C4101: 'thisNd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(103,11): warning C4101: 'thisEl': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(104,15): warning C4101: 'thisLdTm': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(99,9): warning C4101: 'time': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(96,6): warning C4101: 'i1': unreferenced local variable
   ModelInput.cpp
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(23,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(28,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
@@ -92,6 +97,6 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1223,19
   SetClass.cpp
   Generating code
   Previous IPDB not found, fall back to full compilation.
-  All 1074 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 1075 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   ASenD_runJob.vcxproj -> C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\x64\Release\ASenD_runJob.exe

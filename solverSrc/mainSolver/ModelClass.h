@@ -184,6 +184,8 @@ class Model {
 		void dRthermaldD(int dVarNum);
 
 		void dRelasticdD(int dVarNum);
+
+		void getObjective();
 		
 		void getObjGradient();
 		
