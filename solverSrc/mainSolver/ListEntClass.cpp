@@ -264,6 +264,20 @@ void SparseMat::addEntry(int row, int col, double val) {
 	return;
 }
 
+void SparseMat::addMatrix(SparseMat& inpMat) {
+	MatrixEnt* thisEnt = nullptr;
+	int inDim = inpMat.getDim();
+	int i1;
+	for (i1 = 0; i1 < inDim; i1++) {
+		thisEnt = inpMat.getFirstEnt(i1);
+		while (thisEnt) {
+			addEntry(thisEnt->row, thisEnt->col, thisEnt->value);
+			thisEnt = thisEnt->nextEnt;
+		}
+	}
+	return;
+}
+
 int SparseMat::getDim() {
 	return dim;
 }

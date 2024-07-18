@@ -1857,12 +1857,6 @@ void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
 //dup2
 void matMul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
@@ -2656,12 +2650,6 @@ void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]) {
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
 //dup1
 void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
@@ -2860,11 +2848,5 @@ void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1,
 //end dup  
  
 //end skip 
- 
- 
- 
- 
- 
- 
  
  

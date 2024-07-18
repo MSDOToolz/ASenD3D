@@ -49,6 +49,7 @@ class Model {
 		
 		SparseMat elasticMat;
 		LowerTriMat elasticLT;
+		SparseMat nonFrcElMat;
 		bool elasticScaled;
 		SparseMat thermMat;
 		LowerTriMat thermLT;
@@ -151,7 +152,7 @@ class Model {
 
 		void buildThermalAppLoad(double appLd[], double time);
 		
-		void buildElasticSolnLoad(double solnLd[], bool buildMat);
+		void buildElasticSolnLoad(double solnLd[], bool buildMat, bool fullRef);
 
 		void buildThermalSolnLoad(double solnLd[], bool buildMat);
 
@@ -163,7 +164,7 @@ class Model {
 
 		void buildThermalConstLoad(double constLd[]);
 		
-		void solveStep(JobCommand *cmd, double time, double appLdFact);
+		void solveStep(JobCommand *cmd, double time, double appLdFact, bool fullRef);
 		
 		void solve(JobCommand *cmd);
 
@@ -179,7 +180,7 @@ class Model {
 
 		void augmentdLdU();
 
-		void solveForAdjoint(double time);
+		void solveForAdjoint(double time, bool fullRef);
 
 		void dRthermaldD(int dVarNum);
 

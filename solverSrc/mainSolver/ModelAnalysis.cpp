@@ -209,6 +209,7 @@ void Model::reorderNodes(int blockDim) {
 	}
 	elMatDim = i2;
 	elasticMat.setDim(elMatDim);
+	nonFrcElMat.setDim(elMatDim);
 	thermMat.setDim(nodes.getLength());
 
 	if (solveCmd->solverMethod == "iterative" && solveCmd->maxIt == 0) {
@@ -574,7 +575,7 @@ void Model::prepMatrixFactorizations() {
 			thisEl = thisEl->getNext();
 		}
 		if (!elasticLT.isAllocated()) {
-			buildElasticSolnLoad(tempV1, true);
+			buildElasticSolnLoad(tempV1, true, true);
 			scaleElasticConst();
 			elasticLT.allocateFromSparseMat(elasticMat, elasticConst, 6 * solveCmd->solverBlockDim);
 		}
@@ -587,6 +588,8 @@ void Model::analysisPrep() {
 	int i1;
 	int numNds;
 	int blockDim;
+	double time;
+	double tInc;
 	if (solveCmd) {
 		if (solveCmd->solverMethod == "direct") {
 			solveCmd->solverBlockDim = 2000000000;
@@ -763,7 +766,7 @@ void Model::buildThermalAppLoad(double appLd[], double time) {
 	return;
 }
 
-void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
+void Model::buildElasticSolnLoad(double solnLd[], bool buildMat, bool fullRef) {
 	int i1;
 	Element *thisEl;
 	
@@ -773,12 +776,29 @@ void Model::buildElasticSolnLoad(double solnLd[], bool buildMat) {
 	if(buildMat) {
 		elasticMat.zeroAll();
 	}
+	if (fullRef) {
+		nonFrcElMat.zeroAll();
+	}
 	
 	thisEl = elements.getFirst();
 	while(thisEl) {
 		thisEl->getStressPrereq(d0Pre, nodeArray, dVarArray);
-		thisEl->getRu(tempD1, elasticMat, buildMat, solveCmd, d0Pre, nodeArray, dVarArray);
+		if (thisEl->getType() == 21) {
+			thisEl->getRu(tempD1, elasticMat, buildMat, solveCmd, d0Pre, nodeArray, dVarArray);
+		}
+		else {
+			if (fullRef) {
+				thisEl->getRu(tempD1, nonFrcElMat, true, solveCmd, d0Pre, nodeArray, dVarArray);
+			}
+			else {
+				thisEl->getRu(tempD1, nonFrcElMat, false, solveCmd, d0Pre, nodeArray, dVarArray);
+			}
+		}
 		thisEl = thisEl->getNext();
+	}
+	
+	if (buildMat) {
+		elasticMat.addMatrix(nonFrcElMat);
 	}
 	
 	for (i1 = 0; i1 < elMatDim; i1++) {
@@ -866,7 +886,7 @@ void Model::buildThermalConstLoad(double constLd[]) {
 	return;
 }
 
-void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
+void Model::solveStep(JobCommand *cmd, double time, double appLdFact, bool fullRef) {
 	int i1;
 	int i2;
 	int numNodes;
@@ -929,7 +949,7 @@ void Model::solveStep(JobCommand *cmd, double time, double appLdFact) {
 			for (i1 = 0; i1 < elMatDim; i1++) {
 				tempV1[i1] *= appLdFact;
 			}
-			buildElasticSolnLoad(tempV1,cmd->nonlinearGeom);
+			buildElasticSolnLoad(tempV1,cmd->nonlinearGeom,fullRef);
 			if (!elasticScaled) {
 				scaleElasticConst();
 			}
@@ -994,6 +1014,7 @@ void Model::solve(JobCommand *cmd) {
 	int i1;
 	int i2;
 	int i3;
+	int sinceRef;
 	double appLdFact;
 	double time;
 	int ldSteps = cmd->loadRampSteps;
@@ -1025,8 +1046,16 @@ void Model::solve(JobCommand *cmd) {
 		}
 		time = 0.0;
 		i1 = 1;
+		sinceRef = 0;
 		while (time < cmd->simPeriod) {
-			solveStep(cmd, time, 1.0);
+			sinceRef++;
+			if (sinceRef == cmd->fullReform) {
+				solveStep(cmd, time, 1.0, true);
+				sinceRef = 0;
+			}
+			else {
+				solveStep(cmd, time, 1.0, false);
+			}
 			thisNd = nodes.getFirst();
 			while (thisNd) {
 				if (cmd->thermal) {
@@ -1061,12 +1090,12 @@ void Model::solve(JobCommand *cmd) {
 				for (i1 = 0; i1 < ldSteps; i1++) {
 					i2 = ldSteps - i1 - 1;
 					appLdFact = 1.0 - c1 * i2 * i2;
-					solveStep(cmd, thisLd->value, appLdFact);
+					solveStep(cmd, thisLd->value, appLdFact, true);
 				}
 			}
 			else {
 				appLdFact = 1.0;
-				solveStep(cmd, thisLd->value, appLdFact);
+				solveStep(cmd, thisLd->value, appLdFact, true);
 			}
 			if (cmd->saveSolnHist) {
 				thisNd = nodes.getFirst();
@@ -1228,7 +1257,7 @@ void Model::eigenSolve(JobCommand* cmd) {
 	solveCmd->nonlinearGeom = true;
 	solveCmd->dynamic = false;
 	cout << "building stiffness matrix" << endl;
-	buildElasticSolnLoad(tempV1, true);
+	buildElasticSolnLoad(tempV1, true, true);
 	cout << "finished building matrix" << endl;
 	if (cmd->type == "buckling" || cmd->type == "frequency") {
 		for (i1 = 0; i1 < elMatDim; i1++) {
@@ -1290,7 +1319,7 @@ void Model::eigenSolve(JobCommand* cmd) {
 			thisEl->setIntDisp(zeros);
 			thisEl = thisEl->getNext();
 		}
-		buildElasticSolnLoad(tempV1, true);
+		buildElasticSolnLoad(tempV1, true, true);
 		i2 = 0;
 		for (i1 = 0; i1 < cmd->numModes; i1++) {
 			for (i3 = 0; i3 < elMatDim; i3++) {
@@ -1494,7 +1523,7 @@ void Model::augmentdLdU() {
 	return;
 }
 
-void Model::solveForAdjoint(double time) {
+void Model::solveForAdjoint(double time, bool fullRef) {
 	int i1;
 	int i2;
 	int i3;
@@ -1528,7 +1557,7 @@ void Model::solveForAdjoint(double time) {
 			}
 		}
 		if (solveCmd->nonlinearGeom) {
-			buildElasticSolnLoad(tempV1, true);
+			buildElasticSolnLoad(tempV1, true, fullRef);
 			elasticLT.populateFromSparseMat(elasticMat, elasticConst);
 			elasticLT.ldlFactor();
 		}
@@ -1842,6 +1871,7 @@ void Model::getObjGradient() {
 	int i3;
 	int i4;
 	double time;
+	int sinceRef;
 	int numDV = designVars.getLength();
 	Element* thisEl;
 	Node* thisNd;
@@ -1862,6 +1892,7 @@ void Model::getObjGradient() {
 	if (solveCmd->dynamic) {
 		time = solveCmd->timeStep * timeStepsSaved;
 		i1 = timeStepsSaved;
+		sinceRef = 0;
 		readTimeStepSoln(i1);
 		while (i1 > 0) {
 			for (i2 = 0; i2 < nodes.getLength(); i2++) {
@@ -1895,7 +1926,14 @@ void Model::getObjGradient() {
 			}
 			readTimeStepSoln(i1 - 1);
 			objective.calculateTerms(time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d0Pre);
-			solveForAdjoint(time);
+			sinceRef++;
+			if (sinceRef == solveCmd->fullReform) {
+				solveForAdjoint(time, true);
+				sinceRef = 0;
+			}
+			else {
+				solveForAdjoint(time, false);
+			}
 			objective.calculatedLdD(dLdD, time, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray,d1Pre);
 			for (i2 = 0; i2 < numDV; i2++) {
 				if (solveCmd->thermal) {
@@ -1951,7 +1989,7 @@ void Model::getObjGradient() {
 			for (i2 = 0; i2 < totGlobDof; i2++) {
 				dLdU[i2] = 0.0;
 			}
-			solveForAdjoint(thisLd->value);
+			solveForAdjoint(thisLd->value,true);
 			objective.calculatedLdD(dLdD, thisLd->value, solveCmd->nonlinearGeom, nodeArray, elementArray, dVarArray, d1Pre);
 			for (i1 = 0; i1 < numDV; i1++) {
 				if (solveCmd->thermal) {

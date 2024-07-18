@@ -51,8 +51,6 @@ class Face {
 //end skip 
  
  
- 
-
 };
 
 class FacePt {

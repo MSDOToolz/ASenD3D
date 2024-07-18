@@ -17,6 +17,8 @@ JobCommand::JobCommand() {
 	rayDampCM = 0.0;
 	nonlinearGeom = false;
 	saveSolnHist = false;
+	lumpMass = false;
+	fullReform = 1;
 	simPeriod = 1.0;
 	solverBandwidth = 2000000000;
 	solverBlockDim = 2000000000;

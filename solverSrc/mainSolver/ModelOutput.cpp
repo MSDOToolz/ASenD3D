@@ -146,7 +146,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 			for (i1 = 0; i1 < elMatDim; i1++) {
 				tempV1[i1] = 0.0;
 			}
-			buildElasticSolnLoad(tempV1, false);
+			buildElasticSolnLoad(tempV1, false, false);
 			thisEnt = setPt->getFirstEntry();
 			while (thisEnt) {
 				ndLabel = thisEnt->value;

@@ -70,8 +70,8 @@ class ASenDJob:
         
     def solvePrep(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
-              simPeriod=1.0,saveSolnHist=True,solnHistDir='',solverMethod='direct',
-              solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
+              simPeriod=1.0,saveSolnHist=True,solnHistDir='',lumpMass=False,fullReformFreq=1, 
+              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
         newCmd = dict()
         newCmd['command'] = 'solvePrep'
         if(not elastic):
@@ -94,6 +94,10 @@ class ASenDJob:
         if(saveSolnHist):
             newCmd['saveSolnHist'] = 'yes'
         newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
+        if(lumpMass):
+            newCmd['lumpMass'] = 'yes'
+        if(fullReformFreq != 1):
+            newCmd['fullReformFreq'] = fullReformFreq
         newCmd['solverMethod'] = solverMethod
         newCmd['solverBlockDim'] = solverBlockDim
         if(maxIt != 0):
@@ -104,8 +108,8 @@ class ASenDJob:
         
     def solve(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
-              simPeriod=1.0,saveSolnHist=True,solnHistDir='',solverMethod='direct',
-              solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
+              simPeriod=1.0,saveSolnHist=True,solnHistDir='',lumpMass=False,fullReformFreq=1, 
+              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
         newCmd = dict()
         newCmd['command'] = 'solve'
         if(not elastic):
@@ -128,6 +132,10 @@ class ASenDJob:
         if(saveSolnHist):
             newCmd['saveSolnHist'] = 'yes'
         newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
+        if(lumpMass):
+            newCmd['lumpMass'] = 'yes'
+        if(fullReformFreq != 1):
+            newCmd['fullReformFreq'] = fullReformFreq
         newCmd['solverMethod'] = solverMethod
         newCmd['solverBlockDim'] = solverBlockDim
         if(maxIt != 0):

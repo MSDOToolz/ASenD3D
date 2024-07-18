@@ -19,6 +19,8 @@ class JobCommand {
 		bool nonlinearGeom;
 		bool saveSolnHist;
 		double simPeriod;
+		bool lumpMass;
+		int fullReform;
 		int solverBandwidth;
 		int solverBlockDim;
 		std::string solverMethod;

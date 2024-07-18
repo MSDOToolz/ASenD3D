@@ -786,6 +786,7 @@ void Element::getRu(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix, JobC
 	int globInd2;
 	int ndDof;
 	int totDof;
+	DiffDoub0 tempAcc[30];
 	DiffDoub0 Rvec[33];
 	//double dRdu[1089];
 	double* dRdu = &pre.scratch[0];
@@ -843,40 +844,92 @@ void Element::getRu(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix, JobC
 	}
 	
 	if(cmd->dynamic) {
-		getRum(Rtmp, dRtmp, getMatrix, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
-		for (i1 = 0; i1 < ndDof; i1++) {
-			Rvec[i1].add(Rtmp[i1]);
-		}
 		if (getMatrix) {
-			c1 = cmd->timeStep;
-			c1 = -1.0 / (c1 * c1 * (cmd->newmarkBeta - cmd->newmarkGamma));
-			i3 = 0;
-			i4 = 0;
-			for (i1 = 0; i1 < ndDof; i1++) {
-				for (i2 = 0; i2 < ndDof; i2++) {
-					dRdu[i3] += c1 * dRtmp[i4];
-					i3++;
-					i4++;
+			if (cmd->lumpMass) {
+				i2 = 0;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					nd = dofTable[i2];
+					dof = dofTable[i2 + 1];
+					i3 = dof * numNds + nd;
+					tempAcc[i1].setVal(pre.globAcc[i3]);
+					pre.globAcc[i3].setVal(1.0);
+					i2 += 2;
 				}
-				i3 += numIntDof;
+				getRum(Rtmp, dRtmp, false, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				c1 = cmd->timeStep;
+				c1 = -1.0 / (c1 * c1 * (cmd->newmarkBeta - cmd->newmarkGamma));
+				i2 = 0;
+				i3 = totDof + 1;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					tempAcc[i1].mult(Rtmp[i1]);
+					Rvec[i1].add(tempAcc[i1]);
+					dRdu[i2] += c1 * Rtmp[i1].val;
+					i2 += i3;
+				}
 			}
-		}
-		if (type != 1) {
-			getRud(Rtmp, dRtmp, getMatrix, cmd, pre, ndAr, dvAr);
-			for (i1 = 0; i1 < ndDof; i1++) {
-				Rvec[i1].add(Rtmp[i1]);
-			}
-			if (getMatrix) {
-				c2 = cmd->timeStep * cmd->newmarkGamma;
+			else {
+				getRum(Rtmp, dRtmp, true, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
+				}
+				c1 = cmd->timeStep;
+				c1 = -1.0 / (c1 * c1 * (cmd->newmarkBeta - cmd->newmarkGamma));
 				i3 = 0;
 				i4 = 0;
 				for (i1 = 0; i1 < ndDof; i1++) {
 					for (i2 = 0; i2 < ndDof; i2++) {
-						dRdu[i3] += c1 * c2 * dRtmp[i4];
+						dRdu[i3] += c1 * dRtmp[i4];
 						i3++;
 						i4++;
 					}
 					i3 += numIntDof;
+				}
+			}
+			if (type != 1) {
+				getRud(Rtmp, dRtmp, true, cmd, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
+				}
+				c2 = cmd->timeStep * cmd->newmarkGamma * c1;
+				i3 = 0;
+				i4 = 0;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					for (i2 = 0; i2 < ndDof; i2++) {
+						dRdu[i3] += c2 * dRtmp[i4];
+						i3++;
+						i4++;
+					}
+					i3 += numIntDof;
+				}
+			}
+		}
+		else {
+			if (cmd->lumpMass) {
+				i2 = 0;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					nd = dofTable[i2];
+					dof = dofTable[i2 + 1];
+					i3 = dof * numNds + nd;
+					tempAcc[i1].setVal(pre.globAcc[i3]);
+					pre.globAcc[i3].setVal(1.0);
+					i2 += 2;
+				}
+				getRum(Rtmp, dRtmp, false, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					tempAcc[i1].mult(Rtmp[i1]);
+					Rvec[i1].add(tempAcc[i1]);
+				}
+			}
+			else {
+				getRum(Rtmp, dRtmp, false, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
+				}
+			}
+			if (type != 1) {
+				getRud(Rtmp, dRtmp, false, cmd, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
 				}
 			}
 		}
@@ -2188,6 +2241,7 @@ void Element::getRu(DiffDoub1 globR[], SparseMat& globdRdu, bool getMatrix, JobC
 	int globInd2;
 	int ndDof;
 	int totDof;
+	DiffDoub1 tempAcc[30];
 	DiffDoub1 Rvec[33];
 	//double dRdu[1089];
 	double* dRdu = &pre.scratch[0];
@@ -2245,40 +2299,92 @@ void Element::getRu(DiffDoub1 globR[], SparseMat& globdRdu, bool getMatrix, JobC
 	}
 	
 	if(cmd->dynamic) {
-		getRum(Rtmp, dRtmp, getMatrix, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
-		for (i1 = 0; i1 < ndDof; i1++) {
-			Rvec[i1].add(Rtmp[i1]);
-		}
 		if (getMatrix) {
-			c1 = cmd->timeStep;
-			c1 = -1.0 / (c1 * c1 * (cmd->newmarkBeta - cmd->newmarkGamma));
-			i3 = 0;
-			i4 = 0;
-			for (i1 = 0; i1 < ndDof; i1++) {
-				for (i2 = 0; i2 < ndDof; i2++) {
-					dRdu[i3] += c1 * dRtmp[i4];
-					i3++;
-					i4++;
+			if (cmd->lumpMass) {
+				i2 = 0;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					nd = dofTable[i2];
+					dof = dofTable[i2 + 1];
+					i3 = dof * numNds + nd;
+					tempAcc[i1].setVal(pre.globAcc[i3]);
+					pre.globAcc[i3].setVal(1.0);
+					i2 += 2;
 				}
-				i3 += numIntDof;
+				getRum(Rtmp, dRtmp, false, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				c1 = cmd->timeStep;
+				c1 = -1.0 / (c1 * c1 * (cmd->newmarkBeta - cmd->newmarkGamma));
+				i2 = 0;
+				i3 = totDof + 1;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					tempAcc[i1].mult(Rtmp[i1]);
+					Rvec[i1].add(tempAcc[i1]);
+					dRdu[i2] += c1 * Rtmp[i1].val;
+					i2 += i3;
+				}
 			}
-		}
-		if (type != 1) {
-			getRud(Rtmp, dRtmp, getMatrix, cmd, pre, ndAr, dvAr);
-			for (i1 = 0; i1 < ndDof; i1++) {
-				Rvec[i1].add(Rtmp[i1]);
-			}
-			if (getMatrix) {
-				c2 = cmd->timeStep * cmd->newmarkGamma;
+			else {
+				getRum(Rtmp, dRtmp, true, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
+				}
+				c1 = cmd->timeStep;
+				c1 = -1.0 / (c1 * c1 * (cmd->newmarkBeta - cmd->newmarkGamma));
 				i3 = 0;
 				i4 = 0;
 				for (i1 = 0; i1 < ndDof; i1++) {
 					for (i2 = 0; i2 < ndDof; i2++) {
-						dRdu[i3] += c1 * c2 * dRtmp[i4];
+						dRdu[i3] += c1 * dRtmp[i4];
 						i3++;
 						i4++;
 					}
 					i3 += numIntDof;
+				}
+			}
+			if (type != 1) {
+				getRud(Rtmp, dRtmp, true, cmd, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
+				}
+				c2 = cmd->timeStep * cmd->newmarkGamma * c1;
+				i3 = 0;
+				i4 = 0;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					for (i2 = 0; i2 < ndDof; i2++) {
+						dRdu[i3] += c2 * dRtmp[i4];
+						i3++;
+						i4++;
+					}
+					i3 += numIntDof;
+				}
+			}
+		}
+		else {
+			if (cmd->lumpMass) {
+				i2 = 0;
+				for (i1 = 0; i1 < ndDof; i1++) {
+					nd = dofTable[i2];
+					dof = dofTable[i2 + 1];
+					i3 = dof * numNds + nd;
+					tempAcc[i1].setVal(pre.globAcc[i3]);
+					pre.globAcc[i3].setVal(1.0);
+					i2 += 2;
+				}
+				getRum(Rtmp, dRtmp, false, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					tempAcc[i1].mult(Rtmp[i1]);
+					Rvec[i1].add(tempAcc[i1]);
+				}
+			}
+			else {
+				getRum(Rtmp, dRtmp, false, true, cmd->nonlinearGeom, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
+				}
+			}
+			if (type != 1) {
+				getRud(Rtmp, dRtmp, false, cmd, pre, ndAr, dvAr);
+				for (i1 = 0; i1 < ndDof; i1++) {
+					Rvec[i1].add(Rtmp[i1]);
 				}
 			}
 		}
@@ -2995,11 +3101,5 @@ void Element::getAppThermLoad(DiffDoub1 AppLd[], Load* ldPt, DiffDoub1StressPrer
 //end dup
  
 //end skip 
- 
- 
- 
- 
- 
- 
  
  

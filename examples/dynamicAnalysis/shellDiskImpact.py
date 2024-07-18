@@ -39,9 +39,10 @@ job = ASenDJob()
 job.readModelInput(modFile)
 job.readConstraints(constFile)
 job.readInitialState(initFile)
-job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.5,saveSolnHist=True,solnHistDir='shellDiskImpact/results/')
+job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.2,solnHistDir='shellDiskImpact/results/',lumpMass=True,solverMethod='iterative',solverBlockDim=10)
+#job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.5,saveSolnHist=True,solnHistDir='shellDiskImpact/results/')
 resFile = 'shellDiskImpact/results/nodeResults.yaml'
-ts = list(range(0,100))
+ts = list(range(0,40))
 job.writeNodeResults(resFile,['displacement'],timeSteps=ts)
 jobFile = 'shellDiskImpact/job.yaml'
 job.writeJobInput(jobFile)

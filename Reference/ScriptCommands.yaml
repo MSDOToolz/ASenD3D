@@ -33,6 +33,8 @@ jobCommands:
     simPeriod:
     saveSolnHist: no
     solnHistDir:
+    lumpMass: no
+    fullReformFreq: 1
     solverMethod:
     solverBlockDim:
     maxIterations:

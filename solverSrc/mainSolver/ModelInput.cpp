@@ -159,7 +159,19 @@ void Model::readJob(string fileName) {
 				}
 			} else if (headings[1] == "solnHistDir" && dataLen == 1) {
 				newCmd->fileName = data[0];
-			} else if (headings[1] == "simPeriod" && dataLen == 1) {
+			}
+			else if (headings[1] == "lumpMass" && dataLen == 1) {
+				if (data[0] == "yes") {
+					newCmd->lumpMass = true;
+				}
+				else {
+					newCmd->lumpMass = false;
+				}
+			}
+			else if (headings[1] == "fullReformFreq") {
+				newCmd->fullReform = stoi(data[0]);
+			}
+			else if (headings[1] == "simPeriod" && dataLen == 1) {
 				newCmd->simPeriod = stod(data[0]);
 			} else if(headings[1] == "solverBandwidth" && dataLen == 1) {
 				newCmd->solverBandwidth = stoi(data[0]);
