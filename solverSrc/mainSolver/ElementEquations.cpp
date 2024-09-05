@@ -984,6 +984,10 @@ void Element::getRtk(DiffDoub0 Rvec[], double dRdT[], bool getMatrix, DiffDoub0S
 		}
 	}
 
+	if (type == 1 || type == 21) {
+		return;
+	}
+
 	for (i1 = 0; i1 < numIP; i1++) {
 		getIpData(nVec, dNdx, detJ, pre.locNds, &intPts[3 * i1]);
 		tmp.setVal(ipWt[i1]);
@@ -1031,6 +1035,18 @@ void Element::getRtm(DiffDoub0 Rvec[], double dRdTdot[], bool getMatrix, bool ac
 				i3++;
 			}
 		}
+	}
+
+	if (type == 21) {
+		return;
+	}
+	else if (type == 1) {
+		tmp.setVal(pre.massPerEl);
+		tmp.mult(pre.SpecHeat);
+		dRdTdot[0] = tmp.val;
+		tmp.mult(pre.globTemp[0]);
+		Rvec[0].setVal(tmp);
+		return;
 	}
 
 	if (!actualProps) {
@@ -1089,7 +1105,14 @@ void Element::getRt(DiffDoub0 globR[], SparseMat& globdRdT, bool getMatrix, JobC
 	DiffDoub0 Rtmp[10];
 	double dRtmp[100];
 
-	getRtk(Rvec, dRdT, getMatrix, pre);
+	if (type == 21) {
+		getRtFrcFld(globR, globdRdT, &pre.scratch[0], &pre.scratch[12], getMatrix, cmd, pre, ndAr);
+		return;
+	}
+
+	if (type != 1) {
+		getRtk(Rvec, dRdT, getMatrix, pre);
+	}
 
 	if (cmd->dynamic) {
 		getRtm(Rtmp, dRtmp, getMatrix, true, pre);
@@ -1300,6 +1323,310 @@ void Element::getRuFrcFld(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix
 			}
 		}
 		i4 += 2;
+	}
+
+	return;
+}
+
+void Element::getRtFrcFld(DiffDoub0 globR[], SparseMat& globdRdT, double dRdU[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int ndDof = 6;
+	int totDof = 6;
+	int nd;
+	int nd2;
+	int dof;
+	int dof2;
+	int globInd;
+	int globInd2;
+	DiffDoub0 Rvec[2];
+	double dRdT[4];
+	DiffDoub0 dVec[3];
+	DiffDoub0 dist;
+	DiffDoub0 dvVec[3];
+	DiffDoub0 dDvecdU[18];
+	DiffDoub0 dDistdU[6];
+	DiffDoub0 fN1[3];
+	DiffDoub0 dfN1dU[18];
+	DiffDoub0 dfN1dV[18];
+	DiffDoub0 dtoP;
+	DiffDoub0 dtoP1;
+	DiffDoub0 dtoP2;
+	DiffDoub0 T1to3;
+	DiffDoub0 T1to4;
+	DiffDoub0 T2to3;
+	DiffDoub0 T2to4;
+	DiffDoub0 tmp;
+	DiffDoub0 tmp2;
+	DiffDoub0 tmpMat[18];
+	DiffDoub0 tmpMat2[18];
+
+	// Potential force
+	for (i1 = 0; i1 < 3; i1++) {
+		i2 = i1 * 2 + 1;
+		tmp.setVal(pre.globNds[i2]);
+		tmp.add(pre.globDisp[i2]);
+		i2 -= 1;
+		tmp.sub(pre.globNds[i2]);
+		tmp.sub(pre.globDisp[i2]);
+		dVec[i1].setVal(tmp);
+	}
+
+	dist.setVal(dVec[0]);
+	dist.sqr();
+	tmp.setVal(dVec[1]);
+	tmp.sqr();
+	dist.add(tmp);
+	tmp.setVal(dVec[2]);
+	tmp.sqr();
+	dist.add(tmp);
+	dist.sqt();
+
+	dtoP.setVal(dist);
+	i1 = 1;
+	while (i1 < pre.frcFldExp[0].val) {
+		dtoP.mult(dist);
+		i1++;
+	}
+	dtoP1.setVal(dtoP);
+	dtoP1.mult(dist); // ||d||^(P+1)
+	dtoP2.setVal(dtoP1);
+	dtoP2.mult(dist); // ||d||^(P+2)
+
+	tmp.setVal(pre.frcFldCoef[0]);
+	tmp.dvd(dtoP1);
+	for (i1 = 0; i1 < 3; i1++) {
+		fN1[i1].setVal(dVec[i1]);
+		fN1[i1].mult(tmp);
+	}
+
+	// Damping force
+
+	for (i1 = 0; i1 < 3; i1++) {
+		i2 = i1 * 2 + 1;
+		tmp.setVal(pre.globVel[i2]);
+		i2 -= 1;
+		tmp.sub(pre.globVel[i2]);
+		dvVec[i1].setVal(tmp);
+	}
+
+	tmp.setVal(pre.frcFldCoef[1]);
+	tmp.dvd(dtoP); // tmp = c_d/||d||^p
+
+	for (i1 = 0; i1 < 3; i1++) {
+		tmp2.setVal(tmp);
+		tmp2.mult(dvVec[i1]);
+		fN1[i1].add(tmp2);
+	}
+
+	// calculate absolute temps
+	tmp.setVal(pre.globTemp[0]);
+	tmp.add(pre.refTemp);
+	T1to4.setVal(tmp);
+	T1to4.sqr();
+	T1to4.sqr();
+	T1to3.setVal(T1to4);
+	T1to3.dvd(tmp);
+
+	tmp.setVal(pre.globTemp[1]);
+	tmp.add(pre.refTemp);
+	T2to4.setVal(tmp);
+	T2to4.sqr();
+	T2to4.sqr();
+	T2to3.setVal(T2to4);
+	T2to3.dvd(tmp);
+
+	// conduction and radiation terms
+	tmp.setVal(pre.globTemp[0]);
+	tmp.sub(pre.globTemp[1]);
+	tmp.mult(pre.thrmFldCoef[0]);
+	tmp.dvd(dist);
+	Rvec[0].setVal(tmp);
+
+	tmp.setVal(T1to4);
+	tmp.sub(T2to4);
+	tmp.mult(pre.thrmFldCoef[1]);
+	tmp.dvd(dist);
+	tmp.dvd(dist);
+	Rvec[0].add(tmp);
+
+	Rvec[1].setVal(Rvec[0]);
+	Rvec[1].neg();
+
+	// work dissipation term
+
+	tmp.setVal(fN1[0]);
+	tmp.mult(dvVec[0]);
+	tmp2.setVal(fN1[1]);
+	tmp2.mult(dvVec[1]);
+	tmp.add(tmp2);
+	tmp2.setVal(fN1[2]);
+	tmp2.mult(dvVec[2]);
+	tmp.add(tmp2);
+	tmp2.setVal(0.5);
+	tmp.mult(tmp2); // tmp = 0.5*dot(FN1,d_v)
+
+	Rvec[0].sub(tmp);
+	Rvec[1].sub(tmp);
+	for (i1 = 0; i1 < 2; i1++) {
+		nd = nodes[i1];
+		globInd = ndAr[nd]->getSortedRank();
+		globR[globInd].add(Rvec[i1]);
+	}
+
+	if (getMatrix) {
+		dDvecdU[0].setVal(-1.0);
+		dDvecdU[3].setVal(1.0);
+		dDvecdU[7].setVal(-1.0);
+		dDvecdU[10].setVal(1.0);
+		dDvecdU[14].setVal(-1.0);
+		dDvecdU[17].setVal(1.0);
+
+		matMul(dDistdU, dVec, dDvecdU, 1, 3, 6);
+		tmp.setVal(1.0);
+		tmp.dvd(dist);
+		for (i1 = 0; i1 < 6; i1++) {
+			dDistdU[i1].mult(tmp);
+		}
+
+		matMul(dfN1dU, dVec, dDistdU, 3, 1, 6);
+		tmp.setVal(1.0);
+		tmp.add(pre.frcFldExp[0]);
+		tmp.neg();
+		tmp.mult(pre.frcFldCoef[0]);
+		tmp.dvd(dtoP2);
+		for (i1 = 0; i1 < 18; i1++) {
+			dfN1dU[i1].mult(tmp);
+		}
+
+		tmp.setVal(pre.frcFldCoef[0]);
+		tmp.dvd(dtoP1);
+		for (i1 = 0; i1 < 18; i1++) {
+			tmp2.setVal(tmp);
+			tmp2.mult(dDvecdU[i1]);
+			dfN1dU[i1].add(tmp2);
+		}
+
+		matMul(tmpMat, dvVec, dDistdU, 3, 1, 6);
+		tmp.setVal(pre.frcFldCoef[1]);
+		tmp.mult(pre.frcFldExp[1]);
+		tmp.dvd(dtoP1);
+		tmp.neg();
+		for (i1 = 0; i1 < 18; i1++) {
+			tmp2.setVal(tmp);
+			tmp2.mult(tmpMat[i1]);
+			dfN1dU[i1].add(tmp2);
+		}
+
+		tmp.setVal(pre.frcFldCoef[1]);
+		tmp.dvd(dtoP);
+		for (i1 = 0; i1 < 18; i1++) {
+			dfN1dV[i1].setVal(dDvecdU[i1]);
+			dfN1dV[i1].mult(tmp);
+		}
+
+		// dRdT
+		tmp.setVal(pre.thrmFldCoef[0]);
+		tmp.dvd(dist);
+		tmp2.setVal(pre.thrmFldCoef[1]);
+		tmp2.dvd(dist);
+		tmp2.dvd(dist);
+		dRdT[0] = tmp.val + tmp2.val * T1to3.val;
+		dRdT[1] = -tmp.val;
+		dRdT[2] = -tmp.val;
+		dRdT[3] = tmp.val + tmp2.val * T2to3.val;
+
+		i3 = 0;
+		for (i1 = 0; i1 < 2; i1++) {
+			nd = nodes[i1];
+			globInd = ndAr[nd]->getSortedRank();
+			for (i2 = 0; i2 < 2; i2++) {
+				nd2 = nodes[i2];
+				globInd2 = ndAr[nd2]->getSortedRank();
+				globdRdT.addEntry(globInd, globInd2, dRdT[i3]);
+				i3++;
+			}
+		}
+        
+		// dRdU
+		for (i1 = 0; i1 < 12; i1++) {
+			dRdU[i1] = 0.0;
+		}
+
+		// conduction term
+		tmp.setVal(pre.globTemp[0]);
+		tmp.sub(pre.globTemp[1]);
+		tmp.mult(pre.thrmFldCoef[0]);
+		tmp.dvd(dist);
+		tmp.dvd(dist);
+		tmp.neg();
+		tmpMat[0].setVal(tmp);
+		tmpMat[1].setVal(tmp);
+		tmpMat[1].neg();
+
+		matMul(tmpMat2, tmpMat, dDistdU, 2, 1, 6);
+		
+		for (i1 = 0; i1 < 12; i1++) {
+			dRdU[i1] += tmpMat2[i1].val;
+		}
+
+		// radiation term
+		tmp.setVal(T1to4);
+		tmp.sub(T2to4);
+		tmp.mult(pre.thrmFldCoef[1]);
+		tmp2.setVal(2.0);
+		tmp.mult(tmp2);
+		tmp.dvd(dist);
+		tmp.dvd(dist);
+		tmp.dvd(dist);
+		tmp.neg();
+		tmpMat[0].setVal(tmp);
+		tmpMat[1].setVal(tmp);
+		tmpMat[1].neg();
+
+		matMul(tmpMat2, tmpMat, dDistdU, 2, 1, 6);
+
+		for (i1 = 0; i1 < 12; i1++) {
+			dRdU[i1] += tmpMat2[i1].val;
+		}
+
+		// work dissipation term
+		matMul(tmpMat, dvVec, dfN1dU, 1, 3, 6);
+		i3 = 0;
+		for (i1 = 0; i1 < 2; i1++) {
+			for (i2 = 0; i2 < 6; i2++) {
+				dRdU[i3] -= 0.5 * tmpMat[i2].val;
+				i3++;
+			}
+		}
+
+		// dRdV
+
+		for (i1 = 0; i1 < 12; i1++) {
+			dRdV[i1] = 0.0;
+		}
+
+		matMul(tmpMat, dvVec, dfN1dV, 1, 3, 6);
+		i3 = 0;
+		for (i1 = 0; i1 < 2; i1++) {
+			for (i2 = 0; i2 < 6; i2++) {
+				dRdV[i3] -= 0.5 * tmpMat[i2].val;
+				i3++;
+			}
+		}
+
+		matMul(tmpMat, fN1, dDvecdU, 1, 3, 6);
+		i3 = 0;
+		for (i1 = 0; i1 < 2; i1++) {
+			for (i2 = 0; i2 < 6; i2++) {
+				dRdV[i3] -= 0.5 * tmpMat[i2].val;
+				i3++;
+			}
+		}
+
 	}
 
 	return;

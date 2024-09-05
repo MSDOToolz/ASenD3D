@@ -1,8 +1,10 @@
 ## AStrO Model Input File Template
 nodes:
     - [label, x, y, z]
+fluidNodes:
+    - [label, x, y, z]
 elements:
-    - type:
+    - type: ## tet4, wedge6, brick8, brickIM, tet10, fl4, fl6, fl8, fl10
       connectivity:
           - [label, n1, n2, n3]
 sets:
@@ -29,8 +31,9 @@ sets:
               - [1, 10] # one thru 10...
               - [20, 30] # 20 thru 30...
 sections:
-    - type: # solid, shell, beam, forceField, mass
+    - type: # solid, shell, beam, forceField, mass, fluid
       material: (material name)
+      fluid:
       orientation: [x1, x2, x3, xy1, xy2, xy3]
       layup:
           zOffset:
@@ -63,7 +66,24 @@ sections:
       dampField:
           coef:
           exp:
+      thermField:
+          condCoef:
+          radCoef: 0
+          refTemp: 
       massPerEl:
+      specHeat:
+      fluidParams:
+          denVisCoef:
+          tempVisCoef:
+          gradVisCoef:
+          enthCoef:
+          enthExp:
+          presCoef:
+          presExp:
+          refTemp:
+          refDen:
+          refVGrad:
+          refEnth:
       elementSet: setName
 materials:
     - name:
@@ -95,6 +115,13 @@ materials:
               shear:
           maxStrainEnergy: (value)
           maxMises: (value)
+fluids:
+    - name:
+      viscosity:
+      thermal:
+          conductivity:
+          specHeat:
+      idealGasConst:
 constraints:
     - type: displacement, temperature
       terms:

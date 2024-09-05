@@ -513,7 +513,7 @@ class ResultsProcessor:
         animateMeshSolution(allNdCrd,allNdValues,verts,title=cbTitle)
         self.nodeData = nodeCopy
         
-    def nodeHistorySeries(self,fileName,field,timeSteps,nodeSet,component=1):
+    def extractNodeHistory(self,fileName,field,timeSteps,nodeSet):
         fnLst = fileName.split('.')
         try:
             ndI = int(nodeSet)
@@ -524,12 +524,7 @@ class ResultsProcessor:
                 self.loadNodeResults(fn)
                 for nd in self.nodeData['nodeResults'][field]:
                     if(nd[0] == ndI):
-                        if(component == 'mag'):
-                            vec = np.array(nd[1:4])
-                            val = np.linalg.norm(vec)
-                        else:
-                            val = nd[component]
-                        vals.append(val)
+                        vals.append(nd[1:])
                         timePts.append(self.nodeData['nodeResults']['time'])
             series = dict()
             lab = 'node_' + str(ndI)
@@ -549,15 +544,25 @@ class ResultsProcessor:
                 for nd in self.nodeData['nodeResults'][field]:
                     try:
                         lab = 'node_' + str(nd[0])
-                        if(component == 'mag'):
-                            vec = np.array(nd[1:4])
-                            val = np.linalg.norm(vec)
-                        else:
-                            val = nd[component]
-                        series[lab].append(val)
+                        series[lab].append(nd[1:])
                     except:
                         pass
         return series, timePts
+        
+    def nodeHistorySeries(self,fileName,field,timeSteps,nodeSet,component=1):
+        series, timePts = self.extractNodeHistory(fileName,field,timeSteps,nodeSet)
+        newSeries = dict()
+        for k in series:
+            sList = list()
+            for v in series[k]:
+                if(component == 'mag'):
+                    vec = np.array(v[0:3])
+                    val = np.linalg.norm(vec)
+                else:
+                    val = v[component]
+                sList.append(val)
+            newSeries[k] = sList
+        return newSeries, timePts
         
     def plotNodeHistory(self,fileName,field,timeSteps,nodeSet,component=1,xTitle='Time',yTitle=None):
         series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
@@ -653,7 +658,71 @@ class ResultsProcessor:
         verts = self.buildElementVertexList(elSet)
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell')
         
+    def extractModalAmplitudes(self,fileName,timeSteps,nodeSet,modeList):
+        try:
+            nSet = {int(nodeSet)}
+        except:
+            for ns in self.modelData['sets']['node']:
+                if(ns['name'] == nodeSet):
+                    nSet = set(ns['labels'])
+        
+        normMdDisp = dict()
+        for md in self.modalData['modalResults']['modes']:
+            mdStr = str(md['mode'])
+            maxMag = 0.
+            for nu in md['displacement']:
+                vec = np.array(nu[1:4])
+                mag = np.linalg.norm(vec)
+                if(mag > maxMag):
+                    maxMag = mag
+            mFact = 1.0/maxMag
+            for nu in md['displacement']:
+                lab = nu[0]
+                if(lab in nSet):
+                    ndStr = str(lab)
+                    dk = ndStr + ',' + mdStr
+                    normMdDisp[dk] = mFact*np.array(nu[1:4])
+                    
+        freq = self.modalData['modalResults']['frequencies']
+        
+        series, timePts = self.extractNodeHistory(fileName,'displacement',timeSteps,nodeSet)
+        outDat = dict()
+        nRows = 3*len(timeSteps)
+        nCols = 2*len(modeList) + 1
+        mat = np.zeros((nRows,nCols),dtype=float)
+        uVec = np.zeros(nRows,dtype=float)
+        for sk in series:
+            kLst = sk.split('_')
+            nStr = kLst[1]
+            i = 0
+            for j, nu in enumerate(series[sk]):
+                uVec[i:i+3] = np.array(nu[0:3])
+                t = timePts[j]
+                i2 = 0
+                for mi in modeList:
+                    mStr = str(mi)
+                    dk = nStr + ',' + mStr
+                    omegaT = 2.0*np.pi*freq[mi]*t
+                    mat[i:i+3,i2] = normMdDisp[dk]*np.sin(omegaT)
+                    mat[i:i+3,i2+1] = normMdDisp[dk]*np.cos(omegaT)
+                    i2 += 2
+                i += 3
+            mat[:,nCols-1] = 1.0
+            Q, R = np.linalg.qr(mat)
+            rhs = np.matmul(uVec,Q)
+            soln = np.linalg.solve(R,rhs)
+            ndDic = dict()
+            i2 = 0
+            for mi in modeList:
+                vec = soln[i2:i2+2]
+                amp = np.linalg.norm(vec)
+                dk = 'mode_' + str(mi)
+                ndDic[dk] = amp
+                i2 += 2
+            outDat[sk] = ndDic
             
+        return outDat, freq
+        
     # def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
     #     series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
     #     npts = len(timePts)

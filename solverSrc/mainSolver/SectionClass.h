@@ -105,6 +105,58 @@ class MaterialList {
 		~MaterialList();
 };
 
+class Fluid {
+private:
+	std::string name;
+	double viscosity;
+	double idealGas;
+	double thermCond;
+	double specHeat;
+	Fluid* nextFl;
+
+public:
+	Fluid(std::string newName);
+
+	void setViscosity(double newVis);
+
+	void setIdealGas(double newIG);
+
+	void setThermCond(double newTC);
+
+	void setSpecHeat(double newSH);
+
+	void setNext(Fluid* newNext);
+
+	double getViscosity();
+
+	double getIdealGas();
+
+	double getThermCond();
+
+	double getSpecHeat();
+
+	Fluid* getNext();
+
+};
+
+class FluidList {
+private:
+	Fluid* firstFl;
+	Fluid* lastFl;
+	int length;
+
+public:
+	FluidList();
+
+	void addFluid(Fluid* newFl);
+
+	int getLength();
+
+	Fluid* getFirst();
+
+	~FluidList();
+};
+
 class Layer {
 	private:
 	    std::string matName;
@@ -158,7 +210,9 @@ class Section {
 	    std::string type;
 		std::string elSetName;
 		std::string matName;
+		std::string flName;
 		Material *matPtr;
+		Fluid* flPtr;
 		double orientation[9];
 		double zOffset;
 		LayerList layers;
@@ -176,6 +230,19 @@ class Section {
 		double potExp;
 		double dampCoef;
 		double dampExp;
+		double condCoef;
+		double radCoef;
+		double denVisCoef;
+		double tempVisCoef;
+		double gradVisCoef;
+		double enthCoef;
+		double enthExp;
+		double presCoef;
+		double presExp;
+		double refTemp;
+		double refDen;
+		double refGradV;
+		double refEnth;
 		Section *nextSection;
 		
 	public:
@@ -184,8 +251,12 @@ class Section {
 		void setElset(std::string newSet);
 		
 		void setMaterial(std::string newMat);
+
+		void setFluid(std::string newFl);
 		
 		void setMatPtr(Material *newMat);
+
+		void setFlPtr(Fluid* newFl);
 		
 		void setOrientation(double newOri[]);
 		
@@ -220,12 +291,42 @@ class Section {
 		void setDampCoef(double newCoef);
 
 		void setDampExp(double newExp);
+
+		void setCondCoef(double newCoef);
+
+		void setRadCoef(double newCoef);
+
+		void setDenVisCoef(double newCoef);
+
+		void setTempVisCoef(double newCoef);
+
+		void setGradVisCoef(double newCoef);
+
+		void setEnthCoef(double newCoef);
+
+		void setEnthExp(double newExp);
+
+		void setPresCoef(double newCoef);
+
+		void setPresExp(double newExp);
+
+		void setRefTemp(double newRT);
+
+		void setRefDen(double newDen);
+
+		void setRefGradV(double newGV);
+
+		void setRefEnth(double newEnth);
 		
 		std::string getElset();
 		
 		std::string getMaterial();
+
+		std::string getFluid();
 		
 		Material* getMatPtr();
+
+		Fluid* getFluidPtr();
 		
 		double* getOrientation();
 		
@@ -262,6 +363,34 @@ class Section {
 		double getDampCoef();
 
 		double getDampExp();
+
+		double getCondCoef();
+
+		double getRadCoef();
+
+		double getRefTemp();
+
+		double getDenVisCoef();
+
+		double getTempVisCoef();
+
+		double getGradVisCoef();
+
+		double getEnthCoef();
+
+		double getEnthExp();
+
+		double getPresCoef();
+
+		double getPresExp();
+
+		double getRefTemp();
+
+		double getRefDen();
+
+		double getRefGradV();
+
+		double getRefEnth();
 		
 		Section* getNext();
 		

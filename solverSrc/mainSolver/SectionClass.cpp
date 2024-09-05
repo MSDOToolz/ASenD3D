@@ -219,6 +219,97 @@ MaterialList::~MaterialList() {
 	return;
 }
 
+Fluid::Fluid(string newName) {
+	name = newName;
+	nextFl = nullptr;
+	return;
+}
+
+void Fluid::setViscosity(double newVis) {
+	viscosity = newVis;
+	return;
+}
+
+void Fluid::setIdealGas(double newIG) {
+	idealGas = newIG;
+	return;
+}
+
+void Fluid::setThermCond(double newTC) {
+	thermCond = newTC;
+	return;
+}
+
+void Fluid::setSpecHeat(double newSH) {
+	specHeat = newSH;
+	return;
+}
+
+void Fluid::setNext(Fluid* newNext) {
+	nextFl = newNext;
+	return;
+}
+
+double Fluid::getViscosity() {
+	return viscosity;
+}
+
+double Fluid::getIdealGas() {
+	return idealGas;
+}
+
+double Fluid::getThermCond() {
+	return thermCond;
+}
+
+double Fluid::getSpecHeat() {
+	return specHeat;
+}
+
+Fluid* Fluid::getNext() {
+	return nextFl;
+}
+
+FluidList::FluidList() {
+	firstFl = nullptr;
+	lastFl = nullptr;
+	length = 0;
+}
+
+void FluidList::addFluid(Fluid* newFl) {
+	if (!firstFl) {
+		firstFl = newFl;
+		lastFl = newFl;
+	}
+	else {
+		lastFl->setNext(newFl);
+		lastFl = newFl;
+	}
+	length++;
+}
+
+int FluidList::getLength() {
+	return length;
+}
+
+Fluid* FluidList::getFirst() {
+	return firstFl;
+}
+
+FluidList::~FluidList() {
+	Fluid* thisFl = firstFl;
+	Fluid* nextFl;
+	while (thisFl) {
+		nextFl = thisFl->getNext();
+		delete thisFl;
+		thisFl = nextFl;
+	}
+	firstFl = nullptr;
+	lastFl = nullptr;
+	length = 0;
+	return;
+}
+
 Layer::Layer(string newNm) {
 	matName = newNm;
 	return;
@@ -333,7 +424,21 @@ Section::Section(string newType) {
 	potExp = 1.0;
 	dampCoef = 0.0;
 	dampExp = 1.0;
+	condCoef = 0.0;
+	radCoef = 0.0;
+	denVisCoef = 0.0;
+	tempVisCoef = 0.0;
+	gradVisCoef = 0.0;
+	enthCoef = 0.0;
+	enthExp = 1.0;
+	presCoef = 0.0;
+	presExp = 1.0;
+	refTemp = 0.0;
+	refDen = 0.0;
+	refGradV = 0.0;
+	refEnth = 0.0;
 	matPtr = nullptr;
+	flPtr = nullptr;
 	nextSection = nullptr;
 	return;
 }
@@ -348,8 +453,18 @@ void Section::setMaterial(string newMat) {
 	return;
 }
 
+void Section::setFluid(string newFl) {
+	flName = newFl;
+	return;
+}
+
 void Section::setMatPtr(Material *newMat) {
 	matPtr = newMat;
+	return;
+}
+
+void Section::setFlPtr(Fluid* newFl) {
+	flPtr = newFl;
 	return;
 }
 
@@ -471,6 +586,71 @@ void Section::setDampExp(double newExp) {
 	return;
 }
 
+void Section::setCondCoef(double newCoef) {
+	condCoef = newCoef;
+	return;
+}
+
+void Section::setRadCoef(double newCoef) {
+	radCoef = newCoef;
+	return;
+}
+
+void Section::setDenVisCoef(double newCoef) {
+	denVisCoef = newCoef;
+	return;
+}
+
+void Section::setTempVisCoef(double newCoef) {
+	tempVisCoef = newCoef;
+	return;
+}
+
+void Section::setGradVisCoef(double newCoef) {
+	gradVisCoef = newCoef;
+	return;
+}
+
+void Section::setEnthCoef(double newCoef) {
+	enthCoef = newCoef;
+	return;
+}
+
+void Section::setEnthExp(double newExp) {
+	enthExp = newExp;
+	return;
+}
+
+void Section::setPresCoef(double newCoef) {
+	presCoef = newCoef;
+	return;
+}
+
+void Section::setPresExp(double newExp) {
+	presExp = newExp;
+	return;
+}
+
+void Section::setRefTemp(double newRT) {
+	refTemp = newRT;
+	return;
+}
+
+void Section::setRefDen(double newDen) {
+	refDen = newDen;
+	return;
+}
+
+void Section::setRefGradV(double newGV) {
+	refGradV = newGV;
+	return;
+}
+
+void Section::setRefEnth(double newEnth) {
+	refEnth = newEnth;
+	return;
+}
+
 string Section::getElset() {
 	return elSetName;
 }
@@ -479,8 +659,16 @@ string Section::getMaterial() {
 	return matName;
 }
 
+string Section::getFluid() {
+	return flName;
+}
+
 Material* Section::getMatPtr() {
 	return matPtr;
+}
+
+Fluid* Section::getFluidPtr() {
+	return flPtr;
 }
 
 double* Section::getOrientation() {
@@ -553,6 +741,62 @@ double Section::getDampCoef() {
 
 double Section::getDampExp() {
 	return dampExp;
+}
+
+double Section::getCondCoef() {
+	return condCoef;
+}
+
+double Section::getRadCoef() {
+	return radCoef;
+}
+
+double Section::getRefTemp() {
+	return refTemp;
+}
+
+double Section::getDenVisCoef() {
+	return denVisCoef;
+}
+
+double Section::getTempVisCoef() {
+	return tempVisCoef;
+}
+
+double Section::getGradVisCoef() {
+	return gradVisCoef;
+}
+
+double Section::getEnthCoef() {
+	return enthCoef;
+}
+
+double Section::getEnthExp() {
+	return enthExp;
+}
+
+double Section::getPresCoef() {
+	return presCoef;
+}
+
+double Section::getPresExp() {
+	return presExp;
+}
+
+double Section::getRefTemp() {
+	return presExp;
+}
+
+double Section::getRefDen() {
+	return refDen;
+}
+
+double Section::getRefGradV() {
+	return refGradV;
+}
+
+double Section::getRefEnth() {
+	return refEnth;
 }
 
 Section* Section::getNext() {

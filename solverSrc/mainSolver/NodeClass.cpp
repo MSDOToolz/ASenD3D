@@ -193,20 +193,24 @@ void Node::initializeTemp() {
 }
 
 void Node::updateVelAcc(double nmBeta, double nmGamma, double delT) {
-	double c1 = 1.0/(delT*delT*(nmBeta-nmGamma));
-	double c2 = delT*delT*(0.5 + nmBeta - nmGamma);
+	double c1;
+	double c2;
 	int i1;
+	c1 = 1.0 / (delT * delT * (nmBeta - nmGamma));
+	c2 = delT * delT * (0.5 + nmBeta - nmGamma);
 	for (i1 = 0; i1 < 6; i1++) {
-		acceleration[i1] = c1*(prevDisp[i1] - displacement[i1] + delT*prevVel[i1] + c2*prevAcc[i1]);
-		velocity[i1] = prevVel[i1] + delT*((1.0-nmGamma)*prevAcc[i1] + nmGamma*acceleration[i1]);
+		acceleration[i1] = c1 * (prevDisp[i1] - displacement[i1] + delT * prevVel[i1] + c2 * prevAcc[i1]);
+		velocity[i1] = prevVel[i1] + delT * ((1.0 - nmGamma) * prevAcc[i1] + nmGamma * acceleration[i1]);
 	}
 	
 	return;
 }
 
 void Node::updateTdot(double nmGamma, double delT) {
-	double c1 = 1.0 / nmGamma;
-	double c2 = -1.0 / delT;
+	double c1;
+	double c2;
+	c1 = 1.0 / nmGamma;
+	c2 = -1.0 / delT;
 	tempChangeRate = c1 * (c2 * (prevTemp - temperature) - (1.0 - nmGamma) * prevTdot);
 	return;
 }

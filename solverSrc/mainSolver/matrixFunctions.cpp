@@ -227,8 +227,10 @@ void conjGradSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTr
 
 	if (i1 == maxIt) {
 		cout << "Warning: Conjugate gradient solver did not converge to specified tolerance, " << convTol << " within tne maximum number of iterations, " << maxIt << endl;
-		cout << "Final residual norm: " << res << endl;
 	}
+
+	cout << "Total CG iterations: " << i1 << endl;
+	cout << "Final residual norm: " << res << endl; cout << "Final residual norm: " << res << endl;
 
 	delete[] hVec;
 	delete[] gVec;

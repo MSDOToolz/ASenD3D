@@ -1029,9 +1029,11 @@ void Element::getStressPrereq(DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVa
 	}
 	else if (type == 21) {
 		getFrcFldConst(pre.frcFldCoef, pre.frcFldExp, dvAr);
+		getThrmFldConst(pre.thrmFldCoef, pre.refTemp, dvAr);
 	}
 	else if (type == 1) {
 		getMassPerEl(pre.massPerEl, dvAr);
+		getSpecificHeat(pre.SpecHeat, dvAr);
 	}
 	else {
 		getSolidStiff(pre.Cmat, dvAr);

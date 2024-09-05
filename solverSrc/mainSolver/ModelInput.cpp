@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <string>
 #include "ModelClass.h"
 #include "JobClass.h"
 #include "NodeClass.h"
@@ -133,7 +134,8 @@ void Model::readJob(string fileName) {
 				} else {
 					newCmd->dynamic = false;
 				}
-			} else if(headings[1] == "elastic" && dataLen == 1) {
+			}
+			else if (headings[1] == "elastic" && dataLen == 1) {
 				if(data[0] == "yes") {
 					newCmd->elastic = true;
 				} else {
@@ -157,7 +159,8 @@ void Model::readJob(string fileName) {
 				} else {
 					newCmd->saveSolnHist = false;
 				}
-			} else if (headings[1] == "solnHistDir" && dataLen == 1) {
+			}
+			else if (headings[1] == "solnHistDir" && dataLen == 1) {
 				newCmd->fileName = data[0];
 			}
 			else if (headings[1] == "lumpMass" && dataLen == 1) {
@@ -337,6 +340,18 @@ void Model::readModelInput(string fileName) {
 					else if (data[0] == "mass") {
 						elType = 1;
 					}
+					else if (data[0] == "fl4") {
+						elType = 400;
+					}
+					else if (data[0] == "fl6") {
+						elType = 600;
+					}
+					else if (data[0] == "fl8") {
+						elType = 800;
+					}
+					else if (data[0] == "fl10") {
+						elType = 1000;
+					}
 					else {
 						string errSt = "Error: unrecognized element type, " + data[0];
 						throw invalid_argument(errSt);
@@ -414,7 +429,11 @@ void Model::readModelInput(string fileName) {
 					sections.addSection(newSec);
 				} else if(headings[1] == "material" && dataLen == 1) {
 					newSec->setMaterial(data[0]);
-				} else if(headings[1] == "orientation" && dataLen == 6) {
+				}
+				else if (headings[1] == "fluid" && dataLen == 1) {
+					newSec->setFluid(data[0]);
+				}
+				else if (headings[1] == "orientation" && dataLen == 6) {
 					for (i1 = 0; i1 < 6; i1++) {
 						doubInp[i1] = stod(data[i1]);
 					}
@@ -486,8 +505,57 @@ void Model::readModelInput(string fileName) {
 						newSec->setDampExp(stod(data[0]));
 					}
 				}
+				else if (headings[1] == "thermField") {
+					if (headings[2] == "condCoef" && dataLen == 1) {
+						newSec->setCondCoef(stod(data[0]));
+					}
+					else if (headings[2] == "radCoef" && dataLen == 1) {
+						newSec->setRadCoef(stod(data[0]));
+					}
+					else if (headings[2] == "refTemp" && dataLen == 1) {
+						newSec->setRefTemp(stod(data[0]));
+					}
+				}
 				else if (headings[1] == "massPerEl" && dataLen == 1) {
 					newSec->setMassPerEl(stod(data[0]));
+				}
+				else if (headings[1] == "specHeat" && dataLen == 1) {
+					newSec->setSpecHeat(stod(data[0]));
+				}
+				else if (headings[1] == "fluidParams") {
+					if (headings[2] == "denVisCoef" && dataLen == 1) {
+						newSec->setDenVisCoef(stod(data[0]));
+					}
+					else if (headings[2] == "tempVisCoef" && dataLen == 1) {
+						newSec->setTempVisCoef(stod(data[0]));
+					}
+					else if (headings[2] == "gradVisCoef" && dataLen == 1) {
+						newSec->setGradVisCoef(stod(data[0]));
+					}
+					else if (headings[2] == "enthCoef" && dataLen == 1) {
+						newSec->setEnthCoef(stod(data[0]));
+					}
+					else if (headings[2] == "enthExp" && dataLen == 1) {
+						newSec->setEnthExp(stod(data[0]));
+					}
+					else if (headings[2] == "presCoef" && dataLen == 1) {
+						newSec->setPresCoef(stod(data[0]));
+					}
+					else if (headings[2] == "presExp" && dataLen == 1) {
+						newSec->setPresExp(stod(data[0]));
+					}
+					else if (headings[2] == "refTemp" && dataLen == 1) {
+						newSec->setRefTemp(stod(data[0]));
+					}
+					else if (headings[2] == "refDen" && dataLen == 1) {
+						newSec->setRefDen(stod(data[0]));
+					}
+					else if (headings[2] == "refVGrad" && dataLen == 1) {
+						newSec->setRefGradV(stod(data[0]));
+					}
+					else if (headings[2] == "refEnth" && dataLen == 1) {
+						newSec->setRefEnth(stod(data[0]));
+					}
 				}
 				else if(headings[1] == "elementSet" && dataLen == 1) {
 					newSec->setElset(data[0]);

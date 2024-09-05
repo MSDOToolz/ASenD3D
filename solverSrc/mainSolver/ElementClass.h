@@ -43,6 +43,8 @@ public:
 	DiffDoub0* layerSH;
 	DiffDoub0* frcFldCoef;
 	DiffDoub0* frcFldExp;
+	DiffDoub0* thrmFldCoef;
+	DiffDoub0 refTemp;
 	DiffDoub0 massPerEl;
 	double* scratch;
 
@@ -270,6 +272,8 @@ class Element {
 
 		void getFrcFldConst(DiffDoub0 coef[], DiffDoub0 exp[], DesignVariable* dvAr[]);
 
+		void getThrmFldConst(DiffDoub0 coef[], DiffDoub0& refT, DesignVariable* dvAr[]);
+
 		void getMassPerEl(DiffDoub0& massPerEl, DesignVariable* dvAr[]);
 
 // Solution Fields
@@ -465,6 +469,8 @@ class Element {
 		void getRt(DiffDoub0 globR[], SparseMat& globdRdT, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]);
 
 		void getRuFrcFld(DiffDoub0 globR[], SparseMat& globdRdu, bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]);
+
+		void getRtFrcFld(DiffDoub0 globR[], SparseMat& globdRdT, double dRdU[], double dRdV[], bool getMatrix, JobCommand* cmd, DiffDoub0StressPrereq& pre, Node* ndAr[]);
 
 		void getAppLoad(DiffDoub0 AppLd[], Load* ldPt, bool nLGeom, DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 

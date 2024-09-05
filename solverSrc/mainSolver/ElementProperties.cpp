@@ -2221,6 +2221,42 @@ void Element::getFrcFldConst(DiffDoub0 coef[], DiffDoub0 exp[], DesignVariable* 
 	return;
 }
 
+void Element::getThrmFldConst(DiffDoub0 coef[], DiffDoub0& refT, DesignVariable* dvAr[]) {
+	DesignVariable* thisDV;
+	IntListEnt* thisEnt;
+	DoubListEnt* thisCoef;
+	DiffDoub0 dvVal;
+	DiffDoub0 tmp;
+	string cat;
+
+	coef[0].setVal(sectPtr->getCondCoef());
+	coef[1].setVal(sectPtr->getRadCoef());
+	refT.setVal(sectPtr->getRefTemp());
+
+	thisEnt = designVars.getFirst();
+	thisCoef = dvCoef.getFirst();
+	while (thisEnt) {
+		thisDV = dvAr[thisEnt->value];
+		cat = thisDV->getCategory();
+		if (cat == "condCoef") {
+			thisDV->getValue(dvVal);
+			tmp.setVal(thisCoef->value);
+			dvVal.mult(tmp);
+			coef[0].add(dvVal);
+		}
+		else if (cat == "radCoef") {
+			thisDV->getValue(dvVal);
+			tmp.setVal(thisCoef->value);
+			dvVal.mult(tmp);
+			coef[1].add(dvVal);
+		}
+		thisEnt = thisEnt->next;
+		thisCoef = thisCoef->next;
+	}
+
+	return;
+}
+
 void Element::getMassPerEl(DiffDoub0& massPerEl, DesignVariable* dvAr[]) {
 	DesignVariable* thisDV;
 	IntListEnt* thisEnt;

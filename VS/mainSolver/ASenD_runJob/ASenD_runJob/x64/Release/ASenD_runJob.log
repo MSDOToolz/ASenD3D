@@ -29,11 +29,11 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementSolnFields.cpp(2699
   LoadClass.cpp
   LowerTriMatClass.cpp
   matrixFunctions.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1149,13): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1314,9): warning C4101: 'stepLen': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1309,9): warning C4101: 'mag': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1315,7): warning C4101: 'reduced': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1310,9): warning C4101: 'minv': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1151,13): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1316,9): warning C4101: 'stepLen': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1311,9): warning C4101: 'mag': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1317,7): warning C4101: 'reduced': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1312,9): warning C4101: 'minv': unreferenced local variable
   ModelAnalysis.cpp
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(508,6): warning C4101: 'i1': unreferenced local variable
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(592,9): warning C4101: 'tInc': unreferenced local variable

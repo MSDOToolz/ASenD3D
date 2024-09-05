@@ -46,7 +46,7 @@ jobCommands:
   - command: modalAnalysis X
     type: buckling , frequency, dynSoln
     numModes: 10
-    targetEigenvalue: 0.0
+    targetEigenvalue: 0.0, hilo
     solverMethod: 
     maxIterations:
     

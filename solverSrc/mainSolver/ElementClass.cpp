@@ -705,6 +705,7 @@ DiffDoub0StressPrereq::DiffDoub0StressPrereq() {
 	layerSH = nullptr;
 	frcFldCoef = new DiffDoub0[2];
 	frcFldExp = new DiffDoub0[2];
+	thrmFldCoef = new DiffDoub0[2];
 	scratch = new double[4096];
 	currentLayLen = 0;
 	return;
@@ -781,6 +782,7 @@ DiffDoub0StressPrereq::~DiffDoub0StressPrereq() {
 	}
 	delete[] frcFldCoef;
 	delete[] frcFldExp;
+	delete[] thrmFldCoef;
 	delete[] scratch;
 	currentLayLen = 0;
 
