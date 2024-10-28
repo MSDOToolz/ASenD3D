@@ -18,6 +18,32 @@ const double r_1ort3 = 0.577350269189625765;
 
 //dup1
 
+void Element::getGenProp(DiffDoub0& prop, string propKey, DesignVariable* dvAr[]) {
+	IntListEnt* thisDV;
+	DoubListEnt* thisCoef;
+	DesignVariable* dvPt;
+	int dVInd;
+	DiffDoub0 dvVal;
+	DiffDoub0 tmp;
+
+	thisDV = designVars.getFirst();
+	thisCoef = dvCoef.getFirst();
+	while (thisDV) {
+		dVInd = thisDV->value;
+		dvPt = dvAr[dVInd];
+		if (dvPt->getCategory() == propKey) {
+			dvPt->getValue(dvVal);
+			tmp.setVal(thisCoef->value);
+			dvVal.mult(tmp);
+			prop.add(dvVal);
+		}
+		thisDV = thisDV->next;
+		thisCoef = thisCoef->next;
+	}
+
+	return;
+}
+
 void Element::getLayerThkZ(DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0& zOffset, DesignVariable* dvAr[]) {
 	//zOffset = 1: upper Z surface is reference plane
 	//zOffset = -1: lower Z surface is reference plane

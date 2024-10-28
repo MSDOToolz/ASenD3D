@@ -10,6 +10,7 @@ using namespace std;
 
 Node::Node(int newLab) {
 	label = newLab;
+	fluid = false;
 	numDof = 3;
 	sortedRank = 0;
 	coord[0] = 0.0;
@@ -28,13 +29,34 @@ Node::Node(int newLab) {
 		initialAcc[i1] = 0.0;
 		dofIndex[i1] = 0;
 	}
+	for (i1 = 0; i1 < 3; i1++) {
+		flVel[i1] = 0.0;
+		flVelDot[i1] = 0.0;
+		prevFlVel[i1] = 0.0;
+		pFlVelLF[i1] = 0.0;
+		prevFlVelDot[i1] = 0.0;
+		initialFlVel[i1] = 0.0;
+		initialFlVelDot[i1] = 0.0;
+	}
 	temperature = 0.0;
 	tempChangeRate = 0.0;
+	flDen = 0.0;
 	prevTemp = 0.0;
+	pTempLF = 0.0;
 	prevTdot = 0.0;
+	prevFlDen = 0.0;
+	pFlDenLF = 0.0;
+	prevFlDenDot = 0.0;
 	initialTemp = 0.0;
 	initialTdot = 0.0;
+	initialFlDen = 0.0;
+	initialFlDenDot = 0.0;
 	nextNd = nullptr;
+}
+
+void Node::setFluid(bool newFluid) {
+	fluid = newFluid;
+	return;
 }
 
 void Node::setNumDof(int nDof) {
@@ -83,6 +105,20 @@ void Node::setAcceleration(double newAcc[]) {
 	return;
 }
 
+void Node::setFlVel(double newVel[]) {
+	flVel[0] = newVel[0];
+	flVel[1] = newVel[1];
+	flVel[2] = newVel[2];
+	return;
+}
+
+void Node::setFlVelDot(double newFlVDot[]) {
+	flVelDot[0] = newFlVDot[0];
+	flVelDot[1] = newFlVDot[1];
+	flVelDot[2] = newFlVDot[2];
+	return;
+}
+
 void Node::setTemperature(double newTemp) {
 	temperature = newTemp;
 	return;
@@ -90,6 +126,16 @@ void Node::setTemperature(double newTemp) {
 
 void Node::setTdot(double newTdot) {
 	tempChangeRate = newTdot;
+	return;
+}
+
+void Node::setFlDen(double newFlDen) {
+	flDen = newFlDen;
+	return;
+}
+
+void Node::setFlDenDot(double newFlDDot) {
+	flDenDot = newFlDDot;
 	return;
 }
 
@@ -101,8 +147,20 @@ void Node::addToDisplacement(double delDisp[]) {
 	return;
 }
 
+void Node::addToFlVel(double delFlVel[]) {
+	flVel[0] += delFlVel[0];
+	flVel[1] += delFlVel[1];
+	flVel[2] += delFlVel[2];
+	return;
+}
+
 void Node::addToTemperature(double delTemp) {
 	temperature += delTemp;
+	return;
+}
+
+void Node::addToFlDen(double delFlDen) {
+	flDen += delFlDen;
 	return;
 }
 
@@ -130,6 +188,20 @@ void Node::setInitialAcc(double newAcc[]) {
 	return;
 }
 
+void Node::setInitialFlVel(double newFlVel[]) {
+	initialFlVel[0] = newFlVel[0];
+	initialFlVel[1] = newFlVel[1];
+	initialFlVel[2] = newFlVel[2];
+	return;
+}
+
+void Node::setInitialFlVDot(double newFlVDot[]) {
+	initialFlVelDot[0] = newFlVDot[0];
+	initialFlVelDot[1] = newFlVDot[1];
+	initialFlVelDot[2] = newFlVDot[2];
+	return;
+}
+
 void Node::setInitialTemp(double newTemp) {
 	initialTemp = newTemp;
 	return;
@@ -137,6 +209,16 @@ void Node::setInitialTemp(double newTemp) {
 
 void Node::setInitialTdot(double newTdot) {
 	initialTdot = newTdot;
+	return;
+}
+
+void Node::setInitialFlDen(double newFlDen) {
+	initialFlDen = newFlDen;
+	return;
+}
+
+void Node::setInitialFlDDot(double newFlDen) {
+	initialFlDenDot = newFlDen;
 	return;
 }
 
@@ -164,13 +246,54 @@ void Node::setPrevAcc(double newAcc[]) {
 	return;
 }
 
+void Node::setPrevFlVel(double newFlVel[]) {
+	prevFlVel[0] = newFlVel[0];
+	prevFlVel[1] = newFlVel[1];
+	prevFlVel[2] = newFlVel[2];
+	return;
+}
+
+void Node::setPFlVelLF(double newVel[]) {
+	pFlVelLF[0] = newVel[0];
+	pFlVelLF[1] = newVel[1];
+	pFlVelLF[2] = newVel[2];
+	return;
+}
+
+void Node::setPrevFlVDot(double newFlVDot[]) {
+	prevFlVelDot[0] = newFlVDot[0];
+	prevFlVelDot[1] = newFlVDot[1];
+	prevFlVelDot[2] = newFlVDot[2];
+	return;
+}
+
 void Node::setPrevTemp(double newTemp) {
 	prevTemp = newTemp;
 	return;
 }
 
+void Node::setPTempLF(double newTemp) {
+	pTempLF = newTemp;
+	return;
+}
+
 void Node::setPrevTdot(double newTdot) {
 	prevTdot = newTdot;
+	return;
+}
+
+void Node::setPrevFlDen(double newFlDen) {
+	prevFlDen = newFlDen;
+	return;
+}
+
+void Node::setPFlDenLF(double newDen) {
+	pFlDenLF = newDen;
+	return;
+}
+
+void Node::setPrevFlDDot(double newFlDDot) {
+	prevFlDenDot = newFlDDot;
 	return;
 }
 
@@ -185,10 +308,26 @@ void Node::initializeDisp() {
 	return;
 }
 
+void Node::initializeFlVel() {
+	int i1;
+	for (i1 = 0; i1 < 3; i1++) {
+		prevFlVel[i1] = initialFlVel[i1];
+		prevFlVelDot[i1] = initialFlVelDot[i1];
+		flVel[i1] = initialFlVel[i1];
+	}
+	return;
+}
+
 void Node::initializeTemp() {
 	prevTemp = initialTemp;
 	prevTdot = initialTdot;
 	temperature = initialTemp;
+	return;
+}
+
+void Node::initializeFlDen() {
+	prevFlDen = initialFlDen;
+	prevFlDenDot = initialFlDenDot;
 	return;
 }
 
@@ -206,12 +345,43 @@ void Node::updateVelAcc(double nmBeta, double nmGamma, double delT) {
 	return;
 }
 
+void Node::updateFlVelDot(double nmGamma, double delT) {
+	int i1;
+	double c1;
+	double c2;
+	c1 = 1.0 / nmGamma;
+	c2 = 1.0 / delT;
+	for (i1 = 0; i1 < 3; i1++) {
+		flVelDot[i1] = c1 * (c2 * (flVel[i1] - pFlVelLF[i1]) - (1.0 - nmGamma) * prevFlVelDot[i1]);
+	}
+	return;
+}
+
 void Node::updateTdot(double nmGamma, double delT) {
 	double c1;
 	double c2;
 	c1 = 1.0 / nmGamma;
-	c2 = -1.0 / delT;
-	tempChangeRate = c1 * (c2 * (prevTemp - temperature) - (1.0 - nmGamma) * prevTdot);
+	c2 = 1.0 / delT;
+	if (fluid) {
+		tempChangeRate = c1 * (c2 * (temperature - pTempLF) - (1.0 - nmGamma) * prevTdot);
+	}
+	else {
+		tempChangeRate = c1 * (c2 * (temperature - prevTemp) - (1.0 - nmGamma) * prevTdot);
+	}
+	return;
+}
+
+void Node::updateFlDenDot(double nmGamma, double delT) {
+	double c1;
+	double c2;
+	c1 = 1.0 / nmGamma;
+	c2 = 1.0 / delT;
+	if (fluid) {
+		flDenDot = c1 * (c2 * (flDen - pFlDenLF) - (1.0 - nmGamma) * prevFlDenDot);
+	}
+	else {
+	    flDenDot = c1 * (c2 * (flDen - prevFlDen) - (1.0 - nmGamma) * prevFlDenDot);
+	}
 	return;
 }
 
@@ -225,9 +395,24 @@ void Node::advanceDisp() {
 	return;	
 }
 
+void Node::advanceFlVel() {
+	int i1;
+	for (i1 = 0; i1 < 3; i1++) {
+		prevFlVel[i1] = flVel[i1];
+		prevFlVelDot[i1] = flVelDot[i1];
+	}
+	return;
+}
+
 void Node::advanceTemp() {
 	prevTemp = temperature;
 	prevTdot = tempChangeRate;
+	return;
+}
+
+void Node::advanceFlDen() {
+	prevFlDen = flDen;
+	prevFlDenDot = flDenDot;
 	return;
 }
 
@@ -241,9 +426,24 @@ void Node::backstepDisp() {
 	return;
 }
 
+void Node::backstepFlVel() {
+	int i1;
+	for (i1 = 0; i1 < 3; i1++) {
+		flVel[i1] = prevFlVel[i1];
+		flVelDot[i1] = prevFlVelDot[i1];
+	}
+	return;
+}
+
 void Node::backstepTemp() {
 	temperature = prevTemp;
 	tempChangeRate = prevTdot;
+	return;
+}
+
+void Node::backstepFlDen() {
+	flDen = prevFlDen;
+	flDenDot = prevFlDenDot;
 	return;
 }
 
@@ -266,6 +466,10 @@ void Node::getCrd(double crdOut[]) {
 
 int Node::getLabel() {
 	return label;
+}
+
+bool Node::isFluid() {
+	return fluid;
 }
 
 int Node::getNumDof() {
@@ -296,12 +500,34 @@ void Node::getAcc(double accOut[]) {
 	return;
 }
 
+void Node::getFlVel(double velOut[]) {
+	velOut[0] = flVel[0];
+	velOut[1] = flVel[1];
+	velOut[2] = flVel[2];
+	return;
+}
+
+void Node::getFlVelDot(double velDotOut[]) {
+	velDotOut[0] = flVelDot[0];
+	velDotOut[1] = flVelDot[1];
+	velDotOut[2] = flVelDot[2];
+	return;
+}
+
 double Node::getTemperature() {
 	return temperature;
 }
 
 double Node::getTdot() {
 	return tempChangeRate;
+}
+
+double Node::getFlDen() {
+	return flDen;
+}
+
+double Node::getFlDenDot() {
+	return flDenDot;
 }
 
 void Node::getPrevDisp(double dispOut[]) {
@@ -328,12 +554,34 @@ void Node::getPrevAcc(double accOut[]) {
 	return;
 }
 
+void Node::getPrevFlVel(double flVelOut[]) {
+	flVelOut[0] = prevFlVel[0];
+	flVelOut[1] = prevFlVel[1];
+	flVelOut[2] = prevFlVel[2];
+	return;
+}
+
+void Node::getPrevFlVelDot(double flVDOut[]) {
+	flVDOut[0] = prevFlVelDot[0];
+	flVDOut[1] = prevFlVelDot[1];
+	flVDOut[2] = prevFlVelDot[2];
+	return;
+}
+
 double Node::getPrevTemp() {
 	return prevTemp;
 }
 
 double Node::getPrevTdot() {
 	return prevTdot;
+}
+
+double Node::getPrevFlDen() {
+	return prevFlDen;
+}
+
+double Node::getPrevFlDenDot() {
+	return prevFlDenDot;
 }
 
 //dup1
@@ -363,6 +611,16 @@ void Node::getCrd(DiffDoub0 crdOut[], DesignVariable* dvAr[]) {
 		currD = currD->next;
 		currCoef = currCoef->next;
 	}
+	return;
+}
+
+void Node::getDefCrd(DiffDoub0 crdOut[], DesignVariable* dvAr[]) {
+	DiffDoub0 dsp[6];
+	getCrd(crdOut, dvAr);
+	getDisp(dsp);
+	crdOut[0].add(dsp[0]);
+	crdOut[1].add(dsp[1]);
+	crdOut[2].add(dsp[2]);
 	return;
 }
 

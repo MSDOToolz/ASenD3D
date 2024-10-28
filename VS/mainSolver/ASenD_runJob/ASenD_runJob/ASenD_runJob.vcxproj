@@ -132,8 +132,6 @@
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\DiffDoubClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\ElementClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\FaceClass.h" />
-    <ClInclude Include="..\..\..\..\solverSrc\mainSolver\FluidElement.h" />
-    <ClInclude Include="..\..\..\..\solverSrc\mainSolver\FluidNode.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\JobClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\ListEntClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\LoadClass.h" />
@@ -155,8 +153,6 @@
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\ElementProperties.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\ElementSolnFields.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\FaceClass.cpp" />
-    <ClCompile Include="..\..\..\..\solverSrc\mainSolver\FluidElement.cpp" />
-    <ClCompile Include="..\..\..\..\solverSrc\mainSolver\FluidNode.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\JobClass.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\ListEntClass.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\LoadClass.cpp" />

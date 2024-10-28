@@ -117,7 +117,7 @@ void Element::getNdTdot(DiffDoub0 globTdot[], Node* ndAr[]) {
 }
 
 void Element::evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]) {
-	if(type == 4) {
+	if(type == 4 || type == 400) {
 		nVec[0].setVal(1.0-spt[0]-spt[1]-spt[2]);
 		dNds[0].setVal(-1.0);
 		dNds[1].setVal(-1.0);
@@ -137,7 +137,7 @@ void Element::evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]) {
 		dNds[9].setVal(0.0);
 		dNds[10].setVal(0.0);
 		dNds[11].setVal(1.0);
-	} else if(type == 6) {
+	} else if(type == 6 || type == 600) {
 		nVec[0].setVal(0.5*(1.0-spt[0]-spt[1])*(1.0-spt[2]));
 		dNds[0].setVal(-0.5*(1.0-spt[2]));
 	    dNds[1].setVal(-0.5*(1.0-spt[2]));
@@ -167,7 +167,7 @@ void Element::evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]) {
 		dNds[15].setVal(0.0);
 		dNds[16].setVal(0.5*(1.0+spt[2]));
 		dNds[17].setVal(0.5*spt[1]);
-	} else if(type == 8 || type == 81) {
+	} else if(type == 8 || type == 81 || type == 800) {
 		nVec[0].setVal(0.125 * (1.0 - spt[0]) * (1.0 - spt[1]) * (1.0 - spt[2]));
 		dNds[0].setVal(-0.125*(1.0-spt[1])*(1.0-spt[2]));
 		dNds[1].setVal(-0.125*(1.0-spt[0])*(1.0-spt[2]));
@@ -225,7 +225,7 @@ void Element::evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]) {
 		    dNds[32].setVal(-2.0*spt[2]);
 		}
 	}
-	else if (type == 10) {
+	else if (type == 10 || type == 1000) {
 		double p1 = 1.0 - spt[0] - spt[1] - spt[2];
 		double p2 = p1 - 0.5;
 		nVec[0].setVal(2.0 * p1 * p2);
@@ -1045,6 +1045,11 @@ void Element::getStressPrereq(DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVa
 	}
 	matMul(pre.locNds, pre.locOri, pre.globNds, 3, 3, numNds);
 
+
+	return;
+}
+
+void Element::getFluidPrereq(DiffDoub0FlPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]) {
 
 	return;
 }

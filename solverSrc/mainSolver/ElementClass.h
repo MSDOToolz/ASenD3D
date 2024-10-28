@@ -56,6 +56,39 @@ public:
 
 	~DiffDoub0StressPrereq();
 };
+
+class DiffDoub0FlPrereq {
+public:
+	DiffDoub0* globNds;
+	DiffDoub0* globVel;
+	DiffDoub0* flDen;
+	DiffDoub0* flVel;
+	DiffDoub0* flTemp;
+	DiffDoub0* flDenDot;
+	DiffDoub0* flVelDot;
+	DiffDoub0* flTDot;
+	DiffDoub0 refVisc;
+	DiffDoub0 denVisCoef;
+	DiffDoub0 tempVisCoef;
+	DiffDoub0 gradVisCoef;
+	DiffDoub0 refEnth;
+	DiffDoub0 denEnthCoef;
+	DiffDoub0 denEnthExp;
+	DiffDoub0 denPresCoef;
+	DiffDoub0 denPresExp;
+	DiffDoub0 refDen;
+	DiffDoub0 refTemp;
+	DiffDoub0 thermCond;
+	DiffDoub0 specHeat;
+	DiffDoub0 iGConst;
+	DiffDoub0 denMax;
+	double* scratch;
+
+	DiffDoub0FlPrereq();
+
+	~DiffDoub0FlPrereq();
+};
+
 //end dup
  
 //skip 
@@ -124,6 +157,7 @@ class Element {
 		int intDofIndex;
 		double* intPts;
 		double* ipWt;
+		double* ndSpts;
 		double sCent[3];
 		int numIP;
 		FaceList faces;
@@ -206,6 +240,8 @@ class Element {
 //dup1
 
 // Properties
+		void getGenProp(DiffDoub0& prop, std::string propKey, DesignVariable* dvAr[]);
+
 		void getLayerThkZ(DiffDoub0 layThk[], DiffDoub0 layZ[], DiffDoub0& zOffset, DesignVariable* dvAr[]);
 
 		void getLayerQ(DiffDoub0 layQ[], DesignVariable* dvAr[]);
@@ -265,6 +301,8 @@ class Element {
 		void getBeamSpecHeat(DiffDoub0& specHeat, DesignVariable* dvAr[]);
 
         void getNdCrds(DiffDoub0 xGlob[], Node* ndAr[], DesignVariable* dvAr[]);
+
+		void getDefNdCrds(DiffDoub0 xGlob[], Node* ndAr[], DesignVariable* dvAr[]);
 		
 		void getLocOri(DiffDoub0 locOri[], DesignVariable* dvAr[]);
 		
@@ -283,9 +321,17 @@ class Element {
 
 		void getNdAcc(DiffDoub0 globAcc[], Node* ndAr[]);
 
+		void getNdFlVel(DiffDoub0 flVel[], Node* ndAr[]);
+
+		void getNdFlVDot(DiffDoub0 flVDot[], Node* ndAr[]);
+
 		void getNdTemp(DiffDoub0 globTemp[], Node* ndAr[]);
 
 		void getNdTdot(DiffDoub0 globTdot[], Node* ndAr[]);
+
+		void getNdFlDen(DiffDoub0 flDen[], Node* ndAr[]);
+
+		void getNdFlDenDot(DiffDoub0 flDenDot[], Node* ndAr[]);
 
 		void evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]);
 		
@@ -296,6 +342,8 @@ class Element {
 		void getInstDisp(DiffDoub0 instDisp[], DiffDoub0 globDisp[], DiffDoub0 instOriMat[], DiffDoub0 locOri[], DiffDoub0 xGlob[], bool nLGeom, int dv1, int dv2);
 
 		void getStressPrereq(DiffDoub0StressPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
+
+		void getFluidPrereq(DiffDoub0FlPrereq& pre, Node* ndAr[], DesignVariable* dvAr[]);
 
 		void getVolume(DiffDoub0& vol, DiffDoub0StressPrereq& pre, int layer);
 		
