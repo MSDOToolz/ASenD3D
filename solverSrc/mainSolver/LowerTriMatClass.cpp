@@ -313,7 +313,7 @@ void LowerTriMat::writeToFile(ofstream& outFile) {
 }
 
 LowerTriMat::~LowerTriMat() {
-	if (dim < 0) {
+	if (dim > 0) {
 		delete[] range;
 		delete[] minCol;
 		delete[] zVec;
