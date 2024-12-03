@@ -11,6 +11,7 @@ C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\JobClass.cpp;C:\Users\evan
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ListEntClass.cpp;C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\ASenD_runJob\x64\Release\ListEntClass.obj
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\LoadClass.cpp;C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\ASenD_runJob\x64\Release\LoadClass.obj
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\LowerTriMatClass.cpp;C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\ASenD_runJob\x64\Release\LowerTriMatClass.obj
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\LUMatClass.cpp;C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\ASenD_runJob\x64\Release\LUMatClass.obj
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp;C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\ASenD_runJob\x64\Release\matrixFunctions.obj
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp;C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\ASenD_runJob\x64\Release\ModelAnalysis.obj
 C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp;C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\ASenD_runJob\x64\Release\ModelClass.obj

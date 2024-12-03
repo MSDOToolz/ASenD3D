@@ -1,3 +1,6 @@
+#include <iostream>
+#include <iomanip>
+#include <vector>
 #include "LUMatClass.h"
 #include "ListEntClass.h"
 #include "ConstraintClass.h"
@@ -5,15 +8,15 @@
 using namespace std;
 
 LUMat::LUMat() {
-	lMat = nullptr;
-	lRange = nullptr;
-	lMinCol = nullptr;
+	lMat.clear();
+	lRange.clear();
+	lMinCol.clear();
 	lSize = 0;
-	uMat = nullptr;
-	uRange = nullptr;
-	uMinRow = nullptr;
+	uMat.clear();
+	uRange.clear();
+	uMinRow.clear();
 	uSize = 0;
-	zVec = nullptr;
+	zVec.clear();
 	dim = 0;
 	maxBandwidth = 0;
 	allocated = false;
@@ -22,11 +25,11 @@ LUMat::LUMat() {
 
 void LUMat::setDim(int newDim) {
 	dim = newDim;
-	lRange = new int[newDim+1];
-	lMinCol = new int[newDim];
-	uRange = new int[newDim+1];
-	uMinRow = new int[newDim];
-	zVec = new double[newDim];
+	lRange = vector<int>(newDim+1);
+	lMinCol = vector<int>(newDim);
+	uRange = vector<int>(newDim+1);
+	uMinRow = vector<int>(newDim);
+	zVec = vector<double>(newDim);
 	return;
 }
 
@@ -36,26 +39,26 @@ void LUMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int b
 	int i3;
 	int i4;
 	int currBlock;
+	int constDim;
 	int blkMaxCol;
 	int blkMinCol;
 	
-	MatrixEnt* mEnt1;
-	MatrixEnt* mEnt2;
-	Constraint* thisConst;
-	
-	if(!lMat) {
-		setDim(spMat.getDim());
+	if(!allocated) {
+		setDim(spMat.dim);
 	}
-	
+
 	for (i1 = 0; i1 < dim; i1++) {
 		lRange[i1] = 0;
 		uRange[i1] = 1;
+	}
+	
+	for (i1 = 0; i1 < dim; i1++) {
 		currBlock = i1/blockDim;
 		blkMinCol = currBlock*blockDim;
 		blkMaxCol = blkMinCol + blockDim;
-		mEnt1 = spMat.getFirstEnt(i1);
-		while(mEnt1) {
-			i2 = mEnt1->col;
+		MatrixRow& mr = spMat.matrix[i1];
+		for (auto& me : mr.rowVec) {
+			i2 = me.col;
 			if(i2 >= blkMinCol && i2 < blkMaxCol) {
 				if(i2 < i1) { // in L
 				    i3 = i1 - i2;
@@ -70,23 +73,19 @@ void LUMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int b
 					}
 				}
 			}
-			mEnt1 = mEnt1->nextEnt;
 		}
 	}
 	
-	thisConst = cList.getFirst();
-	while(thisConst) {
-		constDim = thisConst->getMatDim();
-		for (i1 = 0; i1 < constDim; i1++) {
-			mEnt1 = thisConst-> getMatFirst(i1);
-			while(mEnt1) {
-				i2 = mEnt1->col;
+	for (auto& cnst : cList.constVec) {
+		SparseMat& thisMat = cnst.mat;
+		for (auto& mr : thisMat.matrix) {
+			for (auto& me : mr.rowVec) {
+				i2 = me.col;
 				currBlock = i2/blockDim;
 				blkMinCol = currBlock*blockDim;
 				blkMaxCol = blkMinCol + blockDim;
-				mEnt2 = thisConst->getMatFirst(i1);
-				while(mEnt2) {
-					i3 = mEnt2->col;
+				for (auto& me2 : mr.rowVec) {
+					i3 = me2.col;
 					if(i3 >= blkMinCol && i3 < blkMaxCol) {
 						if(i3 < i2) { // in LU
 						    i4 = i2 - i3;
@@ -101,12 +100,9 @@ void LUMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int b
 							}
 						}
 					}
-					mEnt2 = mEnt2->nextEnt;
 				}
-				mEnt1 = mEnt1->nextEnt;
 			}
 		}
-		thisConst = thisConst->getNext();
 	}
 	
 	lSize = 0;
@@ -131,18 +127,14 @@ void LUMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int b
 		uRange[i1] = uRange[i1+1] - uRange[i1];
 	}
 	
-	lMat = new double[lSize];
-	uMat = new double[uSize];
+	lMat = vector<double>(lSize);
+	uMat = vector<double>(uSize);
 	
 	allocated = true;
 	
 	cout << "maxBandwidth: " << maxBandwidth << endl;
 	
 	return;
-}
-
-bool LUMat::isAllocated() {
-	return allocated;
 }
 
 void LUMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList) {
@@ -153,59 +145,48 @@ void LUMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList) {
 	int constDim;
 	double constSF;
 	
-	MatrixEnt* mEnt1;
-	MatrixEnt* mEnt2;
-	Constraint* thisConst;
-	
-	for (i1 = 0; i1 < lSize; i1++) {
-		lMat[i1] = 0.0;
+	for (auto& lm : lMat) {
+		lm = 0.0;
 	}
 	
-	for (i1 = 0; i1 < uSize; i1++) {
-		uMat[i1] = 0.0;
+	for (auto& um : uMat) {
+		um = 0.0;
 	}
 	
 	for (i1 = 0; i1 < dim; i1++) {
-		mEnt1 = spMat.getFirstEnt(i1);
-		while(mEnt1) {
-			i2 = mEnt1->col;
+		MatrixRow& mr = spMat.matrix[i1];
+		for (auto& me : mr.rowVec) {
+			i2 = me.col;
 			if(i2 >= lMinCol[i1] && i2 < i1) { // in L
 				i3 = lRange[i1] + i2 - lMinCol[i1];
-			    lMat[i3] += mEnt1->value;
+			    lMat[i3] += me.value;
 			}
 			else if(i1 >= uMinRow[i2] && i1 <= i2) {
 				i3 = uRange[i2] + i1 - uMinRow[i2];
-				uMat[i3] += mEnt1->value;
+				uMat[i3] += me.value;
 			}
-			mEnt1 = mEnt1->nextEnt;
 		}
 	}
 	
-	thisConst = cList.getFirst();
-	while(thisConst) {
-		constDim = thisConst->getMatDim();
-		constSF = thisConst->getScaleFact();
-		for (i1 = 0; i1 < constDim; i1++) {
-			mEnt1 = thisConst-> getMatFirst(i1);
-			while(mEnt1) {
-				i2 = mEnt1->col;
-				mEnt2 = thisConst->getMatFirst(i1);
-				while(mEnt2) {
-					i3 = mEnt2->col;
+	for (auto& cnst : cList.constVec) {
+		SparseMat& thisMat = cnst.mat;
+		constSF = cnst.scaleFact;
+		for (auto& mr : thisMat.matrix) {
+			for (auto& me : mr.rowVec) {
+				i2 = me.col;
+				for (auto& me2 : mr.rowVec) {
+					i3 = me2.col;
 					if(i3 >= lMinCol[i2] && i3 < i2) { // in LU
 						i4 = lRange[i2] + i3 - lMinCol[i2];
-						lMat[i4] += constSF*mEnt1->value*mEnt2->value;
+						lMat[i4] += constSF*me.value*me2.value;
 					}
 					else if(i2 >= uMinRow[i3] && i2 <= i3) {
 						i4 = uRange[i3] + i2 - uMinRow[i3];
-						uMat[i4] += constSF*mEnt1->value*mEnt2->value;
+						uMat[i4] += constSF*me.value*me2.value;
 					}
-					mEnt2 = mEnt2->nextEnt;
 				}
-				mEnt1 = mEnt1->nextEnt;
 			}
 		}
-		thisConst = thisConst->getNext();
 	}
 	
 	return;
@@ -271,7 +252,7 @@ void LUMat::luFactor() {
 	return;
 }
 
-void LUMat::luSolve(double solnVec[], double rhs[], bool transpose) {
+void LUMat::luSolve(vector<double>& solnVec, vector<double>& rhs, bool transpose) {
 	int i1;
 	int i2;
 	int i3;
@@ -325,7 +306,7 @@ void LUMat::luSolve(double solnVec[], double rhs[], bool transpose) {
 			}
 			for (i2 = (i1+1); i2 < maxRow; i2++) {
 				if(lMinCol[i2] <= i1) {
- l					i3 = lRange[i2] + i1 - lMinCol[i2];
+ 					i3 = lRange[i2] + i1 - lMinCol[i2];
                     tmp -= lMat[i3]*solnVec[i2];
 				}
 			}
@@ -334,18 +315,4 @@ void LUMat::luSolve(double solnVec[], double rhs[], bool transpose) {
 	}
 	
 	return;
-}
-
-LUMat::~LUMat() {
-	if (dim > 0) {
-		delete[] lRange;
-		delete[] lMinCol;
-		delete[] uRange;
-		delete[] uMinRow;
-		delete[] zVec;
-	}
-	if(lMat) {
-		delete[] lMat;
-		delete[] uMat;
-	}
 }

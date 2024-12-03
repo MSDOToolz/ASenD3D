@@ -2,15 +2,17 @@
 #include "ListEntClass.h"
 #include "ConstraintClass.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
 LowerTriMat::LowerTriMat() {
-	mat = nullptr;
-	range = nullptr;
-	minCol = nullptr;
-	zVec = nullptr;
+	mat.clear();
+	range.clear();
+	minCol.clear();
+	zVec.clear();
 	dim = 0;
 	size = 0;
 	maxBandwidth = 0;
@@ -20,9 +22,9 @@ LowerTriMat::LowerTriMat() {
 
 void LowerTriMat::setDim(int newDim) {
 	dim = newDim;
-	range = new int[newDim+1];
-	minCol = new int[newDim];
-	zVec = new double[newDim];
+	range = vector<int>(newDim+1);
+	minCol = vector<int>(newDim);
+	zVec = vector<double>(newDim);
 	return;
 }
 
@@ -31,59 +33,49 @@ void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList,
 	int i2;
 	int i3;
 	int i4;
+	int row;
 	int currBlock;
 	int blkMC;
 	int constDim;
 	
-	MatrixEnt *mEnt1;
-	MatrixEnt *mEnt2;
-	Constraint *thisConst;
-	
-	if(!mat) {
-		setDim(spMat.getDim());
+	if(!allocated) {
+		setDim(spMat.dim);
 	}
 	
-	for (i1 = 0; i1 < dim; i1++) {
-		range[i1] = 1;
-		currBlock = i1 / blockDim;
+	for (auto& mr : spMat.matrix) {
+		row = mr.rowVec.begin()->row;
+		range[row] = 1;
+		currBlock = row / blockDim;
 		blkMC = blockDim * currBlock;
-		mEnt1 = spMat.getFirstEnt(i1);
-		while(mEnt1) {
-			i2 = mEnt1->col;
-			if(i2 <= i1 && i2 >= blkMC) {
-				i3 = i1 - i2 + 1;
-				if(i3 > range[i1]) {
-					range[i1] = i3;
+		for (auto& me : mr.rowVec) {
+			i2 = me.col;
+			if(i2 <= row && i2 >= blkMC) {
+				i3 = row - i2 + 1;
+				if(i3 > range[row]) {
+					range[row] = i3;
 				}
 			}
-			mEnt1 = mEnt1->nextEnt;
 		}
 	}
 	
-	thisConst = cList.getFirst();
-	while(thisConst) {
-		constDim = thisConst->getMatDim();
-		for (i1 = 0; i1 < constDim; i1++) {
-			mEnt1 = thisConst->getMatFirst(i1);
-			while(mEnt1) {
-				i2 = mEnt1->col;
+	for (auto& cnst : cList.constVec) {
+		SparseMat& thisMat = cnst.mat;
+		for (auto& mr : thisMat.matrix) {
+			for (auto& me : mr.rowVec) {
+				i2 = me.col;
 				currBlock = i2 / blockDim;
 				blkMC = blockDim * currBlock;
-				mEnt2 = thisConst->getMatFirst(i1);
-				while(mEnt2) {
-					i3 = mEnt2->col;
+				for (auto& me2 : mr.rowVec) {
+					i3 = me2.col;
 					if(i3 <= i2 && i3 >= blkMC) {
 						i4 = i2 - i3 + 1;
 						if(i4 > range[i2]) {
 							range[i2] = i4;
 						}
 					}
-					mEnt2 = mEnt2->nextEnt;
 				}
-				mEnt1 = mEnt1->nextEnt;
 			}
 		}
-		thisConst = thisConst->getNext();
 	}
 
 	size = 0;
@@ -100,7 +92,7 @@ void LowerTriMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList,
 		range[i1] = range[i1+1] - range[i1];
 	}
 	
-	mat = new double[size];
+	mat = vector<double>(size);
 	
 	allocated = true;
 
@@ -121,74 +113,64 @@ void LowerTriMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList)
 	int constDim;
 	double constSF;
 	
-	MatrixEnt *mEnt1;
-	MatrixEnt *mEnt2;
-	Constraint *thisConst;
-	
-	for (i1 = 0; i1 < size; i1++) {
-		mat[i1] = 0.0;
+	for (auto& me : mat) {
+		me = 0.0;
 	}
 	
-	for (i1 = 0; i1 < dim; i1++) {
-		mEnt1 = spMat.getFirstEnt(i1);
-		while(mEnt1) {
-			i2 = mEnt1->col;
+	i1 = 0;
+	for (auto& mr : spMat.matrix) {
+		for (auto& me : mr.rowVec) {
+			i2 = me.col;
 			if(i2 <= i1 && i2 >= minCol[i1]) {
 				i3 = range[i1] + (i2 - minCol[i1]);
-				mat[i3]+= mEnt1->value;
+				mat[i3]+= me.value;
 			}
-			mEnt1 = mEnt1->nextEnt;
 		}
+		i1++;
 	}
 	
-	thisConst = cList.getFirst();
-	while(thisConst) {
-		constDim = thisConst->getMatDim();
-		constSF = thisConst->getScaleFact();
-		for (i1 = 0; i1 < constDim; i1++) {
-			mEnt1 = thisConst->getMatFirst(i1);
-			while(mEnt1) {
-				i2 = mEnt1->col;
-				mEnt2 = thisConst->getMatFirst(i1);
-				while(mEnt2) {
-					i3 = mEnt2->col;
+	for (auto& cnst : cList.constVec) {
+		SparseMat& thisMat = cnst.mat;
+		constSF = cnst.scaleFact;
+		for (auto& mr : thisMat.matrix) {
+			for (auto& me : mr.rowVec) {
+				i2 = me.col;
+				for (auto& me2 : mr.rowVec) {
+					i3 = me2.col;
 					if(i3 <= i2 && i3 >= minCol[i2]) {
 						i4 = range[i2] + (i3 - minCol[i2]);
-						mat[i4] += constSF * mEnt1->value * mEnt2->value;
+						mat[i4] += constSF * me.value * me2.value;
 					}
-					mEnt2 = mEnt2->nextEnt;
 				}
-				mEnt1 = mEnt1->nextEnt;
 			}
 		}
-		thisConst = thisConst->getNext();
 	}		
     	
 	return;
 }
 
-void LowerTriMat::copyToFullMat(double matFP[]) {
-	int i1;
-	int i2;
-	int i3;
-	int i4;
-	int i5;
-
-	for (i1 = 0; i1 < dim; i1++) {
-		i3 = minCol[i1];
-		i4 = i1 * dim + i3;
-		i5 = i3 * dim + i1;
-		for (i2 = range[i1]; i2 < range[i1 + 1]; i2++) {
-			matFP[i4] = mat[i2];
-			matFP[i5] = mat[i2];
-			i3++;
-			i4++;
-			i5 += dim;
-		}
-	}
-
-	return;
-}
+//void LowerTriMat::copyToFullMat(double matFP[]) {
+//	int i1;
+//	int i2;
+//	int i3;
+//	int i4;
+//	int i5;
+//
+//	for (i1 = 0; i1 < dim; i1++) {
+//		i3 = minCol[i1];
+//		i4 = i1 * dim + i3;
+//		i5 = i3 * dim + i1;
+//		for (i2 = range[i1]; i2 < range[i1 + 1]; i2++) {
+//			matFP[i4] = mat[i2];
+//			matFP[i5] = mat[i2];
+//			i3++;
+//			i4++;
+//			i5 += dim;
+//		}
+//	}
+//
+//	return;
+//}
 
 void LowerTriMat::ldlFactor() {
 	int i1;
@@ -199,7 +181,7 @@ void LowerTriMat::ldlFactor() {
 	int stCol;
 	double sum;
 	
-	double *ldVec = new double[dim];
+	vector<double> ldVec(dim);
 	
 	for (i1 = 0; i1 < dim; i1++) { // i1 = column in L
 		//form ldVec
@@ -241,11 +223,10 @@ void LowerTriMat::ldlFactor() {
 		}
 	}
 	
-	delete[] ldVec;
 	return;
 }
 
-void LowerTriMat::ldlSolve(double solnVec[], double rhs[]) {
+void LowerTriMat::ldlSolve(vector<double>& solnVec, vector<double>& rhs) {
 	int i1;
 	int i2;
 	int i3;
@@ -309,17 +290,5 @@ void LowerTriMat::writeToFile(ofstream& outFile) {
 		}
 	}
 
-	return;
-}
-
-LowerTriMat::~LowerTriMat() {
-	if (dim > 0) {
-		delete[] range;
-		delete[] minCol;
-		delete[] zVec;
-	}
-	if (mat) {
-		delete[] mat;
-	}
 	return;
 }

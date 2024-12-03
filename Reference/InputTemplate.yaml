@@ -75,14 +75,16 @@ sections:
       fluidParams:
           denVisCoef:
           tempVisCoef:
-          gradVisCoef:
+          turbVisCoef:
+          gradVTurbCoef:
+          dissTurbCoef:
           enthCoef:
           enthExp:
           presCoef:
           presExp:
           refTemp:
           refDen:
-          refVGrad:
+          refTurbE:
           refEnth:
       elementSet: setName
 materials:

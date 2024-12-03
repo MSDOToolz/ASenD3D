@@ -51,43 +51,6 @@ JobCommand::JobCommand() {
 	
 	// writeObjective
 	writeGradient = true;	
-	
-	next = nullptr;
 	return;
 }
 
-Job::Job() {
-	firstCmd = nullptr;
-	lastCmd = nullptr;
-	length = 0;
-}
-
-void Job::addCommand(JobCommand *newCmd) {
-	if(!firstCmd) {
-		firstCmd = newCmd;
-		lastCmd = newCmd;
-	} else {
-		lastCmd->next = newCmd;
-		lastCmd = newCmd;
-	}
-	length++;
-}
-
-int Job::getLength() {
-	return length;
-}
-
-JobCommand* Job::getFirst() {
-	return firstCmd;
-}
-
-Job::~Job() {
-	JobCommand* thisCmd = firstCmd;
-	JobCommand* nextCmd;
-	while (thisCmd) {
-		nextCmd = thisCmd->next;
-		delete thisCmd;
-		thisCmd = nextCmd;
-	}
-	return;
-}

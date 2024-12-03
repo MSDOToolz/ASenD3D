@@ -1,6 +1,7 @@
 #ifndef JOBCLASS
 #define JOBCLASS
 #include "ListEntClass.h"
+#include <vector>
 #include <string>
 
 class JobCommand {
@@ -26,7 +27,7 @@ class JobCommand {
 		std::string solverMethod;
 		int maxIt;
 		double convTol;
-		DoubList staticLoadTime;
+		std::list<double> staticLoadTime;
 		bool thermal;
 		double timeStep;
 		
@@ -42,8 +43,8 @@ class JobCommand {
 		
 		// writeNodeResults
 		std::string nodeSet;
-		StringList fields;
-		IntList timeSteps;
+		std::list<std::string> fields;
+		std::list<int> timeSteps;
 		std::string timeStepTag;
 		
 		// writeElementResults
@@ -54,33 +55,13 @@ class JobCommand {
 		bool writeModes;
 		
 		// writeElementProperties
-		StringList properties;
+		std::list<std::string> properties;
 		
 		// writeObjective
-		StringList objInclude;
+		std::list<std::string> objInclude;
 		bool writeGradient;
 		
-		JobCommand *next;
-		
 		JobCommand();
-};
-
-class Job {
-	private:
-	    JobCommand *firstCmd;
-		JobCommand *lastCmd;
-		int length;
-		
-	public:
-	    Job();
-		
-		void addCommand(JobCommand *newCmd);
-		
-		int getLength();
-		
-		JobCommand* getFirst();
-
-		~Job();
 };
 
 #endif

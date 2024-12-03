@@ -2,8 +2,10 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
+#include "LUMatClass.h"
 #include "LowerTriMatClass.h"
 #include "ConstraintClass.h"
 
@@ -14,6 +16,33 @@ const double tol = 1.0e-12;
 const double magtol = 1.0e-8;
 const double maxMag = 1.0e+12;
 const double minMag = 1.0e-12;
+
+void subVec(vector<double>& subV, vector<double>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		subV[i2] = vIn[i1];
+		i2++;
+	}
+}
+
+void returnSV(vector<double>& subV, vector<double>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		vIn[i1] = subV[i2];
+		i2++;
+	}
+}
+
+void vecToAr(double ar[], std::vector<double>& vc, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		ar[i2] = vc[i1];
+		i2++;
+	}
+}
 
 double getDist(double p1[], double p2[]) {
 	double dist;
@@ -32,7 +61,7 @@ void crossProd(double prod[], double v1[], double v2[]) {
 	return;
 }
 
-void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void qRFactor(vector<double>& mat, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -92,7 +121,7 @@ void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int en
 	return;
 }
 
-void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void solveqRxEqb(vector<double>& xVec, vector<double>& mat, vector<double>& bVec, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -155,22 +184,22 @@ void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stR
 	return;
 }
 
-void conjGradSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt) {
+void conjGradSparse(vector<double>& soln, SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, vector<double>& rhs, double convTol, int maxIt) {
 	int i1;
 	int i2;
 	int i3;
-	int dim = mat.getDim();
+	int dim = mat.dim;
 	int statusFreq = dim / 24;
 	double res;
 	double rNext;
 	double alpha;
 	double dp;
 	double beta;
-	double* hVec = new double[dim];
-	double* gVec = new double[dim];
-	double* zVec = new double[dim];
-	double* wVec = new double[dim];
-	double* tVec = new double[dim];
+	vector<double> hVec(dim);
+	vector<double> gVec(dim);
+	vector<double> zVec(dim);
+	vector<double> wVec(dim);
+	vector<double> tVec(dim);
 
 	if (!pcMat.posDef()) {
 		cout << "Warning: preconditioning matrix for conjugate gradient solver is not positive definite." << endl;
@@ -232,16 +261,10 @@ void conjGradSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTr
 	cout << "Total CG iterations: " << i1 << endl;
 	cout << "Final residual norm: " << res << endl; cout << "Final residual norm: " << res << endl;
 
-	delete[] hVec;
-	delete[] gVec;
-	delete[] zVec;
-	delete[] wVec;
-	delete[] tVec;
-
 	return;
 }
 
-void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, double rhs[], double convTol, int maxIt, int restart) {
+void gMResSparse(vector<double>& soln, SparseMat& mat, ConstraintList& cnst, LUMat& pcMat, vector<double>& rhs, double convTol, int maxIt, int restart) {
 	int i1;
 	int i2;
 	int i3;
@@ -250,22 +273,24 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 	int itCt;
 	double resNrm;
 	double tmp;
-	int dim = mat.getDim();
+	int dim = mat.dim;
 
-	double* resVec = new double[dim];
-	double* tmpV = new double[dim];
-	double* tmpV2 = new double[dim];
+	vector<double> resVec(dim);
+	vector<double> tmpV(dim);
+	vector<double> tmpV2(dim);
+	vector<double> tmpV3(dim);
 	i1 = dim * (restart + 1);
-	double* hMat = new double[i1];
+	vector<double> hMat(i1);
 	i1 = restart * (restart + 1);
-	double* phiMat = new double[i1];
+	vector<double> phiMat(i1);
 
 	for (i1 = 0; i1 < dim; i1++) {
 		soln[i1] = 0.0;
 		tmpV[i1] = -rhs[i1];
 	}
 
-	pcMat.ldlSolve(resVec, tmpV);
+	pcMat.luSolve(resVec, tmpV, false);
+	//pcMat.ldlSolve(resVec, tmpV);
 	resNrm = 0.0;
 	for (i1 = 0; i1 < dim; i1++) {
 		resNrm += resVec[i1] * resVec[i1];
@@ -290,9 +315,11 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 				tmpV[i2] = 0.0;
 			}
 			i2 = dim * (i1 - 1);
-			mat.vectorMultiply(tmpV, &hMat[i2], false);
-			cnst.getTotalVecMult(tmpV, &hMat[i2], tmpV2);
-			pcMat.ldlSolve(tmpV2, tmpV);
+			subVec(tmpV3, hMat, i2, i2 + dim);
+			mat.vectorMultiply(tmpV, tmpV3, false);
+			cnst.getTotalVecMult(tmpV, tmpV3, tmpV2);
+			//pcMat.ldlSolve(tmpV2, tmpV);
+			pcMat.luSolve(tmpV2, tmpV, false);
 			//Orthogonalize with all previous vectors
 			for (i2 = 0; i2 < i1; i2++) {
 				i4 = dim * i2;
@@ -309,7 +336,7 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 					i4++;
 				}
 			}
-			//Calculate magnitude and set new unit basis vector
+			//Calculate magnitude and set new unit basis std::vector
 			tmp = 0.0;
 			for (i3 = 0; i3 < dim; i3++) {
 				tmp += tmpV2[i3] * tmpV2[i3];
@@ -326,16 +353,16 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 		}
 		//Find the least squares solution
 		i3 = 0;
-		for (i1 = 0; i1 < restart; i1++) {
+		for (i1 = 0; i1 <= restart; i1++) {
 			tmpV[i1] = 0.0;
 			for (i2 = 0; i2 < dim; i2++) {
 				tmpV[i1] -= hMat[i3] * resVec[i2];
 				i3++;
 			}
 		}
-		qRFactor(phiMat, restart, 0, (restart-1), 0, (restart-1), 1);
-		solveqRxEqb(tmpV2, phiMat, tmpV, restart, 0, (restart-1), 0, (restart-1), 1);
-		//Update the solution vector
+		qRFactor(phiMat, restart, 0, restart, 0, (restart-1), 1);
+		solveqRxEqb(tmpV2, phiMat, tmpV, restart, 0, restart, 0, (restart-1), 1);
+		//Update the solution std::vector
 		i3 = 0;
 		for (i1 = 0; i1 < restart; i1++) {
 			for (i2 = 0; i2 < dim; i2++) {
@@ -343,13 +370,14 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 				i3++;
 			}
 		}
-		//Update residual vector
+		//Update residual std::vector
 		for (i1 = 0; i1 < dim; i1++) {
 			tmpV[i1] = -rhs[i1];
 		}
 		mat.vectorMultiply(tmpV, soln, false);
 		cnst.getTotalVecMult(tmpV, soln, tmpV2);
-		pcMat.ldlSolve(resVec, tmpV);
+		//pcMat.ldlSolve(resVec, tmpV);
+		pcMat.luSolve(resVec, tmpV, false);
 		resNrm = 0.0;
 		for (i1 = 0; i1 < dim; i1++) {
 			resNrm += resVec[i1] * resVec[i1];
@@ -364,16 +392,10 @@ void gMResSparse(double soln[], SparseMat& mat, ConstraintList& cnst, LowerTriMa
 		cout << "Residual norm after " << itCt << " iterations: " << resNrm << endl;
 	}
 
-	delete[] resVec;
-	delete[] tmpV;
-	delete[] tmpV2;
-	delete[] hMat;
-	delete[] phiMat;
-
 	return;
 }
 
-void symFactor(double mat[], double qMat[], int matDim) {
+void symFactor(vector<double>& mat, vector<double>& qMat, int matDim) {
 	int i1;
 	int i2;
 	int i3;
@@ -438,7 +460,7 @@ void symFactor(double mat[], double qMat[], int matDim) {
 	return;
 }
 
-void getCharFun(DiffDoub1& cFun, DiffDoub1 mat[], int matDim, DoubList& eVals, double lam, int triDiag) {
+void getCharFun(DiffDoub1& cFun, vector<DiffDoub1>& mat, int matDim, vector<double>& eVals, double lam, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -526,10 +548,9 @@ void getCharFun(DiffDoub1& cFun, DiffDoub1 mat[], int matDim, DoubList& eVals, d
 		i2+= (matDim + 1);
 	}
 	
-	DoubListEnt *thisEval = eVals.getFirst();
 	double term;
-	while(thisEval) {
-		term = thisEval->value - lam;
+	for (auto& ev : eVals) {
+		term = ev - lam;
 		tmp.setVal(term,-1.0);
 		cFun.dvd(tmp);
 		while(abs(cFun.val) > maxMag) {
@@ -540,19 +561,18 @@ void getCharFun(DiffDoub1& cFun, DiffDoub1 mat[], int matDim, DoubList& eVals, d
 			cFun.val*= maxMag;
 			cFun.dval*= maxMag;
 		}
-		thisEval = thisEval->next;
 	}
 	
 	return;
 }
 
-void getEvals(double eVals[], double mat[], int matDim, double lamInit, double convTol, int triDiag) {
+void getEvals(vector<double>& eVals, vector<double>& mat, int matDim, double lamInit, double convTol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
 	int matSize = matDim*matDim;
-	DoubList eValList;
-	DiffDoub1 *matCopy = new DiffDoub1[matSize];
+	vector<double> eValList;
+	vector<DiffDoub1> matCopy(matSize);
 	DiffDoub1 cFun;
 	double lam = lamInit;
 	double dLam;
@@ -578,26 +598,25 @@ void getEvals(double eVals[], double mat[], int matDim, double lamInit, double c
 		dLam = -cFun.val/cFun.dval;
 		lam+= dLam;
 		if(abs(dLam) < convTol) {
-			eValList.addEntry(lam);
+			//eValList.addEntry(lam);
+			eValList.push_back(lam);
 			numFound++;
 			lam-= backStep;
 		}
 		it++;
 	}
-	DoubListEnt *thisEnt = eValList.getFirst();
+	//DoubListEnt *thisEnt = eValList.getFirst();
 	i1 = 0;
-	while(thisEnt) {
-		eVals[i1] = thisEnt->value;
-		thisEnt = thisEnt->next;
+	for (auto& ev : eValList) {
+		eVals[i1] = ev;
 		i1++;
 	}
-	delete[] matCopy;
 	return;
 }
 
-double getLowEval(double mat[], int matDim) {
-	double *vec = new double[matDim];
-	double *prevVec = new double[matDim];
+double getLowEval(vector<double>& mat, int matDim) {
+	vector<double> vec(matDim);
+	vector<double> prevVec(matDim);
 	double high;
 	double tmp;
 	double mag;
@@ -650,8 +669,6 @@ double getLowEval(double mat[], int matDim) {
 	}
 	
 	if(dp < 0.0) {
-		delete[] vec;
-	    delete[] prevVec;
 		return dp;
 	}
 	
@@ -710,12 +727,10 @@ double getLowEval(double mat[], int matDim) {
 	}
 	
 	dp+= high;
-	delete[] vec;
-	delete[] prevVec;
 	return dp;
 }
 
-void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int triDiag) {
+void eigenSolve(vector<double>& eVals, vector<double>& eVecs, vector<double>& mat, int matDim, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -724,9 +739,9 @@ void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int tr
 	double tmp;
 	int matSize = matDim*matDim;
 	int newTd = triDiag;
-	double* qMat = nullptr;
+	vector<double> qMat;
 	if(triDiag == 0) {
-		qMat = new double[matSize];
+		qMat = vector<double>(matSize);
 		symFactor(mat,qMat,matDim);
 		newTd = 1;
 	}
@@ -746,10 +761,10 @@ void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int tr
 	getEvals(eVals,mat,matDim,low,convTol,newTd);
 	
 	//DoubListEnt *thisVal = eVals.getFirst();
-	double *matCopy = new double[matSize];
-	double *vec = new double[matDim];
-	double *prevVec = new double[matDim];
-	double *bVec = new double[matDim];
+	vector<double> matCopy(matSize);
+	vector<double> vec(matDim);
+	vector<double> prevVec(matDim);
+	vector<double> bVec(matDim);
 	double shift;
 	bool conv;
 	double mag;
@@ -832,19 +847,10 @@ void eigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int tr
 			it++;
 		}
 	}
-
-	if (triDiag == 0) {
-		delete[] qMat;
-	}
-
-	delete[] matCopy;
-	delete[] vec;
-	delete[] prevVec;
-	delete[] bVec;
 	return;
 }
 
-void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int triDiag) {
+void symEigenSolve(vector<double>& eVals, vector<double>& eVecs, vector<double>& mat, int matDim, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -857,11 +863,11 @@ void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int
 	double mag;
 	double dp;
 
-	double* tempV1 = new double[matDim];
-	double* tempV2 = new double[matDim];
-	double* eVtmp = new double[matDim * matDim];
-	double* qMat = new double[matDim * matDim];
-	int* srtOrder = new int[matDim];
+	vector<double> tempV1(matDim);
+	vector<double> tempV2(matDim);
+	vector<double> eVtmp(matDim*matDim);
+	vector<double> qMat(matDim * matDim);
+	vector<int> srtOrder(matDim);
 
 	if (triDiag == 0) {
 		symFactor(mat, qMat, matDim);
@@ -920,7 +926,7 @@ void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int
 					i4++;
 				}
 			}
-			// orthogonalize with previous vectors
+			// orthogonalize with previous std::vectors
 			for (i2 = 0; i2 < i1; i2++) {
 				dp = 0.0;
 				i4 = i2 * matDim;
@@ -999,97 +1005,91 @@ void symEigenSolve(double eVals[], double eVecs[], double mat[], int matDim, int
 		}
 	}
 
-	delete[] tempV1;
-	delete[] tempV2;
-	delete[] eVtmp;
-	delete[] qMat;
-	delete[] srtOrder;
-
 	return;
 }
 
-void eigenFull(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, double massMat[], int matDim) {
-	int i1;
-	int i2;
-	int i3;
-	int i4;
-	int i5;
-	double tmp;
-	double mag;
+//void eigenFull(vector<double>& eVals, vector<double>& eVecs, int numPairs, LowerTriMat& mat, vector<double>& massMat, int matDim) {
+//	int i1;
+//	int i2;
+//	int i3;
+//	int i4;
+//	int i5;
+//	double tmp;
+//	double mag;
+//
+//	i3 = matDim * matDim;
+//	double* matFP = new double[i3];
+//	double* qMat = new double[i3];
+//	double* eVectmp = new double[i3];
+//	double* eValtmp = new double[matDim];
+//	double* vtmp = new double[matDim];
+//
+//	for (i1 = 0; i1 < i3; i1++) {
+//		matFP[i1] = 0.0;
+//	}
+//
+//	mat.copyToFullMat(matFP);
+//
+//	for (i1 = 0; i1 < matDim; i1++) {
+//		massMat[i1] = 1.0 / sqrt(massMat[i1]);
+//		i3 = i1 * matDim;
+//		i4 = i1;
+//		for (i2 = 0; i2 < matDim; i2++) {
+//			matFP[i3] *= massMat[i1];
+//			matFP[i4] *= massMat[i1];
+//			i3++;
+//			i4 += matDim;
+//		}
+//	}
+//
+//	//symFactor(matFP, qMat, matDim);
+//
+//	symEigenSolve(eValtmp, eVectmp, matFP, matDim, 1);
+//
+//	for (i1 = 0; i1 < numPairs; i1++) {
+//		i4 = 0;
+//		i5 = i1 * matDim;
+//		for (i2 = 0; i2 < matDim; i2++) {
+//			/*vtmp[i2] = 0.0;
+//			i5 = i1 * matDim;
+//			for (i3 = 0; i3 < matDim; i3++) {
+//				vtmp[i2] += qMat[i4] * eVectmp[i5];
+//				i4++;
+//				i5++;
+//			}*/
+//			vtmp[i2] = eVectmp[i5];
+//			i5++;
+//		}
+//		mag = 0.0;
+//		for (i2 = 0; i2 < matDim; i2++) {
+//			tmp = vtmp[i2] * massMat[i2];
+//			vtmp[i2] = tmp;
+//			mag += tmp * tmp;
+//		}
+//		mag = 1.0/sqrt(mag);
+//		i3 = i1 * matDim;
+//		for (i2 = 0; i2 < matDim; i2++) {
+//			eVecs[i3] = mag * vtmp[i2];
+//			i3++;
+//		}
+//		eVals[i1] = eValtmp[i1];
+//	}
+//
+//	for (i1 = 0; i1 < matDim; i1++) {
+//		tmp = 1.0 / massMat[i1];
+//		massMat[i1] = tmp * tmp;
+//	}
+//
+//	delete[] matFP;
+//	delete[] qMat;
+//	delete[] eVectmp;
+//	delete[] eValtmp;
+//	delete[] vtmp;
+//
+//	return;
+//}
 
-	i3 = matDim * matDim;
-	double* matFP = new double[i3];
-	double* qMat = new double[i3];
-	double* eVectmp = new double[i3];
-	double* eValtmp = new double[matDim];
-	double* vtmp = new double[matDim];
-
-	for (i1 = 0; i1 < i3; i1++) {
-		matFP[i1] = 0.0;
-	}
-
-	mat.copyToFullMat(matFP);
-
-	for (i1 = 0; i1 < matDim; i1++) {
-		massMat[i1] = 1.0 / sqrt(massMat[i1]);
-		i3 = i1 * matDim;
-		i4 = i1;
-		for (i2 = 0; i2 < matDim; i2++) {
-			matFP[i3] *= massMat[i1];
-			matFP[i4] *= massMat[i1];
-			i3++;
-			i4 += matDim;
-		}
-	}
-
-	//symFactor(matFP, qMat, matDim);
-
-	symEigenSolve(eValtmp, eVectmp, matFP, matDim, 1);
-
-	for (i1 = 0; i1 < numPairs; i1++) {
-		i4 = 0;
-		i5 = i1 * matDim;
-		for (i2 = 0; i2 < matDim; i2++) {
-			/*vtmp[i2] = 0.0;
-			i5 = i1 * matDim;
-			for (i3 = 0; i3 < matDim; i3++) {
-				vtmp[i2] += qMat[i4] * eVectmp[i5];
-				i4++;
-				i5++;
-			}*/
-			vtmp[i2] = eVectmp[i5];
-			i5++;
-		}
-		mag = 0.0;
-		for (i2 = 0; i2 < matDim; i2++) {
-			tmp = vtmp[i2] * massMat[i2];
-			vtmp[i2] = tmp;
-			mag += tmp * tmp;
-		}
-		mag = 1.0/sqrt(mag);
-		i3 = i1 * matDim;
-		for (i2 = 0; i2 < matDim; i2++) {
-			eVecs[i3] = mag * vtmp[i2];
-			i3++;
-		}
-		eVals[i1] = eValtmp[i1];
-	}
-
-	for (i1 = 0; i1 < matDim; i1++) {
-		tmp = 1.0 / massMat[i1];
-		massMat[i1] = tmp * tmp;
-	}
-
-	delete[] matFP;
-	delete[] qMat;
-	delete[] eVectmp;
-	delete[] eValtmp;
-	delete[] vtmp;
-
-	return;
-}
-
-void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat& mat, double massMat[], int matDim) {
+void eigenSparseDirect(vector<double>& eVals, vector<double>& eVecs, int numPairs, LowerTriMat& mat, vector<double>& massMat, int matDim) {
 	int i1;
 	int i2;
 	int i3;
@@ -1099,9 +1099,11 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	
 	int hCols = 5*numPairs;
 	i1 = hCols*matDim;
-	double *hMat = new double[i1];
+	vector<double> hMat(i1);
+	vector<double> tVec1(matDim);
+	vector<double> tVec2(matDim);
 	i1 = hCols*(hCols - 1);
-	double *coefMat = new double[i1];
+	vector<double> coefMat(i1);
 	
 	for (i2 = 0; i2 < i1; i2++) {
 		coefMat[i2] = 0.0;
@@ -1117,7 +1119,10 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 		hMat[i2] = sin(1.0 * i2);
 	}
 
-	mat.ldlSolve(&hMat[0], &hMat[matDim]);
+	subVec(tVec1, hMat, 0, matDim);
+	subVec(tVec2, hMat, matDim, matDim + matDim);
+	mat.ldlSolve(tVec1, tVec2);
+	returnSV(tVec1, hMat, 0, matDim);
 
 	mag = 0.0;
 	for (i2 = 0; i2 < matDim; i2++) {
@@ -1129,8 +1134,6 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 		hMat[i2] *= mag;
 	}
 	
-	double *tVec1 = new double[matDim];
-	double *tVec2 = new double[matDim];
 	double dp;
 	double stVec;
 	for (i1 = 1; i1 < hCols; i1++) {
@@ -1179,8 +1182,8 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 	}
 	
 	i1 = hCols - 1;
-	double *coefVals = new double[i1];
-	double *coefVecs = new double[i1*i1];
+	vector<double> coefVals(i1);
+	vector<double> coefVecs(i1*i1);
 	//eigenSolve(coefVals, coefVecs, coefMat, i1, 2);
 	symEigenSolve(coefVals, coefVecs, coefMat, i1, 1);
 
@@ -1251,20 +1254,13 @@ void eigenSparseDirect(double eVals[], double eVecs[], int numPairs, LowerTriMat
 		massMat[i1] = tmp*tmp;
 	}
 	
-	delete[] hMat;
-	delete[] coefMat;
-	delete[] tVec1;
-	delete[] tVec2;
-	delete[] coefVals;
-	delete[] coefVecs;
-	
 	return;
 }
 
-double rayQuot(double grad[], double Kv[], double Mv[], SparseMat& mat, ConstraintList& cnst, double massMat[], double inVec[]) {
+double rayQuot(vector<double>& grad, vector<double>& Kv, vector<double>& Mv, SparseMat& mat, ConstraintList& cnst, vector<double>& massMat, vector<double>& inVec) {
 	int i1;
 	double rC;
-	int dim = mat.getDim();
+	int dim = mat.dim;
 	double vKv;
 	double vMv = 0.0;
 	for (i1 = 0; i1 < dim; i1++) {
@@ -1285,7 +1281,7 @@ double rayQuot(double grad[], double Kv[], double Mv[], SparseMat& mat, Constrai
 	return rC;
 }
 
-double unitizeVec(double vec[], int dim) {
+double unitizeVec(vector<double>& vec, int dim) {
 	int i1;
 	double mag;
 	double minv;
@@ -1301,7 +1297,7 @@ double unitizeVec(double vec[], int dim) {
 	return mag;
 }
 
-void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, double massMat[], double inVecs[], double eVals[], int numVecs, int maxIt) {
+void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, vector<double>& massMat, vector<double>& inVecs, vector<double>& eVals, int numVecs, int maxIt) {
 	int i1;
 	int i2;
 	int i3;
@@ -1316,19 +1312,22 @@ void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, double massMat[], do
 	double stepLen;
 	bool reduced;
 	
-	dim = mat.getDim();
+	dim = mat.dim;
 
-	double* grad0 = new double[dim];
-	double* grad1 = new double[dim];
-	double* d2RQ = new double[dim];
-	double* vStep = new double[dim];
-	double* Kv = new double[dim];
-	double* Mv = new double[dim];
+	vector<double> grad0(dim);
+	vector<double> grad1(dim);
+	vector<double> d2RQ(dim);
+	vector<double> vStep(dim);
+	vector<double> Kv(dim);
+	vector<double> Mv(dim);
+	vector<double> tVec1(dim);
 
 	for (i1 = 0; i1 < numVecs; i1++) {
 		i2 = i1 * dim;
-		unitizeVec(&inVecs[i2], dim);
-		rQ0 = rayQuot(grad0, Kv, Mv, mat, cnst, massMat, &inVecs[i2]);
+		subVec(tVec1, inVecs, i2, i2 + dim);
+		unitizeVec(tVec1, dim);
+		rQ0 = rayQuot(grad0, Kv, Mv, mat, cnst, massMat, tVec1);
+		returnSV(tVec1, inVecs, i2, i2 + dim);
 		res = 1.0;
 		i3 = 0;
 		while (i3 < maxIt && res > 1.0e-6) {
@@ -1342,7 +1341,8 @@ void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, double massMat[], do
 			for (i4 = 0; i4 < dim; i4++) {
 				inVecs[i2 + i4] += 0.01*vStep[i4];
 			}
-			rQ1 = rayQuot(grad1, Kv, Mv, mat, cnst, massMat, &inVecs[i2]);
+			subVec(tVec1, inVecs, i2, i2 + dim);
+			rQ1 = rayQuot(grad1, Kv, Mv, mat, cnst, massMat, tVec1);
 			for (i4 = 0; i4 < dim; i4++) {
 				inVecs[i2 + i4] -= 0.01 * vStep[i4];
 			}
@@ -1356,8 +1356,10 @@ void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, double massMat[], do
 				}
 				inVecs[i2 + i4] += vStep[i4];
 			}
-			unitizeVec(&inVecs[i2], dim);
-			rQ0 = rayQuot(grad0, Kv, Mv, mat, cnst, massMat, &inVecs[i2]);
+			subVec(tVec1, inVecs, i2, i2 + dim);
+			unitizeVec(tVec1, dim);
+			rQ0 = rayQuot(grad0, Kv, Mv, mat, cnst, massMat, tVec1);
+			returnSV(tVec1, inVecs, i2, i2 + dim);
 			unitizeVec(Kv, dim);
 			unitizeVec(Mv, dim);
 			dp = 0.0;
@@ -1367,126 +1369,120 @@ void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, double massMat[], do
 			res = 1.0 - abs(dp);
 			i3++;
 		}
-		cout << "Warning: eigenvector " << i1 << " did not converge within the max iterations." << endl;
+		cout << "Warning: eigenstd::vector " << i1 << " did not converge within the max iterations." << endl;
 		eVals[i1] = rQ0;
 	}
 
-	delete[] grad0;
-	delete[] grad1;
-	delete[] d2RQ;
-	delete[] vStep;
-	delete[] Kv;
-	delete[] Mv;
 }
 
-void getNearestEvecSubspace(SparseMat& mat, ConstraintList& cnst, double massMat[], double inVecs[], double eVals[], int numVecs) {
-	int i1;
-	int i2;
-	int i3;
-	int i4;
-	int i5;
-	int i6;
-	double dp;
-	int dim = mat.getDim();
-	
-	double* gMat = new double[dim * numVecs];
-	i1 = numVecs * numVecs;
-	double* condMat = new double[i1];
-	double* condEvecs = new double[i1];
-	double* t1 = new double[dim];
-	double* t2 = new double[dim];
-	double* t3 = new double[dim];
-
-	for (i1 = 0; i1 < dim; i1++) {
-		massMat[i1] = sqrt(massMat[i1]);
-	}
-
-	for (i1 = 0; i1 < numVecs; i1++) {
-		i2 = dim * i1;
-		for (i3 = 0; i3 < dim; i3++) {
-			gMat[i2 + i3] = massMat[i3] * inVecs[i2 + i3];
-		}
-		for (i3 = 0; i3 < i1; i3++) {
-			i5 = dim * i3;
-			dp = 0.0;
-			for (i4 = 0; i4 < dim; i4++) {
-				dp += gMat[i5 + i4] * gMat[i2 + i4];
-			}
-			for (i4 = 0; i4 < dim; i4++) {
-				gMat[i2 + i4] -= dp * gMat[i5 + i4];
-			}
-		}
-		unitizeVec(&gMat[i2], dim);
-	}
-
-	for (i1 = 0; i1 < dim; i1++) {
-		massMat[i1] = 1.0/massMat[i1];
-	}
-
-	for (i1 = 0; i1 < numVecs; i1++) {
-		i3 = i1 * dim;
-		for (i2 = 0; i2 < dim; i2++) {
-			t1[i2] = massMat[i2] * gMat[i3 + i2];
-			t2[i2] = 0.0;
-		}
-		mat.vectorMultiply(t2, t1, false);
-		cnst.getTotalVecMult(t2, t1, t3);
-		for (i2 = 0; i2 < dim; i2++) {
-			t1[i2] = massMat[i2] * t2[i2];
-		}
-		i6 = i1 * numVecs;
-		i5 = 0;
-		for (i2 = 0; i2 < numVecs; i2++) {
-			//i6 = i1 * numVecs + i2;
-			condMat[i6] = 0.0;
-			//i5 = i2 * dim;
-			for (i4 = 0; i4 < dim; i4++) {
-				//i5 = i2 * dim + i4;
-				condMat[i6] += gMat[i5] * t1[i4];
-				i5++;
-			}
-			i6++;
-		}
-	}
-
-	symEigenSolve(eVals, condEvecs, condMat, numVecs, 0);
-
-	for (i1 = 0; i1 < numVecs; i1++) {
-		for (i2 = 0; i2 < dim; i2++) {
-			t1[i2] = 0.0;
-		}
-		i5 = 0;
-		i6 = i1 * numVecs;
-		for (i2 = 0; i2 < numVecs; i2++) {
-			//i6 = i1 * numVecs + i2;
-			for (i3 = 0; i3 < dim; i3++) {
-				t1[i3] += gMat[i5] * condEvecs[i6];
-				i5++;
-			}
-			i6++;
-		}
-		i3 = i1 * dim;
-		for (i2 = 0; i2 < dim; i2++) {
-			inVecs[i3 + i2] = massMat[i2] * t1[i2];
-		}
-		unitizeVec(&inVecs[i3], dim);
-	}
-
-	for (i1 = 0; i1 < dim; i1++) {
-		dp = 1.0 / massMat[i1];
-		massMat[i1] = dp * dp;
-	}
-
-	delete[] gMat;
-	delete[] condMat;
-	delete[] condEvecs;
-	delete[] t1;
-	delete[] t2;
-	delete[] t3;
-}
+//void getNearestEvecSubspace(SparseMat& mat, ConstraintList& cnst, vector<double>& massMat, vector<double>& inVecs, vector<double>& eVals, int numVecs) {
+//	int i1;
+//	int i2;
+//	int i3;
+//	int i4;
+//	int i5;
+//	int i6;
+//	double dp;
+//	int dim = mat.getDim();
+//	
+//	double* gMat = new double[dim * numVecs];
+//	i1 = numVecs * numVecs;
+//	double* condMat = new double[i1];
+//	double* condEvecs = new double[i1];
+//	double* t1 = new double[dim];
+//	double* t2 = new double[dim];
+//	double* t3 = new double[dim];
+//
+//	for (i1 = 0; i1 < dim; i1++) {
+//		massMat[i1] = sqrt(massMat[i1]);
+//	}
+//
+//	for (i1 = 0; i1 < numVecs; i1++) {
+//		i2 = dim * i1;
+//		for (i3 = 0; i3 < dim; i3++) {
+//			gMat[i2 + i3] = massMat[i3] * inVecs[i2 + i3];
+//		}
+//		for (i3 = 0; i3 < i1; i3++) {
+//			i5 = dim * i3;
+//			dp = 0.0;
+//			for (i4 = 0; i4 < dim; i4++) {
+//				dp += gMat[i5 + i4] * gMat[i2 + i4];
+//			}
+//			for (i4 = 0; i4 < dim; i4++) {
+//				gMat[i2 + i4] -= dp * gMat[i5 + i4];
+//			}
+//		}
+//		unitizeVec(&gMat[i2], dim);
+//	}
+//
+//	for (i1 = 0; i1 < dim; i1++) {
+//		massMat[i1] = 1.0/massMat[i1];
+//	}
+//
+//	for (i1 = 0; i1 < numVecs; i1++) {
+//		i3 = i1 * dim;
+//		for (i2 = 0; i2 < dim; i2++) {
+//			t1[i2] = massMat[i2] * gMat[i3 + i2];
+//			t2[i2] = 0.0;
+//		}
+//		mat.std::vectorMultiply(t2, t1, false);
+//		cnst.getTotalVecMult(t2, t1, t3);
+//		for (i2 = 0; i2 < dim; i2++) {
+//			t1[i2] = massMat[i2] * t2[i2];
+//		}
+//		i6 = i1 * numVecs;
+//		i5 = 0;
+//		for (i2 = 0; i2 < numVecs; i2++) {
+//			//i6 = i1 * numVecs + i2;
+//			condMat[i6] = 0.0;
+//			//i5 = i2 * dim;
+//			for (i4 = 0; i4 < dim; i4++) {
+//				//i5 = i2 * dim + i4;
+//				condMat[i6] += gMat[i5] * t1[i4];
+//				i5++;
+//			}
+//			i6++;
+//		}
+//	}
+//
+//	symEigenSolve(eVals, condEvecs, condMat, numVecs, 0);
+//
+//	for (i1 = 0; i1 < numVecs; i1++) {
+//		for (i2 = 0; i2 < dim; i2++) {
+//			t1[i2] = 0.0;
+//		}
+//		i5 = 0;
+//		i6 = i1 * numVecs;
+//		for (i2 = 0; i2 < numVecs; i2++) {
+//			//i6 = i1 * numVecs + i2;
+//			for (i3 = 0; i3 < dim; i3++) {
+//				t1[i3] += gMat[i5] * condEvecs[i6];
+//				i5++;
+//			}
+//			i6++;
+//		}
+//		i3 = i1 * dim;
+//		for (i2 = 0; i2 < dim; i2++) {
+//			inVecs[i3 + i2] = massMat[i2] * t1[i2];
+//		}
+//		unitizeVec(&inVecs[i3], dim);
+//	}
+//
+//	for (i1 = 0; i1 < dim; i1++) {
+//		dp = 1.0 / massMat[i1];
+//		massMat[i1] = dp * dp;
+//	}
+//
+//	delete[] gMat;
+//	delete[] condMat;
+//	delete[] condEvecs;
+//	delete[] t1;
+//	delete[] t2;
+//	delete[] t3;
+//}
 
 //dup1
-void qRFactor(DiffDoub0 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void qRFactor(vector<DiffDoub0>& mat, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1561,7 +1557,84 @@ void qRFactor(DiffDoub0 mat[], int colDim, int stRow, int endRow, int stCol, int
 	return;
 }
 
-void solveqRxEqb(DiffDoub0 xVec[], DiffDoub0 mat[], DiffDoub0 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void qRFactor(DiffDoub0 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+	int i1;
+	int i2;
+	int i3;
+	int i2Min;
+	int i2Max;
+	int i3Min;
+	int i3Max;
+	int k11;
+	int k12;
+	int k22;
+	int k23;
+	DiffDoub0 theta;
+	DiffDoub0 sth;
+	DiffDoub0 cth;
+	DiffDoub0 p1;
+	DiffDoub0 p2;
+	DiffDoub0 tmp;
+
+	for (i1 = stCol; i1 <= endCol; i1++) {
+		i2Min = stRow + (i1 - stCol) + 1;
+		if (triDiag == 0) {
+			i2Max = endRow;
+		}
+		else {
+			i2Max = stRow + (i1 - stCol) + 1;
+			if (i2Max > endRow) {
+				i2Max = endRow;
+			}
+		}
+		for (i2 = i2Min; i2 <= i2Max; i2++) {
+			k11 = (i2Min - 1) * colDim + i1;
+			k12 = i2 * colDim + i1;
+			if (abs(mat[k11].val) < tol) {
+				mat[k11].val = tol;
+			}
+			theta.setVal(mat[k12]);
+			tmp.setVal(mat[k11]);
+			theta.dvd(tmp);
+			theta.atn();
+			sth.setVal(theta);
+			sth.sn();
+			cth.setVal(theta);
+			cth.cs();
+			i3Min = i1;
+			if (triDiag == 2) {
+				i3Max = i1 + 2;
+				if (i3Max > endCol) {
+					i3Max = endCol;
+				}
+			}
+			else {
+				i3Max = endCol;
+			}
+			for (i3 = i3Min; i3 <= i3Max; i3++) {
+				k22 = (i2Min - 1) * colDim + i3;
+				k23 = i2 * colDim + i3;
+				p1.setVal(cth);
+				p1.mult(mat[k22]);
+				tmp.setVal(sth);
+				tmp.mult(mat[k23]);
+				p1.add(tmp);
+				p2.setVal(sth);
+				p2.neg();
+				p2.mult(mat[k22]);
+				tmp.setVal(cth);
+				tmp.mult(mat[k23]);
+				p2.add(tmp);
+				mat[k22].setVal(p1);
+				mat[k23].setVal(p2);
+			}
+			mat[k12].setVal(theta);
+		}
+	}
+	return;
+}
+
+void solveqRxEqb(vector<DiffDoub0>& xVec, vector<DiffDoub0>& mat, vector<DiffDoub0>& bVec, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1642,7 +1715,90 @@ void solveqRxEqb(DiffDoub0 xVec[], DiffDoub0 mat[], DiffDoub0 bVec[], int colDim
 	return;
 }
 
-void getDetInv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int colDim, int triDiag, DiffDoub0 xVec[], DiffDoub0 bVec[]) {
+void solveqRxEqb(DiffDoub0 xVec[], DiffDoub0 mat[], DiffDoub0 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+	int i1;
+	int i2;
+	int i3;
+	int i2Min;
+	int i2Max;
+	int k11;
+	int k12;
+	DiffDoub0 theta;
+	DiffDoub0 sth;
+	DiffDoub0 cth;
+	DiffDoub0 p1;
+	DiffDoub0 p2;
+	DiffDoub0 tmp;
+	DiffDoub0 rowSum;
+
+	for (i1 = stCol; i1 <= endCol; i1++) {
+		i2Min = stRow + (i1 - stCol) + 1;
+		if (triDiag == 0) {
+			i2Max = endRow;
+		}
+		else {
+			i2Max = stRow + (i1 - stCol) + 1;
+			if (i2Max > endRow) {
+				i2Max = endRow;
+			}
+		}
+		i3 = i2Min - 1;
+		for (i2 = i2Min; i2 <= i2Max; i2++) {
+			k12 = i2 * colDim + i1;
+			theta.setVal(mat[k12]);
+			sth.setVal(theta);
+			sth.sn();
+			cth.setVal(theta);
+			cth.cs();
+			p1.setVal(cth);
+			p1.mult(bVec[i3]);
+			tmp.setVal(sth);
+			tmp.mult(bVec[i2]);
+			p1.add(tmp);
+			p2.setVal(sth);
+			p2.neg();
+			p2.mult(bVec[i3]);
+			tmp.setVal(cth);
+			tmp.mult(bVec[i2]);
+			p2.add(tmp);
+			bVec[i3].setVal(p1);
+			bVec[i2].setVal(p2);
+		}
+		xVec[i1].setVal(0.0);
+	}
+
+
+	for (i1 = endCol; i1 >= stCol; i1--) {
+		i3 = stRow + (i1 - stCol);
+		i2Min = i1 + 1;
+		if (triDiag == 2) {
+			i2Max = i1 + 2;
+			if (i2Max > endCol) {
+				i2Max = endCol;
+			}
+		}
+		else {
+			i2Max = endCol;
+		}
+		rowSum.setVal(0.0);
+		k11 = i3 * colDim + i2Min;
+		for (i2 = i2Min; i2 <= i2Max; i2++) {
+			tmp.setVal(mat[k11]);
+			tmp.mult(xVec[i2]);
+			rowSum.add(tmp);
+			k11++;
+		}
+		tmp.setVal(bVec[i3]);
+		tmp.sub(rowSum);
+		k11 = i3 * colDim + i1;
+		tmp.dvd(mat[k11]);
+		xVec[i1].setVal(tmp);
+	}
+
+	return;
+}
+
+void getDetInv(DiffDoub0& det, vector<DiffDoub0>& inv, vector<DiffDoub0>& mat, int colDim, int triDiag, vector<DiffDoub0>& xVec, vector<DiffDoub0>& bVec) {
 	qRFactor(mat, colDim, 0, (colDim-1), 0, (colDim-1), triDiag);
 	int i1;
     int i2;
@@ -1667,13 +1823,39 @@ void getDetInv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int colDim, int
 	return;
 }
 
+void getDetInv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int colDim, int triDiag, DiffDoub0 xVec[], DiffDoub0 bVec[]) {
+	qRFactor(mat, colDim, 0, (colDim - 1), 0, (colDim - 1), triDiag);
+	int i1;
+	int i2;
+	int i3;
+	det.setVal(1.0);
+	for (i1 = 0; i1 < colDim; i1++) {
+		for (i2 = 0; i2 < colDim; i2++) {
+			if (i1 == i2) {
+				bVec[i2].setVal(1.0);
+			}
+			else {
+				bVec[i2].setVal(0.0);
+			}
+		}
+		solveqRxEqb(xVec, mat, bVec, colDim, 0, (colDim - 1), 0, (colDim - 1), triDiag);
+		for (i2 = 0; i2 < colDim; i2++) {
+			i3 = i2 * colDim + i1;
+			inv[i3].setVal(xVec[i2]);
+		}
+		i3 = i1 * colDim + i1;
+		det.mult(mat[i3]);
+	}
+	return;
+}
+
 //end dup
  
 //skip 
  
 //DiffDoub1 versions: 
 //dup1
-void qRFactor(DiffDoub1 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void qRFactor(vector<DiffDoub1>& mat, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1748,7 +1930,84 @@ void qRFactor(DiffDoub1 mat[], int colDim, int stRow, int endRow, int stCol, int
 	return;
 }
 
-void solveqRxEqb(DiffDoub1 xVec[], DiffDoub1 mat[], DiffDoub1 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void qRFactor(DiffDoub1 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+	int i1;
+	int i2;
+	int i3;
+	int i2Min;
+	int i2Max;
+	int i3Min;
+	int i3Max;
+	int k11;
+	int k12;
+	int k22;
+	int k23;
+	DiffDoub1 theta;
+	DiffDoub1 sth;
+	DiffDoub1 cth;
+	DiffDoub1 p1;
+	DiffDoub1 p2;
+	DiffDoub1 tmp;
+
+	for (i1 = stCol; i1 <= endCol; i1++) {
+		i2Min = stRow + (i1 - stCol) + 1;
+		if (triDiag == 0) {
+			i2Max = endRow;
+		}
+		else {
+			i2Max = stRow + (i1 - stCol) + 1;
+			if (i2Max > endRow) {
+				i2Max = endRow;
+			}
+		}
+		for (i2 = i2Min; i2 <= i2Max; i2++) {
+			k11 = (i2Min - 1) * colDim + i1;
+			k12 = i2 * colDim + i1;
+			if (abs(mat[k11].val) < tol) {
+				mat[k11].val = tol;
+			}
+			theta.setVal(mat[k12]);
+			tmp.setVal(mat[k11]);
+			theta.dvd(tmp);
+			theta.atn();
+			sth.setVal(theta);
+			sth.sn();
+			cth.setVal(theta);
+			cth.cs();
+			i3Min = i1;
+			if (triDiag == 2) {
+				i3Max = i1 + 2;
+				if (i3Max > endCol) {
+					i3Max = endCol;
+				}
+			}
+			else {
+				i3Max = endCol;
+			}
+			for (i3 = i3Min; i3 <= i3Max; i3++) {
+				k22 = (i2Min - 1) * colDim + i3;
+				k23 = i2 * colDim + i3;
+				p1.setVal(cth);
+				p1.mult(mat[k22]);
+				tmp.setVal(sth);
+				tmp.mult(mat[k23]);
+				p1.add(tmp);
+				p2.setVal(sth);
+				p2.neg();
+				p2.mult(mat[k22]);
+				tmp.setVal(cth);
+				tmp.mult(mat[k23]);
+				p2.add(tmp);
+				mat[k22].setVal(p1);
+				mat[k23].setVal(p2);
+			}
+			mat[k12].setVal(theta);
+		}
+	}
+	return;
+}
+
+void solveqRxEqb(vector<DiffDoub1>& xVec, vector<DiffDoub1>& mat, vector<DiffDoub1>& bVec, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1829,7 +2088,90 @@ void solveqRxEqb(DiffDoub1 xVec[], DiffDoub1 mat[], DiffDoub1 bVec[], int colDim
 	return;
 }
 
-void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int triDiag, DiffDoub1 xVec[], DiffDoub1 bVec[]) {
+void solveqRxEqb(DiffDoub1 xVec[], DiffDoub1 mat[], DiffDoub1 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+	int i1;
+	int i2;
+	int i3;
+	int i2Min;
+	int i2Max;
+	int k11;
+	int k12;
+	DiffDoub1 theta;
+	DiffDoub1 sth;
+	DiffDoub1 cth;
+	DiffDoub1 p1;
+	DiffDoub1 p2;
+	DiffDoub1 tmp;
+	DiffDoub1 rowSum;
+
+	for (i1 = stCol; i1 <= endCol; i1++) {
+		i2Min = stRow + (i1 - stCol) + 1;
+		if (triDiag == 0) {
+			i2Max = endRow;
+		}
+		else {
+			i2Max = stRow + (i1 - stCol) + 1;
+			if (i2Max > endRow) {
+				i2Max = endRow;
+			}
+		}
+		i3 = i2Min - 1;
+		for (i2 = i2Min; i2 <= i2Max; i2++) {
+			k12 = i2 * colDim + i1;
+			theta.setVal(mat[k12]);
+			sth.setVal(theta);
+			sth.sn();
+			cth.setVal(theta);
+			cth.cs();
+			p1.setVal(cth);
+			p1.mult(bVec[i3]);
+			tmp.setVal(sth);
+			tmp.mult(bVec[i2]);
+			p1.add(tmp);
+			p2.setVal(sth);
+			p2.neg();
+			p2.mult(bVec[i3]);
+			tmp.setVal(cth);
+			tmp.mult(bVec[i2]);
+			p2.add(tmp);
+			bVec[i3].setVal(p1);
+			bVec[i2].setVal(p2);
+		}
+		xVec[i1].setVal(0.0);
+	}
+
+
+	for (i1 = endCol; i1 >= stCol; i1--) {
+		i3 = stRow + (i1 - stCol);
+		i2Min = i1 + 1;
+		if (triDiag == 2) {
+			i2Max = i1 + 2;
+			if (i2Max > endCol) {
+				i2Max = endCol;
+			}
+		}
+		else {
+			i2Max = endCol;
+		}
+		rowSum.setVal(0.0);
+		k11 = i3 * colDim + i2Min;
+		for (i2 = i2Min; i2 <= i2Max; i2++) {
+			tmp.setVal(mat[k11]);
+			tmp.mult(xVec[i2]);
+			rowSum.add(tmp);
+			k11++;
+		}
+		tmp.setVal(bVec[i3]);
+		tmp.sub(rowSum);
+		k11 = i3 * colDim + i1;
+		tmp.dvd(mat[k11]);
+		xVec[i1].setVal(tmp);
+	}
+
+	return;
+}
+
+void getDetInv(DiffDoub1& det, vector<DiffDoub1>& inv, vector<DiffDoub1>& mat, int colDim, int triDiag, vector<DiffDoub1>& xVec, vector<DiffDoub1>& bVec) {
 	qRFactor(mat, colDim, 0, (colDim-1), 0, (colDim-1), triDiag);
 	int i1;
     int i2;
@@ -1854,13 +2196,79 @@ void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int
 	return;
 }
 
+void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int triDiag, DiffDoub1 xVec[], DiffDoub1 bVec[]) {
+	qRFactor(mat, colDim, 0, (colDim - 1), 0, (colDim - 1), triDiag);
+	int i1;
+	int i2;
+	int i3;
+	det.setVal(1.0);
+	for (i1 = 0; i1 < colDim; i1++) {
+		for (i2 = 0; i2 < colDim; i2++) {
+			if (i1 == i2) {
+				bVec[i2].setVal(1.0);
+			}
+			else {
+				bVec[i2].setVal(0.0);
+			}
+		}
+		solveqRxEqb(xVec, mat, bVec, colDim, 0, (colDim - 1), 0, (colDim - 1), triDiag);
+		for (i2 = 0; i2 < colDim; i2++) {
+			i3 = i2 * colDim + i1;
+			inv[i3].setVal(xVec[i2]);
+		}
+		i3 = i1 * colDim + i1;
+		det.mult(mat[i3]);
+	}
+	return;
+}
+
 //end dup
  
 //end skip 
  
  
+ 
+ 
+ 
+ 
 //dup2
-void matMul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1Rows, int m1Cols, int m2Cols) {
+void subVec(vector<DiffDoub0>& subV, vector<DiffDoub0>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		subV[i2].setVal(vIn[i1]);
+		i2++;
+	}
+}
+
+void returnSV(vector<DiffDoub0>& subV, vector<DiffDoub0>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		vIn[i1].setVal(subV[i2]);
+		i2++;
+	}
+}
+
+void vecToAr(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		ar[i2].setVal(vc[i1]);
+		i2++;
+	}
+}
+
+void arToVec(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		vc[i1].setVal(ar[i2]);
+		i2++;
+	}
+}
+
+void matMul(vector<DiffDoub0>& prod, vector<DiffDoub0>& mat1, vector<DiffDoub0>& mat2, int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -1890,7 +2298,37 @@ void matMul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1Rows, in
 	return;
 }
 
-void transpose(DiffDoub0 matT[], DiffDoub0 mat[], int rowDim, int colDim) {
+void matMul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1Rows, int m1Cols, int m2Cols) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int i6;
+	DiffDoub0 tmp;
+
+	i4 = 0;
+	i5 = 0;
+	for (i1 = 0; i1 < m1Rows; i1++) {
+		for (i2 = 0; i2 < m2Cols; i2++) {
+			i6 = i2;
+			prod[i4].setVal(0.0);
+			for (i3 = 0; i3 < m1Cols; i3++) {
+				tmp.setVal(mat1[i5]);
+				tmp.mult(mat2[i6]);
+				prod[i4].add(tmp);
+				i5++;
+				i6 += m2Cols;
+			}
+			i5 -= m1Cols;
+			i4++;
+		}
+		i5 += m1Cols;
+	}
+	return;
+}
+
+void transpose(vector<DiffDoub0>& matT, vector<DiffDoub0>& mat, int rowDim, int colDim) {
 	DiffDoub0 tmp;
 	int i1;
 	int i2;
@@ -1904,6 +2342,25 @@ void transpose(DiffDoub0 matT[], DiffDoub0 mat[], int rowDim, int colDim) {
 			matT[i4].setVal(mat[i3]);
 			i3++;
 			i4+= rowDim;
+		}
+	}
+	return;
+}
+
+void transpose(DiffDoub0 matT[], DiffDoub0 mat[], int rowDim, int colDim) {
+	DiffDoub0 tmp;
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+
+	i3 = 0;
+	for (i1 = 0; i1 < rowDim; i1++) {
+		i4 = i1;
+		for (i2 = 0; i2 < colDim; i2++) {
+			matT[i4].setVal(mat[i3]);
+			i3++;
+			i4 += rowDim;
 		}
 	}
 	return;
@@ -2071,7 +2528,7 @@ void rotateOrient(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[]) {
 			}
 		}
 		
-		crossProd(&a1[6],&a1[0],&a1[3]);
+		crossProd(&a1[6], &a1[0], &a1[3]);
 		
 		a2[0].setVal(a1[0]);
 		a2[1].setVal(a1[1]);
@@ -2125,7 +2582,43 @@ void rotateOrient(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[]) {
  
 //DiffDoub1 versions: 
 //dup2
-void matMul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1Rows, int m1Cols, int m2Cols) {
+void subVec(vector<DiffDoub1>& subV, vector<DiffDoub1>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		subV[i2].setVal(vIn[i1]);
+		i2++;
+	}
+}
+
+void returnSV(vector<DiffDoub1>& subV, vector<DiffDoub1>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		vIn[i1].setVal(subV[i2]);
+		i2++;
+	}
+}
+
+void vecToAr(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		ar[i2].setVal(vc[i1]);
+		i2++;
+	}
+}
+
+void arToVec(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		vc[i1].setVal(ar[i2]);
+		i2++;
+	}
+}
+
+void matMul(vector<DiffDoub1>& prod, vector<DiffDoub1>& mat1, vector<DiffDoub1>& mat2, int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -2155,7 +2648,37 @@ void matMul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1Rows, in
 	return;
 }
 
-void transpose(DiffDoub1 matT[], DiffDoub1 mat[], int rowDim, int colDim) {
+void matMul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1Rows, int m1Cols, int m2Cols) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int i6;
+	DiffDoub1 tmp;
+
+	i4 = 0;
+	i5 = 0;
+	for (i1 = 0; i1 < m1Rows; i1++) {
+		for (i2 = 0; i2 < m2Cols; i2++) {
+			i6 = i2;
+			prod[i4].setVal(0.0);
+			for (i3 = 0; i3 < m1Cols; i3++) {
+				tmp.setVal(mat1[i5]);
+				tmp.mult(mat2[i6]);
+				prod[i4].add(tmp);
+				i5++;
+				i6 += m2Cols;
+			}
+			i5 -= m1Cols;
+			i4++;
+		}
+		i5 += m1Cols;
+	}
+	return;
+}
+
+void transpose(vector<DiffDoub1>& matT, vector<DiffDoub1>& mat, int rowDim, int colDim) {
 	DiffDoub1 tmp;
 	int i1;
 	int i2;
@@ -2169,6 +2692,25 @@ void transpose(DiffDoub1 matT[], DiffDoub1 mat[], int rowDim, int colDim) {
 			matT[i4].setVal(mat[i3]);
 			i3++;
 			i4+= rowDim;
+		}
+	}
+	return;
+}
+
+void transpose(DiffDoub1 matT[], DiffDoub1 mat[], int rowDim, int colDim) {
+	DiffDoub1 tmp;
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+
+	i3 = 0;
+	for (i1 = 0; i1 < rowDim; i1++) {
+		i4 = i1;
+		for (i2 = 0; i2 < colDim; i2++) {
+			matT[i4].setVal(mat[i3]);
+			i3++;
+			i4 += rowDim;
 		}
 	}
 	return;
@@ -2336,7 +2878,7 @@ void rotateOrient(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[]) {
 			}
 		}
 		
-		crossProd(&a1[6],&a1[0],&a1[3]);
+		crossProd(&a1[6], &a1[0], &a1[3]);
 		
 		a2[0].setVal(a1[0]);
 		a2[1].setVal(a1[1]);
@@ -2388,7 +2930,43 @@ void rotateOrient(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[]) {
  
 //DiffDoub2 versions: 
 //dup2
-void matMul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1Rows, int m1Cols, int m2Cols) {
+void subVec(vector<DiffDoub2>& subV, vector<DiffDoub2>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		subV[i2].setVal(vIn[i1]);
+		i2++;
+	}
+}
+
+void returnSV(vector<DiffDoub2>& subV, vector<DiffDoub2>& vIn, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		vIn[i1].setVal(subV[i2]);
+		i2++;
+	}
+}
+
+void vecToAr(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		ar[i2].setVal(vc[i1]);
+		i2++;
+	}
+}
+
+void arToVec(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end) {
+	int i1;
+	int i2 = 0;
+	for (i1 = st; i1 < end; i1++) {
+		vc[i1].setVal(ar[i2]);
+		i2++;
+	}
+}
+
+void matMul(vector<DiffDoub2>& prod, vector<DiffDoub2>& mat1, vector<DiffDoub2>& mat2, int m1Rows, int m1Cols, int m2Cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -2418,7 +2996,37 @@ void matMul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1Rows, in
 	return;
 }
 
-void transpose(DiffDoub2 matT[], DiffDoub2 mat[], int rowDim, int colDim) {
+void matMul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1Rows, int m1Cols, int m2Cols) {
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+	int i5;
+	int i6;
+	DiffDoub2 tmp;
+
+	i4 = 0;
+	i5 = 0;
+	for (i1 = 0; i1 < m1Rows; i1++) {
+		for (i2 = 0; i2 < m2Cols; i2++) {
+			i6 = i2;
+			prod[i4].setVal(0.0);
+			for (i3 = 0; i3 < m1Cols; i3++) {
+				tmp.setVal(mat1[i5]);
+				tmp.mult(mat2[i6]);
+				prod[i4].add(tmp);
+				i5++;
+				i6 += m2Cols;
+			}
+			i5 -= m1Cols;
+			i4++;
+		}
+		i5 += m1Cols;
+	}
+	return;
+}
+
+void transpose(vector<DiffDoub2>& matT, vector<DiffDoub2>& mat, int rowDim, int colDim) {
 	DiffDoub2 tmp;
 	int i1;
 	int i2;
@@ -2432,6 +3040,25 @@ void transpose(DiffDoub2 matT[], DiffDoub2 mat[], int rowDim, int colDim) {
 			matT[i4].setVal(mat[i3]);
 			i3++;
 			i4+= rowDim;
+		}
+	}
+	return;
+}
+
+void transpose(DiffDoub2 matT[], DiffDoub2 mat[], int rowDim, int colDim) {
+	DiffDoub2 tmp;
+	int i1;
+	int i2;
+	int i3;
+	int i4;
+
+	i3 = 0;
+	for (i1 = 0; i1 < rowDim; i1++) {
+		i4 = i1;
+		for (i2 = 0; i2 < colDim; i2++) {
+			matT[i4].setVal(mat[i3]);
+			i3++;
+			i4 += rowDim;
 		}
 	}
 	return;
@@ -2599,7 +3226,7 @@ void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]) {
 			}
 		}
 		
-		crossProd(&a1[6],&a1[0],&a1[3]);
+		crossProd(&a1[6], &a1[0], &a1[3]);
 		
 		a2[0].setVal(a1[0]);
 		a2[1].setVal(a1[1]);
@@ -2650,6 +3277,10 @@ void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]) {
 //end dup
  
 //end skip 
+ 
+ 
+ 
+ 
  
  
 //dup1
@@ -2850,5 +3481,9 @@ void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1,
 //end dup  
  
 //end skip 
+ 
+ 
+ 
+ 
  
  

@@ -1,3 +1,4 @@
+#include <vector>
 #include "ElementClass.h"
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
@@ -23,267 +24,160 @@ const double r_tet2 = 0.585410196624929;
 
 //dup1
 DiffDoub0StressPrereq::DiffDoub0StressPrereq() {
-	globNds = new DiffDoub0[30];
-	locNds = new DiffDoub0[30];
-	locOri = new DiffDoub0[9];
-	instOri = new DiffDoub0[720];
-	globDisp = new DiffDoub0[60];
-	globVel = new DiffDoub0[30];
-	globAcc = new DiffDoub0[30];
-	globTemp = new DiffDoub0[10];
-	globTdot = new DiffDoub0[10];
-	Cmat = new DiffDoub0[81];
-	Mmat = new DiffDoub0[36];
-	Dmat = new DiffDoub0[81];
-	thermExp = new DiffDoub0[6];
-	Einit = new DiffDoub0[6];
-	TCmat = new DiffDoub0[9];
-	BMat = new DiffDoub0[288];
-	CBMat = new DiffDoub0[288];
-	layerZ = nullptr;
-	layerThk = nullptr;
-	layerAng = nullptr;
-	layerQ = nullptr;
-	layerD = nullptr;
-	layerTE = nullptr;
-	layerE0 = nullptr;
-	layerDen = nullptr;
-	layerTC = nullptr;
-	layerSH = nullptr;
-	frcFldCoef = new DiffDoub0[2];
-	frcFldExp = new DiffDoub0[2];
-	thrmFldCoef = new DiffDoub0[2];
-	scratch = new double[4096];
+	globNds = vector<DiffDoub0>(30);
+	locNds = vector<DiffDoub0>(30);
+	locOri = vector<DiffDoub0>(9);
+	instOri = vector<DiffDoub0>(720);
+	globDisp = vector<DiffDoub0>(60);
+	globVel = vector<DiffDoub0>(30);
+	globAcc = vector<DiffDoub0>(30);
+	globTemp = vector<DiffDoub0>(10);
+	globTdot = vector<DiffDoub0>(10);
+	Cmat = vector<DiffDoub0>(81);
+	Mmat = vector<DiffDoub0>(36);
+	Dmat = vector<DiffDoub0>(81);
+	thermExp = vector<DiffDoub0>(6);
+	Einit = vector<DiffDoub0>(6);
+	TCmat = vector<DiffDoub0>(9);
+	BMat = vector<DiffDoub0>(288);
+	CBMat = vector<DiffDoub0>(288);
+	frcFldCoef = vector<DiffDoub0>(2);
+	frcFldExp = vector<DiffDoub0>(2);
+	thrmFldCoef = vector<DiffDoub0>(2);
+	scrMat1 = vector<double>(3600);
+	scrMat2 = vector<double>(3600);
+	scrMat3 = vector<double>(3600);
+	scrMat4 = vector<double>(3600);
+	scrMat5 = vector<double>(3600);
+	scrVec1 = vector<DiffDoub0>(60);
+	scrVec2 = vector<DiffDoub0>(60);
+	scrVec3 = vector<DiffDoub0>(60);
+	scrVec4 = vector<DiffDoub0>(60);
+	scrVec5 = vector<DiffDoub0>(60);
 	currentLayLen = 0;
 	return;
 }
 
 void DiffDoub0StressPrereq::allocateLayers(int numLayers) {
-	if (numLayers == 0) {
-		layerZ = nullptr;
-		layerThk = nullptr;
-		layerAng = nullptr;
-		layerQ = nullptr;
-		layerD = nullptr;
-		layerTE = nullptr;
-		layerE0 = nullptr;
-		layerDen = nullptr;
-		layerTC = nullptr;
-		layerSH = nullptr;
-	}
-	else {
-		layerZ = new DiffDoub0[numLayers];
-		layerThk = new DiffDoub0[numLayers];
-		layerAng = new DiffDoub0[numLayers];
-		layerQ = new DiffDoub0[9 * numLayers];
-		layerD = new DiffDoub0[9 * numLayers];
-		layerTE = new DiffDoub0[3 * numLayers];
-		layerE0 = new DiffDoub0[3 * numLayers];
-		layerDen = new DiffDoub0[numLayers];
-		layerTC = new DiffDoub0[9 * numLayers];
-		layerSH = new DiffDoub0[numLayers];
+	if (numLayers != 0) {
+		layerZ = vector<DiffDoub0>(numLayers);
+		layerThk = vector<DiffDoub0>(numLayers);
+		layerAng = vector<DiffDoub0>(numLayers);
+		layerQ = vector<DiffDoub0>(9 * numLayers);
+		layerD = vector<DiffDoub0>(9 * numLayers);
+		layerTE = vector<DiffDoub0>(3 * numLayers);
+		layerE0 = vector<DiffDoub0>(3 * numLayers);
+		layerDen = vector<DiffDoub0>(numLayers);
+		layerTC = vector<DiffDoub0>(9 * numLayers);
+		layerSH = vector<DiffDoub0>(numLayers);
 	}
 	currentLayLen = numLayers;
 	return;
 }
 
-DiffDoub0StressPrereq::~DiffDoub0StressPrereq() {
-	delete[] globNds;
-	delete[] locNds;
-	delete[] locOri;
-	delete[] instOri;
-	delete[] globDisp;
-	delete[] globVel;
-	delete[] globAcc;
-	delete[] globTemp;
-	delete[] globTdot;
-	delete[] Cmat;
-	delete[] Mmat;
-	delete[] Dmat;
-	delete[] thermExp;
-	delete[] Einit;
-	delete[] TCmat;
-	delete[] BMat;
-	delete[] CBMat;
-	if (layerZ) {
-		delete[] layerZ;
-		delete[] layerThk;
-		delete[] layerAng;
-		delete[] layerQ;
-		delete[] layerD;
-		delete[] layerTE;
-		delete[] layerE0;
-		delete[] layerDen;
-		delete[] layerTC;
-		delete[] layerSH;
-		layerZ = nullptr;
-		layerThk = nullptr;
-		layerAng = nullptr;
-		layerQ = nullptr;
-		layerD = nullptr;
-		layerTE = nullptr;
-		layerE0 = nullptr;
-		layerDen = nullptr;
-		layerTC = nullptr;
-		layerSH = nullptr;
-	}
-	delete[] frcFldCoef;
-	delete[] frcFldExp;
-	delete[] thrmFldCoef;
-	delete[] scratch;
-	currentLayLen = 0;
-
-	return;
-}
-
 DiffDoub0FlPrereq::DiffDoub0FlPrereq() {
-	globNds = new DiffDoub0[30];
-	globVel = new DiffDoub0[30];
-	flDen = new DiffDoub0[10];
-	flVel = new DiffDoub0[30];
-	flTemp = new DiffDoub0[10];
-	flDenDot = new DiffDoub0[10];
-	flVelDot = new DiffDoub0[30];
-	flTDot = new DiffDoub0[10];
-
-	return;
-}
-
-DiffDoub0FlPrereq::~DiffDoub0FlPrereq() {
-	delete[] globNds;
-	delete[] globVel;
-	delete[] flDen;
-	delete[] flVel;
-	delete[] flTemp;
-	delete[] flDenDot;
-	delete[] flVelDot;
-	delete[] flTDot;
+	globNds = vector<DiffDoub0>(30);
+	globDisp = vector<DiffDoub0>(30);
+	globVel = vector<DiffDoub0>(30);
+	flDen = vector<DiffDoub0>(10);
+	flVel = vector<DiffDoub0>(30);
+	flTemp = vector<DiffDoub0>(10);
+	flTurbE = vector<DiffDoub0>(10);
+	flDenDot = vector<DiffDoub0>(10);
+	flVelDot = vector<DiffDoub0>(30);
+	flTDot = vector<DiffDoub0>(10);
+	flTurbEDot = vector<DiffDoub0>(10);
+	scratch = vector<double>(3600);
 
 	return;
 }
 
 //end dup 
-
+ 
 //skip 
-
+ 
 //DiffDoub1 versions: 
 //dup1
 DiffDoub1StressPrereq::DiffDoub1StressPrereq() {
-	globNds = new DiffDoub1[30];
-	locNds = new DiffDoub1[30];
-	locOri = new DiffDoub1[9];
-	instOri = new DiffDoub1[720];
-	globDisp = new DiffDoub1[60];
-	globVel = new DiffDoub1[30];
-	globAcc = new DiffDoub1[30];
-	globTemp = new DiffDoub1[10];
-	globTdot = new DiffDoub1[10];
-	Cmat = new DiffDoub1[81];
-	Mmat = new DiffDoub1[36];
-	Dmat = new DiffDoub1[81];
-	thermExp = new DiffDoub1[6];
-	Einit = new DiffDoub1[6];
-	TCmat = new DiffDoub1[9];
-	BMat = new DiffDoub1[288];
-	CBMat = new DiffDoub1[288];
-	layerZ = nullptr;
-	layerThk = nullptr;
-	layerAng = nullptr;
-	layerQ = nullptr;
-	layerD = nullptr;
-	layerTE = nullptr;
-	layerE0 = nullptr;
-	layerDen = nullptr;
-	layerTC = nullptr;
-	layerSH = nullptr;
-	frcFldCoef = new DiffDoub1[2];
-	frcFldExp = new DiffDoub1[2];
-	scratch = new double[4096];
+	globNds = vector<DiffDoub1>(30);
+	locNds = vector<DiffDoub1>(30);
+	locOri = vector<DiffDoub1>(9);
+	instOri = vector<DiffDoub1>(720);
+	globDisp = vector<DiffDoub1>(60);
+	globVel = vector<DiffDoub1>(30);
+	globAcc = vector<DiffDoub1>(30);
+	globTemp = vector<DiffDoub1>(10);
+	globTdot = vector<DiffDoub1>(10);
+	Cmat = vector<DiffDoub1>(81);
+	Mmat = vector<DiffDoub1>(36);
+	Dmat = vector<DiffDoub1>(81);
+	thermExp = vector<DiffDoub1>(6);
+	Einit = vector<DiffDoub1>(6);
+	TCmat = vector<DiffDoub1>(9);
+	BMat = vector<DiffDoub1>(288);
+	CBMat = vector<DiffDoub1>(288);
+	frcFldCoef = vector<DiffDoub1>(2);
+	frcFldExp = vector<DiffDoub1>(2);
+	thrmFldCoef = vector<DiffDoub1>(2);
+	scrMat1 = vector<double>(3600);
+	scrMat2 = vector<double>(3600);
+	scrMat3 = vector<double>(3600);
+	scrMat4 = vector<double>(3600);
+	scrMat5 = vector<double>(3600);
+	scrVec1 = vector<DiffDoub1>(60);
+	scrVec2 = vector<DiffDoub1>(60);
+	scrVec3 = vector<DiffDoub1>(60);
+	scrVec4 = vector<DiffDoub1>(60);
+	scrVec5 = vector<DiffDoub1>(60);
 	currentLayLen = 0;
 	return;
 }
 
 void DiffDoub1StressPrereq::allocateLayers(int numLayers) {
-	if (numLayers == 0) {
-		layerZ = nullptr;
-		layerThk = nullptr;
-		layerAng = nullptr;
-		layerQ = nullptr;
-		layerD = nullptr;
-		layerTE = nullptr;
-		layerE0 = nullptr;
-		layerDen = nullptr;
-		layerTC = nullptr;
-		layerSH = nullptr;
-	}
-	else {
-		layerZ = new DiffDoub1[numLayers];
-		layerThk = new DiffDoub1[numLayers];
-		layerAng = new DiffDoub1[numLayers];
-		layerQ = new DiffDoub1[9 * numLayers];
-		layerD = new DiffDoub1[9 * numLayers];
-		layerTE = new DiffDoub1[3 * numLayers];
-		layerE0 = new DiffDoub1[3 * numLayers];
-		layerDen = new DiffDoub1[numLayers];
-		layerTC = new DiffDoub1[9 * numLayers];
-		layerSH = new DiffDoub1[numLayers];
+	if (numLayers != 0) {
+		layerZ = vector<DiffDoub1>(numLayers);
+		layerThk = vector<DiffDoub1>(numLayers);
+		layerAng = vector<DiffDoub1>(numLayers);
+		layerQ = vector<DiffDoub1>(9 * numLayers);
+		layerD = vector<DiffDoub1>(9 * numLayers);
+		layerTE = vector<DiffDoub1>(3 * numLayers);
+		layerE0 = vector<DiffDoub1>(3 * numLayers);
+		layerDen = vector<DiffDoub1>(numLayers);
+		layerTC = vector<DiffDoub1>(9 * numLayers);
+		layerSH = vector<DiffDoub1>(numLayers);
 	}
 	currentLayLen = numLayers;
 	return;
 }
 
-DiffDoub1StressPrereq::~DiffDoub1StressPrereq() {
-	delete[] globNds;
-	delete[] locNds;
-	delete[] locOri;
-	delete[] instOri;
-	delete[] globDisp;
-	delete[] globVel;
-	delete[] globAcc;
-	delete[] globTemp;
-	delete[] globTdot;
-	delete[] Cmat;
-	delete[] Mmat;
-	delete[] Dmat;
-	delete[] thermExp;
-	delete[] Einit;
-	delete[] TCmat;
-	delete[] BMat;
-	delete[] CBMat;
-	if (layerZ) {
-		delete[] layerZ;
-		delete[] layerThk;
-		delete[] layerAng;
-		delete[] layerQ;
-		delete[] layerD;
-		delete[] layerTE;
-		delete[] layerE0;
-		delete[] layerDen;
-		delete[] layerTC;
-		delete[] layerSH;
-		layerZ = nullptr;
-		layerThk = nullptr;
-		layerAng = nullptr;
-		layerQ = nullptr;
-		layerD = nullptr;
-		layerTE = nullptr;
-		layerE0 = nullptr;
-		layerDen = nullptr;
-		layerTC = nullptr;
-		layerSH = nullptr;
-	}
-	delete[] frcFldCoef;
-	delete[] frcFldExp;
-	delete[] scratch;
-	currentLayLen = 0;
+DiffDoub1FlPrereq::DiffDoub1FlPrereq() {
+	globNds = vector<DiffDoub1>(30);
+	globDisp = vector<DiffDoub1>(30);
+	globVel = vector<DiffDoub1>(30);
+	flDen = vector<DiffDoub1>(10);
+	flVel = vector<DiffDoub1>(30);
+	flTemp = vector<DiffDoub1>(10);
+	flTurbE = vector<DiffDoub1>(10);
+	flDenDot = vector<DiffDoub1>(10);
+	flVelDot = vector<DiffDoub1>(30);
+	flTDot = vector<DiffDoub1>(10);
+	flTurbEDot = vector<DiffDoub1>(10);
+	scratch = vector<double>(3600);
 
 	return;
 }
+
 //end dup 
-
+ 
 //end skip 
+ 
+ 
+ 
+Element::Element() {
+	return;
+}
 
-Element::Element(int newType) {
+void Element::initializeType(int newType) {
 	type = newType;
 	int i1;
 	int i2;
@@ -294,7 +188,6 @@ Element::Element(int newType) {
 	sCent[0] = 0.0;
 	sCent[1] = 0.0;
 	sCent[2] = 0.0;
-	ndSpts = nullptr;
 	if(type == 4 || type == 400) {
 		numNds = 4;
 		dofPerNd = 3;
@@ -302,16 +195,17 @@ Element::Element(int newType) {
 		nDim = 4;
 		defDim = 6;
 		numIP = 1;
-		nodes = new int[numNds];
+		numFaces = 4;
+		nodes = vector<int>(numNds);
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1 * 2]; //int[i1][2];
-		intPts = new double[numIP*3];
-		ipWt = new double[numIP];
+		dofTable = vector<int>(i1 * 2); //int[i1][2];
+		intPts = vector<double>(numIP*3);
+		ipWt = vector<double>(numIP);
 		intPts[0] = 0.25;
 		intPts[1] = 0.25;
 		intPts[2] = 0.25;
 		ipWt[0] = r_1o6;
-		ndSpts = new double[12];
+		ndSpts = vector<double>(12);
 		ndSpts[0] = 0.0;
 		ndSpts[1] = 0.0;
 		ndSpts[2] = 0.0;
@@ -331,11 +225,12 @@ Element::Element(int newType) {
 		nDim = 6;
 		defDim = 6;
 		numIP = 2;
-		nodes = new int[numNds];
+		numFaces = 5;
+		nodes = vector<int>(numNds);
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1 * 2];// int[i1][2];
-		intPts = new double[numIP*3];
-		ipWt = new double[numIP];
+		dofTable = vector<int>(i1 * 2);// int[i1][2];
+		intPts = vector<double>(numIP*3);
+		ipWt = vector<double>(numIP);
 		intPts[0] = r_1o3;
 		intPts[1] = r_1o3;
 		intPts[2] = -r_1ort3;
@@ -347,7 +242,7 @@ Element::Element(int newType) {
 		sCent[0] = r_1o3;
 		sCent[1] = r_1o3;
 		sCent[2] = 0.0;
-		ndSpts = new double[18];
+		ndSpts = vector<double>(18);
 		ndSpts[0] = 0.0;
 		ndSpts[1] = 0.0;
 		ndSpts[2] = -1.0;
@@ -378,11 +273,12 @@ Element::Element(int newType) {
 		}
 		defDim = 6;
 		numIP = 8;
-		nodes = new int[numNds];
+		numFaces = 6;
+		nodes = vector<int>(numNds);
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1 * 2];//int[i1][2];
-		intPts = new double[numIP*3];
-		ipWt = new double[numIP];
+		dofTable = vector<int>(i1 * 2);//int[i1][2];
+		intPts = vector<double>(numIP*3);
+		ipWt = vector<double>(numIP);
 		double sVal[2] = {-r_1ort3,r_1ort3};
 		i4 = 0;
 		i5 = 0;
@@ -410,7 +306,7 @@ Element::Element(int newType) {
 				}
 			}
 		}
-		ndSpts = new double[24];
+		ndSpts = vector<double>(24);
 		ndSpts[0] = -1.0;
 		ndSpts[1] = -1.0;
 		ndSpts[2] = -1.0;
@@ -443,11 +339,12 @@ Element::Element(int newType) {
 		nDim = 10;
 		defDim = 6;
 		numIP = 4;
-		nodes = new int[numNds];
+		numFaces = 4;
+		nodes = vector<int>(numNds);
 		i1 = numNds * dofPerNd + numIntDof;
-		dofTable = new int[2 * i1];
-		intPts = new double[numIP * 3];
-		ipWt = new double[numIP];
+		dofTable = vector<int>(2 * i1);
+		intPts = vector<double>(numIP * 3);
+		ipWt = vector<double>(numIP);
 		intPts[0] = r_tet1;
 		intPts[1] = r_tet1;
 		intPts[2] = r_tet1;
@@ -467,7 +364,7 @@ Element::Element(int newType) {
 		sCent[0] = 0.25;
 		sCent[1] = 0.25;
 		sCent[2] = 0.25;
-		ndSpts = new double[30];
+		ndSpts = vector<double>(30);
 		ndSpts[0] = 0.0;
 		ndSpts[1] = 0.0;
 		ndSpts[2] = 0.0;
@@ -506,11 +403,12 @@ Element::Element(int newType) {
 		nDim = 6;
 		defDim = 9;
 		numIP = 3;
-		nodes = new int[numNds];
+		numFaces = 2;
+		nodes = vector<int>(numNds);
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[2*i1];
-		intPts = new double[numIP*3];
-		ipWt = new double[numIP];
+		dofTable = vector<int>(2*i1);
+		intPts = vector<double>(numIP*3);
+		ipWt = vector<double>(numIP);
 		intPts[0] = r_1o6;
 		intPts[1] = r_1o6;
 		intPts[2] = 0.0;
@@ -539,11 +437,12 @@ Element::Element(int newType) {
 		nDim = 10;
 		defDim = 9;
 		numIP = 4;
-		nodes = new int[numNds];
+		numFaces = 2;
+		nodes = vector<int>(numNds);
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[2*i1];
-		intPts = new double[numIP*3];
-		ipWt = new double[numIP];
+		dofTable = vector<int>(2*i1);
+		intPts = vector<double>(numIP*3);
+		ipWt = vector<double>(numIP);
 		intPts[0] = -r_1ort3;
 		intPts[1] = -r_1ort3;
 		intPts[2] = 0.0;
@@ -583,11 +482,12 @@ Element::Element(int newType) {
 		nDim = 3;
 		defDim = 6;
 		numIP = 2;
-		nodes = new int[numNds];
+		numFaces = 0;
+		nodes = vector<int>(numNds);
 		i1 = numNds*dofPerNd + numIntDof;
-		dofTable = new int[i1*2];
-		intPts = new double[numIP*3];
-		ipWt = new double[numIP];
+		dofTable = vector<int>(i1*2);
+		intPts = vector<double>(numIP*3);
+		ipWt = vector<double>(numIP);
 		intPts[0] = -r_1ort3;
 		intPts[1] = 0.0;
 		intPts[2] = 0.0;
@@ -608,10 +508,11 @@ Element::Element(int newType) {
 		nDim = 2;
 		defDim = 0;
 		numIP = 0;
-		nodes = new int[numNds];
-		dofTable = new int[12];
-		intPts = new double[1];
-		ipWt = new double[1];
+		numFaces = 0;
+		nodes = vector<int>(numNds);
+		dofTable = vector<int>(12);
+		intPts = vector<double>(1);
+		ipWt = vector<double>(1);
 	}
 	else if (type == 1) { // Mass
 		numNds = 1;
@@ -620,10 +521,11 @@ Element::Element(int newType) {
 		nDim = 1;
 		defDim = 0;
 		numIP = 0;
-		nodes = new int[numNds];
-		dofTable = new int[6];
-		intPts = new double[1];
-		intPts = new double[1];
+		numFaces = 0;
+		nodes = vector<int>(numNds);
+		dofTable = vector<int>(6);
+		intPts = vector<double>(1);
+		intPts = vector<double>(1);
 	}
 	
 	i3 = 0;
@@ -635,33 +537,20 @@ Element::Element(int newType) {
 		}
 	}
 	
-	if(numIntDof == 0) {
-		internalDisp = nullptr;
-		intPrevDisp = nullptr;
-		internaldLdu = nullptr;
-		internalAdj = nullptr;
-		internalRu = nullptr;
-		internalMat = nullptr;
-	} else {
-		internalDisp = new double[numIntDof];
-		intPrevDisp = new double[numIntDof];
-		internaldLdu = new double[numIntDof];
-		internalAdj = new double[numIntDof];
-		internalRu = new DiffDoub1[numIntDof];
+	if(numIntDof != 0) {
+		internalDisp = vector<double>(numIntDof);
+		intPrevDisp = vector<double>(numIntDof);
+		internaldLdu = vector<double>(numIntDof);
+		internalAdj = vector<double>(numIntDof);
+		internalRu = vector<DiffDoub1>(numIntDof);
 		i1 = (numNds*dofPerNd + numIntDof)*numIntDof;
-		internalMat = new double[i1];
+		internalMat = vector<double>(i1);
 	}
 
 	intDofIndex = 0;
 	
-	sectPtr = nullptr;
-	nextEl = nullptr;
+	sectPtr = -1;
 	
-	return;
-}
-
-void Element::setLabel(int newLab) {
-	label = newLab;
 	return;
 }
 
@@ -673,167 +562,203 @@ void Element::setNodes(int newNds[]) {
 	return;
 }
 
-void Element::setSectPtr(Section *newSec) {
-	sectPtr = newSec;
-	return;
-}
-
-void Element::initializeFaces() {
-	Face *newFc;
-	
+void Element::initializeFaces(vector<Face>& globFcLst, int& fi) {
+	//fi = the current number of faces that have been written into globFcLst
+	Face* newFc = nullptr;
 	if(type == 4 || type == 400) {
-		newFc = new Face(3);
+		globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
-		faces.addFace(newFc);
-		newFc = new Face(3);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,3,nodes[3]);
-		faces.addFace(newFc);
-		newFc = new Face(3);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,1,nodes[1]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,3,nodes[3]);
-		faces.addFace(newFc);
-		newFc = new Face(3);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,3,nodes[3]);
 		newFc->setNode(2,2,nodes[2]);
-		faces.addFace(newFc);
+		faces.push_back(fi);
+		fi++;
 	} else if(type == 6 || type == 600) {
-        newFc = new Face(3);
+        globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
-		faces.addFace(newFc);
-		newFc = new Face(3);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,4,nodes[4]);
 		newFc->setNode(2,5,nodes[5]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,4,nodes[4]);
 		newFc->setNode(3,3,nodes[3]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,1,nodes[1]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,5,nodes[5]);
 		newFc->setNode(3,4,nodes[4]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,3,nodes[3]);
 		newFc->setNode(2,5,nodes[5]);
 		newFc->setNode(3,2,nodes[2]);
-		faces.addFace(newFc);
+		faces.push_back(fi);
+		fi++;
 	} else if(type == 8 || type == 81 || type == 800) {
-		newFc = new Face(4);
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
 		newFc->setNode(3,0,nodes[0]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,4,nodes[4]);
 		newFc->setNode(1,5,nodes[5]);
 		newFc->setNode(2,6,nodes[6]);
 		newFc->setNode(3,7,nodes[7]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,5,nodes[5]);
 		newFc->setNode(3,4,nodes[4]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,1,nodes[1]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,6,nodes[6]);
 		newFc->setNode(3,5,nodes[5]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,2,nodes[2]);
 		newFc->setNode(1,3,nodes[3]);
 		newFc->setNode(2,7,nodes[7]);
 		newFc->setNode(3,6,nodes[6]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,0,nodes[0]);
 		newFc->setNode(2,4,nodes[4]);
 		newFc->setNode(3,7,nodes[7]);
-		faces.addFace(newFc);
+		faces.push_back(fi);
+		fi++;
 	}
 	else if (type == 10 || type == 1000) {
-		newFc = new Face(6);
+		globFcLst[fi].numNds = 6;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0, 0, nodes[0]);
 		newFc->setNode(1, 2, nodes[2]);
 		newFc->setNode(2, 1, nodes[1]);
 		newFc->setNode(3, 6, nodes[6]);
 		newFc->setNode(4, 5, nodes[5]);
 		newFc->setNode(5, 4, nodes[4]);
-		faces.addFace(newFc);
-		newFc = new Face(6);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 6;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0, 0, nodes[0]);
 		newFc->setNode(1, 1, nodes[1]);
 		newFc->setNode(2, 3, nodes[3]);
 		newFc->setNode(3, 4, nodes[4]);
 		newFc->setNode(4, 8, nodes[8]);
 		newFc->setNode(5, 7, nodes[7]);
-		faces.addFace(newFc);
-		newFc = new Face(6);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 6;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0, 1, nodes[1]);
 		newFc->setNode(1, 2, nodes[2]);
 		newFc->setNode(2, 3, nodes[3]);
 		newFc->setNode(3, 5, nodes[5]);
 		newFc->setNode(4, 9, nodes[9]);
 		newFc->setNode(5, 8, nodes[8]);
-		faces.addFace(newFc);
-		newFc = new Face(6);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 6;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0, 0, nodes[0]);
 		newFc->setNode(1, 3, nodes[3]);
 		newFc->setNode(2, 2, nodes[2]);
 		newFc->setNode(3, 7, nodes[7]);
 		newFc->setNode(4, 9, nodes[9]);
 		newFc->setNode(5, 6, nodes[6]);
-		faces.addFace(newFc);
+		faces.push_back(fi);
+		fi++;
 	}
 	else if (type == 3) {
-		newFc = new Face(3);
+		globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,2,nodes[2]);
-		faces.addFace(newFc);
-		newFc = new Face(3);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 3;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,2,nodes[2]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,0,nodes[0]);
-		faces.addFace(newFc);
+		faces.push_back(fi);
+		fi++;
 	} else if(type == 41) {
-		newFc = new Face(4);
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,0,nodes[0]);
 		newFc->setNode(1,1,nodes[1]);
 		newFc->setNode(2,2,nodes[2]);
 		newFc->setNode(3,3,nodes[3]);
-		faces.addFace(newFc);
-		newFc = new Face(4);
+		faces.push_back(fi);
+		fi++;
+		globFcLst[fi].numNds = 4;
+		newFc = &globFcLst[fi];
 		newFc->setNode(0,3,nodes[3]);
 		newFc->setNode(1,2,nodes[2]);
 		newFc->setNode(2,1,nodes[1]);
 		newFc->setNode(3,0,nodes[0]);
-		faces.addFace(newFc);
+		faces.push_back(fi);
+		fi++;
 	} 
 	
-	return;
-}
-
-void Element::setIntDofIndex(int newInd) {
-	intDofIndex = newInd;
 	return;
 }
 
@@ -869,7 +794,7 @@ void Element::backstepIntDisp() {
 	return;
 }
 
-void Element::setIntdLdU(double globdLdU[]) {
+void Element::setIntdLdU(vector<double>& globdLdU) {
 	int i1;
 	int i2 = intDofIndex;
 	for (i1 = 0; i1 < numIntDof; i1++) {
@@ -879,153 +804,30 @@ void Element::setIntdLdU(double globdLdU[]) {
 	return;
 }
 
-void Element::setNext(Element *newEl) {
-	nextEl = newEl;
-	return;
+int Element::getNumLayers(vector<Section>& secLst) {
+	return secLst[sectPtr].layers.size();
 }
 
-int Element::getType() {
-	return type;
-}
-
-int Element::getLabel() {
-	return label;
-}
-
-int Element::getNumNds() {
-	return numNds;
-}
-
-int Element::getDofPerNd() {
-	return dofPerNd;
-}
-
-int Element::getNumIntDof() {
-	return numIntDof;
-}
-
-void Element::getIntDisp(double dispOut[]) {
-	int i1;
-	for (i1 = 0; i1 < numIntDof; i1++) {
-		dispOut[i1] = internalDisp[i1];
-	}
-	return;
-}
-
-void Element::getIntPrevDisp(double dispOut[]) {
-	int i1;
-	for (i1 = 0; i1 < numIntDof; i1++) {
-		dispOut[i1] = intPrevDisp[i1];
-	}
-	return;
-}
-
-int Element::getNumIP() {
-	return numIP;
-}
-
-double* Element::getIP() {
-	return intPts;
-}
-
-double* Element::getSCent() {
-	return &sCent[0];
-}
-
-double* Element::getIntAdj() {
-	return internalAdj;
-}
-
-int Element::getNumLayers() {
-	return sectPtr->getNumLayers();
-}
-
-int* Element::getNodes() {
-	return nodes;
-}
-
-IntList* Element::getDesignVars() {
-	return &designVars;
-}
-
-IntListEnt* Element::getFirstCompDV() {
-	return compDVars.getFirst();
-}
-
-Face* Element::getFirstFace() {
-	return faces.getFirst();
-}
-
-Element* Element::getNext() {
-	return nextEl;
-}
 
 void Element::addDesignVariable(int dIndex, double coef) {
-	designVars.addEntry(dIndex);
-	dvCoef.addEntry(coef);
+	int i1 = designVars.size();
+	IDCapsule dv;
+	dv.intDat = dIndex;
+	dv.doubDat = coef;
+	designVars.push_back(dv);
 	return;
 }
 
 void Element::addCompDVar(int dIndex) {
-	compDVars.addIfAbsent(dIndex);
-	return;
-}
-
-Element::~Element() {
-	delete[] nodes;
-	delete[] dofTable;
-	delete[] intPts;
-	delete[] ipWt;
-	if (ndSpts) {
-		delete[] ndSpts;
+	for (auto& dv : compDVars) {
+		if (dv == dIndex) {
+			return;
+		}
 	}
-	if (numIntDof > 0) {
-		delete[] internalDisp;
-		delete[] internaldLdu;
-		delete[] internalAdj;
-		delete[] internalRu;
-		delete[] internalMat;
-	}
+	compDVars.push_back(dIndex);
 	return;
 }
 
-//ElementList begin
-ElementList::ElementList() {
-	firstEl = nullptr;
-	lastEl = nullptr;
-	length = 0;
-	return;
-}
 
-void ElementList::addElement(Element *newEl) {
-	if(!firstEl) {
-		firstEl = newEl;
-		lastEl = newEl;
-	} else {
-		lastEl->setNext(newEl);
-		lastEl = newEl;
-	}
-	length++;
-	return;
-}
-
-int ElementList::getLength() {
-	return length;
-}
-
-Element* ElementList::getFirst() {
-	return firstEl;
-}
-
-ElementList::~ElementList() {
-	Element* thisEl = firstEl;
-	Element* nextEl;
-	while (thisEl) {
-		nextEl = thisEl->getNext();
-		delete thisEl;
-		thisEl = nextEl;
-	}
-	return;
-}
 
 

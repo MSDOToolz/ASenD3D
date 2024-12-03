@@ -14,82 +14,16 @@
 using namespace std;
 
 Model::Model() {
-	nodeArray = nullptr;
-	elementArray = nullptr;
-	nsArray = nullptr;
-	esArray = nullptr;
-	dVarArray = nullptr;
 	anPrepRun = false;
 	timeStepsSaved = 0;
 	elMatDim = 0;
 	totGlobDof = 0;
 	elasticScaled = false;
 	thermScaled = false;
-	solveCmd = nullptr;
-	modalCmd = nullptr;
+	solveCmd = -1;
+	modalCmd = -1;
 
-	eigVecs = nullptr;
-	eigVals = nullptr;
-	diagMass = nullptr;
-	loadFact = nullptr;
-
-	tempV1 = nullptr;
-	tempV2 = nullptr;
-	tempV3 = nullptr;
-	tempV4 = nullptr;
-	tempV5 = nullptr;
-	tempV6 = nullptr;
-
-	tempD1 = nullptr;
-
-	dLdU = nullptr;
-	dLdV = nullptr;
-	dLdA = nullptr;
-	dLdT = nullptr;
-	dLdTdot = nullptr;
-	uAdj = nullptr;
-	vAdj = nullptr;
-	aAdj = nullptr;
-	tAdj = nullptr;
-	tdotAdj = nullptr;
-
-	dRudD = nullptr;
-	dRtdD = nullptr;
-	dLdD = nullptr;
-	elInD = nullptr;
 	return;
-}
-
-NodeList* Model::getNodes() {
-	return &nodes;
-}
-
-ElementList* Model::getElements() {
-	return &elements;
-}
-
-SetList* Model::getNodeSets() {
-	return &nodeSets;
-}
-
-SetList* Model::getElementSets() {
-	return &elementSets;
-}
-
-SectionList* Model::getSections() {
-	return &sections;
-}
-
-MaterialList* Model::getMaterials() {
-	return &materials;
-}
-
-ConstraintList* Model::getElasticConstraints() {
-	return &elasticConst;
-}
-
-DesVarList* Model::getDesignVars() {
-	return &designVars;
 }
 
 void Model::executeJob() {
@@ -97,19 +31,15 @@ void Model::executeJob() {
 	int i2;
 	int numTsteps;
 	double time;
-	IntListEnt* thisEnt;
-	JobCommand* thisCmd = job.getFirst();
-	Node* thisNd;
-	Element* thisEl;
-	DoubListEnt* thisLdTm;
 	string cmdStr;
 	string fileName;
 	string exten;
 	string fullFname;
 
-	while(thisCmd) {
-		cmdStr = thisCmd->cmdString;
-		fileName = thisCmd->fileName;
+	i1 = 0;
+	for (auto& thisCmd : job) {
+		cmdStr = thisCmd.cmdString;
+		fileName = thisCmd.fileName;
 		if(cmdStr == "readModelInput") {
 			cout << "reading model input: " << fileName << endl;
 			readModelInput(fileName);
@@ -136,27 +66,27 @@ void Model::executeJob() {
 			readDesVarValues(fileName);
 		}
 		else if (cmdStr == "readNodeResults") {
-			readNodeResults(thisCmd->fileName);
+			readNodeResults(thisCmd.fileName);
 		}
 		else if (cmdStr == "solvePrep") {
-			solveCmd = thisCmd;
+			solveCmd = i1;
 			analysisPrep();
 		}
 		else if (cmdStr == "solve") {
 			cout << "running main analysis " << endl;
-			solveCmd = thisCmd;
-			solve(thisCmd);
+			solveCmd = i1;
+			solve();
 		}
 		else if (cmdStr == "zeroSolution") {
-			zeroSolution(thisCmd->fields);
+			zeroSolution(thisCmd.fields);
 		}
 		else if (cmdStr == "modalAnalysis") {
 			cout << "running modal analysis " << fileName << endl;
-			modalCmd = thisCmd;
-			eigenSolve(thisCmd);
+			modalCmd = i1;
+			eigenSolve();
 		}
 		else if (cmdStr == "setSolnToMode") {
-			setSolnToMode(thisCmd->solnField, thisCmd->mode, thisCmd->maxAmplitude);
+			setSolnToMode(thisCmd.solnField, thisCmd.mode, thisCmd.maxAmplitude);
 		}
 		else if (cmdStr == "calcObjective") {
 			cout << "calculating objective function " << fileName << endl;
@@ -172,93 +102,47 @@ void Model::executeJob() {
 			else {
 				cout << "writing element results" << endl;
 			}
-			numTsteps = thisCmd->timeSteps.getLength();
+			numTsteps = thisCmd.timeSteps.size();
 			if (numTsteps > 0) {
-				i2 = thisCmd->fileName.find(".");
+				i2 = thisCmd.fileName.find(".");
 				if (i2 > -1) {
-					exten = thisCmd->fileName.substr(i2);
-					fileName = thisCmd->fileName.substr(0, i2);
+					exten = thisCmd.fileName.substr(i2);
+					fileName = thisCmd.fileName.substr(0, i2);
 				}
 				else {
 					exten = "";
-					fileName = thisCmd->fileName;
+					fileName = thisCmd.fileName;
 				}
-				thisEnt = thisCmd->timeSteps.getFirst();
-				while (thisEnt) {
-					fullFname = fileName + "_timestep" + to_string(thisEnt->value) + exten;
+				for (auto& ts : thisCmd.timeSteps) {
+					fullFname = fileName + "_timestep" + to_string(ts) + exten;
 					if (cmdStr == "writeNodeResults") {
-						writeNodeResults(fullFname, thisCmd->nodeSet, thisCmd->fields, thisEnt->value);
+						writeNodeResults(fullFname, thisCmd.nodeSet, thisCmd.fields, ts);
 					}
 					else {
-						writeElementResults(fullFname, thisCmd->elementSet, thisCmd->fields, thisCmd->position, thisEnt->value);
+						writeElementResults(fullFname, thisCmd.elementSet, thisCmd.fields, thisCmd.position, ts);
 					}
-					thisEnt = thisEnt->next;
 				}
 			}
 			else {
 				if (cmdStr == "writeNodeResults") {
-					writeNodeResults(thisCmd->fileName, thisCmd->nodeSet, thisCmd->fields, -1);
+					writeNodeResults(thisCmd.fileName, thisCmd.nodeSet, thisCmd.fields, -1);
 				}
 				else {
-					writeElementResults(thisCmd->fileName, thisCmd->elementSet, thisCmd->fields, thisCmd->position, -1);
+					writeElementResults(thisCmd.fileName, thisCmd.elementSet, thisCmd.fields, thisCmd.position, -1);
 				}
 			}
 		}
 		else if (cmdStr == "writeModalResults") {
 			cout << "writing modal results" << endl;
-			writeModalResults(thisCmd->fileName, thisCmd->writeModes);
+			writeModalResults(thisCmd.fileName, thisCmd.writeModes);
 		}
 		else if (cmdStr == "writeObjective") {
 			cout << "writing objective results" << endl;
-			writeObjective(thisCmd->fileName, thisCmd->objInclude, thisCmd->writeGradient);
+			writeObjective(thisCmd.fileName, thisCmd.objInclude, thisCmd.writeGradient);
 		}
 		
-		thisCmd = thisCmd->next;
+		i1++;
 	}
 	
-	return;
-}
-
-Model::~Model() {
-	delete[] nodeArray;
-	delete[] elementArray;
-	delete[] nsArray;
-	delete[] esArray;
-	delete[] dVarArray;
-
-	if (eigVecs) {
-		delete[] eigVecs;
-		delete[] eigVals;
-		delete[] loadFact;
-		delete[] diagMass;
-	}
-
-	if (tempV1) {
-		delete[] tempV1;
-		delete[] tempV2;
-		delete[] tempV3;
-		delete[] tempV4;
-		delete[] tempV5;
-		delete[] tempV6;
-		delete[] tempD1;
-		delete[] dLdU;
-		delete[] dLdV;
-		delete[] dLdA;
-		delete[] dLdT;
-		delete[] dLdTdot;
-		delete[] uAdj;
-		delete[] vAdj;
-		delete[] aAdj;
-		delete[] tAdj;
-		delete[] tdotAdj;
-		delete[] dRudD;
-		delete[] dRtdD;
-		delete[] elInD;
-	}
-
-	if (dLdD) {
-		delete[] dLdD;
-	}
-
 	return;
 }

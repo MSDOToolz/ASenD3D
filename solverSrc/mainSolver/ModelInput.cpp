@@ -115,119 +115,129 @@ void Model::readJob(string fileName) {
 	string data[11];
 	int dataLen;
 	string errSt;
+	int cmdCt;
 	
-	JobCommand *newCmd = nullptr;
-	
+	cmdCt = 0;
 	inFile.open(fileName);
+	while (!inFile.eof()) {
+		readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+		if (headings[1] == "command" && dataLen == 1) {
+			cmdCt++;
+		}
+	}
+
+	job = vector<JobCommand>(cmdCt);
+	inFile.seekg(0, std::ios::beg);
+	
 	if(inFile) {
+		cmdCt = -1;
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[1] == "command" && dataLen == 1) {
-				newCmd = new JobCommand();
-				newCmd->cmdString = data[0];
-				job.addCommand(newCmd);
+				cmdCt++;
+				job[cmdCt].cmdString = data[0];
 			} else if(headings[1] == "fileName" && dataLen == 1) {
-				newCmd->fileName = data[0];
+				job[cmdCt].fileName = data[0];
 			} else if(headings[1] == "dynamic" && dataLen == 1) {
 				if(data[0] == "yes") {
-					newCmd->dynamic = true;
+					job[cmdCt].dynamic = true;
 				} else {
-					newCmd->dynamic = false;
+					job[cmdCt].dynamic = false;
 				}
 			}
 			else if (headings[1] == "elastic" && dataLen == 1) {
 				if(data[0] == "yes") {
-					newCmd->elastic = true;
+					job[cmdCt].elastic = true;
 				} else {
-					newCmd->elastic = false;
+					job[cmdCt].elastic = false;
 				}
 			} else if(headings[1] == "loadRampSteps" && dataLen == 1) {
-				newCmd->loadRampSteps = stoi(data[0]);
+				job[cmdCt].loadRampSteps = stoi(data[0]);
 			} else if(headings[1] == "newmarkBeta" && dataLen == 1) {
-				newCmd->newmarkBeta = stod(data[0]);
+				job[cmdCt].newmarkBeta = stod(data[0]);
 			} else if(headings[1] == "newmarkGamma" && dataLen == 1) {
-				newCmd->newmarkGamma = stod(data[0]);
+				job[cmdCt].newmarkGamma = stod(data[0]);
 			} else if(headings[1] == "nonlinearGeom" && dataLen == 1) {
 				if(data[0] == "yes") {
-					newCmd->nonlinearGeom = true;
+					job[cmdCt].nonlinearGeom = true;
 				} else {
-					newCmd->nonlinearGeom = false;
+					job[cmdCt].nonlinearGeom = false;
 				}
 			} else if(headings[1] == "saveSolnHist" && dataLen == 1) {
 				if(data[0] == "yes") {
-					newCmd->saveSolnHist = true;
+					job[cmdCt].saveSolnHist = true;
 				} else {
-					newCmd->saveSolnHist = false;
+					job[cmdCt].saveSolnHist = false;
 				}
 			}
 			else if (headings[1] == "solnHistDir" && dataLen == 1) {
-				newCmd->fileName = data[0];
+				job[cmdCt].fileName = data[0];
 			}
 			else if (headings[1] == "lumpMass" && dataLen == 1) {
 				if (data[0] == "yes") {
-					newCmd->lumpMass = true;
+					job[cmdCt].lumpMass = true;
 				}
 				else {
-					newCmd->lumpMass = false;
+					job[cmdCt].lumpMass = false;
 				}
 			}
 			else if (headings[1] == "fullReformFreq") {
-				newCmd->fullReform = stoi(data[0]);
+				job[cmdCt].fullReform = stoi(data[0]);
 			}
 			else if (headings[1] == "simPeriod" && dataLen == 1) {
-				newCmd->simPeriod = stod(data[0]);
+				job[cmdCt].simPeriod = stod(data[0]);
 			} else if(headings[1] == "solverBandwidth" && dataLen == 1) {
-				newCmd->solverBandwidth = stoi(data[0]);
+				job[cmdCt].solverBandwidth = stoi(data[0]);
 			} else if(headings[1] == "solverBlockDim" && dataLen == 1) {
-				newCmd->solverBlockDim = stoi(data[0]);
+				job[cmdCt].solverBlockDim = stoi(data[0]);
 			} else if(headings[1] == "solverMethod" && dataLen == 1) {
-				newCmd->solverMethod = data[0];
+				job[cmdCt].solverMethod = data[0];
 			}
 			else if (headings[1] == "maxIterations" && dataLen == 1) {
-				newCmd->maxIt = stoi(data[0]);
+				job[cmdCt].maxIt = stoi(data[0]);
 			}
 			else if (headings[1] == "convergenceTol" && dataLen == 1) {
-				newCmd->convTol = stod(data[0]);
+				job[cmdCt].convTol = stod(data[0]);
 			}
 			else if (headings[1] == "staticLoadTime" && dataLen == 1) {
-				newCmd->staticLoadTime.addEntry(stod(data[0]));
+				job[cmdCt].staticLoadTime.push_back(stod(data[0]));
 				//newCmd->staticLoadTime = stod(data[0]);
 			} else if(headings[1] == "thermal" && dataLen == 1) {
 				if(data[0] == "yes") {
-					newCmd->thermal = true;
+					job[cmdCt].thermal = true;
 				} else {
-					newCmd->thermal = false;
+					job[cmdCt].thermal = false;
 				}
 			} else if(headings[1] == "timeStep" && dataLen == 1) {
-				newCmd->timeStep = stod(data[0]);
+				job[cmdCt].timeStep = stod(data[0]);
 			} else if(headings[1] == "type" && dataLen == 1) {
-				newCmd->type = data[0];
+				job[cmdCt].type = data[0];
 			} else if(headings[1] == "numModes" && dataLen == 1) {
-				newCmd->numModes = stoi(data[0]);
+				job[cmdCt].numModes = stoi(data[0]);
 			}
 			else if (headings[1] == "targetEigenvalue" && dataLen == 1) {
-				newCmd->tgtEval = stod(data[0]);
+				job[cmdCt].tgtEval = stod(data[0]);
 			}
 			else if (headings[1] == "solnField" && dataLen == 1) {
-				newCmd->solnField = data[0];
+				job[cmdCt].solnField = data[0];
 			} else if(headings[1] == "mode" && dataLen == 1) {
-				newCmd->mode = stoi(data[0]);
+				job[cmdCt].mode = stoi(data[0]);
 			} else if(headings[1] == "maxAmplitude" && dataLen == 1) {
-				newCmd->maxAmplitude = stod(data[0]);
+				job[cmdCt].maxAmplitude = stod(data[0]);
 			} else if(headings[1] == "nodeSet" && dataLen == 1) {
-				newCmd->nodeSet = data[0];
+				job[cmdCt].nodeSet = data[0];
 			} else if(headings[1] == "fields" && dataLen == 1) {
-				newCmd->fields.addEntry(data[0]);
+				job[cmdCt].fields.push_back(data[0]);
 			} else if(headings[1] == "timeSteps") {
 				if(dataLen == 1) {
 					if(data[0] == "all") {
-						newCmd->timeStepTag = "all";
+						job[cmdCt].timeStepTag = "all";
 					} else if(data[0] == "last") {
-						newCmd->timeStepTag = "last";
+						job[cmdCt].timeStepTag = "last";
 					} else {
 						try {
 							i1 = stoi(data[0]);
-							newCmd->timeSteps.addEntry(stoi(data[0]));
+							job[cmdCt].timeSteps.push_back(stoi(data[0]));
 						} catch(...) {
 							errSt = "Warning: possible invalid entry for " + headings[0] + " timeSteps in job file " + fileName;
 							cout << errSt << endl;
@@ -242,30 +252,30 @@ void Model::readJob(string fileName) {
 						i4 = 1;
 					}
 					for (i1 = i2; i1 < i3; i1+= i4) {
-						newCmd->timeSteps.addEntry(i1);
+						job[cmdCt].timeSteps.push_back(i1);
 					}
 				}
 			} else if(headings[1] == "elementSet" && dataLen == 1) {
-				newCmd->elementSet = data[0];
+				job[cmdCt].elementSet = data[0];
 			}
 			else if (headings[1] == "position" && dataLen == 1) {
-				newCmd->position = data[0];
+				job[cmdCt].position = data[0];
 			}
 			else if (headings[1] == "writeModes" && dataLen == 1) {
 				if(data[0] == "yes") {
-					newCmd->writeModes = true;
+					job[cmdCt].writeModes = true;
 				} else {
-					newCmd->writeModes = false;
+					job[cmdCt].writeModes = false;
 				}
 			} else if(headings[1] == "properties" && dataLen == 1) {
-				newCmd->properties.addEntry(data[0]);
+				job[cmdCt].properties.push_back(data[0]);
 			} else if(headings[1] == "include" && dataLen == 1) {
-				newCmd->objInclude.addEntry(data[0]);
+				job[cmdCt].objInclude.push_back(data[0]);
 			} else if(headings[1] == "writeGradient" && dataLen == 1) {
 				if(data[0] == "yes") {
-					newCmd->writeGradient = true;
+					job[cmdCt].writeGradient = true;
 				} else {
-					newCmd->writeGradient = false;
+					job[cmdCt].writeGradient = false;
 				}
 			}
 			
@@ -293,26 +303,87 @@ void Model::readModelInput(string fileName) {
 	int i4;
 	double doubInp[10] = { 0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
 	int intInp[10] = {0,0,0,0,0,0,0,0,0,0};
-	
-	Node *newNd = nullptr;
-	Element *newEl = nullptr;
 	int elType;
-	Set *newSet = nullptr;
-	Section *newSec = nullptr;
-	Layer *newLay = nullptr;
-	Material *newMat = nullptr;
 	
+	int ndCt = 0;
+	int elCt = 0;
+	int nsCt = 0;
+	int esCt = 0;
+	int secCt = 0;
+	int matCt = 0;
+	int flCt = 0;
+	int layCt = 0;
+	int setInd = 0;
+
 	inFile.open(fileName);
+	if (inFile) {
+		while (!inFile.eof()) {
+			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			if (headings[0] == "nodes" && dataLen == 4) {
+				ndCt++;
+			}
+			else if (headings[0] == "elements") {
+				if (headings[1] == "connectivity" && dataLen > 1) {
+					elCt++;
+				}
+			}
+			else if (headings[0] == "sets") {
+				if (headings[1] == "node") {
+					if (headings[2] == "name" && dataLen == 1) {
+						nsCt++;
+					}
+				}
+				else if (headings[1] == "element") {
+					if (headings[2] == "name" && dataLen == 1) {
+						esCt++;
+					}
+				}
+			}
+			else if (headings[0] == "sections") {
+				if (headings[1] == "type" && dataLen == 1) {
+					secCt++;
+				}
+			}
+			else if (headings[0] == "materials") {
+				if (headings[1] == "name" && dataLen == 1) {
+					matCt++;
+				}
+			}
+			else if (headings[0] == "fluids") {
+				if (headings[1] == "name" && dataLen == 1) {
+					flCt++;
+				}
+			}
+		}
+	}
+
+	nodes = vector<Node>(ndCt);
+	elements = vector<Element>(elCt);
+	nodeSets = vector<Set>(nsCt + ndCt + 1);
+	elementSets = vector<Set>(esCt + elCt + 1);
+	sections = vector<Section>(secCt);
+	materials = vector<Material>(matCt);
+	fluids = vector<Fluid>(flCt);
+
+	inFile.seekg(0, std::ios::beg);
+	
 	if(inFile) {
+		ndCt = -1;
+		elCt = -1;
+		nsCt = -1;
+		esCt = -1;
+		secCt = -1;
+		matCt = -1;
+		flCt = -1;
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "nodes" && dataLen == 4) {
-				newNd = new Node(stoi(data[0]));
+				ndCt = stoi(data[0]);
+				nodes[ndCt].label = ndCt;
 				doubInp[0] = stod(data[1]);
 				doubInp[1] = stod(data[2]);
 				doubInp[2] = stod(data[3]);
-				newNd->setCrd(doubInp);
-				nodes.addNode(newNd);
+				nodes[ndCt].setCrd(doubInp);
 			} else if(headings[0] == "elements") {
 				if(headings[1] == "type" && dataLen == 1) {
 					if(data[0] == "tet4") {
@@ -357,30 +428,24 @@ void Model::readModelInput(string fileName) {
 						throw invalid_argument(errSt);
 					}
 				} else if(headings[1] == "connectivity" && dataLen > 1) {
-					newEl = new Element(elType);
-					newEl->setLabel(stoi(data[0]));
+					elCt = stoi(data[0]);
+					Element& newEl = elements[elCt];
+					newEl.initializeType(elType);
+					newEl.label = elCt;
 					for (i1 = 1; i1 < dataLen; i1++) {
 						intInp[i1-1] = stoi(data[i1]);
 					}
-					newEl->setNodes(intInp);
-					elements.addElement(newEl);
+					newEl.setNodes(intInp);
 				} 
 			} else if(headings[0] == "sets") {
 				if(headings[1] == "node") {
 					if(headings[2] == "name" && dataLen == 1) {
-						newSet = new Set;
-						newSet->setName(data[0]);
-						nodeSets.addSet(newSet);
+						nsCt++;
+						Set& newSet = nodeSets[nsCt];
+						newSet.name = data[0];
 					} else if(headings[2] == "labels") {
 						if(dataLen == 1) {
-							if(data[0] == "all") {
-								i2 = nodes.getLength();
-								for (i1 = 0; i1 < i2; i1++) {
-									newSet->addEntry(i1);
-								}
-							} else {
-								newSet->addEntry(stoi(data[0]));
-							}
+							nodeSets[nsCt].labels.push_back(stoi(data[0]));
 						} else if(dataLen > 1) {
 							i2 = stoi(data[0]);
 							i3 = stoi(data[1]);
@@ -390,25 +455,18 @@ void Model::readModelInput(string fileName) {
 								i4 = 1;
 							}
 							for (i1 = i2; i1 < i3; i1+= i4) {
-								newSet->addEntry(i1);
+								nodeSets[nsCt].labels.push_back(i1);
 							}
 						}
 					}
 				} else if(headings[1] == "element") {
 					if(headings[2] == "name" && dataLen == 1) {
-						newSet = new Set;
-						newSet->setName(data[0]);
-						elementSets.addSet(newSet);
+						esCt++;
+						Set& newSet = elementSets[esCt];
+						newSet.name = data[0];
 					} else if(headings[2] == "labels") {
 						if(dataLen == 1) {
-							if(data[0] == "all") {
-								i2 = elements.getLength();
-								for (i1 = 0; i1 < i2; i1++) {
-									newSet->addEntry(i1);
-								}
-							} else {
-								newSet->addEntry(stoi(data[0]));
-							}
+							elementSets[esCt].labels.push_back(stoi(data[0]));
 						} else if(dataLen > 1) {
 							i2 = stoi(data[0]);
 							i3 = stoi(data[1]);
@@ -418,367 +476,367 @@ void Model::readModelInput(string fileName) {
 								i4 = 1;
 							}
 							for (i1 = i2; i1 < i3; i1+= i4) {
-								newSet->addEntry(i1);
+								elementSets[esCt].labels.push_back(i1);
 							}
 						}
 					}
 				}
 			} else if(headings[0] == "sections") {
 				if(headings[1] == "type" && dataLen == 1) {
-					newSec = new Section(data[0]);
-					sections.addSection(newSec);
+					secCt++;
+					sections[secCt].type = data[0];
+					layCt = -1;
 				} else if(headings[1] == "material" && dataLen == 1) {
-					newSec->setMaterial(data[0]);
+					sections[secCt].matName = data[0];
 				}
 				else if (headings[1] == "fluid" && dataLen == 1) {
-					newSec->setFluid(data[0]);
+					sections[secCt].flName = data[0];
 				}
 				else if (headings[1] == "orientation" && dataLen == 6) {
 					for (i1 = 0; i1 < 6; i1++) {
 						doubInp[i1] = stod(data[i1]);
 					}
-					newSec->setOrientation(doubInp);
+					sections[secCt].setOrientation(doubInp);
 				} else if(headings[1] == "layup") {
 					if(headings[2] == "zOffset" && dataLen == 1) {
-						newSec->setZOffset(stod(data[0]));
+						sections[secCt].zOffset = stod(data[0]);
 					} else if(headings[2] == "layers") {
 						if(headings[3] == "material" && dataLen == 1) {
-							newLay = new Layer(data[0]);
-							newSec->addLayer(newLay);
+							Layer newLay;
+							newLay.matName = data[0];
+							sections[secCt].layers.push_back(newLay);
 						} else if(headings[3] == "thickness" && dataLen == 1) {
-							newLay->setThickness(stod(data[0]));
+							auto layPt = sections[secCt].layers.end();
+							--layPt;
+							layPt->thickness = stod(data[0]);
 						} else if(headings[3] == "angle" && dataLen == 1) {
-							newLay->setAngle(stod(data[0]));
+							auto layPt = sections[secCt].layers.end();
+							--layPt;
+							layPt->angle = stod(data[0]);
 						}
 					}
 				} else if(headings[1] == "beamProps") {
 					if(headings[2] == "area" && dataLen == 1) {
-						newSec->setArea(stod(data[0]));
+						sections[secCt].area = stod(data[0]);
 					} else if(headings[2] == "I" && dataLen == 5) {
 						for(i1 = 0; i1 < 5; i1++) {
 							doubInp[i1] = stod(data[i1]);
 						}
-						newSec->setAreaMoment(doubInp);
+						sections[secCt].setAreaMoment(doubInp);
 					} else if(headings[2] == "J" && dataLen == 1) {
-						newSec->setPolarMoment(stod(data[1]));
+						sections[secCt].polarMoment = stod(data[1]);
 					} else if(headings[2] == "stiffness" && dataLen == 3) {
 						intInp[0] = stoi(data[0]) - 1;
 						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
-						newSec->setStiffness(intInp[0],intInp[1],doubInp[0]);
+						sections[secCt].setStiffness(intInp[0],intInp[1],doubInp[0]);
 					} else if(headings[2] == "mass" && dataLen == 3) {
 						intInp[0] = stoi(data[0]) - 1;
 						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
-						newSec->setMass(intInp[0],intInp[1],doubInp[0]);
+						sections[secCt].setMass(intInp[0],intInp[1],doubInp[0]);
 					}
 					else if (headings[2] == "damping" && dataLen == 3) {
 						intInp[0] = stoi(data[0]) - 1;
 						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
-						newSec->setDamping(intInp[0], intInp[1], doubInp[0]);
+						sections[secCt].setDamping(intInp[0], intInp[1], doubInp[0]);
 					}
 					else if (headings[2] == "expLoadCoef" && dataLen == 6) {
 						for(i1 = 0; i1 < 6; i1++) {
 							doubInp[i1] = stod(data[i1]);
 						}
-						newSec->setExpLd(doubInp);
+						sections[secCt].setExpLd(doubInp);
 					} else if(headings[2] == "conductivity" && dataLen == 1) {
-						newSec->setConductivity(stod(data[0]));
+						sections[secCt].conductivity = stod(data[0]);
 					} else if(headings[2] == "specHeat" && dataLen == 1) {
-						newSec->setSpecHeat(stod(data[0]));
+						sections[secCt].specHeat = stod(data[0]);
 					}
 				}
 				else if (headings[1] == "potField") {
 					if (headings[2] == "coef" && dataLen == 1) {
-						newSec->setPotCoef(stod(data[0]));
+						sections[secCt].potCoef = stod(data[0]);
 					}
 					else if (headings[2] == "exp" && dataLen == 1) {
-						newSec->setPotExp(stod(data[0]));
+						sections[secCt].potExp = stod(data[0]);
 					}
 				}
 				else if (headings[1] == "dampField") {
 					if (headings[2] == "coef" && dataLen == 1) {
-						newSec->setDampCoef(stod(data[0]));
+						sections[secCt].dampCoef = stod(data[0]);
 					}
 					else if (headings[2] == "exp" && dataLen == 1) {
-						newSec->setDampExp(stod(data[0]));
+						sections[secCt].dampExp = stod(data[0]);
 					}
 				}
 				else if (headings[1] == "thermField") {
 					if (headings[2] == "condCoef" && dataLen == 1) {
-						newSec->setCondCoef(stod(data[0]));
+						sections[secCt].condCoef = stod(data[0]);
 					}
 					else if (headings[2] == "radCoef" && dataLen == 1) {
-						newSec->setRadCoef(stod(data[0]));
+						sections[secCt].radCoef = stod(data[0]);
 					}
 					else if (headings[2] == "refTemp" && dataLen == 1) {
-						newSec->setRefTemp(stod(data[0]));
+						sections[secCt].refTemp = stod(data[0]);
 					}
 				}
 				else if (headings[1] == "massPerEl" && dataLen == 1) {
-					newSec->setMassPerEl(stod(data[0]));
+					sections[secCt].massPerEl = stod(data[0]);
 				}
 				else if (headings[1] == "specHeat" && dataLen == 1) {
-					newSec->setSpecHeat(stod(data[0]));
+					sections[secCt].specHeat = stod(data[0]);
 				}
 				else if (headings[1] == "fluidParams") {
 					if (headings[2] == "denVisCoef" && dataLen == 1) {
-						newSec->setDenVisCoef(stod(data[0]));
+						sections[secCt].denVisCoef = stod(data[0]);
 					}
 					else if (headings[2] == "tempVisCoef" && dataLen == 1) {
-						newSec->setTempVisCoef(stod(data[0]));
+						sections[secCt].tempVisCoef = stod(data[0]);
 					}
-					else if (headings[2] == "gradVisCoef" && dataLen == 1) {
-						newSec->setGradVisCoef(stod(data[0]));
+					else if (headings[2] == "turbVisCoef" && dataLen == 1) {
+						sections[secCt].turbVisCoef = stod(data[0]);
+					}
+					else if (headings[2] == "gradVTurbCoef" && dataLen == 1) {
+						sections[secCt].gradVTurbCoef = stod(data[0]);
+					}
+					else if (headings[2] == "dissTurbCoef" && dataLen == 1) {
+						sections[secCt].dissTurbCoef = stod(data[0]);
 					}
 					else if (headings[2] == "enthCoef" && dataLen == 1) {
-						newSec->setEnthCoef(stod(data[0]));
+						sections[secCt].enthCoef = stod(data[0]);
 					}
 					else if (headings[2] == "enthExp" && dataLen == 1) {
-						newSec->setEnthExp(stod(data[0]));
+						sections[secCt].enthExp = stod(data[0]);
 					}
 					else if (headings[2] == "presCoef" && dataLen == 1) {
-						newSec->setPresCoef(stod(data[0]));
+						sections[secCt].presCoef = stod(data[0]);
 					}
 					else if (headings[2] == "presExp" && dataLen == 1) {
-						newSec->setPresExp(stod(data[0]));
+						sections[secCt].presExp = stod(data[0]);
 					}
 					else if (headings[2] == "refTemp" && dataLen == 1) {
-						newSec->setRefTemp(stod(data[0]));
+						sections[secCt].refTemp = stod(data[0]);
 					}
 					else if (headings[2] == "refDen" && dataLen == 1) {
-						newSec->setRefDen(stod(data[0]));
+						sections[secCt].refDen = stod(data[0]);
 					}
-					else if (headings[2] == "refVGrad" && dataLen == 1) {
-						newSec->setRefGradV(stod(data[0]));
+					else if (headings[2] == "refTurbE" && dataLen == 1) {
+						sections[secCt].refTurbE = stod(data[0]);
 					}
 					else if (headings[2] == "refEnth" && dataLen == 1) {
-						newSec->setRefEnth(stod(data[0]));
+						sections[secCt].refEnth = stod(data[0]);
 					}
 				}
 				else if(headings[1] == "elementSet" && dataLen == 1) {
-					newSec->setElset(data[0]);
+					sections[secCt].elSetName = data[0];
 				}
 			} else if(headings[0] == "materials") {
 				if(headings[1] == "name" && dataLen == 1) {
-					newMat = new Material(data[0]);
-					materials.addMaterial(newMat);
+					matCt++;
+					materials[matCt].name = data[0];
 				} else if(headings[1] == "density" && dataLen == 1) {
-					newMat->setDensity(stod(data[0]));
+					materials[matCt].density = stod(data[0]);
 				} else if(headings[1] == "elastic") {
 					if(headings[2] == "E" && dataLen > 0) {
-						doubInp[0] = stod(data[0]);
+						Material& thisMat = materials[matCt];
+						thisMat.modulus[0] = stod(data[0]);
 						if(dataLen == 3) {
-							doubInp[1] = stod(data[1]);
-							doubInp[2] = stod(data[2]);
+							thisMat.modulus[1] = stod(data[1]);
+							thisMat.modulus[2] = stod(data[2]);
 						} else {
-							doubInp[1] = doubInp[0];
-							doubInp[2] = doubInp[0];
+							thisMat.modulus[1] = thisMat.modulus[0];
+							thisMat.modulus[2] = thisMat.modulus[0];
 						}
-						newMat->setModulus(doubInp);
 					} else if(headings[2] == "nu" && dataLen > 0) {
-						doubInp[0] = stod(data[0]);
+						Material& thisMat = materials[matCt];
+						thisMat.poissonRatio[0] = stod(data[0]);
 						if(dataLen == 3) {
-							doubInp[1] = stod(data[1]);
-							doubInp[2] = stod(data[2]);
+							thisMat.poissonRatio[1] = stod(data[1]);
+							thisMat.poissonRatio[2] = stod(data[2]);
 						} else {
-							doubInp[1] = doubInp[0];
-							doubInp[2] = doubInp[0];
+							thisMat.poissonRatio[1] = thisMat.poissonRatio[0];
+							thisMat.poissonRatio[2] = thisMat.poissonRatio[0];
 						}
-						newMat->setPoissonRatio(doubInp);
 					} else if(headings[2] == "G" && dataLen > 0) {
-						doubInp[0] = stod(data[0]);
+						Material& thisMat = materials[matCt];
+						thisMat.shearMod[0] = stod(data[0]);
 						if(dataLen == 3) {
-							doubInp[1] = stod(data[1]);
-							doubInp[2] = stod(data[2]);
+							thisMat.shearMod[1] = stod(data[1]);
+							thisMat.shearMod[2] = stod(data[2]);
 						} else {
-							doubInp[1] = doubInp[0];
-							doubInp[2] = doubInp[0];
+							thisMat.shearMod[1] = thisMat.shearMod[0];
+							thisMat.shearMod[2] = thisMat.shearMod[0];
 						}
-						newMat->setShearMod(doubInp);
 					} else if(headings[2] == "stiffness" && dataLen == 3) {
 						intInp[0] = stoi(data[0]) - 1;
 						intInp[1] = stoi(data[1]) - 1;
 						doubInp[0] = stod(data[2]);
-						newMat->setStiffness(intInp[0],intInp[1],doubInp[0]);
+						materials[matCt].setStiffness(intInp[0],intInp[1],doubInp[0]);
 					} 
 				} else if(headings[1] == "thermal") {
 					if(headings[2] == "conductivity" && dataLen == 6) {
+						Material& thisMat = materials[matCt];
 						for(i1 = 0; i1 < 6; i1++) {
-							doubInp[i1] = stod(data[i1]);
+							thisMat.conductivity[i1] = stod(data[i1]);
 						}
-						newMat->setConductivity(doubInp);
 					} else if(headings[2] == "expansion" && dataLen == 6) {
+						Material& thisMat = materials[matCt];
 						for(i1 = 0; i1 < 6; i1++) {
-							doubInp[i1] = stod(data[i1]);
+							thisMat.expansion[i1] = stod(data[i1]);
 						}
-						newMat->setExpansion(doubInp);
 					} else if (headings[2] == "specHeat" && dataLen == 1) {
-						newMat->setSpecHeat(stod(data[0]));
+						materials[matCt].specHeat = stod(data[0]);
 					}
 				}
 				else if (headings[1] == "damping" && dataLen == 3) {
 					intInp[0] = stoi(data[0]) - 1;
 					intInp[1] = stoi(data[1]) - 1;
 					doubInp[0] = stod(data[2]);
-					newMat->setDamping(intInp[0], intInp[1], doubInp[0]);
+					materials[matCt].setDamping(intInp[0], intInp[1], doubInp[0]);
 				}
 				else if (headings[1] == "failure") {
 					if(headings[2] == "maxStress") {
 						if(headings[3] == "tensile" && dataLen > 0) {
-							doubInp[0] = stod(data[0]);
+							Material& nMat = materials[matCt];
+							nMat.maxTenStress[0] = stod(data[0]);
 							if(dataLen == 3) {
-								doubInp[1] = stod(data[1]);
-								doubInp[2] = stod(data[2]);
+								nMat.maxTenStress[1] = stod(data[1]);
+								nMat.maxTenStress[2] = stod(data[2]);
 							} else {
-								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0];
+								nMat.maxTenStress[1] = nMat.maxTenStress[0];
+								nMat.maxTenStress[2] = nMat.maxTenStress[0];
 							}
-							newMat->setMaxTenStress(doubInp);
 						} else if(headings[3] == "compressive" && dataLen > 0) {
-							doubInp[0] = stod(data[0]);
+							Material& nMat = materials[matCt];
+							nMat.maxCompStress[0] = stod(data[0]);
 							if(dataLen == 3) {
-								doubInp[1] = stod(data[1]);
-								doubInp[2] = stod(data[2]);
+								nMat.maxCompStress[1] = stod(data[1]);
+								nMat.maxCompStress[2] = stod(data[2]);
 							} else {
-								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0];
+								nMat.maxCompStress[1] = nMat.maxCompStress[0];
+								nMat.maxCompStress[2] = nMat.maxCompStress[0];
 							}
-							newMat->setMaxCompStress(doubInp);
 						} else if(headings[3] == "shear" && dataLen > 0) {
-							doubInp[0] = stod(data[0]);
+							Material& nMat = materials[matCt];
+							nMat.maxShearStress[0] = stod(data[0]);
 							if(dataLen == 3) {
-								doubInp[1] = stod(data[1]);
-								doubInp[2] = stod(data[2]);
+								nMat.maxShearStress[1] = stod(data[1]);
+								nMat.maxShearStress[2] = stod(data[2]);
 							} else {
-								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0];
+								nMat.maxShearStress[1] = nMat.maxShearStress[0];
+								nMat.maxShearStress[2] = nMat.maxShearStress[0];
 							}
-							newMat->setMaxShearStress(doubInp);
 						}
 					} else if(headings[2] == "maxStrain") {
 						if(headings[3] == "tensile" && dataLen > 0) {
-							doubInp[0] = stod(data[0]);
+							Material& nMat = materials[matCt];
+							nMat.maxTenStrain[0] = stod(data[0]);
 							if(dataLen == 3) {
-								doubInp[1] = stod(data[1]);
-								doubInp[2] = stod(data[2]);
+								nMat.maxTenStrain[1] = stod(data[1]);
+								nMat.maxTenStrain[2] = stod(data[2]);
 							} else {
-								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0];
+								nMat.maxTenStrain[1] = nMat.maxTenStrain[0];
+								nMat.maxTenStrain[2] = nMat.maxTenStrain[0];
 							}
-							newMat->setMaxTenStrain(doubInp);
 						} else if(headings[3] == "compressive" && dataLen > 0) {
-							doubInp[0] = stod(data[0]);
+							Material& nMat = materials[matCt];
+							nMat.maxCompStrain[0] = stod(data[0]);
 							if(dataLen == 3) {
-								doubInp[1] = stod(data[1]);
-								doubInp[2] = stod(data[2]);
+								nMat.maxCompStrain[1] = stod(data[1]);
+								nMat.maxCompStrain[2] = stod(data[2]);
 							} else {
-								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0];
+								nMat.maxCompStrain[1] = nMat.maxCompStrain[0];
+								nMat.maxCompStrain[2] = nMat.maxCompStrain[0];
 							}
-							newMat->setMaxCompStrain(doubInp);
 						} else if(headings[3] == "shear" && dataLen > 0) {
-							doubInp[0] = stod(data[0]);
+							Material& nMat = materials[matCt];
+							nMat.maxShearStrain[0] = stod(data[0]);
 							if(dataLen == 3) {
-								doubInp[1] = stod(data[1]);
-								doubInp[2] = stod(data[2]);
+								nMat.maxShearStrain[1] = stod(data[1]);
+								nMat.maxShearStrain[2] = stod(data[2]);
 							} else {
-								doubInp[1] = doubInp[0];
-								doubInp[2] = doubInp[0];
+								nMat.maxShearStrain[1] = nMat.maxShearStrain[0];
+								nMat.maxShearStrain[2] = nMat.maxShearStrain[0];
 							}
-							newMat->setMaxShearStrain(doubInp);
 						}
 					} else if(headings[2] == "maxStrainEnergy" && dataLen == 1) {
-						newMat->setMaxStrEng(stod(data[0]));
+						materials[matCt].maxStrEng = stod(data[0]);
 					} else if(headings[2] == "maxMises" && dataLen == 1) {
-						newMat->setMaxMises(stod(data[0]));
+						materials[matCt].maxMises = stod(data[0]);
 					}
 				}
-			} 
+			}
+			else if (headings[0] == "fluids") {
+				if (headings[1] == "name" && dataLen == 1) {
+					flCt++;
+					fluids[flCt].name = data[0];
+				}
+				else if (headings[1] == "viscosity" && dataLen == 1) {
+					fluids[flCt].viscosity = stod(data[0]);
+				}
+				else if (headings[1] == "thermal") {
+					if (headings[2] == "conductivity" && dataLen == 1) {
+						fluids[flCt].thermCond = stod(data[0]);
+					}
+					else if (headings[2] == "specHeat" && dataLen == 1) {
+						fluids[flCt].specHeat = stod(data[0]);
+					}
+				}
+				else if (headings[1] == "idealGasConst" && dataLen == 1) {
+					fluids[flCt].idealGas = stod(data[0]);
+				}
+			}
 		}
 	} else {
 		string errSt = "Error: could not open model input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
-	
-	// Populate node array
-	i1 = nodes.getLength();
-	nodeArray = new Node*[i1];
-	newNd = nodes.getFirst();
-	while(newNd) {
-		i1 = newNd->getLabel();
-		nodeArray[i1] = newNd;
-		newNd = newNd->getNext();
-	}
-	
-	// Populate element array
-	i1 = elements.getLength();
-	elementArray = new  Element*[i1];
-	newEl = elements.getFirst();
-	while(newEl) {
-		i1 = newEl->getLabel();
-		elementArray[i1] = newEl;
-		newEl = newEl->getNext();
-	}
 
 	// Create all and individual nd/element sets
 
-	i1 = nodes.getLength();
-    
+	i1 = nodes.size();
 	for (i2 = 0; i2 < i1; i2++) {
-		newSet = new Set;
-		newSet->setName(to_string(i2));
-		newSet->addEntry(i2);
-		nodeSets.addSet(newSet);
+		nsCt++;
+		nodeSets[nsCt].name = to_string(i2);
+		nodeSets[nsCt].labels.push_back(i2);
 	}
 
-	newSet = new Set;
-	newSet->setName("all");
+	nsCt++;
+	nodeSets[nsCt].name = "all";
+	list<int>& labs = nodeSets[nsCt].labels;
 	for (i2 = 0; i2 < i1; i2++) {
-		newSet->addEntry(i2);
-	}
-	nodeSets.addSet(newSet);
-
-	i1 = elements.getLength();
-
-	for (i2 = 0; i2 < i1; i2++) {
-		newSet = new Set;
-		newSet->setName(to_string(i2));
-		newSet->addEntry(i2);
-		elementSets.addSet(newSet);
+		labs.push_back(i2);
 	}
 
-	newSet = new Set;
-	newSet->setName("all");
+	i1 = elements.size();
 	for (i2 = 0; i2 < i1; i2++) {
-		newSet->addEntry(i2);
+		esCt++;
+		elementSets[esCt].name = to_string(i2);
+		elementSets[esCt].labels.push_back(i2);
 	}
-	elementSets.addSet(newSet);
+
+	esCt++;
+	Set& newSet = elementSets[esCt];
+	newSet.name = "all";
+	for (i2 = 0; i2 < i1; i2++) {
+		newSet.labels.push_back(i2);
+	}
 
 	// Populate set arrays
 
-	i1 = nodeSets.getLength();
+	i1 = nodeSets.size();
 
-	nsArray = new Set*[i1];
-	newSet = nodeSets.getFirst();
 	i2 = 0;
-	while (newSet) {
-		nsArray[i2] = newSet;
-		nsMap.insert(make_pair(newSet->getName(), i2));
-		newSet = newSet->getNext();
+	for (auto& ns : nodeSets) {
+		nsMap.insert(make_pair(ns.name, i2));
 		i2++;
 	}
 
-	i1 = elementSets.getLength();
+	i1 = elementSets.size();
 
-	esArray = new Set*[i1];
-	newSet = elementSets.getFirst();
 	i2 = 0;
-	while (newSet) {
-		esArray[i2] = newSet;
-		esMap.insert(make_pair(newSet->getName(), i2));
-		newSet = newSet->getNext();
+	for (auto& es : elementSets) {
+		esMap.insert(make_pair(es.name, i2));
 		i2++;
 	}
 	
@@ -799,39 +857,74 @@ void Model::readConstraintInput(string fileName) {
 	string allTypes = "displacement temperature";
 	string errSt;
 	
-    Constraint *newConst = nullptr;
-	ConstraintTerm *newTerm = nullptr;
-	
+	int ecCt = 0;
+	int tcCt = 0;
+	string thisType;
+	int currTm;
+
 	inFile.open(fileName);
+	if (inFile) {
+		while (!inFile.eof()) {
+			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			if (headings[0] == "constraints") {
+				if (headings[1] == "type" && dataLen == 1) {
+					if (data[0] == "displacement") {
+						ecCt++;
+					}
+					else if (data[0] == "temperature") {
+						tcCt++;
+					}
+				}
+			}
+		}
+	}
+
+	inFile.seekg(0, std::ios::beg);
+
+	elasticConst.constVec = vector<Constraint>(ecCt);
+	thermalConst.constVec = vector<Constraint>(tcCt);
+
+	inFile.seekg(0, std::ios::beg);
+
+	Constraint* newCon = nullptr;
 	if(inFile) {
+		ecCt = -1;
+		tcCt = -1;
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "constraints") {
 				if (headings[1] == "type" && dataLen == 1) {
-					newConst = new Constraint;
 					if (data[0] == "displacement") {
-						elasticConst.addConstraint(newConst);
+						ecCt++;
+						newCon = &elasticConst.constVec[ecCt];
+						newCon->type = "displacement";
 					}
 					else if (data[0] == "temperature") {
-						thermalConst.addConstraint(newConst);
+						tcCt++;
+						newCon = &thermalConst.constVec[tcCt];
+						newCon->type = "temperature";
 					}
 					else {
 						errSt = "Error: " + data[0] + " is not a valid constraint type.  Allowable values are " + allTypes;
 						throw invalid_argument(errSt);
 					}
-					newConst->setType(data[0]);
 				}
 				else if(headings[1] == "terms") {
 					if(headings[2] == "nodeSet" && dataLen == 1) {
-						newTerm = new ConstraintTerm(data[0]);
-						newConst->addTerm(newTerm);
+						ConstraintTerm newCn;
+						newCn.nodeSet = data[0];
+						newCon->terms.push_back(newCn);
 					} else if(headings[2] == "dof" && dataLen == 1) {
-						newTerm->setDof(stoi(data[0]));
+						auto tmPt = newCon->terms.end();
+						--tmPt;
+						tmPt->dof = stoi(data[0]);
 					} else if(headings[2] == "coef" && dataLen == 1) {
-						newTerm->setCoef(stod(data[0]));
+						auto tmPt = newCon->terms.end();
+						--tmPt;
+						tmPt->coef = stod(data[0]);
 					}
 				} else if(headings[1] == "rhs" && dataLen == 1) {
-					newConst->setRhs(stod(data[0]));
+					newCon->rhs = stod(data[0]);
 				}
 			}
 		}
@@ -839,6 +932,9 @@ void Model::readConstraintInput(string fileName) {
 		errSt = "Error: could not open constraint input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
+
+	inFile.close();
+
 	return;
 }
 
@@ -853,21 +949,53 @@ void Model::readLoadInput(string fileName) {
 	int i1;
 	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
 	string elasticList = "nodalForce bodyForce gravitational centrifugal surfacePressure surfaceTraction";
+	string thermalList = "bodyHeadGen surfaceFlux";
 	Load *newLd = nullptr;
+
+	int eLdCt = 0;
+	int tLdCt = 0;
 	
 	inFile.open(fileName);
+	if (inFile) {
+		while (!inFile.eof()) {
+			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			if (headings[0] == "loads") {
+				if (headings[1] == "type" && dataLen == 1) {
+					i1 = elasticList.find(data[0]);
+					if (i1 > -1) {
+						eLdCt++;
+					}
+					i1 = thermalList.find(data[0]);
+					if (i1 > -1) {
+						tLdCt++;
+					}
+				}
+			}
+		}
+	}
+
+	elasticLoads = vector<Load>(eLdCt);
+	thermalLoads = vector<Load>(tLdCt);
+
+	inFile.seekg(0, std::ios::beg);
 	if(inFile) {
+		eLdCt = -1;
+		tLdCt = -1;
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "loads") {
 				if(headings[1] == "type" && dataLen == 1) {
-					newLd = new Load(data[0]);
 					i1 = elasticList.find(data[0]);
 					if (i1 > -1) {
-						elasticLoads.addLoad(newLd);
+						eLdCt++;
+						elasticLoads[eLdCt].type = data[0];
+						newLd = &elasticLoads[eLdCt];
 					}
-					else {
-						thermalLoads.addLoad(newLd);
+					i1 = thermalList.find(data[0]);
+					if(i1 > -1) {
+						tLdCt++;
+						thermalLoads[tLdCt].type = data[0];
+						newLd = &thermalLoads[tLdCt];
 					}
 				} else if(headings[1] == "activeTime" && dataLen > 0) {
 					doubInp[0] = stod(data[0]);
@@ -887,16 +1015,16 @@ void Model::readLoadInput(string fileName) {
 					}
 					newLd->setLoad(doubInp);
 				} else if(headings[1] == "nodeSet" && dataLen == 1) {
-					newLd->setNodeSet(data[0]);
+					newLd->nodeSet = data[0];
 				} else if(headings[1] == "elementSet" && dataLen == 1) {
-					newLd->setElSet(data[0]);
+					newLd->elementSet = data[0];
 				} else if(headings[1] == "normDir" && dataLen == 3) {
 					doubInp[0] = stod(data[0]);
 					doubInp[1] = stod(data[1]);
 					doubInp[2] = stod(data[2]);
 					newLd->setNormDir(doubInp);
 				} else if(headings[1] == "normTolerance" && dataLen == 1) {
-					newLd->setNormTol(stod(data[0]));
+					newLd->normTol = stod(data[0]);
 				} else if(headings[1] == "center" && dataLen == 3) {
 					doubInp[0] = stod(data[0]);
 					doubInp[1] = stod(data[1]);
@@ -908,7 +1036,7 @@ void Model::readLoadInput(string fileName) {
 					doubInp[2] = stod(data[2]);
 					newLd->setAxis(doubInp);
 				} else if(headings[1] == "angularVelocity") {
-					newLd->setAngVel(stod(data[0]));
+					newLd->angularVel = stod(data[0]);
 				}
 			}
 		}
@@ -916,6 +1044,7 @@ void Model::readLoadInput(string fileName) {
 		string errSt = "Error: could not open load input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
+	inFile.close();
 	
 	return;
 }
@@ -933,7 +1062,6 @@ void Model::readInitialState(string fileName) {
 	int i3;
 	int ndi;
 	int seti;
-	IntListEnt* thisNd;
 	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
 	string dispHdings = " displacement velocity acceleration";
 	
@@ -945,9 +1073,8 @@ void Model::readInitialState(string fileName) {
 				i3 = dispHdings.find(headings[1]);
 				if(i3 > -1 && dataLen > 3) {
 					seti = nsMap.at(data[0]);
-					thisNd = nsArray[seti]->getFirstEntry();
-					while (thisNd) {
-						ndi = thisNd->value;
+					for (auto& ndi : nodeSets[seti].labels) {
+						Node& thisNd = nodes[ndi];
 						i2 = 1;
 						for (i1 = 0; i1 < 6; i1++) {
 							if (i2 < dataLen) {
@@ -959,31 +1086,24 @@ void Model::readInitialState(string fileName) {
 							i2++;
 						}
 						if (headings[1] == "displacement") {
-							nodeArray[ndi]->setInitialDisp(doubInp);
+							thisNd.setInitialDisp(doubInp);
 						}
 						else if (headings[1] == "velocity") {
-							nodeArray[ndi]->setInitialVel(doubInp);
+							thisNd.setInitialVel(doubInp);
 						}
 						else if (headings[1] == "acceleration") {
-							nodeArray[ndi]->setInitialAcc(doubInp);
+							thisNd.setInitialAcc(doubInp);
 						}
-						thisNd = thisNd->next;
 					}
 				} else if(headings[1] == "temperature" && dataLen == 2) {
 					seti = nsMap.at(data[0]);
-					thisNd = nsArray[seti]->getFirstEntry();
-					while (thisNd) {
-						ndi = thisNd->value;
-						nodeArray[ndi]->setInitialTemp(stod(data[1]));
-						thisNd = thisNd->next;
+					for (auto& ndi : nodeSets[seti].labels) {
+						nodes[ndi].initialTemp = stod(data[1]);
 					}
 				} else if(headings[1] == "tdot" && dataLen == 2) {
 					seti = nsMap.at(data[0]);
-					thisNd = nsArray[seti]->getFirstEntry();
-					while (thisNd) {
-						ndi = thisNd->value;
-						nodeArray[ndi]->setInitialTdot(stod(data[1]));
-						thisNd = thisNd->next;
+					for (auto& ndi : nodeSets[seti].labels) {
+						nodes[ndi].initialTdot = stod(data[1]);
 					}
 				}
 			}
@@ -992,6 +1112,8 @@ void Model::readInitialState(string fileName) {
 		string errSt = "Error: could not open initial state input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
+
+	inFile.close();
 	
 	return;
 }
@@ -1009,20 +1131,37 @@ void Model::readDesVarInput(string fileName) {
 	double doubInp[10] = {0,0,0,0,0,0,0,0,0,0};
 	int intInp[10] = {0,0,0,0,0,0,0,0,0,0};
 	
-	DesignVariable* newDVar = nullptr;
+	int dvCt = 0;
+	int currCoef;
 	
 	inFile.open(fileName);
+	if (inFile) {
+		while (!inFile.eof()) {
+			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			if (headings[0] == "designVariables") {
+				if (headings[1] == "category" && dataLen == 1) {
+					dvCt++;
+				}
+			}
+		}
+	}
+
+	designVars = vector<DesignVariable>(dvCt);
+
+	inFile.seekg(0, std::ios::beg);
+
 	if(inFile) {
+		dvCt = -1;
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "designVariables") {
 				if(headings[1] == "category" && dataLen == 1) {
-					newDVar = new DesignVariable(data[0]);
-					designVars.addDVar(newDVar);
+					dvCt++;
+					designVars[dvCt].category = data[0];
 				} else if(headings[1] == "elementSet" && dataLen == 1) {
-					newDVar->setElset(data[0]);
+					designVars[dvCt].elSetName = data[0];
 				} else if(headings[1] == "nodeSet" && dataLen == 1) {
-					newDVar->setNdset(data[0]);
+					designVars[dvCt].ndSetName = data[0];
 				} else if(headings[1] == "activeTime" && dataLen > 0) {
 					doubInp[0] = stod(data[0]);
 					if(dataLen == 2) {
@@ -1030,10 +1169,10 @@ void Model::readDesVarInput(string fileName) {
 					} else {
 						doubInp[1] = 1.0e+100;
 					}
-					newDVar->setActiveTime(doubInp);
+					designVars[dvCt].setActiveTime(doubInp);
 				} else if(headings[1] == "component") {
 					if(dataLen == 1) {
-					    newDVar->setComponent(stoi(data[0]));
+					    designVars[dvCt].component = stoi(data[0]);
 					} else if(dataLen == 2) {
 						intInp[0] = stoi(data[0]) - 1;
 						intInp[1] = stoi(data[1]) - 1;
@@ -1042,12 +1181,12 @@ void Model::readDesVarInput(string fileName) {
 						} else {
 							i1 = 6*intInp[0] + intInp[1];
 						}
-						newDVar->setComponent(i1);
+						designVars[dvCt].component = i1;
 					}
 				} else if(headings[1] == "layer" && dataLen == 1) {
-					newDVar->setLayer(stoi(data[0]));
+					designVars[dvCt].layer = stoi(data[0]);
 				} else if(headings[1] == "coefficients" && dataLen == 1) {
-					newDVar->addCoefficient(stod(data[0]));
+					designVars[dvCt].coefs.push_back(stod(data[0]));
 				}
 			}
 		}
@@ -1055,17 +1194,7 @@ void Model::readDesVarInput(string fileName) {
 		string errSt = "Error: could not open design variable input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
-	
-	// Populate design variable array
-	i1 = designVars.getLength();
-	dVarArray = new DesignVariable*[i1];
-	newDVar = designVars.getFirst();
-	i2 = 0;
-	while(newDVar) {
-		dVarArray[i2] = newDVar;
-		newDVar = newDVar->getNext();
-		i2++;
-	}
+	inFile.close();
 	
 	return;
 }
@@ -1079,18 +1208,37 @@ void Model::readObjectiveInput(string fileName) {
 	int dataLen;
 	
 	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
-	ObjectiveTerm* newTerm = nullptr;
+	
+	int obCt = 0;
+	int currTgt;
 	
 	inFile.open(fileName);
+
+	if (inFile) {
+		while (!inFile.eof()) {
+			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			if (headings[0] == "objectiveTerms") {
+				if (headings[1] == "category" && dataLen == 1) {
+					obCt++;
+				}
+			}
+		}
+	}
+
+	objective.terms = vector<ObjectiveTerm>(obCt);
+
+	inFile.seekg(0, std::ios::beg);
+
 	if(inFile) {
+		obCt = -1;
 		while(!inFile.eof()) {
 			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "objectiveTerms") {
 				if(headings[1] == "category" && dataLen == 1) {
-					newTerm = new ObjectiveTerm(data[0]);
-					objective.addTerm(newTerm);
+					obCt++;
+					objective.terms[obCt].category = data[0];
 				} else if(headings[1] == "operator" && dataLen == 1) {
-					newTerm->setOperator(data[0]);
+					objective.terms[obCt].optr = data[0];
 				} else if(headings[1] == "activeTime" && dataLen > 0) {
 					doubInp[0] = stod(data[0]);
 					if(dataLen == 2) {
@@ -1098,25 +1246,25 @@ void Model::readObjectiveInput(string fileName) {
 					} else {
 						doubInp[1] = 1.0e+100;
 					}
-					newTerm->setActiveTime(doubInp);
+					objective.terms[obCt].setActiveTime(doubInp);
 				} else if(headings[1] == "component" && dataLen == 1) {
-					newTerm->setComponent(stoi(data[0]));
+					objective.terms[obCt].component = stoi(data[0]);
 				} else if(headings[1] == "layer" && dataLen == 1) {
-					newTerm->setLayer(stoi(data[0]));
+					objective.terms[obCt].layer = stoi(data[0]);
 				} else if(headings[1] == "coefficient" && dataLen == 1) {
-					newTerm->setCoef(stod(data[0]));
+					objective.terms[obCt].coef = stod(data[0]);
 				} else if(headings[1] == "exponent" && dataLen == 1) {
-					newTerm->setExponent(stod(data[0]));
+					objective.terms[obCt].expnt = stod(data[0]);
 				} else if(headings[1] == "elementSet" && dataLen == 1) {
-					newTerm->setElset(data[0]);
+					objective.terms[obCt].elSetName = data[0];
 				} else if(headings[1] == "nodeSet" && dataLen == 1) {
-					newTerm->setNdset(data[0]);
+					objective.terms[obCt].ndSetName = data[0];
 				} else if(headings[1] == "targetValue" && dataLen == 1) {
 					try {
 						doubInp[0] = stod(data[0]);
-						newTerm->addTargetValue(doubInp[0]);
+						objective.terms[obCt].tgtVals.push_back(doubInp[0]);
 					} catch(...) {
-						newTerm->setTgtTag(data[0]);
+						objective.terms[obCt].tgtTag = data[0];
 					}
 				}
 			}
@@ -1125,6 +1273,8 @@ void Model::readObjectiveInput(string fileName) {
 		string errSt = "Error: could not open objective input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
+
+	inFile.close();
 	
 	return;
 }
@@ -1146,13 +1296,15 @@ void Model::readDesVarValues(string fileName) {
 			if(dataLen == 2) {
 				label = stoi(data[0]);
 				value = stod(data[1]);
-				dVarArray[label]->setValue(value);
+				designVars[label].value.setVal(value);
 			}
 		}
 	} else {
 		string errSt = "Error: could not open design variable value input file: " + fileName;
 		throw invalid_argument(errSt);		
 	}
+
+	inFile.close();
 	
 	return;
 }
@@ -1170,6 +1322,7 @@ void Model::readNodeResults(string fileName) {
 	string data[11];
 	int dataLen;
 	string dispFields = "displacement velocity acceleration";
+	string thrmFields = "temperature tdot";
 
 	inFile.open(fileName);
 	if (inFile) {
@@ -1177,29 +1330,30 @@ void Model::readNodeResults(string fileName) {
 			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "nodeResults" && dataLen > 1) {
 				nd = stoi(data[0]);
-				thisNd = nodeArray[nd];
+				Node& thisNd = nodes[nd];
 				i2 = dispFields.find(headings[1]);
 				if (i2 > -1) {
-					for (i1 = 0; i1 < thisNd->getNumDof(); i1++) {
+					for (i1 = 0; i1 < thisNd.numDof; i1++) {
 						ndDat[i1] = stod(data[i1 + 1]);
 					}
 					if (headings[1] == "displacement") {
-						thisNd->setDisplacement(ndDat);
+						thisNd.setDisplacement(ndDat);
 					}
 					else if (headings[1] == "velocity") {
-						thisNd->setVelocity(ndDat);
+						thisNd.setVelocity(ndDat);
 					}
 					else {
-						thisNd->setAcceleration(ndDat);
+						thisNd.setAcceleration(ndDat);
 					}
 				}
-				else {
+				i2 = thrmFields.find(headings[1]);
+				if (i2 > -1) {
 					ndDat[0] = stod(data[1]);
 					if (headings[1] == "temperature") {
-						thisNd->setTemperature(ndDat[0]);
+						thisNd.temperature = ndDat[0];
 					}
 					else {
-						thisNd->setTdot(ndDat[0]);
+						thisNd.tempChangeRate = ndDat[0];
 					}
 				}
 			}
@@ -1209,6 +1363,8 @@ void Model::readNodeResults(string fileName) {
 		string errSt = "Error: could not open node result input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
+
+	inFile.close();
 	
 	return;
 }
@@ -1219,42 +1375,38 @@ void Model::readTimeStepSoln(int tStep) {
 	int numIntDof;
 	double* inDat;
 	char inLn[72];
-	string fullFile = solveCmd->fileName + "/solnTStep" + to_string(tStep) + ".out";
+	string fullFile = job[solveCmd].fileName + "/solnTStep" + to_string(tStep) + ".out";
 	ifstream inFile;
 	inFile.open(fullFile, std::ifstream::binary);
 
 	inDat = reinterpret_cast<double*>(&inLn[0]);
-	Node* thisNd = nodes.getFirst();
-	while (thisNd) {
-		if (solveCmd->thermal) {
+	for (auto& nd : nodes) {
+		if (job[solveCmd].thermal) {
 			inFile.read(&inLn[0], 8);
-			thisNd->setPrevTemp(*inDat);
+			nd.prevTemp = *inDat;
 			inFile.read(&inLn[0], 8);
-			thisNd->setPrevTdot(*inDat);
+			nd.prevTdot = *inDat;
 		}
-		if (solveCmd->elastic) {
-			dofPerNd = thisNd->getNumDof();
+		if (job[solveCmd].elastic) {
+			dofPerNd = nd.numDof;
 			i1 = 8 * dofPerNd;
 			inFile.read(&inLn[0], i1);
-			thisNd->setPrevDisp(inDat);
+			nd.setPrevDisp(inDat);
 			inFile.read(&inLn[0], i1);
-			thisNd->setPrevVel(inDat);
+			nd.setPrevVel(inDat);
 			inFile.read(&inLn[0], i1);
-			thisNd->setPrevAcc(inDat);
+			nd.setPrevAcc(inDat);
 		}
-		thisNd = thisNd->getNext();
 	}
 
-	if (solveCmd->elastic) {
-		Element* thisEl = elements.getFirst();
-		while (thisEl) {
-			numIntDof = thisEl->getNumIntDof();
+	if (job[solveCmd].elastic) {
+		for (auto& el : elements) {
+			numIntDof = el.numIntDof;
 			if (numIntDof > 0) {
 				i1 = 8 * numIntDof;
 				inFile.read(&inLn[0], i1);
-				thisEl->setIntPrevDisp(inDat);
+				el.setIntPrevDisp(inDat);
 			}
-			thisEl = thisEl->getNext();
 		}
 	}
 

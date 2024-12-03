@@ -60,6 +60,9 @@
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\SetClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\solverSrc\mainSolver\LUMatClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\ASenD_runJob.cpp">
@@ -126,6 +129,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\SetClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\solverSrc\mainSolver\LUMatClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

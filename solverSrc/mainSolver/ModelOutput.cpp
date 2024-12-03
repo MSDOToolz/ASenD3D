@@ -22,43 +22,39 @@ void Model::writeTimeStepSoln(int tStep) {
 	double ndDat[6];
 	double elDat[9];
 	char* buf;
-	string fullFile = solveCmd->fileName + "/solnTStep" + to_string(tStep) + ".out";
+	JobCommand& scmd = job[solveCmd];
+	string fullFile = scmd.fileName + "/solnTStep" + to_string(tStep) + ".out";
 	ofstream outFile;
 	outFile.open(fullFile, std::ofstream::binary);
 
-	buf = reinterpret_cast<char*>(&ndDat[0]);
-	Node* thisNd = nodes.getFirst();
-	while (thisNd) {
-		if (solveCmd->thermal) {
-			ndDat[0] = thisNd->getPrevTemp();
+	for (auto& thisNd : nodes) {
+		if (scmd.thermal) {
+			buf = reinterpret_cast<char*>(&thisNd.prevTemp);
 			outFile.write(buf, 8);
-			ndDat[0] = thisNd->getPrevTdot();
+			buf = reinterpret_cast<char*>(&thisNd.prevTdot);
 			outFile.write(buf, 8);
 		}
-		if (solveCmd->elastic) {
-			dofPerNd = thisNd->getNumDof();
+		if (scmd.elastic) {
+			dofPerNd = thisNd.numDof;
 			i1 = 8 * dofPerNd;
-			thisNd->getPrevDisp(ndDat);
+			buf = reinterpret_cast<char*>(&thisNd.prevDisp[0]);
 			outFile.write(buf, i1);
-			thisNd->getPrevVel(ndDat);
+			buf = reinterpret_cast<char*>(&thisNd.prevVel[0]);
 			outFile.write(buf, i1);
-			thisNd->getPrevAcc(ndDat);
+			buf = reinterpret_cast<char*>(&thisNd.prevAcc[0]);
 			outFile.write(buf, i1);
 		}
-		thisNd = thisNd->getNext();
 	}
 
-	if (solveCmd->elastic) {
+	if (scmd.elastic) {
 		buf = reinterpret_cast<char*>(&elDat[0]);
-		Element* thisEl = elements.getFirst();
-		while (thisEl) {
-			numIntDof = thisEl->getNumIntDof();
+		for (auto& thisEl : elements) {
+			numIntDof = thisEl.numIntDof;
 			if (numIntDof > 0) {
 				i1 = 8 * numIntDof;
-				thisEl->getIntPrevDisp(elDat);
+				vecToAr(elDat, thisEl.intPrevDisp, 0, numIntDof);
 				outFile.write(buf, i1);
 			}
-			thisEl = thisEl->getNext();
 		}
 	}
 
@@ -66,45 +62,41 @@ void Model::writeTimeStepSoln(int tStep) {
 	return;
 }
 
-void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields, int timeStep) {
+void Model::writeNodeResults(string fileName, string nodeSet, list<string>& fields, int timeStep) {
 	int i1;
 	int globInd;
-	Set* setPt;
+	int setPt;
 	string errStr;
 	string thisField;
-	IntListEnt *thisEnt;
-	Node *ndPt;
-	DoubListEnt* thisLdTm;
-	int ndLabel;
 	double ndDat[6];
 	int ndof;
 	double time;
+
+	JobCommand& scmd = job[solveCmd];
 	
 	if(timeStep >= 0) {
 		// Read the results from the time step file and store them in nodes
 		try {
 			readTimeStepSoln(timeStep);
-			ndPt = nodes.getFirst();
-			while (ndPt) {
-				if (solveCmd->thermal) {
-					ndPt->backstepTemp();
+			for (auto& ndPt : nodes) {
+				if (scmd.thermal) {
+					ndPt.backstepTemp();
 				}
-				if (solveCmd->elastic) {
-					ndPt->backstepDisp();
+				if (scmd.elastic) {
+					ndPt.backstepDisp();
 				}
-				ndPt = ndPt->getNext();
 			}
-			if (solveCmd->dynamic) {
-				time = solveCmd->timeStep * timeStep;
+			if (scmd.dynamic) {
+				time = scmd.timeStep * timeStep;
 			}
 			else {
-				thisLdTm = solveCmd->staticLoadTime.getFirst();
+				auto thisLdTm = scmd.staticLoadTime.begin();
 				i1 = 0;
-				while (thisLdTm && i1 < timeStep) {
-					thisLdTm = thisLdTm->next;
+				while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
+					++thisLdTm;
 					i1++;
 				}
-				time = thisLdTm->value;
+				time = *thisLdTm;
 			}
 		}
 		catch (...) {
@@ -118,15 +110,14 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	}
 	
 	try {
-		i1 = nsMap.at(nodeSet);
-		setPt = nsArray[i1];
+		setPt = nsMap.at(nodeSet);
 	}
 	catch (...) {
 		errStr = "Warning: there is no node set named " + nodeSet + ". Defaulting to all nodes in writeNodeResults";
 		cout << errStr << endl;
-		i1 = nsMap.at("all");
-		setPt = nsArray[i1];
+		setPt = nsMap.at("all");
 	}
+	Set& thisSet = nodeSets[setPt];
 	
 	ofstream outFile;
 	outFile.open(fileName);
@@ -136,9 +127,7 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	outFile << "    time: " << time << "\n";
 	outFile << "    nodeSet: " << nodeSet << "\n";
 	
-	StringListEnt *strPt = fields.getFirst();
-	while(strPt) {
-		thisField = strPt->value;
+	for (auto& thisField : fields) {
 		outFile << "    " << thisField << ":\n";
 		// -----------------
 		// Calculate reaction force if necessary
@@ -147,18 +136,15 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 				tempV1[i1] = 0.0;
 			}
 			buildElasticSolnLoad(tempV1, false, false);
-			thisEnt = setPt->getFirstEntry();
-			while (thisEnt) {
-				ndLabel = thisEnt->value;
-				ndPt = nodeArray[ndLabel];
+			for (auto& ndLabel : thisSet.labels) {
+				Node& ndPt = nodes[ndLabel];
 				outFile << "        - [" << ndLabel;
-				ndof = ndPt->getNumDof();
+				ndof = ndPt.numDof;
 				for (i1 = 0; i1 < ndof; i1++) {
-					globInd = ndPt->getDofIndex(i1);
+					globInd = ndPt.dofIndex[i1];
 					outFile << ", " << -tempV1[globInd];
 				}
 				outFile << "]\n";
-				thisEnt = thisEnt->next;
 			}
 		}
 		else if (thisField == "reactionHeatGen") {
@@ -166,58 +152,48 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 				tempV1[i1] = 0.0;
 			}
 			buildThermalSolnLoad(tempV1, false);
-			thisEnt = setPt->getFirstEntry();
-			while (thisEnt) {
-				ndLabel = thisEnt->value;
-				ndPt = nodeArray[ndLabel];
+			for (auto& ndLabel : thisSet.labels) {
+				Node& ndPt = nodes[ndLabel];
 				outFile << "        - [" << ndLabel;
-				globInd = ndPt->getSortedRank();
+				globInd = ndPt.sortedRank;
 				outFile << ", " << -tempV1[globInd] << "\n";
-				thisEnt = thisEnt->next;
 			}
 		}
 		else {
-			thisEnt = setPt->getFirstEntry();
-			while (thisEnt) {
-				ndLabel = thisEnt->value;
-				ndPt = nodeArray[ndLabel];
+			for (auto& ndLabel : thisSet.labels) {
+				Node& ndPt = nodes[ndLabel];
 				outFile << "        - [" << ndLabel;
 				if (thisField == "displacement") {
-					ndPt->getDisp(ndDat);
-					ndof = ndPt->getNumDof();
+					ndof = ndPt.numDof;
 					for (i1 = 0; i1 < ndof; i1++) {
-						outFile << ", " << ndDat[i1];
+						outFile << ", " << ndPt.displacement[i1];
 					}
 					outFile << "]\n";
 				}
 				else if (thisField == "velocity") {
-					ndPt->getVel(ndDat);
-					ndof = ndPt->getNumDof();
+					ndof = ndPt.numDof;
 					for (i1 = 0; i1 < ndof; i1++) {
-						outFile << ", " << ndDat[i1];
+						outFile << ", " << ndPt.velocity[i1];
 					}
 					outFile << "]\n";
 				}
 				else if (thisField == "acceleration") {
-					ndPt->getAcc(ndDat);
-					ndof = ndPt->getNumDof();
+					ndof = ndPt.numDof;
 					for (i1 = 0; i1 < ndof; i1++) {
-						outFile << ", " << ndDat[i1];
+						outFile << ", " << ndPt.acceleration[i1];
 					}
 					outFile << "]\n";
 				}
 				else if (thisField == "temperature") {
-					ndDat[0] = ndPt->getTemperature();
+					ndDat[0] = ndPt.temperature;
 					outFile << ", " << ndDat[0] << "]\n";
 				}
 				else if (thisField == "tdot") {
-					ndDat[0] = ndPt->getTdot();
+					ndDat[0] = ndPt.tempChangeRate;
 					outFile << ", " << ndDat[0] << "]\n";
 				}
-				thisEnt = thisEnt->next;
 			}
 		}
-		strPt = strPt->next;
 	}
 	
 	outFile.close();
@@ -225,22 +201,17 @@ void Model::writeNodeResults(string fileName, string nodeSet, StringList& fields
 	return;
 }
 
-void Model::writeElementResults(string fileName, string elSet, StringList& fields, string position, int timeStep) {
+void Model::writeElementResults(string fileName, string elSet, list<string>& fields, string position, int timeStep) {
 	int i1;
 	int i2;
 	int i3;
 	string errStr;
 	string thisField;
-	IntListEnt* thisEnt;
-	Node* ndPt;
-	Element* elPt;
-	DoubListEnt* thisLdTm;
-	Set* setPt;
+	int setPt;
 	int type;
-	int elLabel;
 	int numIP;
 	int numLay;
-	double* intPts;
+	double intPts[24];
 	double cent[3] = { 0.0,0.0,0.0 };
 	DiffDoub0 strain[6];
 	DiffDoub0 stress[6];
@@ -252,38 +223,36 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	string fieldList;
 	double time;
 
+	JobCommand& scmd = job[solveCmd];
+
 	if (timeStep >= 0) {
 		// Read the results from the time step file and store them in nodes
 		try {
 			readTimeStepSoln(timeStep);
-			ndPt = nodes.getFirst();
-			while (ndPt) {
-				if (solveCmd->thermal) {
-					ndPt->backstepTemp();
+			for (auto& ndPt : nodes) {
+				if (scmd.thermal) {
+					ndPt.backstepTemp();
 				}
-				if (solveCmd->elastic) {
-					ndPt->backstepDisp();
-				}
-				ndPt = ndPt->getNext();
-			}
-			if (solveCmd->elastic) {
-				elPt = elements.getFirst();
-				while (elPt) {
-					elPt->backstepIntDisp();
-					elPt = elPt->getNext();
+				if (scmd.elastic) {
+					ndPt.backstepDisp();
 				}
 			}
-			if (solveCmd->dynamic) {
-				time = solveCmd->timeStep * timeStep;
+			if (scmd.elastic) {
+				for (auto& elPt : elements) {
+					elPt.backstepIntDisp();
+				}
+			}
+			if (scmd.dynamic) {
+				time = scmd.timeStep * timeStep;
 			}
 			else {
-				thisLdTm = solveCmd->staticLoadTime.getFirst();
+				auto thisLdTm = scmd.staticLoadTime.begin();
 				i1 = 0;
-				while (thisLdTm && i1 < timeStep) {
-					thisLdTm = thisLdTm->next;
+				while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
+					++thisLdTm;
 					i1++;
 				}
-				time = thisLdTm->value;
+				time = *thisLdTm;
 			}
 		}
 		catch (...) {
@@ -297,15 +266,14 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	}
 
 	try {
-		i1 = esMap.at(elSet);
-		setPt = esArray[i1];
+		setPt = esMap.at(elSet);
 	}
 	catch (...) {
 		errStr = "Warning: there is no element set named " + elSet + ". Defaulting to all elements in writeNodeResults";
 		cout << errStr << endl;
-		i1 = nsMap.at("all");
-		setPt = esArray[i1];
+		setPt = esMap.at("all");
 	}
+	Set& thisSet = elementSets[setPt];
 
 	ofstream outFile;
 	outFile.open(fileName);
@@ -315,9 +283,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 	outFile << "    time: " << time << "\n";
 	outFile << "    elSet: " << elSet << "\n";
 
-	StringListEnt* strPt = fields.getFirst();
-	while (strPt) {
-		thisField = strPt->value;
+	for (auto& thisField : fields) {
 		outFile << "    " << thisField << ":\n";
 		fieldList = "stress strain";
 		i2 = fieldList.find(thisField);
@@ -342,32 +308,32 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			outFile << "    ##  - [element label, integration pt, layer, dT/dx, dT/dy, dT/dz]\n";
 		}
 
-		thisEnt = setPt->getFirstEntry();
-		while (thisEnt) {
-			elLabel = thisEnt->value;
-			elPt = elementArray[elLabel];
-			type = elPt->getType();
+		for (auto& elLabel : thisSet.labels) {
+			Element& elPt = elements[elLabel];
+			type = elPt.type;
 			
 			fieldList = "stress strain strainEnergyDen";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
-				elPt->getStressPrereq(d0Pre, nodeArray, dVarArray);
+				elPt.getStressPrereq(d0Pre, sections, materials, nodes, designVars);
 				if (position == "intPts") {
-					numIP = elPt->getNumIP();
-					intPts = elPt->getIP();
+					numIP = elPt.numIP;
+					vecToAr(intPts, elPt.intPts, 0, 3 * numIP);
 				}
 				else {
 					numIP = 1;
-					intPts = elPt->getSCent();
+					intPts[0] = elPt.sCent[0];
+					intPts[1] = elPt.sCent[1];
+					intPts[2] = elPt.sCent[2];
 				}
 				for (i1 = 0; i1 < numIP; i1++) {
 					if (type == 3 || type == 41) {
-						numLay = elPt->getNumLayers();
+						numLay = sections[elPt.sectPtr].layers.size();
 					} else {
 						numLay = 1;
 					}
 					for (i2 = 0; i2 < numLay; i2++) {
-						elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, d0Pre);
+						elPt.getStressStrain(stress, strain, &intPts[3 * i1], i2, scmd.nonlinearGeom, d0Pre);
 						outFile << "        - [" << elLabel << ", ";
 						if (thisField == "strain") {
 							outFile << i1 << ", " << i2 << ", " << strain[0].val;
@@ -395,20 +361,22 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 
 			fieldList = "sectionDef sectionFrcMom";
 			i2 = fieldList.find(thisField);
-			if (i2 > -1 && elPt->getDofPerNd() == 6) {
-				elPt->getStressPrereq(d0Pre, nodeArray, dVarArray);
+			if (i2 > -1 && elPt.dofPerNd == 6) {
+				elPt.getStressPrereq(d0Pre, sections, materials, nodes, designVars);
 				if (position == "intPts") {
-					numIP = elPt->getNumIP();
-					intPts = elPt->getIP();
+					numIP = elPt.numIP;
+					vecToAr(intPts, elPt.intPts, 0, 3 * numIP);
 				}
 				else {
 					numIP = 1;
-					intPts = elPt->getSCent();
+					intPts[0] = elPt.sCent[0];
+					intPts[1] = elPt.sCent[1];
+					intPts[2] = elPt.sCent[2];
 				}
 				for (i1 = 0; i1 < numIP; i1++) {
-					type = elPt->getType();
+					type = elPt.type;
 					//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
-					elPt->getDefFrcMom(def, frcMom, &intPts[3 * i1], solveCmd->nonlinearGeom, d0Pre);
+					elPt.getDefFrcMom(def, frcMom, &intPts[3 * i1], scmd.nonlinearGeom, d0Pre);
 					outFile << "        - [" << elLabel << ", ";
 					if (thisField == "sectionDef") {
 						outFile << i1 << ", " << def[0].val;
@@ -430,26 +398,28 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 			fieldList = "tempGradient heatFlux";
 			i2 = fieldList.find(thisField);
 			if (i2 > -1) {
-				elPt->getStressPrereq(d0Pre, nodeArray, dVarArray);
+				elPt.getStressPrereq(d0Pre, sections, materials, nodes, designVars);
 				if (position == "intPts") {
-					numIP = elPt->getNumIP();
-					intPts = elPt->getIP();
+					numIP = elPt.numIP;
+					vecToAr(intPts, elPt.intPts, 0, 3 * numIP);
 				}
 				else {
 					numIP = 1;
-					intPts = elPt->getSCent();
+					intPts[0] = elPt.sCent[0];
+					intPts[1] = elPt.sCent[1];
+					intPts[2] = elPt.sCent[2];
 				}
 				for (i1 = 0; i1 < numIP; i1++) {
-					type = elPt->getType();
+					type = elPt.type;
 					if (type == 3 || type == 41) {
-						numLay = elPt->getNumLayers();
+						numLay = sections[elPt.sectPtr].layers.size();
 					}
 					else {
 						numLay = 1;
 					}
 					for (i2 = 0; i2 < numLay; i2++) {
 						//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
-						elPt->getFluxTGrad(flux, tGrad, &intPts[3 * i1], i2, d0Pre);
+						elPt.getFluxTGrad(flux, tGrad, &intPts[3 * i1], i2, d0Pre);
 						outFile << "        - [" << elLabel << ", " << i1 << ", " << i2 << ", ";
 						if (thisField == "tempGradient") {
 							outFile << tGrad[0].val << ", " << tGrad[1].val << ", " << tGrad[2].val << "]\n";
@@ -461,9 +431,7 @@ void Model::writeElementResults(string fileName, string elSet, StringList& field
 				}
 			}
 
-			thisEnt = thisEnt->next;
 		}
-		strPt = strPt->next;
 	}
 
 	outFile.close();
@@ -478,7 +446,8 @@ void Model::writeModalResults(string fileName, bool writeModes) {
 	int nd;
 	int dofPerNd;
 	int globInd;
-	int nMds = modalCmd->numModes;
+	JobCommand& mcmd = job[modalCmd];
+	int nMds = mcmd.numModes;
 	Node* thisNd;
 
 	ofstream outFile;
@@ -490,7 +459,7 @@ void Model::writeModalResults(string fileName, bool writeModes) {
 	for (i1 = 0; i1 < nMds; i1++) {
 		outFile << "      - " << eigVals[i1] << "\n";
 	}
-	if (modalCmd->type == "buckling") {
+	if (mcmd.type == "buckling") {
 		outFile << "    loadFactors:\n";
 	}
 	else {
@@ -500,23 +469,21 @@ void Model::writeModalResults(string fileName, bool writeModes) {
 		outFile << "      - " << loadFact[i1] << "\n";
 	}
 
-	if (modalCmd->writeModes) {
+	if (mcmd.writeModes) {
 		outFile << "    modes:\n";
 		for (i1 = 0; i1 < nMds; i1++) {
 			outFile << "      - mode: " << i1 << "\n";
 			outFile << "        displacement:\n";
-			thisNd = nodes.getFirst();
-			while (thisNd) {
-				nd = thisNd->getLabel();
+			for (auto& thisNd : nodes) {
+				nd = thisNd.label;
 				outFile << "          - [" << nd;
-				dofPerNd = thisNd->getNumDof();
+				dofPerNd = thisNd.numDof;
 				for (i2 = 0; i2 < dofPerNd; i2++) {
-					globInd = thisNd->getDofIndex(i2);
+					globInd = thisNd.dofIndex[i2];
 					i3 = i1 * elMatDim + globInd;
 					outFile << ", " << eigVecs[i3];
 				}
 				outFile << "]\n";
-				thisNd = thisNd->getNext();
 			}
 		}
 	}
@@ -526,13 +493,12 @@ void Model::writeModalResults(string fileName, bool writeModes) {
 	return;
 }
 
-void Model::writeObjective(string fileName, StringList& includeFields, bool writeGrad) {
+void Model::writeObjective(string fileName, list<string>& includeFields, bool writeGrad) {
 	int i1;
 	int numDV;
 	double totObj;
 	double thisVal;
 	ObjectiveTerm* thisTerm;
-	StringListEnt* thisFld;
 	string fldStr;
 	double* actTime;
 
@@ -542,51 +508,45 @@ void Model::writeObjective(string fileName, StringList& includeFields, bool writ
 
 	outFile << "objective:\n";
 	outFile << "    terms:\n";
-	thisTerm = objective.getFirst();
 	totObj = 0.0;
-	while (thisTerm) {
-		thisVal = thisTerm->getValue();
+	for (auto& thisTerm : objective.terms) {
+		thisVal = thisTerm.value;
 		outFile << "        - value: " << thisVal << "\n";
-		thisFld = includeFields.getFirst();
-		while (thisFld) {
-			fldStr = thisFld->value;
+		for (auto& fldStr : includeFields) {
 			if (fldStr == "category") {
-				outFile << "          category: " << thisTerm->getCategory() << "\n";
+				outFile << "          category: " << thisTerm.category << "\n";
 			}
 			else if (fldStr == "operator") {
-				outFile << "          operator: " << thisTerm->getOperator() << "\n";
+				outFile << "          operator: " << thisTerm.optr << "\n";
 			}
 			else if (fldStr == "component") {
-				outFile << "          component: " << thisTerm->getComponent() << "\n";
+				outFile << "          component: " << thisTerm.component << "\n";
 			}
 			else if (fldStr == "layer") {
-				outFile << "          layer: " << thisTerm->getLayer() << "\n";
+				outFile << "          layer: " << thisTerm.layer << "\n";
 			}
 			else if (fldStr == "coefficient") {
-				outFile << "          coefficient: " << thisTerm->getCoef() << "\n";
+				outFile << "          coefficient: " << thisTerm.coef << "\n";
 			}
 			else if (fldStr == "exponent") {
-				outFile << "          exponent: " << thisTerm->getExpnt() << "\n";
+				outFile << "          exponent: " << thisTerm.expnt << "\n";
 			}
 			else if (fldStr == "elementSet") {
-				outFile << "          elementSet: " << thisTerm->getElsetName() << "\n";
+				outFile << "          elementSet: " << thisTerm.elSetName << "\n";
 			}
 			else if (fldStr == "nodeSet") {
-				outFile << "          nodeSet: " << thisTerm->getNdsetName() << "\n";
+				outFile << "          nodeSet: " << thisTerm.ndSetName << "\n";
 			}
 			else if (fldStr == "activeTime") {
-				actTime = thisTerm->getActTime();
-				outFile << "          activeTime: [" << actTime[0] << ", " << actTime[1] << "]\n";
+				outFile << "          activeTime: [" << thisTerm.activeTime[0] << ", " << thisTerm.activeTime[1] << "]\n";
 			}
-			thisFld = thisFld->next;
 		}
 		totObj += thisVal;
-		thisTerm = thisTerm->getNext();
 	}
 	outFile << "    totalValue: " << totObj << "\n";
 	if (writeGrad) {
 		outFile << "objectiveGradient:\n";
-		numDV = designVars.getLength();
+		numDV = designVars.size();
 		for (i1 = 0; i1 < numDV; i1++) {
 			outFile << "    - [" << i1 << ", " << dLdD[i1] << "]\n";
 		}

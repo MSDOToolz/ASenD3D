@@ -1,105 +1,225 @@
 ﻿  ASenD_runJob.cpp
   ConstraintClass.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ConstraintClass.cpp(112,7): warning C4101: 'setFound': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ConstraintClass.cpp(42,39): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ConstraintClass.cpp(37,7): warning C4101: 'setFound': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ConstraintClass.cpp(85,6): warning C4101: 'i1': unreferenced local variable
   DesignVariableClass.cpp
   DiffDoubClass.cpp
   ElementClass.cpp
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementClass.cpp(808,36): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementClass.cpp(813,9): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   ElementEquations.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(394,6): warning C4101: 'i8': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(395,6): warning C4101: 'i9': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1849,6): warning C4101: 'i8': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1850,6): warning C4101: 'i9': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(127,9): warning C4101: 'xVec': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(128,9): warning C4101: 'bVec': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(397,6): warning C4101: 'i8': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(398,6): warning C4101: 'i9': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1363,6): warning C4101: 'i5': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1369,6): warning C4101: 'dof2': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1368,6): warning C4101: 'dof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1362,6): warning C4101: 'i4': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1671,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(1882,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(2186,6): warning C4101: 'i8': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(2187,6): warning C4101: 'i9': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(3152,6): warning C4101: 'i5': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(3158,6): warning C4101: 'dof2': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(3157,6): warning C4101: 'dof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(3151,6): warning C4101: 'i4': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(3460,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementEquations.cpp(3671,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   ElementProperties.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1246,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1809,10): warning C4101: 'matCond': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1911,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1920,6): warning C4101: 'dvComp': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1957,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3484,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(4047,10): warning C4101: 'matCond': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(4149,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(4158,6): warning C4101: 'dvComp': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(4195,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(707,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(946,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1003,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1115,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1176,6): warning C4101: 'layi': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1229,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1284,12): warning C4101: 'matPt': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1285,10): warning C4101: 'areaMom': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1279,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1404,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1453,6): warning C4101: 'dvInd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1584,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1622,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1662,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1717,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1721,6): warning C4101: 'dvComp': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1746,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1758,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1834,18): warning C4101: 'thisDVpt': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(1833,6): warning C4101: 'dvInd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(2752,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(2991,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3048,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3160,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3223,12): warning C4101: 'thisMat': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3222,9): warning C4101: 'thisLay': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3224,18): warning C4101: 'thisDVPt': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3221,6): warning C4101: 'layi': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3277,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3332,12): warning C4101: 'matPt': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3333,10): warning C4101: 'areaMom': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3327,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3452,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3501,6): warning C4101: 'dvInd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3632,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3670,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3710,18): warning C4101: 'thisDV': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3765,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3769,6): warning C4101: 'dvComp': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3794,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3806,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3882,18): warning C4101: 'thisDVpt': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementProperties.cpp(3881,6): warning C4101: 'dvInd': unreferenced local variable
   ElementSolnFields.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementSolnFields.cpp(993,6): warning C4101: 'numLay': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementSolnFields.cpp(2699,6): warning C4101: 'numLay': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementSolnFields.cpp(1071,6): warning C4101: 'numLay': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ElementSolnFields.cpp(2993,6): warning C4101: 'numLay': unreferenced local variable
   FaceClass.cpp
   JobClass.cpp
   ListEntClass.cpp
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ListEntClass.cpp(52,6): warning C4101: 'i1': unreferenced local variable
   LoadClass.cpp
   LowerTriMatClass.cpp
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\LowerTriMatClass.cpp(39,6): warning C4101: 'constDim': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\LowerTriMatClass.cpp(113,6): warning C4101: 'constDim': unreferenced local variable
+  LUMatClass.cpp
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\LUMatClass.cpp(42,6): warning C4101: 'constDim': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\LUMatClass.cpp(145,6): warning C4101: 'constDim': unreferenced local variable
   matrixFunctions.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1151,13): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1316,9): warning C4101: 'stepLen': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1311,9): warning C4101: 'mag': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1317,7): warning C4101: 'reduced': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1312,9): warning C4101: 'minv': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1154,13): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1312,9): warning C4101: 'stepLen': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1307,9): warning C4101: 'mag': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1313,7): warning C4101: 'reduced': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\matrixFunctions.cpp(1308,9): warning C4101: 'minv': unreferenced local variable
   ModelAnalysis.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(508,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(592,9): warning C4101: 'tInc': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(591,9): warning C4101: 'time': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(706,6): warning C4101: 'numDof': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(873,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(893,6): warning C4101: 'ideb': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1187,6): warning C4101: 'i6': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1200,9): warning C4101: 'dp': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1186,6): warning C4101: 'i5': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1396,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1636,6): warning C4101: 'numDof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(31,15): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(56,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(59,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(103,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(183,28): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(207,17): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(224,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(347,30): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(248,7): warning C4101: 'esPtr': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(275,7): warning C4101: 'nsPtr': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(444,15): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(514,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(534,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(505,9): warning C4101: 'tInc': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(504,9): warning C4101: 'time': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(622,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(614,8): warning C4101: 'thisNd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(615,11): warning C4101: 'thisEl': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(617,9): warning C4101: 'actTime': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(620,7): warning C4101: 'thisSet': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(612,6): warning C4101: 'numDof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(706,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(767,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(758,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(789,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(784,8): warning C4101: 'thisNd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(776,6): warning C4101: 'ideb': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(785,11): warning C4101: 'thisEl': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1044,6): warning C4101: 'globInd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1045,6): warning C4101: 'stepInc': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1042,6): warning C4101: 'i6': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1053,9): warning C4101: 'dp': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1041,6): warning C4101: 'i5': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1046,9): warning C4101: 'ndDisp': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1040,6): warning C4101: 'i4': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1043,6): warning C4101: 'nDof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1243,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1325,18): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1304,11): warning C4101: 'thisEl': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1448,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1383,10): warning C4101: 'intAdj': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1377,11): warning C4101: 'thisEl': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1480,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1471,6): warning C4101: 'numDof': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1602,8): warning C4101: 'thisNd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1603,11): warning C4101: 'thisEl': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1670,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1672,8): warning C4101: 'thisNd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelAnalysis.cpp(1671,11): warning C4101: 'thisEl': unreferenced local variable
   ModelClass.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(177,32): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(102,8): warning C4101: 'thisNd': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(103,11): warning C4101: 'thisEl': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(104,15): warning C4101: 'thisLdTm': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(99,9): warning C4101: 'time': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(96,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(105,38): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(107,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelClass.cpp(33,9): warning C4101: 'time': unreferenced local variable
   ModelInput.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(23,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(28,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(29,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(32,34): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(62,35): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(65,28): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(66,32): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(78,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(83,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(86,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(87,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(730,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(797,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(877,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1113,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(24,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(29,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(30,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(33,34): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(63,35): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(66,28): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(67,32): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(79,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(84,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(87,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(88,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(797,17): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(811,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(827,20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(835,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(863,6): warning C4101: 'currTm': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(856,6): warning C4101: 'i1': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(964,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(968,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(988,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(994,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1073,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1063,6): warning C4101: 'ndi': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1135,6): warning C4101: 'currCoef': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1130,6): warning C4101: 'i2': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1213,6): warning C4101: 'currTgt': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1334,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1349,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelInput.cpp(1317,8): warning C4101: 'thisNd': unreferenced local variable
   ModelOutput.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(323,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(328,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(333,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(352,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(397,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(431,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(22,9): warning C4101: 'ndDat': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(289,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(294,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(299,22): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(316,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(331,50): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(363,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(399,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(415,50): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(451,8): warning C4101: 'thisNd': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(549,26): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(501,17): warning C4101: 'thisTerm': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ModelOutput.cpp(503,10): warning C4101: 'actTime': unreferenced local variable
   NodeClass.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\NodeClass.cpp(414,6): warning C4101: 'comp': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\NodeClass.cpp(406,6): warning C4101: 'i1': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\NodeClass.cpp(519,6): warning C4101: 'comp': unreferenced local variable
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\NodeClass.cpp(511,6): warning C4101: 'i1': unreferenced local variable
-  ObjectiveClass.cpp
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(412,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(481,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(556,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(638,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(709,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(782,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(833,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(906,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(959,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1036,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1100,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1167,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1223,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   Compiling...
+  ObjectiveClass.cpp
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(33,39): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(36,39): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(297,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(320,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(343,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(359,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(390,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(429,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(449,47): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(465,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(506,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(531,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(572,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(284,9): warning C4101: 'ndData': unreferenced local variable
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(639,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(687,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(762,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(815,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(884,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(942,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(966,48): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1003,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\ObjectiveClass.cpp(1053,19): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   SectionClass.cpp
   SetClass.cpp
   Generating code
   Previous IPDB not found, fall back to full compilation.
-  All 1076 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+C:\Users\evans\ASenDHome\ASenD3D\solverSrc\mainSolver\SectionClass.cpp(161): warning C4715: 'Section::getLayerMatPtr': not all control paths return a value
+  All 1973 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   ASenD_runJob.vcxproj -> C:\Users\evans\ASenDHome\ASenD3D\VS\mainSolver\ASenD_runJob\x64\Release\ASenD_runJob.exe

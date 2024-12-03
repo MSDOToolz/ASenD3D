@@ -2,38 +2,34 @@
 #define LUMAT
 #include "ListEntClass.h"
 #include "ConstraintClass.h"
+#include <vector>
 
 class LUMat {
-private:
-    double* lMat;
-	int* lRange;
-	int* lMinCol;
+public:
+    std::vector<double> lMat;
+	std::vector<int> lRange;
+	std::vector<int> lMinCol;
 	int lSize;
-	double* uMat;
-	int* uRange;
-	int* uMinRow;
+	std::vector<double> uMat;
+	std::vector<int> uRange;
+	std::vector<int> uMinRow;
 	int uSize;
-	double* zVec;
+	std::vector<double> zVec;
 	int dim;
 	int maxBandwidth;
 	bool allocated;
 	
-public:
     LUMat();
 	
 	void setDim(int newDim);
 	
 	void allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int blockDim);
 	
-	bool isAllocated();
-	
 	void populateFromSparseMat(SparseMat& spMat, ConstraintList& cList);
 	
 	void luFactor();
 	
-	void luSolve(double solnVec[], double rhs[], bool transpose);
-	
-	~LUMat();
+	void luSolve(std::vector<double>& solnVec, std::vector<double>& rhs, bool transpose);
 };
 
 #endif

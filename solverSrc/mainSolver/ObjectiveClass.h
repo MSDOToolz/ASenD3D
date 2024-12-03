@@ -7,7 +7,7 @@
 #include "DesignVariableClass.h"
 
 class ObjectiveTerm {
-	private:
+	public:
 	    std::string category;
 		std::string optr;
 		double activeTime[2];
@@ -16,18 +16,17 @@ class ObjectiveTerm {
 		double coef;
 		double expnt;
 		std::string elSetName;
-		Set* elSetPtr;
+		int elSetPtr;
 		std::string ndSetName;
-		Set* ndSetPtr;
+		int ndSetPtr;
 		std::string tgtTag;
-		DoubList tgtVals;
+		std::list<double> tgtVals;
 		double value;
-		ObjectiveTerm* next;
 
-		double* qVec;
-		double* elVolVec;
-		double* tgtVec;
-		double* errNormVec;
+		std::vector<double> qVec;
+		std::vector<double> elVolVec;
+		std::vector<double> tgtVec;
+		std::vector<double> errNormVec;
 
 		int qLen;
 
@@ -39,114 +38,53 @@ class ObjectiveTerm {
 		SparseMat dQdD;
 		SparseMat dVdD;
 		
-	public:
-	    ObjectiveTerm(std::string newCat);
-		
-		void setOperator(std::string newOp);
+	    ObjectiveTerm();
 		
 		void setActiveTime(double newAt[]);
-		
-		void setComponent(int newComp);
-		
-		void setLayer(int newLay);
-		
-		void setCoef(double newCoef);
-		
-		void setExponent(double newExp);
-		
-		void setElset(std::string newElset);
 
-		void setElsetPtr(Set* newPtr);
-		
-		void setNdset(std::string newNdset);
-
-		void setNdsetPtr(Set* newPtr);
-		
-		void setTgtTag(std::string newTag);
-
-		void setValue(double newVal);
-
-		void setNext(ObjectiveTerm* newNext);
-		
-		void addTargetValue(double newTgt);
-
-		std::string getCategory();
-
-		std::string getOperator();
-
-		int getComponent();
-
-		int getLayer();
-
-		double getCoef();
-
-		double getExpnt();
-
-		std::string getElsetName();
-
-		std::string getNdsetName();
-
-		double* getActTime();
-
-		double getValue();
-
-		ObjectiveTerm* getNext();
-
-		void allocateObj();
+		void allocateObj(std::vector<Set>& ndSets, std::vector<Set>& elSets);
 
 		void allocateObjGrad();
 
 		double getPowerNorm();
 
-		void dPowerNormdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[]);
+		void dPowerNormdU(std::vector<double>& dLdU, std::vector<double>& dLdV, std::vector<double>& dLdA, std::vector<double>& dLdT, std::vector<double>& dLdTdot);
 
-		void dPowerNormdD(double dLdD[]);
+		void dPowerNormdD(std::vector<double>& dLdD);
 
 		double getVolIntegral();
 
-		void dVolIntegraldU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[]);
+		void dVolIntegraldU(std::vector<double>& dLdU, std::vector<double>& dLdV, std::vector<double>& dLdA, std::vector<double>& dLdT, std::vector<double>& dLdTdot);
 
-		void dVolIntegraldD(double dLdD[]);
+		void dVolIntegraldD(std::vector<double>& dLdD);
 
 		double getVolAverage();
 
-		void dVolAveragedU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[]);
+		void dVolAveragedU(std::vector<double>& dLdU, std::vector<double>& dLdV, std::vector<double>& dLdA, std::vector<double>& dLdT, std::vector<double>& dLdTdot);
 
-		void dVolAveragedD(double dLdD[]);
+		void dVolAveragedD(std::vector<double>& dLdD);
 
-		void getObjVal(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
+		void getObjVal(double time, bool nLGeom, std::vector<Node>& ndAr, std::vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre);
 
-		void getdLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
+		void getdLdU(std::vector<double>& dLdU, std::vector<double>& dLdV, std::vector<double>& dLdA, std::vector<double>& dLdT, std::vector<double>& dLdTdot, double time, bool nLGeom, std::vector<Node>& ndAr,  std::vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre);
 
-		void getdLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq& stPre);
-
-		~ObjectiveTerm();
+		void getdLdD(std::vector<double>& dLdD, double time, bool nLGeom, std::vector<Node>& ndAr, std::vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr, DiffDoub1StressPrereq& stPre);
 };
 
 class Objective {
-	private:
-	    ObjectiveTerm *firstTerm;
-		ObjectiveTerm *lastTerm;
-		int length;
-		
 	public:
+		std::vector<ObjectiveTerm> terms;
+		
 	    Objective();
-		
-		void addTerm(ObjectiveTerm *newTerm);
-		
-		int getLength();
-		
-		ObjectiveTerm* getFirst();
 
 		void clearValues();
 
-		void calculateTerms(double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
+		void calculateTerms(double time, bool nLGeom, std::vector<Node>& ndAr,  std::vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre);
 
-		void calculatedLdU(double dLdU[], double dLdV[], double dLdA[], double dLdT[], double dLdTdot[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub0StressPrereq& stPre);
+		void calculatedLdU(std::vector<double>& dLdU, std::vector<double>& dLdV, std::vector<double>& dLdA, std::vector<double>& dLdT, std::vector<double>& dLdTdot, double time, bool nLGeom, std::vector<Node>& ndAr, std::vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre);
 
-		void calculatedLdD(double dLdD[], double time, bool nLGeom, Node* ndAr[],  Element* elAr[], DesignVariable* dvAr[], DiffDoub1StressPrereq& stPre);
+		void calculatedLdD(std::vector<double>& dLdD, double time, bool nLGeom, std::vector<Node>& ndAr,  std::vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr, DiffDoub1StressPrereq& stPre);
 
-		~Objective();
 };
 
 #endif

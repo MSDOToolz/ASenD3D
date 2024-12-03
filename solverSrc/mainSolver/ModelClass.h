@@ -16,34 +16,31 @@
 #include "DiffDoubClass.h"
 
 class Model {
-	private:
-	    NodeList nodes;
-		Node** nodeArray;
-		ElementList elements;
-		Element** elementArray;
-		SetList nodeSets;
-		Set** nsArray;
+	public:
+	    std::vector<Node> nodes;
+		std::vector<Element> elements;
+		std::vector<Face> faces;
+		std::vector<Set> nodeSets;
 		std::map<std::string, int> nsMap;
-		SetList elementSets;
-		Set** esArray;
+		std::vector<Set> elementSets;
 		std::map<std::string, int> esMap;
-		SectionList sections;
-		MaterialList materials;
+		std::vector<Section> sections;
+		std::vector<Material> materials;
+		std::vector<Fluid> fluids;
 		ConstraintList elasticConst;
 		ConstraintList thermalConst;
-		LoadList elasticLoads;
-		LoadList thermalLoads;
-		DesVarList designVars;
-		DesignVariable** dVarArray;
+		std::vector<Load> elasticLoads;
+		std::vector<Load> thermalLoads;
+		std::vector<DesignVariable> designVars;
 		Objective objective;
-		Job job;
+		std::vector<JobCommand> job;
 		
 		int elMatDim;
 		int totGlobDof;
 		bool anPrepRun;
 		int timeStepsSaved;
-		JobCommand* solveCmd;
-		JobCommand* modalCmd;
+		int solveCmd;
+		int modalCmd;
 		DiffDoub0StressPrereq d0Pre;
 		DiffDoub1StressPrereq d1Pre;
 		
@@ -55,60 +52,41 @@ class Model {
 		LowerTriMat thermLT;
 		bool thermScaled;
 
-		double* eigVecs;
-		double* eigVals;
-		double* diagMass;
-		double* loadFact;
+		std::vector<double> eigVecs;
+		std::vector<double> eigVals;
+		std::vector<double> diagMass;
+		std::vector<double> loadFact;
 		
-		double* tempV1;
-		double* tempV2;
-		double* tempV3;
-		double* tempV4;
-		double* tempV5;
-		double* tempV6;
+		std::vector<double> tempV1;
+		std::vector<double> tempV2;
+		std::vector<double> tempV3;
+		std::vector<double> tempV4;
+		std::vector<double> tempV5;
+		std::vector<double> tempV6;
 
-		DiffDoub0 *tempD1;
+		std::vector<DiffDoub0> tempD1;
 
-		double* dLdU;
-		double* dLdV;
-		double* dLdA;
-		double* dLdT;
-		double* dLdTdot;
-		double* uAdj;
-		double* vAdj;
-		double* aAdj;
-		double* tAdj;
-		double* tdotAdj;
+		std::vector<double> dLdU;
+		std::vector<double> dLdV;
+		std::vector<double> dLdA;
+		std::vector<double> dLdT;
+		std::vector<double> dLdTdot;
+		std::vector<double> uAdj;
+		std::vector<double> vAdj;
+		std::vector<double> aAdj;
+		std::vector<double> tAdj;
+		std::vector<double> tdotAdj;
 
-		DiffDoub1* dRudD;
-		DiffDoub1* dRtdD;
+		std::vector<DiffDoub1> dRudD;
+		std::vector<DiffDoub1> dRtdD;
 
-		int* elInD;
+		std::vector<int> elInD;
 
-		double* dLdD;
+		std::vector<double> dLdD;
 	
-	public:
 	    Model();
 		
-		NodeList* getNodes();
-		
-		ElementList* getElements();
-		
-		SetList* getNodeSets();
-		
-		SetList* getElementSets();
-		
-		SectionList* getSections();
-		
-		MaterialList* getMaterials();
-		
-		ConstraintList* getElasticConstraints();
-		
-		DesVarList* getDesignVars();
-		
 		void executeJob();
-
-        ~Model();	// Finish	
 		
 		// Input
 		
@@ -148,29 +126,29 @@ class Model {
 		
 		void analysisPrep();
 		
-		void buildElasticAppLoad(double appLd[], double time);
+		void buildElasticAppLoad(std::vector<double>& appLd, double time);
 
-		void buildThermalAppLoad(double appLd[], double time);
+		void buildThermalAppLoad(std::vector<double>& appLd, double time);
 		
-		void buildElasticSolnLoad(double solnLd[], bool buildMat, bool fullRef);
+		void buildElasticSolnLoad(std::vector<double>& solnLd, bool buildMat, bool fullRef);
 
-		void buildThermalSolnLoad(double solnLd[], bool buildMat);
+		void buildThermalSolnLoad(std::vector<double>& solnLd, bool buildMat);
 
 		void scaleElasticConst();
 
 		void scaleThermalConst();
 
-		void buildElasticConstLoad(double constLd[]);
+		void buildElasticConstLoad(std::vector<double>& constLd);
 
-		void buildThermalConstLoad(double constLd[]);
+		void buildThermalConstLoad(std::vector<double>& constLd);
 		
-		void solveStep(JobCommand *cmd, double time, double appLdFact, bool fullRef);
+		void solveStep(double time, double appLdFact, bool fullRef);
 		
-		void solve(JobCommand *cmd);
+		void solve();
 
-		void zeroSolution(StringList& fields);
+		void zeroSolution(std::list<std::string>& fields);
 		
-		void eigenSolve(JobCommand* cmd);
+		void eigenSolve();
 
 	/*	void backupElastic();
 
@@ -194,13 +172,13 @@ class Model {
 
 		void writeTimeStepSoln(int tStep);
 		
-		void writeNodeResults(std::string fileName, std::string nodeSet, StringList& fields, int timeStep);
+		void writeNodeResults(std::string fileName, std::string nodeSet, std::list<std::string>& fields, int timeStep);
 
-		void writeElementResults(std::string fileName, std::string elSet, StringList& fields, std::string position, int timeStep);
+		void writeElementResults(std::string fileName, std::string elSet, std::list<std::string>& fields, std::string position, int timeStep);
 
 		void writeModalResults(std::string fileName, bool writeModes);
 
-		void writeObjective(std::string fileName, StringList& includeFields, bool writeGrad);
+		void writeObjective(std::string fileName, std::list<std::string>& includeFields, bool writeGrad);
 		
 		//
 };

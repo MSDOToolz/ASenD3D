@@ -2,12 +2,13 @@
 #define NODECLASS
 #include <string>
 #include <iostream>
+#include <vector>
 #include "ListEntClass.h"
 #include "DiffDoubClass.h"
 #include "DesignVariableClass.h"
 
 class Node {
-	private:
+	public:
 	    int label;
 		bool fluid;
 		int numDof;
@@ -23,6 +24,8 @@ class Node {
 		double tempChangeRate;
 		double flDen;
 		double flDenDot;
+		double turbE;
+		double turbEDot;
 		double prevDisp[6];
 		double prevVel[6];
 		double prevFlVel[3];
@@ -35,6 +38,9 @@ class Node {
 		double prevFlDen;
 		double pFlDenLF;
 		double prevFlDenDot;
+		double prevTurbE;
+		double prevTurbEDot;
+		double pTurbELF;
 		double initialDisp[6];
 		double initialVel[6];
 		double initialFlVel[3];
@@ -44,22 +50,13 @@ class Node {
 		double initialTdot;
 		double initialFlDen;
 		double initialFlDenDot;
-		IntList dVars;
-		DoubList coefs;
-		Node *nextNd;
+		double initialTurbE;
+		double initialTurbEDot;
+		std::list<IDCapsule> dVarLst;
 		
-    public:
-	    Node(int newLab);
-
-		void setFluid(bool newFluid);
-		
-		void setNumDof(int nDof);
+	    Node();
 		
 		void setCrd(double newCrd[]);
-		
-		void setDofIndex(int dof, int index);
-
-		void setSortedRank(int newRank);
 		
 		void setDisplacement(double newDisp[]);
 
@@ -70,22 +67,10 @@ class Node {
 		void setFlVel(double newVel[]);
 
 		void setFlVelDot(double newFlVDot[]);
-
-		void setTemperature(double newTemp);
-
-		void setTdot(double newTdot);
-
-		void setFlDen(double newFlDen);
-
-		void setFlDenDot(double newFlDDot);
 		
 		void addToDisplacement(double delDisp[]);
 
 		void addToFlVel(double delFlVel[]);
-
-		void addToTemperature(double delTemp);
-
-		void addToFlDen(double delFlDen);
 		
 		void setInitialDisp(double newDisp[]);
 		
@@ -96,14 +81,6 @@ class Node {
 		void setInitialFlVel(double newFlVel[]);
 
 		void setInitialFlVDot(double newFlVDot[]);
-		
-		void setInitialTemp(double newTemp);
-		
-		void setInitialTdot(double newTdot);
-
-		void setInitialFlDen(double newFlDen);
-
-		void setInitialFlDDot(double newFlDen);
 
 		void setPrevDisp(double newDisp[]);
 
@@ -116,18 +93,6 @@ class Node {
 		void setPFlVelLF(double newVel[]);
 
 		void setPrevFlVDot(double newFlVDot[]);
-
-		void setPrevTemp(double newTemp);
-
-		void setPTempLF(double newTemp);
-
-		void setPrevTdot(double newTdot);
-
-		void setPrevFlDen(double newFlDen);
-
-		void setPFlDenLF(double newDen);
-
-		void setPrevFlDDot(double newFlDDot);
 		
 		void initializeDisp();
 
@@ -136,6 +101,8 @@ class Node {
 		void initializeTemp();
 
 		void initializeFlDen();
+
+		void initializeTurbE();
 		
 		void updateVelAcc(double nmBeta, double nmGamma, double delT);
 
@@ -144,6 +111,8 @@ class Node {
 		void updateTdot(double nmGamma, double delT);
 
 		void updateFlDenDot(double nmGamma, double delT);
+
+		void updateTurbEDot(double nmGamma, double delT);
 		
 		void advanceDisp();
 
@@ -153,6 +122,8 @@ class Node {
 
 		void advanceFlDen();
 
+		void advanceTurbE();
+
 		void backstepDisp();
 
 		void backstepFlVel();
@@ -160,108 +131,39 @@ class Node {
 		void backstepTemp();
 
 		void backstepFlDen();
+
+		void backstepTurbE();
 		
 		void addDesignVariable(int dIndex, double coef);
 		
-		IntList* getDesignVars();
-		
-		void getCrd(double crdOut[]);
-		
-		int getLabel();
-
-		bool isFluid();
-		
-		int getNumDof();
-		
-		void getDisp(double dispOut[]);
-		
-		void getVel(double velOut[]);
-		
-		void getAcc(double accOut[]);
-
-		void getFlVel(double velOut[]);
-
-		void getFlVelDot(double velDotOut[]);
-		
-		double getTemperature();
-		
-		double getTdot();
-
-		double getFlDen();
-
-		double getFlDenDot();
-
-		void getPrevDisp(double dispOut[]);
-
-		void getPrevVel(double velOut[]);
-
-		void getPrevAcc(double accOut[]);
-
-		void getPrevFlVel(double flVelOut[]);
-
-		void getPrevFlVelDot(double flVDOut[]);
-
-		double getPrevTemp();
-
-		double getPrevTdot();
-
-		double getPrevFlDen();
-
-		double getPrevFlDenDot();
-		
 //dup1
-		void getCrd(DiffDoub0 crdOut[], DesignVariable* dvAr[]);
-
-		void getDefCrd(DiffDoub0 crdOut[], DesignVariable* dvAr[]);
+		void getCrd(DiffDoub0 crdOut[], std::vector<DesignVariable>& dvAr);
 		
 		void getDisp(DiffDoub0 disp[]);
 		
-		void getElasticDVLoad(DiffDoub0 ld[], DesignVariable* dvAr[]);
+		void getElasticDVLoad(DiffDoub0 ld[], std::vector<DesignVariable>& dvAr);
 
-		void getThermalDVLoad(DiffDoub0& ld, DesignVariable* dvAr[]);
-//end dup		
+		void getThermalDVLoad(DiffDoub0& ld, std::vector<DesignVariable>& dvAr);
+//end dup	
  
 //skip 
  
 //DiffDoub1 versions: 
 //dup1
-		void getCrd(DiffDoub1 crdOut[], DesignVariable* dvAr[]);
+		void getCrd(DiffDoub1 crdOut[], std::vector<DesignVariable>& dvAr);
 		
 		void getDisp(DiffDoub1 disp[]);
 		
-		void getElasticDVLoad(DiffDoub1 ld[], DesignVariable* dvAr[]);
+		void getElasticDVLoad(DiffDoub1 ld[], std::vector<DesignVariable>& dvAr);
 
-		void getThermalDVLoad(DiffDoub1& ld, DesignVariable* dvAr[]);
-//end dup		
+		void getThermalDVLoad(DiffDoub1& ld, std::vector<DesignVariable>& dvAr);
+//end dup	
  
 //end skip 
  
  
-		int getDofIndex(int dof);
+ 
 
-		int getSortedRank();
-		
-		Node* getNext();
-		
-		void setNext(Node *newNext);
-};
-
-class NodeList {
-	private:
-	    Node *firstNode;
-		Node *lastNode;
-		int length;
-		
-	public:
-	    NodeList();
-		
-		void addNode(Node *newNd);
-		
-		int getLength();
-		
-		Node* getFirst();
-
-		~NodeList();
 };
 
 #endif

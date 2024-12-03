@@ -1,84 +1,23 @@
 #include "SetClass.h"
 #include <string>
+#include <vector>
 #include "ListEntClass.h"
 
 using namespace std;
 
 Set::Set() {
     name = "";
-    nextSet = nullptr;
+	labels.clear();
 	return;
 }
 
-void Set::setName(string newNm) {
-	name = newNm;
-	return;
-}
-
-void Set::addEntry(int newLabel) {
-    labels.addEntry(newLabel);
-}
-
-string Set::getName() {
-    return name;
-}
-
-int Set::getLength() {
-	return labels.getLength();
-}
-
-IntListEnt* Set::getFirstEntry() {
-    return labels.getFirst();
-}
-
-Set* Set::getNext() {
-    return nextSet;
-}
-
-void Set::setNext(Set* newNext) {
-    nextSet = newNext;
-    return;
-}
-
-SetList::SetList() {
-	firstSet = nullptr;
-	lastSet = nullptr;
-	length = 0;
-}
-
-void SetList::addSet(Set *newSet) {
-	if(!firstSet) {
-		firstSet = newSet;
-		lastSet = newSet;
-	} else {
-		lastSet->setNext(newSet);
-		lastSet = newSet;
+bool Set::addIfAbsent(int newI) {
+	for (auto& i : labels) {
+		if (i == newI) {
+			return false;
+		}
 	}
-	length++;
+	labels.push_back(newI);
+	return true;
 }
 
-int SetList::getLength() {
-	return length;
-}
-
-Set* SetList::getFirst() {
-	return firstSet;
-}
-
-Set* SetList::getLast() {
-	return lastSet;
-}
-
-SetList::~SetList() {
-	Set* thisSet = firstSet;
-	Set* nextSet;
-	while (thisSet) {
-		nextSet = thisSet->getNext();
-		delete thisSet;
-		thisSet = nextSet;
-	}
-	firstSet = nullptr;
-	lastSet = nullptr;
-	length = 0;
-	return;
-}

@@ -136,6 +136,7 @@
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\ListEntClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\LoadClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\LowerTriMatClass.h" />
+    <ClInclude Include="..\..\..\..\solverSrc\mainSolver\LUMatClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\matrixFunctions.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\ModelClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\NodeClass.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\ListEntClass.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\LoadClass.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\LowerTriMatClass.cpp" />
+    <ClCompile Include="..\..\..\..\solverSrc\mainSolver\LUMatClass.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\matrixFunctions.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\ModelAnalysis.cpp" />
     <ClCompile Include="..\..\..\..\solverSrc\mainSolver\ModelClass.cpp" />

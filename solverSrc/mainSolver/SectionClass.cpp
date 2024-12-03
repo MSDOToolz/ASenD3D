@@ -2,12 +2,12 @@
 #include "matrixFunctions.h"
 #include <string>
 #include <cmath>
+#include <vector>
 
 using namespace std;
 
-
-Material::Material(string newName) {
-	name = newName;
+Material::Material() {
+	name = "";
 	int i1;
 	for(i1 = 0; i1 < 36; i1++) {
 		stiffness[i1] = 0.0;
@@ -16,388 +16,30 @@ Material::Material(string newName) {
 	return;
 }
 
-void Material::setDensity(double newDen) {
-	density = newDen;
-	return;
-}
-
-void Material::setModulus(double newMod[]) {
-	modulus[0] = newMod[0];
-	modulus[1] = newMod[1];
-	modulus[2] = newMod[2];
-	return;
-}
-
-void Material::setPoissonRatio(double newPR[]) {
-	poissonRatio[0] = newPR[0];
-	poissonRatio[1] = newPR[1];
-	poissonRatio[2] = newPR[2];
-	return;
-}
-
-void Material::setShearMod(double newMod[]) {
-	shearMod[0] = newMod[0];
-	shearMod[1] = newMod[1];
-	shearMod[2] = newMod[2];
-	return;
-}
-
 void Material::setStiffness(int row, int col, double val) {
-	stiffness[(6*row+col)] = val;
-	stiffness[(6*col+row)] = val;
-	return;
-}
-
-void Material::setConductivity(double newCond[]) {
-	conductivity[0] = newCond[0];
-	conductivity[1] = newCond[1];
-	conductivity[2] = newCond[2];
-	conductivity[3] = newCond[3];
-	conductivity[4] = newCond[4];
-	conductivity[5] = newCond[5];
-	return;
-}
-
-void Material::setExpansion(double newExp[]) {
-	expansion[0] = newExp[0];
-	expansion[1] = newExp[1];
-	expansion[2] = newExp[2];
-	expansion[3] = newExp[3];
-	expansion[4] = newExp[4];
-	expansion[5] = newExp[5];
-	return;
-}
-
-void Material::setSpecHeat(double newSpecHeat) {
-	specHeat = newSpecHeat;
+	stiffness[(6 * row + col)] = val;
+	stiffness[(6 * col + row)] = val;
 	return;
 }
 
 void Material::setDamping(int row, int col, double val) {
-	damping[6 * row + col] = val;
-	damping[6 * row + col] = val;
+	damping[(6 * row + col)] = val;
+	damping[(6 * col + row)] = val;
 	return;
 }
 
-void Material::setMaxTenStress(double newMaxStr[]) {
-	maxTenStress[0] = newMaxStr[0];
-	maxTenStress[1] = newMaxStr[1];
-	maxTenStress[2] = newMaxStr[2];
+Fluid::Fluid() {
+	name = "";
 	return;
 }
 
-void Material::setMaxCompStress(double newMaxStr[]) {
-	maxCompStress[0] = newMaxStr[0];
-	maxCompStress[1] = newMaxStr[1];
-	maxCompStress[2] = newMaxStr[2];
+Layer::Layer() {
+	matName = "";
 	return;
 }
 
-void Material::setMaxShearStress(double newMaxStr[]) {
-	maxShearStress[0] = newMaxStr[0];
-	maxShearStress[1] = newMaxStr[1];
-	maxShearStress[2] = newMaxStr[2];
-	return;
-}
-
-void Material::setMaxTenStrain(double newMaxStr[]) {
-	maxTenStrain[0] = newMaxStr[0];
-	maxTenStrain[1] = newMaxStr[1];
-	maxTenStrain[2] = newMaxStr[2];
-	return;
-}
-
-void Material::setMaxCompStrain(double newMaxStr[]) {
-	maxCompStrain[0] = newMaxStr[0];
-	maxCompStrain[1] = newMaxStr[1];
-	maxCompStrain[2] = newMaxStr[2];
-	return;
-}
-
-void Material::setMaxShearStrain(double newMaxStr[]) {
-	maxShearStrain[0] = newMaxStr[0];
-	maxShearStrain[1] = newMaxStr[1];
-	maxShearStrain[2] = newMaxStr[2];
-	return;
-}
-
-void Material::setMaxStrEng(double newMax) {
-	maxStrEng = newMax;
-	return;
-}
-
-void Material::setMaxMises(double newMax) {
-	maxMises = newMax;
-	return;
-}
-
-void Material::setNext(Material *newMat) {
-	nextMat = newMat;
-	return;
-}
-
-string Material::getName() {
-	return name;
-}
-
-double Material::getDensity() {
-	return density;
-}
-
-double* Material::getModulus() {
-	return &modulus[0];
-}
-
-double* Material::getPoissonRatio() {
-	return &poissonRatio[0];
-}
-
-double* Material::getShearMod() {
-	return &shearMod[0];
-}
-
-double* Material::getStiffMat() {
-	return &stiffness[0];
-}
-
-double* Material::getThermExp() {
-	return &expansion[0];
-}
-
-double* Material::getConductivity() {
-	return &conductivity[0];
-}
-
-double Material::getSpecificHeat() {
-	return specHeat;
-}
-
-double* Material::getDamping() {
-	return &damping[0];
-}
-
-Material* Material::getNext() {
-	return nextMat;
-}
-
-MaterialList::MaterialList() {
-	firstMat = nullptr;
-	lastMat = nullptr;
-	length = 0;
-}
-
-void MaterialList::addMaterial(Material *newMat) {
-	if(!firstMat) {
-		firstMat = newMat;
-		lastMat = newMat;
-	} else {
-		lastMat->setNext(newMat);
-		lastMat = newMat;
-	}
-	length++;
-}
-
-int MaterialList::getLength() {
-	return length;
-}
-
-Material* MaterialList::getFirst() {
-	return firstMat;
-}
-
-MaterialList::~MaterialList() {
-	Material* thisMat = firstMat;
-	Material* nextMat;
-	while (thisMat) {
-		nextMat = thisMat->getNext();
-		delete thisMat;
-		thisMat = nextMat;
-	}
-	firstMat = nullptr;
-	lastMat = nullptr;
-	length = 0;
-	return;
-}
-
-Fluid::Fluid(string newName) {
-	name = newName;
-	nextFl = nullptr;
-	return;
-}
-
-void Fluid::setViscosity(double newVis) {
-	viscosity = newVis;
-	return;
-}
-
-void Fluid::setIdealGas(double newIG) {
-	idealGas = newIG;
-	return;
-}
-
-void Fluid::setThermCond(double newTC) {
-	thermCond = newTC;
-	return;
-}
-
-void Fluid::setSpecHeat(double newSH) {
-	specHeat = newSH;
-	return;
-}
-
-void Fluid::setNext(Fluid* newNext) {
-	nextFl = newNext;
-	return;
-}
-
-double Fluid::getViscosity() {
-	return viscosity;
-}
-
-double Fluid::getIdealGas() {
-	return idealGas;
-}
-
-double Fluid::getThermCond() {
-	return thermCond;
-}
-
-double Fluid::getSpecHeat() {
-	return specHeat;
-}
-
-Fluid* Fluid::getNext() {
-	return nextFl;
-}
-
-FluidList::FluidList() {
-	firstFl = nullptr;
-	lastFl = nullptr;
-	length = 0;
-}
-
-void FluidList::addFluid(Fluid* newFl) {
-	if (!firstFl) {
-		firstFl = newFl;
-		lastFl = newFl;
-	}
-	else {
-		lastFl->setNext(newFl);
-		lastFl = newFl;
-	}
-	length++;
-}
-
-int FluidList::getLength() {
-	return length;
-}
-
-Fluid* FluidList::getFirst() {
-	return firstFl;
-}
-
-FluidList::~FluidList() {
-	Fluid* thisFl = firstFl;
-	Fluid* nextFl;
-	while (thisFl) {
-		nextFl = thisFl->getNext();
-		delete thisFl;
-		thisFl = nextFl;
-	}
-	firstFl = nullptr;
-	lastFl = nullptr;
-	length = 0;
-	return;
-}
-
-Layer::Layer(string newNm) {
-	matName = newNm;
-	return;
-}
-
-void Layer::setThickness(double newThk) {
-	thickness = newThk;
-	return;
-}
-		
-void Layer::setAngle(double newAngle) {
-	angle = newAngle;
-	return;
-}
-
-string Layer::getMatName() {
-	return matName;
-}
-
-Material* Layer::getMatPt() {
-	return matPtr;
-}
-
-double Layer::getThickness() {
-	return thickness;
-}
-
-double Layer::getAngle() {
-	return angle;
-}
-
-Layer* Layer::getNext() {
-	return nextLay;
-}
-
-void Layer::setNext(Layer *newNext) {
-	nextLay = newNext;
-	return;
-}
-
-void Layer::setMatPtr(Material *newPtr) {
-	matPtr = newPtr;
-	return;
-}
-
-
-LayerList::LayerList() {
-	firstLay = nullptr;
-	lastLay = nullptr;
-	length = 0;
-}
-
-void LayerList::addLayer(Layer *newLay) {
-	if(!firstLay) {
-		firstLay = newLay;
-		lastLay = newLay;
-	} else {
-		lastLay->setNext(newLay);
-		lastLay = newLay;
-	}
-	length++;
-	return;
-}
-
-int LayerList::getLength() {
-	return length;
-}
-
-Layer* LayerList::getFirst() {
-	return firstLay;
-}
-
-LayerList::~LayerList() {
-	Layer* thisLay = firstLay;
-	Layer* nextLay;
-	while (thisLay) {
-		nextLay = thisLay->getNext();
-		delete thisLay;
-		thisLay = nextLay;
-	}
-	firstLay = nullptr;
-	lastLay = nullptr;
-	length = 0;
-	return;
-}
-
-Section::Section(string newType) {
-	type = newType;
+Section::Section() {
+	type = "";
 	int i1;
 	for (i1 = 0; i1 < 36; i1++) {
 		stiffness[i1] = 0.0;
@@ -428,43 +70,19 @@ Section::Section(string newType) {
 	radCoef = 0.0;
 	denVisCoef = 0.0;
 	tempVisCoef = 0.0;
-	gradVisCoef = 0.0;
+	turbVisCoef = 0.0;
+	gradVTurbCoef = 0.0;
+	dissTurbCoef = 0.0;
 	enthCoef = 0.0;
 	enthExp = 1.0;
 	presCoef = 0.0;
 	presExp = 1.0;
 	refTemp = 0.0;
 	refDen = 0.0;
-	refGradV = 0.0;
+	refTurbE = 0.0;
 	refEnth = 0.0;
-	matPtr = nullptr;
-	flPtr = nullptr;
-	nextSection = nullptr;
-	return;
-}
-
-void Section::setElset(string newSet) {
-	elSetName = newSet;
-	return;
-}
-
-void Section::setMaterial(string newMat) {
-	matName = newMat;
-	return;
-}
-
-void Section::setFluid(string newFl) {
-	flName = newFl;
-	return;
-}
-
-void Section::setMatPtr(Material *newMat) {
-	matPtr = newMat;
-	return;
-}
-
-void Section::setFlPtr(Fluid* newFl) {
-	flPtr = newFl;
+	matPtr = -1;
+	flPtr = -1;
 	return;
 }
 
@@ -495,21 +113,6 @@ void Section::setOrientation(double newOri[]) {
 	return;
 }
 
-void Section::setZOffset(double newZOff) {
-	zOffset = newZOff;
-	return;
-}
-
-void Section::addLayer(Layer *newLay) {
-	layers.addLayer(newLay);
-	return;
-}
-
-void Section::setArea(double newArea) {
-	area = newArea;
-	return;
-}
-
 void Section::setAreaMoment(double newI[]) {
     areaMoment[0] = newI[0];
 	areaMoment[1] = newI[1];
@@ -517,10 +120,6 @@ void Section::setAreaMoment(double newI[]) {
 	areaMoment[3] = newI[3];
 	areaMoment[4] = newI[4];
 	return;
-}
-
-void Section::setPolarMoment(double newJ) {
-	polarMoment = newJ;
 }
 
 void Section::setStiffness(int row, int col, double val) {
@@ -551,314 +150,12 @@ void Section::setExpLd(double newExpLd[]) {
 	return;
 }
 
-void Section::setConductivity(double newCond) {
-	conductivity = newCond;
-	return;
-}
-
-void Section::setSpecHeat(double specHeat) {
-	specHeat = specHeat;
-	return;
-}
-
-void Section::setMassPerEl(double newMass) {
-	massPerEl = newMass;
-	return;
-}
-
-void Section::setPotCoef(double newCoef) {
-	potCoef = newCoef;
-	return;
-}
-
-void Section::setPotExp(double newExp) {
-	potExp = newExp;
-	return;
-}
-
-void Section::setDampCoef(double newCoef) {
-	dampCoef = newCoef;
-	return;
-}
-
-void Section::setDampExp(double newExp) {
-	dampExp = newExp;
-	return;
-}
-
-void Section::setCondCoef(double newCoef) {
-	condCoef = newCoef;
-	return;
-}
-
-void Section::setRadCoef(double newCoef) {
-	radCoef = newCoef;
-	return;
-}
-
-void Section::setDenVisCoef(double newCoef) {
-	denVisCoef = newCoef;
-	return;
-}
-
-void Section::setTempVisCoef(double newCoef) {
-	tempVisCoef = newCoef;
-	return;
-}
-
-void Section::setGradVisCoef(double newCoef) {
-	gradVisCoef = newCoef;
-	return;
-}
-
-void Section::setEnthCoef(double newCoef) {
-	enthCoef = newCoef;
-	return;
-}
-
-void Section::setEnthExp(double newExp) {
-	enthExp = newExp;
-	return;
-}
-
-void Section::setPresCoef(double newCoef) {
-	presCoef = newCoef;
-	return;
-}
-
-void Section::setPresExp(double newExp) {
-	presExp = newExp;
-	return;
-}
-
-void Section::setRefTemp(double newRT) {
-	refTemp = newRT;
-	return;
-}
-
-void Section::setRefDen(double newDen) {
-	refDen = newDen;
-	return;
-}
-
-void Section::setRefGradV(double newGV) {
-	refGradV = newGV;
-	return;
-}
-
-void Section::setRefEnth(double newEnth) {
-	refEnth = newEnth;
-	return;
-}
-
-string Section::getElset() {
-	return elSetName;
-}
-
-string Section::getMaterial() {
-	return matName;
-}
-
-string Section::getFluid() {
-	return flName;
-}
-
-Material* Section::getMatPtr() {
-	return matPtr;
-}
-
-Fluid* Section::getFluidPtr() {
-	return flPtr;
-}
-
-double* Section::getOrientation() {
-	return &orientation[0];
-}
-
-double Section::getZOffset() {
-	return zOffset;
-}
-
-int Section::getNumLayers() {
-	return layers.getLength();
-}
-
-Layer* Section::getFirstLayer() {
-	return layers.getFirst();
-}
-
-double Section::getArea() {
-	return area;
-}
-
-double* Section::getAreaMoment() {
-	return &areaMoment[0];
-}
-
-double Section::getPolarMoment() {
-	return polarMoment;
-}
-
-double* Section::getStiffMat() {
-	return &stiffness[0];
-}
-
-double* Section::getMassMat() {
-	return &mass[0];
-}
-
-double* Section::getDampMat() {
-	return &damping[0];
-}
-
-double* Section::getExpLoad() {
-	return &expLoadCoef[0];
-}
-
-double Section::getConductivity() {
-	return conductivity;
-}
-
-double Section::getSpecificHeat() {
-	return specHeat;
-}
-
-double Section::getMassPerEl() {
-	return massPerEl;
-}
-
-double Section::getPotCoef() {
-	return potCoef;
-}
-
-double Section::getPotExp() {
-	return potExp;
-}
-
-double Section::getDampCoef() {
-	return dampCoef;
-}
-
-double Section::getDampExp() {
-	return dampExp;
-}
-
-double Section::getCondCoef() {
-	return condCoef;
-}
-
-double Section::getRadCoef() {
-	return radCoef;
-}
-
-double Section::getRefTemp() {
-	return refTemp;
-}
-
-double Section::getDenVisCoef() {
-	return denVisCoef;
-}
-
-double Section::getTempVisCoef() {
-	return tempVisCoef;
-}
-
-double Section::getGradVisCoef() {
-	return gradVisCoef;
-}
-
-double Section::getEnthCoef() {
-	return enthCoef;
-}
-
-double Section::getEnthExp() {
-	return enthExp;
-}
-
-double Section::getPresCoef() {
-	return presCoef;
-}
-
-double Section::getPresExp() {
-	return presExp;
-}
-
-double Section::getRefTemp() {
-	return presExp;
-}
-
-double Section::getRefDen() {
-	return refDen;
-}
-
-double Section::getRefGradV() {
-	return refGradV;
-}
-
-double Section::getRefEnth() {
-	return refEnth;
-}
-
-Section* Section::getNext() {
-	return nextSection;
-}
-
-void Section::setNext(Section *newNext) {
-	nextSection = newNext;
-	return;
-}
-
-SectionList::SectionList() {
-	firstSec = nullptr;
-	lastSec = nullptr;
-	length = 0;
-	return;
-}
-
-void SectionList::addSection(Section *newSec) {
-	if(!firstSec) {
-		firstSec = newSec;
-		lastSec = newSec;
-	} else {
-		lastSec->setNext(newSec);
-		lastSec = newSec;
-	}
-	length++;
-	return;
-}
-
-int SectionList::getLength() {
-	return length;
-}
-
-Section* SectionList::getFirst() {
-	return firstSec;
-}
-
-int SectionList::getMaxNumLayers() {
-	int maxNL = 0;
-	int nL;
-	Section* thisSec = firstSec;
-	while (thisSec) {
-		nL = thisSec->getNumLayers();
-		if (nL > maxNL) {
-			maxNL = nL;
+int Section::getLayerMatPtr(int layi) {
+	int i1 = 0;
+	for (auto& lay : layers) {
+		if (i1 == layi) {
+			return lay.matPtr;
 		}
-		thisSec = thisSec->getNext();
+		i1++;
 	}
-	return maxNL;
-}
-
-SectionList::~SectionList() {
-	Section* thisSec = firstSec;
-	Section* nextSec;
-	while (thisSec) {
-		nextSec = thisSec->getNext();
-		delete thisSec;
-		thisSec = nextSec;
-	}
-	firstSec = nullptr;
-	lastSec = nullptr;
-	length = 0;
-	return;
 }

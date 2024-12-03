@@ -6,38 +6,18 @@
 using namespace std;
 
 
-Load::Load(string newType) {
-	type = newType;
+Load::Load() {
+	type = "";
 	activeTime[0] = 0.0;
 	activeTime[1] = 1.0e+100;
-	ndSetPtr = nullptr;
-	elSetPtr = nullptr;
+	ndSetPtr = -1;
+	elSetPtr = -1;
 	return;
 }
 
 void Load::setActTime(double newAt[]) {
 	activeTime[0] = newAt[0];
 	activeTime[1] = newAt[1];
-	return;
-}
-
-void Load::setNodeSet(string newSet) {
-	nodeSet = newSet;
-	return;
-}
-
-void Load::setNdSetPtr(Set *newSet) {
-	ndSetPtr = newSet;
-	return;
-}
-
-void Load::setElSet(string newSet) {
-	elementSet = newSet;
-	return;
-}
-
-void Load::setElSetPtr(Set *newSet) {
-	elSetPtr = newSet;
 	return;
 }
 
@@ -63,11 +43,6 @@ void Load::setNormDir(double newNDir[]) {
 	return;
 }
 
-void Load::setNormTol(double newTol) {
-	normTol = newTol;
-	return;
-}
-
 void Load::setCenter(double newCent[]) {
 	center[0] = newCent[0];
 	center[1] = newCent[1];
@@ -84,128 +59,5 @@ void Load::setAxis(double newAxis[]) {
 	axis[0] = mag*axis[0];
 	axis[1] = mag*axis[1];
 	axis[2] = mag*axis[2];
-	return;
-}
-
-void Load::setAngVel(double newAngVel) {
-	angularVel = newAngVel;
-	return;
-}
-
-void Load::setNext(Load *newNext) {
-	nextLd = newNext;
-	return;
-}
-
-// get
-
-string Load::getType() {
-	return type;
-}
-
-void Load::getActTime(double actTm[]) {
-	actTm[0] = activeTime[0];
-	actTm[1] = activeTime[1];
-	return;
-}
-
-string Load::getNodeSet() {
-	return nodeSet;
-}
-
-Set* Load::getNdSetPtr() {
-	return ndSetPtr;
-}
-
-string Load::getElSet() {
-	return elementSet;
-}
-
-Set* Load::getElSetPtr() {
-	return elSetPtr;
-}
-
-void Load::getLoad(double ldOut[]) {
-	ldOut[0] = load[0];
-	ldOut[1] = load[1];
-	ldOut[2] = load[2];
-	ldOut[3] = load[3];
-	ldOut[4] = load[4];
-	ldOut[5] = load[5];
-	return;
-}
-
-void Load::getNormDir(double ndOut[]) {
-	ndOut[0] = normalDir[0];
-	ndOut[1] = normalDir[1];
-	ndOut[2] = normalDir[2];
-	return;
-}
-
-double Load::getNormTol() {
-	return normTol;
-}
-
-void Load::getCenter(double centOut[]) {
-	centOut[0] = center[0];
-	centOut[1] = center[1];
-	centOut[2] = center[2];
-	return;
-}
-
-void Load::getAxis(double axisOut[]) {
-	axisOut[0] = axis[0];
-	axisOut[1] = axis[1];
-	axisOut[2] = axis[2];
-	return;
-}
-
-double Load::getAngVel() {
-	return angularVel;
-}
-
-Load* Load::getNext() {
-	return nextLd;
-}
-
-
-//LoadList
-
-LoadList::LoadList() {
-	firstLoad = nullptr;
-	lastLoad = nullptr;
-	length = 0;
-}
-
-void LoadList::addLoad(Load *newLd) {
-	if(!firstLoad) {
-		firstLoad = newLd;
-		lastLoad = newLd;
-	} else {
-		lastLoad->setNext(newLd);
-		lastLoad = newLd;
-	}
-	length++;
-}
-
-int LoadList::getLength() {
-	return length;
-}
-
-Load* LoadList::getFirst() {
-	return firstLoad;
-}
-
-LoadList::~LoadList() {
-	Load* thisLd = firstLoad;
-	Load* nextLd;
-	while (thisLd) {
-		nextLd = thisLd->getNext();
-		delete thisLd;
-		thisLd = nextLd;
-	}
-	firstLoad = nullptr;
-	lastLoad = nullptr;
-	length = 0;
 	return;
 }

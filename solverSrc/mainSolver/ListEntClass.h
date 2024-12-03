@@ -2,89 +2,15 @@
 #define LISTENT
 #include <string>
 #include <fstream>
+#include <vector>
+#include <list>
 
-class IntListEnt {
-    public:
-	    int value;
-		IntListEnt *next;
-	
-	    IntListEnt(int newVal);
-};
+class IDCapsule {
+public:
+	int intDat;
+	double doubDat;
 
-class IntList {
-	private:
-	    int len;
-	    IntListEnt *first;
-		IntListEnt *last;
-		
-    public:
-	    IntList();
-		
-		int getLength();
-		
-		IntListEnt* getFirst();
-		
-		IntListEnt* getLast();
-		
-		void addEntry(int newInt);
-		
-		void addIfAbsent(int newInt);
-		
-		~IntList();
-};
-
-class DoubListEnt {
-    public:
-	    double value;
-		DoubListEnt *next;
-		
-		DoubListEnt(double newVal);
-};
-
-class DoubList {
-	private:
-	    int len;
-	    DoubListEnt *first;
-		DoubListEnt *last;
-		
-    public:
-	    DoubList();
-		
-		int getLength();
-		
-		DoubListEnt* getFirst();
-		
-		void addEntry(double newDoub);
-		
-		void addIfAbsent(double newDoub);
-		
-		~DoubList();
-};
-
-class StringListEnt {
-	public:
-	    std::string value;
-		StringListEnt *next;
-		
-		StringListEnt(std::string newStr);
-};
-
-class StringList {
-	private:
-	    int len;
-		StringListEnt *first;
-		StringListEnt *last;
-		
-	public:
-	    StringList();
-		
-		int getLength();
-		
-		StringListEnt* getFirst();
-		
-		void addEntry(std::string newStr);
-		
-		~StringList();
+	IDCapsule();
 };
 
 class MatrixEnt {
@@ -92,17 +18,24 @@ class MatrixEnt {
 	    int row;
 		int col;
 		double value;
-		MatrixEnt *nextEnt;
 		
-	    MatrixEnt(int newRow, int newCol, double newVal);
+	    MatrixEnt();
+};
+
+class MatrixRow {
+public:
+	std::list<MatrixEnt> rowVec;
+
+	MatrixRow();
+
+	void addEntry(int row, int col, double val);
 };
 
 class SparseMat {
-	private:
-	    int dim;
-	    MatrixEnt** matrix;
-		
 	public:
+	    int dim;
+	    std::vector<MatrixRow> matrix;
+		
 	    SparseMat();
 		
 		void setDim(int newDim);
@@ -113,16 +46,10 @@ class SparseMat {
 
 		void addMatrix(SparseMat& inpMat);
 		
-		int getDim();
-		
-		MatrixEnt* getFirstEnt(int row);
-		
-		void vectorMultiply(double prod[], double inpVec[], bool transpose);
+		void vectorMultiply(std::vector<double>& prod, std::vector<double>& inpVec, bool transpose);
 
 		double getMaxAbsVal();
 
 		void writeToFile(std::ofstream& outFile);
-		
-		~SparseMat();
 };
 #endif

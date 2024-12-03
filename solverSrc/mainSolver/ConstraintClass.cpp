@@ -4,103 +4,28 @@
 #include "NodeClass.h"
 #include <string>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
 
-ConstraintTerm::ConstraintTerm(string newNSet) {
-	nodeSet = newNSet;
-	nsPtr = nullptr;
-	nextTerm = nullptr;
+ConstraintTerm::ConstraintTerm() {
+	nodeSet = "";
+	nsPtr = -1;
+	int dof = -1;
+	coef = 0.0;
 	return;
-}
-
-void ConstraintTerm::setNsPtr(Set* newPtr) {
-	nsPtr = newPtr;
-	return;
-}
-
-void ConstraintTerm::setDof(int newDof) {
-	dof = newDof;
-	return;
-}
-
-void ConstraintTerm::setCoef(double newCoef) {
-	coef = newCoef;
-	return;
-}
-
-string ConstraintTerm::getSetName() {
-	return nodeSet;
-}
-
-Set* ConstraintTerm::getSetPtr() {
-	return nsPtr;
-}
-
-int ConstraintTerm::getDof() {
-	return dof;
-}
-
-double ConstraintTerm::getCoef() {
-	return coef;
-}
-
-void ConstraintTerm::setNext(ConstraintTerm *newNext) {
-	nextTerm = newNext;
-	return;
-}
-
-ConstraintTerm* ConstraintTerm::getNext() {
-	return nextTerm;
 }
 
 
 Constraint::Constraint() {
-	firstTerm = nullptr;
-	lastTerm = nullptr;
-	nextConst = nullptr;
+	terms.clear();
 	rhs = 0.0;
 	scaleFact = 0.0;
 	return;
 }
 
-void Constraint::setType(string newType) {
-	type = newType;
-	return;
-}
-
-void Constraint::addTerm(ConstraintTerm *newTerm) {
-	if(!firstTerm) {
-		firstTerm = newTerm;
-		lastTerm = newTerm;
-	} else {
-		lastTerm->setNext(newTerm);
-		lastTerm = newTerm;
-	}
-	return;
-}
-
-void Constraint::setRhs(double newRhs) {
-	rhs = newRhs;
-	return;
-}
-
-void Constraint::setScaleFact(double newSFact) {
-	scaleFact = newSFact;
-	return;
-}
-
-void Constraint::setNext(Constraint *newNext) {
-	nextConst = newNext;
-	return;
-}
-
-Constraint* Constraint::getNext() {
-	return nextConst;
-}
-
-void Constraint::buildMat(Node* ndAr[]) {
+void Constraint::buildMat(vector<Node>& ndAr, vector<Set>& setAr) {
 	int setLen = 1;
 	int setiLen;
 	int ndIndex;
@@ -110,94 +35,68 @@ void Constraint::buildMat(Node* ndAr[]) {
 	double coef;
 	string setNm;
 	bool setFound;
-	IntListEnt *thisNd;
-	Set *thisSet;
+	int thisSet;
 
-	ConstraintTerm *thisTerm = firstTerm;
-	while(thisTerm) {
-		thisSet = thisTerm->getSetPtr();
-		setiLen = thisSet->getLength();
+	for (auto& tm : terms) {
+		thisSet = tm.nsPtr;
+		setiLen = setAr[thisSet].labels.size();
 		if (setiLen > setLen) {
 			setLen = setiLen;
 		}
-		thisTerm = thisTerm->getNext();
 	}
 
 	mat.setDim(setLen);
-	thisTerm = firstTerm;
-	while(thisTerm) {
-		coef = thisTerm->getCoef();
-		dof = thisTerm->getDof();
-		thisSet = thisTerm->getSetPtr();
-		if (thisSet->getLength() == 1) {
-			thisNd = thisSet->getFirstEntry();
-			ndIndex = thisNd->value;
+	for (auto& tm : terms) {
+		coef = tm.coef;
+		dof = tm.dof;
+		thisSet = tm.nsPtr;
+		list<int>& setLabs = setAr[thisSet].labels;
+		if (setLabs.size() == 1) {
+			ndIndex = *setLabs.begin();
 			if (type == "displacement") {
-				col = ndAr[ndIndex]->getDofIndex(dof - 1);
+				col = ndAr[ndIndex].dofIndex[dof - 1];
 			}
 			else {
-				col = ndAr[ndIndex]->getSortedRank();
+				col = ndAr[ndIndex].sortedRank;
 			}
 			for (row = 0; row < setLen; row++) {
 				mat.addEntry(row, col, coef);
 			}
 		}
 		else {
-			thisNd = thisSet->getFirstEntry();
 			row = 0;
-			while (thisNd) {
-				ndIndex = thisNd->value;
+			for (auto& nd : setLabs) {
 				if (type == "displacement") {
-					col = ndAr[ndIndex]->getDofIndex(dof - 1);
+					col = ndAr[nd].dofIndex[dof - 1];
 				}
 				else {
-					col = ndAr[ndIndex]->getSortedRank();
+					col = ndAr[nd].sortedRank;
 				}
 				mat.addEntry(row, col, coef);
-				thisNd = thisNd->next;
 				row++;
 			}
 		}
-
-		thisTerm = thisTerm->getNext();
 	}
 	return;
 }
 
-ConstraintTerm* Constraint::getFirst() {
-	return firstTerm;
-}
-
-int Constraint::getMatDim() {
-	return mat.getDim();
-}
-
-double Constraint::getScaleFact() {
-	return scaleFact;
-}
-
-MatrixEnt* Constraint::getMatFirst(int row) {
-	return mat.getFirstEnt(row);
-}
-
-void Constraint::fullVecMultiply(double prod[], double vec[], double tmpV[]) {
+void Constraint::fullVecMultiply(vector<double>& prod, vector<double>& vec, vector<double>& tmpV) {
 	// Compute scaleFact*[mat]^T*([mat]*vec + qVec)
 	int i1;
-	int dim = mat.getDim();
-	for (i1 = 0; i1 < dim; i1++) {
-		tmpV[i1] = 0.0;
+	for (auto& tv : tmpV) {
+		tv = 0.0;
 	}
 	mat.vectorMultiply(tmpV, vec, false);
-	for (i1 = 0; i1 < dim; i1++) {
-		tmpV[i1] *= scaleFact;
+	for (auto& tv : tmpV) {
+		tv *= scaleFact;
 	}
 	mat.vectorMultiply(prod, tmpV, true);
 	return;
 }
 
-void Constraint::getLoad(double cLd[], double uVec[], double qVec[], int resDim) {
+void Constraint::getLoad(vector<double>& cLd, vector<double>& uVec, vector<double>& qVec, int resDim) {
 	int i1;
-	int dim = mat.getDim();
+	int dim = mat.dim;
 	for (i1 = 0; i1 < dim; i1++) {
 		qVec[i1] = -rhs;
 	}
@@ -219,61 +118,28 @@ void Constraint::writeToFile(ofstream& outFile) {
 	return;
 }
 
-Constraint::~Constraint() {
-	ConstraintTerm *thisTerm = firstTerm;
-	ConstraintTerm *nextTerm;
-	while(thisTerm) {
-		nextTerm = thisTerm->getNext();
-		delete thisTerm;
-		thisTerm = nextTerm;
-	}
-	return;
-}
-
 ConstraintList::ConstraintList() {
-	firstConst = nullptr;
-	lastConst = nullptr;
+	constVec.clear();
 	return;
-}
-
-void ConstraintList::addConstraint(Constraint *newConst) {
-	if(!firstConst) {
-		firstConst = newConst;
-		lastConst = newConst;
-	} else {
-		lastConst->setNext(newConst);
-		lastConst = newConst;
-	}
-	return;
-}
-
-Constraint* ConstraintList::getFirst() {
-	return firstConst;
 }
 
 void ConstraintList::setScaleFact(double newSF) {
-	Constraint* thisConst = firstConst;
-	while (thisConst) {
-		thisConst->setScaleFact(newSF);
-		thisConst = thisConst->getNext();
+	for (auto& cnst : constVec) {
+		cnst.scaleFact = newSF;
 	}
 	return;
 }
 
-void ConstraintList::getTotalVecMult(double prod[], double vec[], double tmpV[]) {
-	Constraint* thisConst = firstConst;
-	while (thisConst) {
-		thisConst->fullVecMultiply(prod, vec, tmpV);
-		thisConst = thisConst->getNext();
+void ConstraintList::getTotalVecMult(vector<double>& prod, vector<double>& vec, vector<double>& tmpV) {
+	for (auto& cnst : constVec) {
+		cnst.fullVecMultiply(prod, vec, tmpV);
 	}
 	return;
 }
 
-void ConstraintList::getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim) {
-	Constraint* thisConst = firstConst;
-	while (thisConst) {
-		thisConst->getLoad(cLd,uVec,qVec,resDim);
-		thisConst = thisConst->getNext();
+void ConstraintList::getTotalLoad(vector<double>& cLd, vector<double>& uVec, vector<double>& qVec, int resDim) {
+	for (auto& cnst : constVec) {
+		cnst.getLoad(cLd,uVec,qVec,resDim);
 	}
 	return;
 }
@@ -281,23 +147,10 @@ void ConstraintList::getTotalLoad(double cLd[], double uVec[], double qVec[], in
 void ConstraintList::writeAllToFile(string fileName) {
 	ofstream outFile;
 	outFile.open(fileName);
-	Constraint* thisConst = firstConst;
-	while (thisConst) {
-		thisConst->writeToFile(outFile);
+	for (auto& cnst : constVec) {
+		cnst.writeToFile(outFile);
 		outFile << "##------------------------------------------------------\n";
-		thisConst = thisConst->getNext();
 	}
 	outFile.close();
-	return;
-}
-
-ConstraintList::~ConstraintList() {
-	Constraint *thisConst = firstConst;
-	Constraint *nextConst;
-	while(thisConst) {
-		nextConst = thisConst->getNext();
-		delete thisConst;
-		thisConst = nextConst;
-	}
 	return;
 }

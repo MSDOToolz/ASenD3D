@@ -7,100 +7,48 @@
 #include <fstream>
 
 class ConstraintTerm {
-	private:
+	public:
 	    std::string nodeSet;
-		Set* nsPtr;
+		int nsPtr;
 		int dof;
 		double coef;
-		ConstraintTerm *nextTerm;
 		
-	public:
-	    ConstraintTerm(std::string newNSet);
-
-		void setNsPtr(Set* newSet);
+	    ConstraintTerm();
 		
-		void setDof(int newDof);
-		
-		void setCoef(double newCoef);
-		
-		std::string getSetName();
-
-		Set* getSetPtr();
-		
-		int getDof();
-		
-		double getCoef();
-		
-		ConstraintTerm* getNext();
-		
-		void setNext(ConstraintTerm *newNext);
 };
 
 class Constraint {
-	private:
-	    ConstraintTerm *firstTerm;
-		ConstraintTerm *lastTerm;
+	public:
 		std::string type;
+		std::list<ConstraintTerm> terms;
 		double rhs;
 		SparseMat mat;
 		double scaleFact;
-		Constraint* nextConst;
 		
-	public:
 	    Constraint();
+		
+		void buildMat(std::vector<Node>& ndAr, std::vector<Set>& setAr);
 
-		void setType(std::string newType);
-		
-		void addTerm(ConstraintTerm *newTerm);
-		
-		void setRhs(double newRhs);
+		void fullVecMultiply(std::vector<double>& prod, std::vector<double>& vec, std::vector<double>& tmpV);
 
-		void setScaleFact(double newSFact);
-		
-		void setNext(Constraint *newNext);
-		
-		Constraint* getNext();
-		
-		void buildMat(Node* ndAr[]);
-
-		ConstraintTerm* getFirst();
-		
-		int getMatDim();
-
-		double getScaleFact();
-		
-		MatrixEnt* getMatFirst(int row);
-
-		void fullVecMultiply(double prod[], double vec[], double tmpV[]);
-
-		void getLoad(double cLd[], double uVec[], double qVec[],int resDim);
+		void getLoad(std::vector<double>& cLd, std::vector<double>& uVec, std::vector<double>& qVec,int resDim);
 
 		void writeToFile(std::ofstream& outFile);
-		
-		~Constraint();
 };
 
 class ConstraintList {
-	private:
-	    Constraint *firstConst;
-		Constraint *lastConst;
-	
 	public:
+		std::vector<Constraint> constVec;
+	
 	    ConstraintList();
-		
-		void addConstraint(Constraint *newConst);
-		
-		Constraint* getFirst();
 
 		void setScaleFact(double newSF);
 
-		void getTotalVecMult(double prod[], double vec[], double tmpV[]);
+		void getTotalVecMult(std::vector<double>& prod, std::vector<double>& vec, std::vector<double>& tmpV);
 
-		void getTotalLoad(double cLd[], double uVec[], double qVec[], int resDim);
+		void getTotalLoad(std::vector<double>& cLd, std::vector<double>& uVec, std::vector<double>& qVec, int resDim);
 
 		void writeAllToFile(std::string fileName);
-		
-		~ConstraintList();
 };
 
 #endif
