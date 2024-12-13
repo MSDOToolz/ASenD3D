@@ -963,7 +963,7 @@ void Element::getRu(vector<DiffDoub0>& globR, SparseMat& globdRdu, bool getMatri
 			for (i2 = 0; i2 < ndDof; i2++) {
 				nd2 = nodes[dofTable[i5]];
 				dof2 = dofTable[i5+1];
-				globInd2 = ndAr[nd2].dofIndex[dof];
+				globInd2 = ndAr[nd2].dofIndex[dof2];
 				globdRdu.addEntry(globInd, globInd2, dRdu[i3]);
 				i3++;
 				i5 += 2;

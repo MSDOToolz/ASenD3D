@@ -36,4 +36,4 @@ myJob.writeNodeResults('tipMomentLoading/results/nodeResults.yaml',['displacemen
 
 myJob.writeJobInput('tipMomentLoading/job.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()

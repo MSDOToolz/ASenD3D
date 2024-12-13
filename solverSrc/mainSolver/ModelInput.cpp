@@ -127,7 +127,9 @@ void Model::readJob(string fileName) {
 	}
 
 	job = vector<JobCommand>(cmdCt);
-	inFile.seekg(0, std::ios::beg);
+	//inFile.seekg(0, std::ios::beg);
+	inFile.close();
+	inFile.open(fileName);
 	
 	if(inFile) {
 		cmdCt = -1;
@@ -282,9 +284,12 @@ void Model::readJob(string fileName) {
 			prevLdHd = headings[0];
 		}
 	} else {
+		cout << "entered !inFile block" << endl;
 		errSt = "Error: could not open job file: " + fileName;
 		throw invalid_argument(errSt);
 	}
+
+	inFile.close();
 	
 	return;
 }
@@ -365,7 +370,9 @@ void Model::readModelInput(string fileName) {
 	materials = vector<Material>(matCt);
 	fluids = vector<Fluid>(flCt);
 
-	inFile.seekg(0, std::ios::beg);
+	//inFile.seekg(0, std::ios::beg);
+	inFile.close();
+	inFile.open(fileName);
 	
 	if(inFile) {
 		ndCt = -1;
@@ -879,12 +886,12 @@ void Model::readConstraintInput(string fileName) {
 		}
 	}
 
-	inFile.seekg(0, std::ios::beg);
-
 	elasticConst.constVec = vector<Constraint>(ecCt);
 	thermalConst.constVec = vector<Constraint>(tcCt);
 
-	inFile.seekg(0, std::ios::beg);
+	//inFile.seekg(0, std::ios::beg);
+	inFile.close();
+	inFile.open(fileName);
 
 	Constraint* newCon = nullptr;
 	if(inFile) {
@@ -977,7 +984,9 @@ void Model::readLoadInput(string fileName) {
 	elasticLoads = vector<Load>(eLdCt);
 	thermalLoads = vector<Load>(tLdCt);
 
-	inFile.seekg(0, std::ios::beg);
+	//inFile.seekg(0, std::ios::beg);
+	inFile.close();
+	inFile.open(fileName);
 	if(inFile) {
 		eLdCt = -1;
 		tLdCt = -1;
@@ -1060,7 +1069,6 @@ void Model::readInitialState(string fileName) {
 	int i1;
 	int i2;
 	int i3;
-	int ndi;
 	int seti;
 	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
 	string dispHdings = " displacement velocity acceleration";
@@ -1127,12 +1135,10 @@ void Model::readDesVarInput(string fileName) {
 	int dataLen;
 	
 	int i1;
-	int i2;
 	double doubInp[10] = {0,0,0,0,0,0,0,0,0,0};
 	int intInp[10] = {0,0,0,0,0,0,0,0,0,0};
 	
 	int dvCt = 0;
-	int currCoef;
 	
 	inFile.open(fileName);
 	if (inFile) {
@@ -1148,7 +1154,9 @@ void Model::readDesVarInput(string fileName) {
 
 	designVars = vector<DesignVariable>(dvCt);
 
-	inFile.seekg(0, std::ios::beg);
+	//inFile.seekg(0, std::ios::beg);
+	inFile.close();
+	inFile.open(fileName);
 
 	if(inFile) {
 		dvCt = -1;
@@ -1191,6 +1199,7 @@ void Model::readDesVarInput(string fileName) {
 			}
 		}
 	} else {
+		cout << "entering !inFile block" << endl;
 		string errSt = "Error: could not open design variable input file: " + fileName;
 		throw invalid_argument(errSt);
 	}
@@ -1210,7 +1219,6 @@ void Model::readObjectiveInput(string fileName) {
 	double doubInp[10] = { 0,0,0,0,0,0,0,0,0,0 };
 	
 	int obCt = 0;
-	int currTgt;
 	
 	inFile.open(fileName);
 
@@ -1227,7 +1235,9 @@ void Model::readObjectiveInput(string fileName) {
 
 	objective.terms = vector<ObjectiveTerm>(obCt);
 
-	inFile.seekg(0, std::ios::beg);
+	//inFile.seekg(0, std::ios::beg);
+	inFile.close();
+	inFile.open(fileName);
 
 	if(inFile) {
 		obCt = -1;

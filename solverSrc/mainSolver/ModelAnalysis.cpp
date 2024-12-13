@@ -1516,12 +1516,14 @@ void Model::dRthermaldD(int dVarNum) {
 
 
 	// Design variable dependent contribution
-	DiffDoub1 ndLd;
-	for (auto& ndi : nodeSets[thisDV.ndSetPtr].labels) {
-		Node& thisNd = nodes[ndi];
-		thisNd.getThermalDVLoad(ndLd, designVars);
-		globInd = thisNd.sortedRank;
-		dRtdD[globInd].sub(ndLd);
+	if (thisDV.ndSetPtr > -1) {
+		DiffDoub1 ndLd;
+		for (auto& ndi : nodeSets[thisDV.ndSetPtr].labels) {
+			Node& thisNd = nodes[ndi];
+			thisNd.getThermalDVLoad(ndLd, designVars);
+			globInd = thisNd.sortedRank;
+			dRtdD[globInd].sub(ndLd);
+		}
 	}
 
 	thisDV.diffVal.setVal(dvVal.val, 0.0);
@@ -1579,15 +1581,18 @@ void Model::dRelasticdD(int dVarNum) {
 
 
 	// Design variable dependent contribution
-	DiffDoub1 ndLd[6];
-	for (auto& ndi : nodeSets[thisDV.ndSetPtr].labels) {
-		Node& thisNd = nodes[ndi];
-		thisNd.getElasticDVLoad(ndLd, designVars);
-		numDof = thisNd.numDof;
-		for (i1 = 0; i1 < numDof; i1++) {
-			globInd = thisNd.dofIndex[i1];
-			ndLd[i1].neg();
-			dRudD[globInd].add(ndLd[i1]);
+
+	if (thisDV.ndSetPtr > -1) {
+		DiffDoub1 ndLd[6];
+		for (auto& ndi : nodeSets[thisDV.ndSetPtr].labels) {
+			Node& thisNd = nodes[ndi];
+			thisNd.getElasticDVLoad(ndLd, designVars);
+			numDof = thisNd.numDof;
+			for (i1 = 0; i1 < numDof; i1++) {
+				globInd = thisNd.dofIndex[i1];
+				ndLd[i1].neg();
+				dRudD[globInd].add(ndLd[i1]);
+			}
 		}
 	}
 
