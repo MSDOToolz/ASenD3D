@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <map>
 #include "ModelClass.h"
 #include "ListEntClass.h"
 #include "NodeClass.h"
@@ -13,6 +14,8 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
+
 Model::Model() {
 	anPrepRun = false;
 	timeStepsSaved = 0;
@@ -20,10 +23,43 @@ Model::Model() {
 	totGlobDof = 0;
 	elasticScaled = false;
 	thermScaled = false;
-	solveCmd = -1;
-	modalCmd = -1;
+	solveCmd = max_int;
+	modalCmd = max_int;
 
 	return;
+}
+
+bool Model::key_in_map(map<string, int>& inMap, string& key) {
+	int i1;
+	try {
+		i1 = inMap.at(key);
+		return true;
+	}
+	catch (...) {
+		return false;
+	}
+}
+
+bool Model::is_int(string& inStr) {
+	int i1;
+	try {
+		i1 = stoi(inStr);
+		return true;
+	}
+	catch (...) {
+		return false;
+	}
+}
+
+bool Model::is_doub(string& inStr) {
+	double d1;
+	try {
+		d1 = stod(inStr);
+		return true;
+	}
+	catch (...) {
+		return false;
+	}
 }
 
 void Model::executeJob() {
@@ -125,10 +161,10 @@ void Model::executeJob() {
 			}
 			else {
 				if (cmdStr == "writeNodeResults") {
-					writeNodeResults(thisCmd.fileName, thisCmd.nodeSet, thisCmd.fields, -1);
+					writeNodeResults(thisCmd.fileName, thisCmd.nodeSet, thisCmd.fields, max_int);
 				}
 				else {
-					writeElementResults(thisCmd.fileName, thisCmd.elementSet, thisCmd.fields, thisCmd.position, -1);
+					writeElementResults(thisCmd.fileName, thisCmd.elementSet, thisCmd.fields, thisCmd.position, max_int);
 				}
 			}
 		}

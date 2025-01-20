@@ -6,15 +6,16 @@
 #include "SetClass.h"
 using namespace std;
 
+const int max_int = 2000000000;
 
 DesignVariable::DesignVariable() {
 	category = "";
 	component = 1;
 	layer = 0;
 	elSetName = "";
-	elSetPtr = -1;
+	elSetPtr = max_int;
 	ndSetName = "";
-	ndSetPtr = -1;
+	ndSetPtr = max_int;
 	coefs.clear();
 	activeTime[0] = 0.0;
 	activeTime[1] = 1.0e+100;

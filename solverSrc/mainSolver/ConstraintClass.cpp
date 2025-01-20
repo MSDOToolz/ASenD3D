@@ -8,11 +8,12 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
 
 ConstraintTerm::ConstraintTerm() {
 	nodeSet = "";
-	nsPtr = -1;
-	int dof = -1;
+	nsPtr = max_int;
+	int dof = max_int;
 	coef = 0.0;
 	return;
 }

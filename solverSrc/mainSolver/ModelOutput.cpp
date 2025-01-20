@@ -15,6 +15,8 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
+
 void Model::writeTimeStepSoln(int tStep) {
 	int i1;
 	int dofPerNd;
@@ -74,45 +76,38 @@ void Model::writeNodeResults(string fileName, string nodeSet, list<string>& fiel
 
 	JobCommand& scmd = job[solveCmd];
 	
-	if(timeStep >= 0) {
+	if(timeStep < max_int) {
 		// Read the results from the time step file and store them in nodes
-		try {
-			readTimeStepSoln(timeStep);
-			for (auto& ndPt : nodes) {
-				if (scmd.thermal) {
-					ndPt.backstepTemp();
-				}
-				if (scmd.elastic) {
-					ndPt.backstepDisp();
-				}
+		readTimeStepSoln(timeStep);
+		for (auto& ndPt : nodes) {
+			if (scmd.thermal) {
+				ndPt.backstepTemp();
 			}
-			if (scmd.dynamic) {
-				time = scmd.timeStep * timeStep;
-			}
-			else {
-				auto thisLdTm = scmd.staticLoadTime.begin();
-				i1 = 0;
-				while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
-					++thisLdTm;
-					i1++;
-				}
-				time = *thisLdTm;
+			if (scmd.elastic) {
+				ndPt.backstepDisp();
 			}
 		}
-		catch (...) {
-			cout << "Error: time step " << timeStep << " requested for node results is out of range, or solution history was not saved" << endl;
-			cout << "Aborting writeNodeResults" << endl;
-			return;
+		if (scmd.dynamic) {
+			time = scmd.timeStep * timeStep;
+		}
+		else {
+			auto thisLdTm = scmd.staticLoadTime.begin();
+			i1 = 0;
+			while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
+				++thisLdTm;
+				i1++;
+			}
+			time = *thisLdTm;
 		}
 	}
 	else {
 		time = -1.0;
 	}
 	
-	try {
+	if (key_in_map(nsMap,nodeSet)) {
 		setPt = nsMap.at(nodeSet);
 	}
-	catch (...) {
+	else {
 		errStr = "Warning: there is no node set named " + nodeSet + ". Defaulting to all nodes in writeNodeResults";
 		cout << errStr << endl;
 		setPt = nsMap.at("all");
@@ -225,50 +220,43 @@ void Model::writeElementResults(string fileName, string elSet, list<string>& fie
 
 	JobCommand& scmd = job[solveCmd];
 
-	if (timeStep >= 0) {
+	if (timeStep < max_int) {
 		// Read the results from the time step file and store them in nodes
-		try {
-			readTimeStepSoln(timeStep);
-			for (auto& ndPt : nodes) {
-				if (scmd.thermal) {
-					ndPt.backstepTemp();
-				}
-				if (scmd.elastic) {
-					ndPt.backstepDisp();
-				}
+		readTimeStepSoln(timeStep);
+		for (auto& ndPt : nodes) {
+			if (scmd.thermal) {
+				ndPt.backstepTemp();
 			}
 			if (scmd.elastic) {
-				for (auto& elPt : elements) {
-					elPt.backstepIntDisp();
-				}
-			}
-			if (scmd.dynamic) {
-				time = scmd.timeStep * timeStep;
-			}
-			else {
-				auto thisLdTm = scmd.staticLoadTime.begin();
-				i1 = 0;
-				while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
-					++thisLdTm;
-					i1++;
-				}
-				time = *thisLdTm;
+				ndPt.backstepDisp();
 			}
 		}
-		catch (...) {
-			cout << "Error: time step " << timeStep << " requested for element results is out of range," << endl;
-			cout << "or solution history was not saved in the solve options. Aborting writeElementResults." << endl;
-			return;
+		if (scmd.elastic) {
+			for (auto& elPt : elements) {
+				elPt.backstepIntDisp();
+			}
+		}
+		if (scmd.dynamic) {
+			time = scmd.timeStep * timeStep;
+		}
+		else {
+			auto thisLdTm = scmd.staticLoadTime.begin();
+			i1 = 0;
+			while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
+				++thisLdTm;
+				i1++;
+			}
+			time = *thisLdTm;
 		}
 	}
 	else {
 		time = -1.0;
 	}
 
-	try {
+	if (key_in_map(esMap,elSet)) {
 		setPt = esMap.at(elSet);
 	}
-	catch (...) {
+	else {
 		errStr = "Warning: there is no element set named " + elSet + ". Defaulting to all elements in writeNodeResults";
 		cout << errStr << endl;
 		setPt = esMap.at("all");
@@ -498,9 +486,7 @@ void Model::writeObjective(string fileName, list<string>& includeFields, bool wr
 	int numDV;
 	double totObj;
 	double thisVal;
-	ObjectiveTerm* thisTerm;
 	string fldStr;
-	double* actTime;
 
 	ofstream outFile;
 	outFile.open(fileName);

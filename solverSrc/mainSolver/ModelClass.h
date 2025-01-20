@@ -85,12 +85,18 @@ class Model {
 		std::vector<double> dLdD;
 	
 	    Model();
+
+		bool key_in_map(std::map<std::string, int>& inMap, std::string& key);
+
+		bool is_int(std::string& inStr);
+
+		bool is_doub(std::string& inStr);
 		
 		void executeJob();
 		
 		// Input
 		
-		void readInputLine(std::ifstream& inFile,std::string& fileLine,std::string headings[],int hdLdSpace[], std::string data[], int& dataLen);
+		void readInputLine(std::string& fileLine,std::string headings[],int hdLdSpace[], std::string data[], int& dataLen);
 		
 		void readJob(std::string fileName);
 		

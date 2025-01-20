@@ -15,6 +15,8 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
+
 void Model::reorderNodes(int blockDim) {
 	int i1;
 	int i2;
@@ -272,26 +274,25 @@ void Model::updateReference() {
 	
 	// Set node & element set pointers in loads, constraints, design variables and objectives
 	string ndSet;
-	Set *nsPtr;
 	for (auto& thisLoad : elasticLoads) {
-		try {
-			ndSet = thisLoad.nodeSet;
+		ndSet = thisLoad.nodeSet;
+		if (key_in_map(nsMap,ndSet)) {
 			i1 = nsMap.at(ndSet);
 			thisLoad.ndSetPtr = i1;
 		}
-		catch (...) {
+		else {
 			elSet = thisLoad.elementSet;
 			i1 = esMap.at(elSet);
 			thisLoad.elSetPtr = i1;
 		}
 	}
 	for (auto& thisLoad : thermalLoads) {
-		try {
-			ndSet = thisLoad.nodeSet;
+		ndSet = thisLoad.nodeSet;
+		if (key_in_map(nsMap,ndSet)) {
 			i1 = nsMap.at(ndSet);
 			thisLoad.ndSetPtr = i1;
 		}
-		catch (...) {
+		else {
 			elSet = thisLoad.elementSet;
 			i1 = esMap.at(elSet);
 			thisLoad.elSetPtr = i1;
@@ -314,12 +315,12 @@ void Model::updateReference() {
 	}
 
 	for (auto& thisDV : designVars) {
-		try {
-			ndSet = thisDV.ndSetName;
+		ndSet = thisDV.ndSetName;
+		if (key_in_map(nsMap,ndSet)) {
 			i1 = nsMap.at(ndSet);
 			thisDV.ndSetPtr = i1;
 		}
-		catch (...) {
+		else {
 			elSet = thisDV.elSetName;
 			i1 = esMap.at(elSet);
 			thisDV.elSetPtr = i1;
@@ -327,12 +328,12 @@ void Model::updateReference() {
 	}
 
 	for (auto& thisTerm : objective.terms) {
-		try {
-			elSet = thisTerm.elSetName;
+		elSet = thisTerm.elSetName;
+		if (key_in_map(esMap,elSet)) {
 			i1 = esMap.at(elSet);
 			thisTerm.elSetPtr = i1;
 		}
-		catch (...) {
+		else {
 			ndSet = thisTerm.ndSetName;
 			i1 = nsMap.at(ndSet);
 			thisTerm.ndSetPtr = i1;
@@ -345,7 +346,7 @@ void Model::updateReference() {
 	int DVi = 0;
 	for (auto& thisDV : designVars) {
 		coefLen = thisDV.coefs.size();
-		if(thisDV.elSetPtr > -1) {
+		if(thisDV.elSetPtr < max_int) {
 			if(coefLen < 2) {
 				if(coefLen == 0) {
 					constCoef = 1.0;
@@ -370,7 +371,7 @@ void Model::updateReference() {
 		    }
 		}
 		
-		if (thisDV.ndSetPtr > -1) {
+		if (thisDV.ndSetPtr < max_int) {
 			if (coefLen < 2) {
 				if (coefLen == 0) {
 					constCoef = 1.0;
@@ -504,7 +505,7 @@ void Model::analysisPrep() {
 	double time;
 	double tInc;
 
-	if (solveCmd > -1) {
+	if (solveCmd < max_int) {
 		JobCommand& scmd = job[solveCmd];
 		if (scmd.solverMethod == "direct") {
 			scmd.solverBlockDim = 2000000000;
@@ -1182,10 +1183,10 @@ void Model::eigenSolve() {
 			for (i3 = 0; i3 < elMatDim; i3++) {
 				vKv += eigVecs[i2 + i3] * tempV1[i3];
 			}
-			try {
+			if ((vKv - eigVals[i1]) != 0.0) {
 				loadFact[i1] = vKv / (vKv - eigVals[i1]);
 			}
-			catch (...) {
+			else {
 				loadFact[i1] = 1.0e+100;
 			}
 			i2 += elMatDim;
@@ -1200,10 +1201,10 @@ void Model::eigenSolve() {
 	}
 	else {
 		for (i1 = 0; i1 < cmd.numModes; i1++) {
-			try {
+			if (eigVals[i1] >= 0.0) {
 				loadFact[i1] = 0.159154943091895335 * sqrt(eigVals[i1]);
 			}
-			catch (...) {
+			else {
 				loadFact[i1] = -1.0;
 			}
 		}
@@ -1516,7 +1517,7 @@ void Model::dRthermaldD(int dVarNum) {
 
 
 	// Design variable dependent contribution
-	if (thisDV.ndSetPtr > -1) {
+	if (thisDV.ndSetPtr < max_int) {
 		DiffDoub1 ndLd;
 		for (auto& ndi : nodeSets[thisDV.ndSetPtr].labels) {
 			Node& thisNd = nodes[ndi];
@@ -1582,7 +1583,7 @@ void Model::dRelasticdD(int dVarNum) {
 
 	// Design variable dependent contribution
 
-	if (thisDV.ndSetPtr > -1) {
+	if (thisDV.ndSetPtr < max_int) {
 		DiffDoub1 ndLd[6];
 		for (auto& ndi : nodeSets[thisDV.ndSetPtr].labels) {
 			Node& thisNd = nodes[ndi];

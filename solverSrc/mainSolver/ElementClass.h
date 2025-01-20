@@ -203,10 +203,6 @@ public:
 //end skip 
  
  
- 
- 
- 
- 
 class Element {
 	public:
 	    int type;
@@ -530,10 +526,6 @@ class Element {
 //end skip 
  
  
- 
- 
- 
- 
 		void getElVec(std::vector<double>& elVec, std::vector<double>& globVec, bool forTherm, bool intnl, std::vector<Node>& ndAr);
 
 		void addToGlobVec(std::vector<double>& elVec, std::vector<double>& globVec, bool forTherm, bool intnl, std::vector<Node>& ndAr);
@@ -626,10 +618,6 @@ class Element {
 //end dup
  
 //end skip 
- 
- 
- 
- 
  
  
 };

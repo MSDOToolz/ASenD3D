@@ -14,6 +14,7 @@ const double r_1o6 = 0.166666666666666667;
 const double r_pi = 3.14159265358979324;
 const double r_pio180 = 0.0174532925199432958;
 const double r_1ort3 = 0.577350269189625765;
+const int max_int = 2000000000;
 
 //dup1
 void Element::getNdDisp(vector<DiffDoub0>& globDisp, vector<Node>& ndAr) {
@@ -707,7 +708,7 @@ void Element::getInstDisp(DiffDoub0 instDisp[], vector<DiffDoub0>& globDisp, vec
 	}
 	
 	if (!nLGeom) {
-		if (dv1 + dv2 == -2) {
+		if (dv1 == max_int && dv2 == max_int) {
 			i7 = 3 * nDim;
 			for (i1 = 0; i1 < 3; i1++) {
 				i4 = i1 * nDim;
@@ -739,8 +740,8 @@ void Element::getInstDisp(DiffDoub0 instDisp[], vector<DiffDoub0>& globDisp, vec
 				i2 += 2;
 			}
 		}
-		else if ((dv1+1)*(dv2+1) == 0) {
-			dv1 = dv1 + dv2 + 1;
+		else if ((dv1 + dv2) >= max_int) {
+			dv1 = dv1 + dv2 - max_int;
 			nd = dofTable[2 * dv1];
 			dof = dofTable[2 * dv1 + 1];
 			if (dof < 3) {
@@ -774,7 +775,7 @@ void Element::getInstDisp(DiffDoub0 instDisp[], vector<DiffDoub0>& globDisp, vec
 		}
 	}
 	else {
-		if (dv1 + dv2 == -2) {
+		if (dv1 == max_int && dv2 == max_int) {
 			for (i1 = 0; i1 < 3; i1++) {
 				for (i2 = 0; i2 < numNds; i2++) {
 					i4 = i1 * nDim + i2;
@@ -829,8 +830,8 @@ void Element::getInstDisp(DiffDoub0 instDisp[], vector<DiffDoub0>& globDisp, vec
 				}
 			}
 		}
-		else if ((dv1 + 1) * (dv2 + 1) == 0) {
-			dv1 = dv1 + dv2 + 1;
+		else if ((dv1 + dv2) >= max_int) {
+			dv1 = dv1 + dv2 - max_int;
 			nd = dofTable[2 * dv1];
 			dof = dofTable[2 * dv1 + 1];
 			if (dof < 3) {
@@ -1291,13 +1292,13 @@ void Element::getSectionDef(DiffDoub0 secDef[], vector<DiffDoub0>& globDisp,  ve
 	
 	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, nLGeom, dv1, dv2);
 	
-	if(dv1 + dv2 == -2) {
+	if(dv1 == max_int && dv2 == max_int) {
 		matMul(ux,instDisp,dNdx,3,nDim,3);
 		i1 = 3*nDim;
 		matMul(rx,&instDisp[i1],dNdx,3,nDim,3);
 		matMul(rot,&instDisp[i1],nVec,3,nDim,1);
-	} else if((dv1+1)*(dv2+1) == 0) {
-		dv1 = dv1 + dv2 + 1;
+	} else if((dv1 + dv2) >= max_int) {
+		dv1 = dv1 + dv2 - max_int;
 		nd = dofTable[2*dv1];
 		dof = dofTable[2*dv1+1];
 		if(dof < 3) {
@@ -1469,7 +1470,7 @@ void Element::getSolidStrain(DiffDoub0 strain[], DiffDoub0 ux[], DiffDoub0 dNdx[
 	for (i1 = 0; i1 < 9; i1++) {
 		strnMat[i1].setVal(0.0);
 	}
-	if(dv1 + dv2 == -2) {
+	if(dv1 == max_int && dv2 == max_int) {
 		vecToAr(tmpOri, locOri, 0, 9);
 		matMul(uxL,tmpOri,ux,3,3,3);
 		for (i1 = 0; i1 < 3; i1++) {
@@ -1493,8 +1494,8 @@ void Element::getSolidStrain(DiffDoub0 strain[], DiffDoub0 ux[], DiffDoub0 dNdx[
 				i5+= 3;
 			}
 		}
-	} else if((dv1+1)*(dv2+1) == 0) {
-		if(dv1 > -1) {
+	} else if((dv1 + dv2) >= max_int) {
+		if(dv1 < max_int) {
 			nd = dofTable[2*dv1];
 			dof = dofTable[2*dv1+1];
 		} else {
@@ -1598,7 +1599,7 @@ void Element::getStressStrain(DiffDoub0 stress[], DiffDoub0 strain[], double spt
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
 
-		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
+		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, max_int, max_int);
 		
 		sectStrn[0].setVal(secDef[0]);
 		tmp.setVal(pre.layerZ[layer]);
@@ -1642,7 +1643,7 @@ void Element::getStressStrain(DiffDoub0 stress[], DiffDoub0 strain[], double spt
 	} else if(type != 2) {
 		vecToAr(tmpAr, pre.globDisp, 0, 60);
 		matMul(ux, tmpAr, dNdx, 3, nDim, 3);
-		getSolidStrain(strain, ux, dNdx, pre.locOri, -1, -1, nLGeom);
+		getSolidStrain(strain, ux, dNdx, pre.locOri, max_int, max_int, nLGeom);
 		for (i1 = 0; i1 < 6; i1++) {
 			tmp.setVal(pre.thermExp[i1]);
 			tmp.mult(ipTemp);
@@ -1692,7 +1693,7 @@ void Element::dStressStraindU(vector<DiffDoub0>& dsdU, vector<DiffDoub0>& dedU, 
 
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		for (i1 = 0; i1 < totDof; i1++) {
-			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
+			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, max_int);
 
 			sectStrn[0].setVal(secDef[0]);
 			tmp.setVal(pre.layerZ[layer]);
@@ -1739,7 +1740,7 @@ void Element::dStressStraindU(vector<DiffDoub0>& dsdU, vector<DiffDoub0>& dedU, 
 		matMul(ux, tmpAr, dNdx, 3, nDim, 3);
 		vecToAr(tmpAr, pre.Cmat, 0, 36);
 		for (i1 = 0; i1 < totDof; i1++) {
-			getSolidStrain(dStrain, ux, dNdx, pre.locOri, i1, -1, nLGeom);
+			getSolidStrain(dStrain, ux, dNdx, pre.locOri, i1, max_int, nLGeom);
 			matMul(dStress, tmpAr, dStrain, 6, 6, 1);
 			i3 = i1;
 			for (i2 = 0; i2 < 6; i2++) {
@@ -1781,7 +1782,7 @@ void Element::getDefFrcMom(DiffDoub0 def[], DiffDoub0 frcMom[], double spt[], bo
 	}
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
-	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
+	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, max_int, max_int);
 
 	ptTemp.setVal(0.0);
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -1825,7 +1826,7 @@ void Element::dDefFrcMomdU(vector<DiffDoub0>& dDefdU, vector<DiffDoub0>& dFrcMom
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	totDof = numNds * dofPerNd + numIntDof;
 	for (i1 = 0; i1 < totDof; i1++) {
-		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
+		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, max_int);
 		i2 = i1;
 		for (i3 = 0; i3 < defDim; i3++) {
 			dDefdU[i2].setVal(def[i3]);
@@ -2629,7 +2630,7 @@ void Element::getInstDisp(DiffDoub1 instDisp[], vector<DiffDoub1>& globDisp, vec
 	}
 	
 	if (!nLGeom) {
-		if (dv1 + dv2 == -2) {
+		if (dv1 == max_int && dv2 == max_int) {
 			i7 = 3 * nDim;
 			for (i1 = 0; i1 < 3; i1++) {
 				i4 = i1 * nDim;
@@ -2661,8 +2662,8 @@ void Element::getInstDisp(DiffDoub1 instDisp[], vector<DiffDoub1>& globDisp, vec
 				i2 += 2;
 			}
 		}
-		else if ((dv1+1)*(dv2+1) == 0) {
-			dv1 = dv1 + dv2 + 1;
+		else if ((dv1 + dv2) >= max_int) {
+			dv1 = dv1 + dv2 - max_int;
 			nd = dofTable[2 * dv1];
 			dof = dofTable[2 * dv1 + 1];
 			if (dof < 3) {
@@ -2696,7 +2697,7 @@ void Element::getInstDisp(DiffDoub1 instDisp[], vector<DiffDoub1>& globDisp, vec
 		}
 	}
 	else {
-		if (dv1 + dv2 == -2) {
+		if (dv1 == max_int && dv2 == max_int) {
 			for (i1 = 0; i1 < 3; i1++) {
 				for (i2 = 0; i2 < numNds; i2++) {
 					i4 = i1 * nDim + i2;
@@ -2751,8 +2752,8 @@ void Element::getInstDisp(DiffDoub1 instDisp[], vector<DiffDoub1>& globDisp, vec
 				}
 			}
 		}
-		else if ((dv1 + 1) * (dv2 + 1) == 0) {
-			dv1 = dv1 + dv2 + 1;
+		else if ((dv1 + dv2) >= max_int) {
+			dv1 = dv1 + dv2 - max_int;
 			nd = dofTable[2 * dv1];
 			dof = dofTable[2 * dv1 + 1];
 			if (dof < 3) {
@@ -3213,13 +3214,13 @@ void Element::getSectionDef(DiffDoub1 secDef[], vector<DiffDoub1>& globDisp,  ve
 	
 	getInstDisp(instDisp, globDisp, instOriMat, locOri, xGlob, nLGeom, dv1, dv2);
 	
-	if(dv1 + dv2 == -2) {
+	if(dv1 == max_int && dv2 == max_int) {
 		matMul(ux,instDisp,dNdx,3,nDim,3);
 		i1 = 3*nDim;
 		matMul(rx,&instDisp[i1],dNdx,3,nDim,3);
 		matMul(rot,&instDisp[i1],nVec,3,nDim,1);
-	} else if((dv1+1)*(dv2+1) == 0) {
-		dv1 = dv1 + dv2 + 1;
+	} else if((dv1 + dv2) >= max_int) {
+		dv1 = dv1 + dv2 - max_int;
 		nd = dofTable[2*dv1];
 		dof = dofTable[2*dv1+1];
 		if(dof < 3) {
@@ -3391,7 +3392,7 @@ void Element::getSolidStrain(DiffDoub1 strain[], DiffDoub1 ux[], DiffDoub1 dNdx[
 	for (i1 = 0; i1 < 9; i1++) {
 		strnMat[i1].setVal(0.0);
 	}
-	if(dv1 + dv2 == -2) {
+	if(dv1 == max_int && dv2 == max_int) {
 		vecToAr(tmpOri, locOri, 0, 9);
 		matMul(uxL,tmpOri,ux,3,3,3);
 		for (i1 = 0; i1 < 3; i1++) {
@@ -3415,8 +3416,8 @@ void Element::getSolidStrain(DiffDoub1 strain[], DiffDoub1 ux[], DiffDoub1 dNdx[
 				i5+= 3;
 			}
 		}
-	} else if((dv1+1)*(dv2+1) == 0) {
-		if(dv1 > -1) {
+	} else if((dv1 + dv2) >= max_int) {
+		if(dv1 < max_int) {
 			nd = dofTable[2*dv1];
 			dof = dofTable[2*dv1+1];
 		} else {
@@ -3520,7 +3521,7 @@ void Element::getStressStrain(DiffDoub1 stress[], DiffDoub1 strain[], double spt
 			getInstOri(pre.instOri, pre.locOri, pre.globDisp, 2);
 		}
 
-		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
+		getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, max_int, max_int);
 		
 		sectStrn[0].setVal(secDef[0]);
 		tmp.setVal(pre.layerZ[layer]);
@@ -3564,7 +3565,7 @@ void Element::getStressStrain(DiffDoub1 stress[], DiffDoub1 strain[], double spt
 	} else if(type != 2) {
 		vecToAr(tmpAr, pre.globDisp, 0, 60);
 		matMul(ux, tmpAr, dNdx, 3, nDim, 3);
-		getSolidStrain(strain, ux, dNdx, pre.locOri, -1, -1, nLGeom);
+		getSolidStrain(strain, ux, dNdx, pre.locOri, max_int, max_int, nLGeom);
 		for (i1 = 0; i1 < 6; i1++) {
 			tmp.setVal(pre.thermExp[i1]);
 			tmp.mult(ipTemp);
@@ -3614,7 +3615,7 @@ void Element::dStressStraindU(vector<DiffDoub1>& dsdU, vector<DiffDoub1>& dedU, 
 
 		getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 		for (i1 = 0; i1 < totDof; i1++) {
-			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
+			getSectionDef(secDef, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, max_int);
 
 			sectStrn[0].setVal(secDef[0]);
 			tmp.setVal(pre.layerZ[layer]);
@@ -3661,7 +3662,7 @@ void Element::dStressStraindU(vector<DiffDoub1>& dsdU, vector<DiffDoub1>& dedU, 
 		matMul(ux, tmpAr, dNdx, 3, nDim, 3);
 		vecToAr(tmpAr, pre.Cmat, 0, 36);
 		for (i1 = 0; i1 < totDof; i1++) {
-			getSolidStrain(dStrain, ux, dNdx, pre.locOri, i1, -1, nLGeom);
+			getSolidStrain(dStrain, ux, dNdx, pre.locOri, i1, max_int, nLGeom);
 			matMul(dStress, tmpAr, dStrain, 6, 6, 1);
 			i3 = i1;
 			for (i2 = 0; i2 < 6; i2++) {
@@ -3703,7 +3704,7 @@ void Element::getDefFrcMom(DiffDoub1 def[], DiffDoub1 frcMom[], double spt[], bo
 	}
 
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
-	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, -1, -1);
+	getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, max_int, max_int);
 
 	ptTemp.setVal(0.0);
 	for (i1 = 0; i1 < numNds; i1++) {
@@ -3747,7 +3748,7 @@ void Element::dDefFrcMomdU(vector<DiffDoub1>& dDefdU, vector<DiffDoub1>& dFrcMom
 	getIpData(nVec, dNdx, detJ, pre.locNds, spt);
 	totDof = numNds * dofPerNd + numIntDof;
 	for (i1 = 0; i1 < totDof; i1++) {
-		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, -1);
+		getSectionDef(def, pre.globDisp, pre.instOri, pre.locOri, pre.globNds, dNdx, nVec, nLGeom, i1, max_int);
 		i2 = i1;
 		for (i3 = 0; i3 < defDim; i3++) {
 			dDefdU[i2].setVal(def[i3]);
@@ -3857,10 +3858,6 @@ void Element::putVecToGlobMat(SparseMat& qMat, vector<DiffDoub1>& elQVec, bool f
 //end dup
  
 //end skip 
- 
- 
- 
- 
  
  
 void Element::getElVec(vector<double>& elVec, vector<double>& globVec, bool forTherm, bool intnl, vector<Node>& ndAr) {

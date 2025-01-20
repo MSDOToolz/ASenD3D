@@ -3219,9 +3219,6 @@ void Element::getBeamExpLoad(vector<DiffDoub1>& expLd, vector<DiffDoub1>& E0Ld, 
 
 void Element::getDensity(DiffDoub1& den, int layer, vector<Section>& secAr, vector<Material>& matAr, vector<DesignVariable>& dvAr) {
 	int layi;
-	Layer* thisLay;
-	Material* thisMat;
-	DesignVariable* thisDVPt;
 	string cat;
 	int dvLay;
 	DiffDoub1 coef;
@@ -4107,9 +4104,5 @@ void Element::getMassPerEl(DiffDoub1& massPerEl, vector<Section>& secAr, vector<
 //end dup
  
 //end skip 
- 
- 
- 
- 
  
  

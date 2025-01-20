@@ -6,6 +6,8 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
+
 Material::Material() {
 	name = "";
 	int i1;
@@ -35,6 +37,7 @@ Fluid::Fluid() {
 
 Layer::Layer() {
 	matName = "";
+	matPtr = max_int;
 	return;
 }
 
@@ -81,8 +84,8 @@ Section::Section() {
 	refDen = 0.0;
 	refTurbE = 0.0;
 	refEnth = 0.0;
-	matPtr = -1;
-	flPtr = -1;
+	matPtr = max_int;
+	flPtr = max_int;
 	return;
 }
 

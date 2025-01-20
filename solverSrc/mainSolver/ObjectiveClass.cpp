@@ -7,10 +7,12 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
+
 ObjectiveTerm::ObjectiveTerm() {
 	category = "";
-	elSetPtr = -1;
-	ndSetPtr = -1;
+	elSetPtr = max_int;
+	ndSetPtr = max_int;
 	qVec.clear();
 	elVolVec.clear();
 	tgtVec.clear();
@@ -29,10 +31,10 @@ void ObjectiveTerm::setActiveTime(double newAt[]) {
 void ObjectiveTerm::allocateObj(vector<Set>& ndSets, vector<Set>& elSets) {
 	int i1;
 	if (qLen == 0) {
-		if (elSetPtr > -1) {
+		if (elSetPtr < max_int) {
 			qLen = elSets[elSetPtr].labels.size();
 		}
-		else if (ndSetPtr > -1) {
+		else if (ndSetPtr < max_int) {
 			qLen = ndSets[ndSetPtr].labels.size();
 		}
 		if (qLen > 0) {
@@ -296,7 +298,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, vector<Node>& ndAr, vect
 	string catList = "displacement velocity acceleration temperature tdot";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (ndSetPtr == -1) {
+		if (ndSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid node set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the node set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -358,7 +360,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, vector<Node>& ndAr, vect
 	catList = "stress strain strainEnergyDen";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -428,7 +430,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, vector<Node>& ndAr, vect
 	catList = "sectionDef sectionFrcMom";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -505,7 +507,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, vector<Node>& ndAr, vect
 	catList = "flux tempGradient";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -571,7 +573,7 @@ void ObjectiveTerm::getObjVal(double time, bool nLGeom, vector<Node>& ndAr, vect
 	catList = "mass volume";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -638,7 +640,7 @@ void ObjectiveTerm::getdLdU(vector<double>& dLdU, vector<double>& dLdV, vector<d
 	string catList = "displacement velocity acceleration temperature tdot";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (ndSetPtr == -1) {
+		if (ndSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid node set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the node set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -686,7 +688,7 @@ void ObjectiveTerm::getdLdU(vector<double>& dLdU, vector<double>& dLdV, vector<d
 	catList = "stress strain strainEnergyDen";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -761,7 +763,7 @@ void ObjectiveTerm::getdLdU(vector<double>& dLdU, vector<double>& dLdV, vector<d
 	catList = "sectionDef sectionFrcMom";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -814,7 +816,7 @@ void ObjectiveTerm::getdLdU(vector<double>& dLdU, vector<double>& dLdV, vector<d
 	catList = "flux tempGradient";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -883,7 +885,7 @@ void ObjectiveTerm::getdLdD(vector<double>& dLdD, double time, bool nLGeom, vect
 	string catList = "stress strain strainEnergyDen";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -941,7 +943,7 @@ void ObjectiveTerm::getdLdD(vector<double>& dLdD, double time, bool nLGeom, vect
 	catList = "sectionDef sectionFrcMom";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -1002,7 +1004,7 @@ void ObjectiveTerm::getdLdD(vector<double>& dLdD, double time, bool nLGeom, vect
 	catList = "flux tempGradient";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);
@@ -1052,7 +1054,7 @@ void ObjectiveTerm::getdLdD(vector<double>& dLdD, double time, bool nLGeom, vect
 	catList = "mass volume";
 	fi = catList.find(category);
 	if (fi > -1) {
-		if (elSetPtr == -1) {
+		if (elSetPtr == max_int) {
 			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
 			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
 			throw runtime_error(errStr);

@@ -175,7 +175,6 @@ void Face::getAreaNormal(DiffDoub1& area, DiffDoub1 norm[], vector<Node>& ndAr, 
 //end skip 
  
  
-
 //FacePtList
 
 FacePtList::FacePtList() {

@@ -562,5 +562,3 @@ void Node::getThermalDVLoad(DiffDoub1& ld, vector<DesignVariable>& dvAr) {
 //end skip 
  
  
- 
- 

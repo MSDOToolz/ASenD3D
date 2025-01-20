@@ -5,13 +5,14 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
 
 Load::Load() {
 	type = "";
 	activeTime[0] = 0.0;
 	activeTime[1] = 1.0e+100;
-	ndSetPtr = -1;
-	elSetPtr = -1;
+	ndSetPtr = max_int;
+	elSetPtr = max_int;
 	return;
 }
 

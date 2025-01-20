@@ -10,6 +10,7 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
 const double r_1ort3 = 0.577350269189625765; //0.577350269189625765;
 const double r_2o3 = 0.666666666666666667;
 const double r_1o3 = 0.333333333333333333;
@@ -170,7 +171,6 @@ DiffDoub1FlPrereq::DiffDoub1FlPrereq() {
 //end dup 
  
 //end skip 
- 
  
  
 Element::Element() {
@@ -549,7 +549,7 @@ void Element::initializeType(int newType) {
 
 	intDofIndex = 0;
 	
-	sectPtr = -1;
+	sectPtr = max_int;
 	
 	return;
 }
@@ -827,7 +827,5 @@ void Element::addCompDVar(int dIndex) {
 	compDVars.push_back(dIndex);
 	return;
 }
-
-
 
 

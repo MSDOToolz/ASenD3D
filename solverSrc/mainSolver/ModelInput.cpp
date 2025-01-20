@@ -13,14 +13,16 @@
 
 using namespace std;
 
+const int max_int = 2000000000;
+
 // Input
 
-void Model::readInputLine(ifstream& inFile, string& fileLine, string headings[], int hdLdSpace[], string data[], int& dataLen) {
+void Model::readInputLine(string& fileLine, string headings[], int hdLdSpace[], string data[], int& dataLen) {
 	int i1;
 	int i2;
 	int lnLen;
 	int wrdLen;
-	getline(inFile,fileLine);
+	//getline(inFile,fileLine);
 	i1 = fileLine.find("#");
 	if(i1 > -1) {
 		fileLine = fileLine.substr(0,i1);
@@ -120,7 +122,8 @@ void Model::readJob(string fileName) {
 	cmdCt = 0;
 	inFile.open(fileName);
 	while (!inFile.eof()) {
-		readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+		getline(inFile, fileLine);
+		readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 		if (headings[1] == "command" && dataLen == 1) {
 			cmdCt++;
 		}
@@ -132,11 +135,17 @@ void Model::readJob(string fileName) {
 	inFile.open(fileName);
 	
 	if(inFile) {
-		cmdCt = -1;
+		cmdCt = max_int;
 		while(!inFile.eof()) {
-			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[1] == "command" && dataLen == 1) {
-				cmdCt++;
+				if (cmdCt == max_int) {
+					cmdCt = 0;
+				}
+				else {
+					cmdCt++;
+				}
 				job[cmdCt].cmdString = data[0];
 			} else if(headings[1] == "fileName" && dataLen == 1) {
 				job[cmdCt].fileName = data[0];
@@ -237,10 +246,11 @@ void Model::readJob(string fileName) {
 					} else if(data[0] == "last") {
 						job[cmdCt].timeStepTag = "last";
 					} else {
-						try {
+						if (is_int(data[0])) {
 							i1 = stoi(data[0]);
-							job[cmdCt].timeSteps.push_back(stoi(data[0]));
-						} catch(...) {
+							job[cmdCt].timeSteps.push_back(i1);
+						} 
+						else {
 							errSt = "Warning: possible invalid entry for " + headings[0] + " timeSteps in job file " + fileName;
 							cout << errSt << endl;
 						}
@@ -284,7 +294,6 @@ void Model::readJob(string fileName) {
 			prevLdHd = headings[0];
 		}
 	} else {
-		cout << "entered !inFile block" << endl;
 		errSt = "Error: could not open job file: " + fileName;
 		throw invalid_argument(errSt);
 	}
@@ -323,7 +332,8 @@ void Model::readModelInput(string fileName) {
 	inFile.open(fileName);
 	if (inFile) {
 		while (!inFile.eof()) {
-			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "nodes" && dataLen == 4) {
 				ndCt++;
 			}
@@ -375,15 +385,16 @@ void Model::readModelInput(string fileName) {
 	inFile.open(fileName);
 	
 	if(inFile) {
-		ndCt = -1;
-		elCt = -1;
-		nsCt = -1;
-		esCt = -1;
-		secCt = -1;
-		matCt = -1;
-		flCt = -1;
+		ndCt = max_int;
+		elCt = max_int;
+		nsCt = max_int;
+		esCt = max_int;
+		secCt = max_int;
+		matCt = max_int;
+		flCt = max_int;
 		while(!inFile.eof()) {
-			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "nodes" && dataLen == 4) {
 				ndCt = stoi(data[0]);
 				nodes[ndCt].label = ndCt;
@@ -447,7 +458,12 @@ void Model::readModelInput(string fileName) {
 			} else if(headings[0] == "sets") {
 				if(headings[1] == "node") {
 					if(headings[2] == "name" && dataLen == 1) {
-						nsCt++;
+						if (nsCt == max_int) {
+							nsCt = 0;
+						}
+						else {
+							nsCt++;
+						}
 						Set& newSet = nodeSets[nsCt];
 						newSet.name = data[0];
 					} else if(headings[2] == "labels") {
@@ -468,7 +484,12 @@ void Model::readModelInput(string fileName) {
 					}
 				} else if(headings[1] == "element") {
 					if(headings[2] == "name" && dataLen == 1) {
-						esCt++;
+						if (esCt == max_int) {
+							esCt = 0;
+						}
+						else {
+							esCt++;
+						}
 						Set& newSet = elementSets[esCt];
 						newSet.name = data[0];
 					} else if(headings[2] == "labels") {
@@ -490,9 +511,13 @@ void Model::readModelInput(string fileName) {
 				}
 			} else if(headings[0] == "sections") {
 				if(headings[1] == "type" && dataLen == 1) {
-					secCt++;
+					if (secCt == max_int) {
+						secCt = 0;
+					}
+					else {
+						secCt++;
+					}
 					sections[secCt].type = data[0];
-					layCt = -1;
 				} else if(headings[1] == "material" && dataLen == 1) {
 					sections[secCt].matName = data[0];
 				}
@@ -639,7 +664,12 @@ void Model::readModelInput(string fileName) {
 				}
 			} else if(headings[0] == "materials") {
 				if(headings[1] == "name" && dataLen == 1) {
-					matCt++;
+					if (matCt == max_int) {
+						matCt = 0;
+					}
+					else {
+						matCt++;
+					}
 					materials[matCt].name = data[0];
 				} else if(headings[1] == "density" && dataLen == 1) {
 					materials[matCt].density = stod(data[0]);
@@ -775,7 +805,12 @@ void Model::readModelInput(string fileName) {
 			}
 			else if (headings[0] == "fluids") {
 				if (headings[1] == "name" && dataLen == 1) {
-					flCt++;
+					if (flCt == max_int) {
+						flCt = 0;
+					}
+					else {
+						flCt++;
+					}
 					fluids[flCt].name = data[0];
 				}
 				else if (headings[1] == "viscosity" && dataLen == 1) {
@@ -872,7 +907,8 @@ void Model::readConstraintInput(string fileName) {
 	inFile.open(fileName);
 	if (inFile) {
 		while (!inFile.eof()) {
-			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "constraints") {
 				if (headings[1] == "type" && dataLen == 1) {
 					if (data[0] == "displacement") {
@@ -895,19 +931,30 @@ void Model::readConstraintInput(string fileName) {
 
 	Constraint* newCon = nullptr;
 	if(inFile) {
-		ecCt = -1;
-		tcCt = -1;
+		ecCt = max_int;
+		tcCt = max_int;
 		while(!inFile.eof()) {
-			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "constraints") {
 				if (headings[1] == "type" && dataLen == 1) {
 					if (data[0] == "displacement") {
-						ecCt++;
+						if (ecCt == max_int) {
+							ecCt = 0;
+						}
+						else {
+							ecCt++;
+						}
 						newCon = &elasticConst.constVec[ecCt];
 						newCon->type = "displacement";
 					}
 					else if (data[0] == "temperature") {
-						tcCt++;
+						if (tcCt == max_int) {
+							tcCt = 0;
+						}
+						else {
+							tcCt++;
+						}
 						newCon = &thermalConst.constVec[tcCt];
 						newCon->type = "temperature";
 					}
@@ -965,7 +1012,8 @@ void Model::readLoadInput(string fileName) {
 	inFile.open(fileName);
 	if (inFile) {
 		while (!inFile.eof()) {
-			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "loads") {
 				if (headings[1] == "type" && dataLen == 1) {
 					i1 = elasticList.find(data[0]);
@@ -988,21 +1036,32 @@ void Model::readLoadInput(string fileName) {
 	inFile.close();
 	inFile.open(fileName);
 	if(inFile) {
-		eLdCt = -1;
-		tLdCt = -1;
+		eLdCt = max_int;
+		tLdCt = max_int;
 		while(!inFile.eof()) {
-			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "loads") {
 				if(headings[1] == "type" && dataLen == 1) {
 					i1 = elasticList.find(data[0]);
 					if (i1 > -1) {
-						eLdCt++;
+						if (eLdCt == max_int) {
+							eLdCt = 0;
+						}
+						else {
+							eLdCt++;
+						}
 						elasticLoads[eLdCt].type = data[0];
 						newLd = &elasticLoads[eLdCt];
 					}
 					i1 = thermalList.find(data[0]);
 					if(i1 > -1) {
-						tLdCt++;
+						if (tLdCt == max_int) {
+							tLdCt = 0;
+						}
+						else {
+							tLdCt++;
+						}
 						thermalLoads[tLdCt].type = data[0];
 						newLd = &thermalLoads[tLdCt];
 					}
@@ -1076,7 +1135,8 @@ void Model::readInitialState(string fileName) {
 	inFile.open(fileName);
 	if(inFile) {
 		while(!inFile.eof()) {
-			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "initialState") {
 				i3 = dispHdings.find(headings[1]);
 				if(i3 > -1 && dataLen > 3) {
@@ -1143,7 +1203,8 @@ void Model::readDesVarInput(string fileName) {
 	inFile.open(fileName);
 	if (inFile) {
 		while (!inFile.eof()) {
-			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "designVariables") {
 				if (headings[1] == "category" && dataLen == 1) {
 					dvCt++;
@@ -1159,12 +1220,18 @@ void Model::readDesVarInput(string fileName) {
 	inFile.open(fileName);
 
 	if(inFile) {
-		dvCt = -1;
+		dvCt = max_int;
 		while(!inFile.eof()) {
-			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "designVariables") {
 				if(headings[1] == "category" && dataLen == 1) {
-					dvCt++;
+					if (dvCt == max_int) {
+						dvCt = 0;
+					}
+					else {
+						dvCt++;
+					}
 					designVars[dvCt].category = data[0];
 				} else if(headings[1] == "elementSet" && dataLen == 1) {
 					designVars[dvCt].elSetName = data[0];
@@ -1224,7 +1291,8 @@ void Model::readObjectiveInput(string fileName) {
 
 	if (inFile) {
 		while (!inFile.eof()) {
-			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "objectiveTerms") {
 				if (headings[1] == "category" && dataLen == 1) {
 					obCt++;
@@ -1240,12 +1308,18 @@ void Model::readObjectiveInput(string fileName) {
 	inFile.open(fileName);
 
 	if(inFile) {
-		obCt = -1;
+		obCt = max_int;
 		while(!inFile.eof()) {
-			readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(headings[0] == "objectiveTerms") {
 				if(headings[1] == "category" && dataLen == 1) {
-					obCt++;
+					if (obCt == max_int) {
+						obCt = 0;
+					}
+					else {
+						obCt++;
+					}
 					objective.terms[obCt].category = data[0];
 				} else if(headings[1] == "operator" && dataLen == 1) {
 					objective.terms[obCt].optr = data[0];
@@ -1270,10 +1344,11 @@ void Model::readObjectiveInput(string fileName) {
 				} else if(headings[1] == "nodeSet" && dataLen == 1) {
 					objective.terms[obCt].ndSetName = data[0];
 				} else if(headings[1] == "targetValue" && dataLen == 1) {
-					try {
+					if (is_doub(data[0])) {
 						doubInp[0] = stod(data[0]);
 						objective.terms[obCt].tgtVals.push_back(doubInp[0]);
-					} catch(...) {
+					} 
+					else {
 						objective.terms[obCt].tgtTag = data[0];
 					}
 				}
@@ -1302,7 +1377,8 @@ void Model::readDesVarValues(string fileName) {
 	inFile.open(fileName);
 	if(inFile) {
 		while(!inFile.eof()) {
-		    readInputLine(inFile,fileLine,headings,hdLdSpace,data,dataLen);
+			getline(inFile, fileLine);
+		    readInputLine(fileLine,headings,hdLdSpace,data,dataLen);
 			if(dataLen == 2) {
 				label = stoi(data[0]);
 				value = stod(data[1]);
@@ -1337,7 +1413,8 @@ void Model::readNodeResults(string fileName) {
 	inFile.open(fileName);
 	if (inFile) {
 		while (!inFile.eof()) {
-			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "nodeResults" && dataLen > 1) {
 				nd = stoi(data[0]);
 				Node& thisNd = nodes[nd];
@@ -1389,37 +1466,43 @@ void Model::readTimeStepSoln(int tStep) {
 	ifstream inFile;
 	inFile.open(fullFile, std::ifstream::binary);
 
-	inDat = reinterpret_cast<double*>(&inLn[0]);
-	for (auto& nd : nodes) {
-		if (job[solveCmd].thermal) {
-			inFile.read(&inLn[0], 8);
-			nd.prevTemp = *inDat;
-			inFile.read(&inLn[0], 8);
-			nd.prevTdot = *inDat;
-		}
-		if (job[solveCmd].elastic) {
-			dofPerNd = nd.numDof;
-			i1 = 8 * dofPerNd;
-			inFile.read(&inLn[0], i1);
-			nd.setPrevDisp(inDat);
-			inFile.read(&inLn[0], i1);
-			nd.setPrevVel(inDat);
-			inFile.read(&inLn[0], i1);
-			nd.setPrevAcc(inDat);
-		}
-	}
-
-	if (job[solveCmd].elastic) {
-		for (auto& el : elements) {
-			numIntDof = el.numIntDof;
-			if (numIntDof > 0) {
-				i1 = 8 * numIntDof;
+	if (inFile) {
+		inDat = reinterpret_cast<double*>(&inLn[0]);
+		for (auto& nd : nodes) {
+			if (job[solveCmd].thermal) {
+				inFile.read(&inLn[0], 8);
+				nd.prevTemp = *inDat;
+				inFile.read(&inLn[0], 8);
+				nd.prevTdot = *inDat;
+			}
+			if (job[solveCmd].elastic) {
+				dofPerNd = nd.numDof;
+				i1 = 8 * dofPerNd;
 				inFile.read(&inLn[0], i1);
-				el.setIntPrevDisp(inDat);
+				nd.setPrevDisp(inDat);
+				inFile.read(&inLn[0], i1);
+				nd.setPrevVel(inDat);
+				inFile.read(&inLn[0], i1);
+				nd.setPrevAcc(inDat);
 			}
 		}
-	}
 
-	inFile.close();
-	return;
+		if (job[solveCmd].elastic) {
+			for (auto& el : elements) {
+				numIntDof = el.numIntDof;
+				if (numIntDof > 0) {
+					i1 = 8 * numIntDof;
+					inFile.read(&inLn[0], i1);
+					el.setIntPrevDisp(inDat);
+				}
+			}
+		}
+
+		inFile.close();
+		return;
+	}
+	else {
+		string errSt = "Error: could not open solutioin history file for time step: " + to_string(tStep);
+		throw invalid_argument(errSt);
+	}
 }
