@@ -8,95 +8,95 @@
 using namespace std;
 
 LUMat::LUMat() {
-	lMat.clear();
-	lRange.clear();
-	lMinCol.clear();
-	lSize = 0;
-	uMat.clear();
-	uRange.clear();
-	uMinRow.clear();
-	uSize = 0;
-	zVec.clear();
+	l_mat.clear();
+	l_range.clear();
+	l_min_col.clear();
+	l_size = 0;
+	u_mat.clear();
+	u_range.clear();
+	u_min_row.clear();
+	u_size = 0;
+	z_vec.clear();
 	dim = 0;
-	maxBandwidth = 0;
+	max_bandwidth = 0;
 	allocated = false;
 	return;
 }
 
-void LUMat::setDim(int newDim) {
-	dim = newDim;
-	lRange = vector<int>(newDim+1);
-	lMinCol = vector<int>(newDim);
-	uRange = vector<int>(newDim+1);
-	uMinRow = vector<int>(newDim);
-	zVec = vector<double>(newDim);
+void LUMat::set_dim(int new_dim) {
+	dim = new_dim;
+	l_range = vector<int>(new_dim+1);
+	l_min_col = vector<int>(new_dim);
+	u_range = vector<int>(new_dim+1);
+	u_min_row = vector<int>(new_dim);
+	z_vec = vector<double>(new_dim);
 	return;
 }
 
-void LUMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int blockDim) {
+void LUMat::allocate_from_sparse_mat(SparseMat& sp_mat, ConstraintList& c_list, int block_dim) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
-	int currBlock;
-	int constDim;
-	int blkMaxCol;
-	int blkMinCol;
+	int curr_block;
+	int const_dim;
+	int blk_max_col;
+	int blk_min_col;
 	
 	if(!allocated) {
-		setDim(spMat.dim);
+		set_dim(sp_mat.dim);
 	}
 
 	for (i1 = 0; i1 < dim; i1++) {
-		lRange[i1] = 0;
-		uRange[i1] = 1;
+		l_range[i1] = 0;
+		u_range[i1] = 1;
 	}
 	
 	for (i1 = 0; i1 < dim; i1++) {
-		currBlock = i1/blockDim;
-		blkMinCol = currBlock*blockDim;
-		blkMaxCol = blkMinCol + blockDim;
-		MatrixRow& mr = spMat.matrix[i1];
-		for (auto& me : mr.rowVec) {
+		curr_block = i1/block_dim;
+		blk_min_col = curr_block*block_dim;
+		blk_max_col = blk_min_col + block_dim;
+		MatrixRow& mr = sp_mat.matrix[i1];
+		for (auto& me : mr.row_vec) {
 			i2 = me.col;
-			if(i2 >= blkMinCol && i2 < blkMaxCol) {
-				if(i2 < i1) { // in L
+			if(i2 >= blk_min_col && i2 < blk_max_col) {
+				if(i2 < i1) { // in l
 				    i3 = i1 - i2;
-					if(i3 > lRange[i1]) {
-						lRange[i1] = i3;
+					if(i3 > l_range[i1]) {
+						l_range[i1] = i3;
 					}
 				}
 				else {
 					i3 = i2 - i1 + 1;
-					if(i3 > uRange[i2]) {
-						uRange[i2] = i3;
+					if(i3 > u_range[i2]) {
+						u_range[i2] = i3;
 					}
 				}
 			}
 		}
 	}
 	
-	for (auto& cnst : cList.constVec) {
-		SparseMat& thisMat = cnst.mat;
-		for (auto& mr : thisMat.matrix) {
-			for (auto& me : mr.rowVec) {
+	for (auto& cnst : c_list.const_vec) {
+		SparseMat& this_mat = cnst.mat;
+		for (auto& mr : this_mat.matrix) {
+			for (auto& me : mr.row_vec) {
 				i2 = me.col;
-				currBlock = i2/blockDim;
-				blkMinCol = currBlock*blockDim;
-				blkMaxCol = blkMinCol + blockDim;
-				for (auto& me2 : mr.rowVec) {
+				curr_block = i2/block_dim;
+				blk_min_col = curr_block*block_dim;
+				blk_max_col = blk_min_col + block_dim;
+				for (auto& me2 : mr.row_vec) {
 					i3 = me2.col;
-					if(i3 >= blkMinCol && i3 < blkMaxCol) {
-						if(i3 < i2) { // in LU
+					if(i3 >= blk_min_col && i3 < blk_max_col) {
+						if(i3 < i2) { // in lu
 						    i4 = i2 - i3;
-							if(i4 > lRange[i2]) {
-								lRange[i2] = i4;
+							if(i4 > l_range[i2]) {
+								l_range[i2] = i4;
 							}
 						}
 						else {
 							i4 = i3 - i2 + 1;
-							if(i4 > uRange[i3]) {
-								uRange[i3] = i4;
+							if(i4 > u_range[i3]) {
+								u_range[i3] = i4;
 							}
 						}
 					}
@@ -105,84 +105,84 @@ void LUMat::allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int b
 		}
 	}
 	
-	lSize = 0;
-	uSize = 0;
-	maxBandwidth = 0;
+	l_size = 0;
+	u_size = 0;
+	max_bandwidth = 0;
 	for (i1 = 0; i1 < dim; i1++) {
-		lSize += lRange[i1];
-		uSize += uRange[i1];
-		lMinCol[i1] = i1 - lRange[i1];
-		if(lRange[i1] > maxBandwidth) {
-			maxBandwidth = lRange[i1];
+		l_size += l_range[i1];
+		u_size += u_range[i1];
+		l_min_col[i1] = i1 - l_range[i1];
+		if(l_range[i1] > max_bandwidth) {
+			max_bandwidth = l_range[i1];
 		}
-		uMinRow[i1] = i1 - uRange[i1] + 1;
-		if(uRange[i1] > maxBandwidth) {
-			maxBandwidth = uRange[i1];
+		u_min_row[i1] = i1 - u_range[i1] + 1;
+		if(u_range[i1] > max_bandwidth) {
+			max_bandwidth = u_range[i1];
 		}
 	}
-	lRange[dim] = lSize;
-	uRange[dim] = uSize;
+	l_range[dim] = l_size;
+	u_range[dim] = u_size;
 	for (i1 = (dim-1); i1 >= 0; i1--) {
-		lRange[i1] = lRange[i1+1] - lRange[i1];
-		uRange[i1] = uRange[i1+1] - uRange[i1];
+		l_range[i1] = l_range[i1+1] - l_range[i1];
+		u_range[i1] = u_range[i1+1] - u_range[i1];
 	}
 	
-	lMat = vector<double>(lSize);
-	uMat = vector<double>(uSize);
+	l_mat = vector<double>(l_size);
+	u_mat = vector<double>(u_size);
 	
 	allocated = true;
 	
-	cout << "maxBandwidth: " << maxBandwidth << endl;
+	cout << "maxBandwidth: " << max_bandwidth << endl;
 	
 	return;
 }
 
-void LUMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList) {
+void LUMat::populate_from_sparse_mat(SparseMat& sp_mat, ConstraintList& c_list) {
 	int i1;
 	int i2;
 	int i3;
 	int i4;
-	int constDim;
-	double constSF;
+	int const_dim;
+	double const_sf;
 	
-	for (auto& lm : lMat) {
+	for (auto& lm : l_mat) {
 		lm = 0.0;
 	}
 	
-	for (auto& um : uMat) {
+	for (auto& um : u_mat) {
 		um = 0.0;
 	}
 	
 	for (i1 = 0; i1 < dim; i1++) {
-		MatrixRow& mr = spMat.matrix[i1];
-		for (auto& me : mr.rowVec) {
+		MatrixRow& mr = sp_mat.matrix[i1];
+		for (auto& me : mr.row_vec) {
 			i2 = me.col;
-			if(i2 >= lMinCol[i1] && i2 < i1) { // in L
-				i3 = lRange[i1] + i2 - lMinCol[i1];
-			    lMat[i3] += me.value;
+			if(i2 >= l_min_col[i1] && i2 < i1) { // in l
+				i3 = l_range[i1] + i2 - l_min_col[i1];
+			    l_mat[i3] += me.value;
 			}
-			else if(i1 >= uMinRow[i2] && i1 <= i2) {
-				i3 = uRange[i2] + i1 - uMinRow[i2];
-				uMat[i3] += me.value;
+			else if(i1 >= u_min_row[i2] && i1 <= i2) {
+				i3 = u_range[i2] + i1 - u_min_row[i2];
+				u_mat[i3] += me.value;
 			}
 		}
 	}
 	
-	for (auto& cnst : cList.constVec) {
-		SparseMat& thisMat = cnst.mat;
-		constSF = cnst.scaleFact;
-		for (auto& mr : thisMat.matrix) {
-			for (auto& me : mr.rowVec) {
+	for (auto& cnst : c_list.const_vec) {
+		SparseMat& this_mat = cnst.mat;
+		const_sf = cnst.scale_fact;
+		for (auto& mr : this_mat.matrix) {
+			for (auto& me : mr.row_vec) {
 				i2 = me.col;
-				for (auto& me2 : mr.rowVec) {
+				for (auto& me2 : mr.row_vec) {
 					i3 = me2.col;
-					if(i3 >= lMinCol[i2] && i3 < i2) { // in LU
-						i4 = lRange[i2] + i3 - lMinCol[i2];
-						lMat[i4] += constSF*me.value*me2.value;
+					if(i3 >= l_min_col[i2] && i3 < i2) { // in lu
+						i4 = l_range[i2] + i3 - l_min_col[i2];
+						l_mat[i4] += const_sf*me.value*me2.value;
 					}
-					else if(i2 >= uMinRow[i3] && i2 <= i3) {
-						i4 = uRange[i3] + i2 - uMinRow[i3];
-						uMat[i4] += constSF*me.value*me2.value;
+					else if(i2 >= u_min_row[i3] && i2 <= i3) {
+						i4 = u_range[i3] + i2 - u_min_row[i3];
+						u_mat[i4] += const_sf*me.value*me2.value;
 					}
 				}
 			}
@@ -192,59 +192,59 @@ void LUMat::populateFromSparseMat(SparseMat& spMat, ConstraintList& cList) {
 	return;
 }
 
-void LUMat::luFactor() {
+void LUMat::lu_factor() {
 	int i1;
 	int i2;
 	int i3;
-	int thisInd;
-	int lInd;
-	int uInd;
-	int uPiv;
-	int maxCol;
-	int maxRow;
+	int this_ind;
+	int l_ind;
+	int u_ind;
+	int u_piv;
+	int max_col;
+	int max_row;
 	double tmp;
 	
 	for (i1 = 0; i1 < dim; i1++) {
-		maxCol = i1 + maxBandwidth;
-		if(maxCol > dim) {
-			maxCol = dim;
+		max_col = i1 + max_bandwidth;
+		if(max_col > dim) {
+			max_col = dim;
 		}
-		for (i2 = i1; i2 < maxCol; i2++) {
-			if(uMinRow[i2] <= i1) {
-				thisInd = uRange[i2] + i1 - uMinRow[i2];
-				i3 = uMinRow[i2];
-				if(lMinCol[i1] > i3) {
-					i3 = lMinCol[i1];
+		for (i2 = i1; i2 < max_col; i2++) {
+			if(u_min_row[i2] <= i1) {
+				this_ind = u_range[i2] + i1 - u_min_row[i2];
+				i3 = u_min_row[i2];
+				if(l_min_col[i1] > i3) {
+					i3 = l_min_col[i1];
 				}
-				lInd = lRange[i1] + i3 - lMinCol[i1];
-				uInd = uRange[i2] + i3 - uMinRow[i2];
-				tmp = uMat[thisInd];
-				while(lInd < lRange[i1+1]) {
-					tmp -= lMat[lInd]*uMat[uInd];
-					lInd++;
-					uInd++;
+				l_ind = l_range[i1] + i3 - l_min_col[i1];
+				u_ind = u_range[i2] + i3 - u_min_row[i2];
+				tmp = u_mat[this_ind];
+				while(l_ind < l_range[i1+1]) {
+					tmp -= l_mat[l_ind]*u_mat[u_ind];
+					l_ind++;
+					u_ind++;
 				}
-				uMat[thisInd] = tmp;
+				u_mat[this_ind] = tmp;
 			}
 		}
-		maxRow = maxCol;
-		for (i2 = (i1+1); i2 < maxRow; i2++) {
-			if(lMinCol[i2] <= i1) {
-				thisInd = lRange[i2] + i1 - lMinCol[i2];
-				i3 = lMinCol[i2];
-				if(uMinRow[i1] > i3) {
-					i3 = uMinRow[i1];
+		max_row = max_col;
+		for (i2 = (i1+1); i2 < max_row; i2++) {
+			if(l_min_col[i2] <= i1) {
+				this_ind = l_range[i2] + i1 - l_min_col[i2];
+				i3 = l_min_col[i2];
+				if(u_min_row[i1] > i3) {
+					i3 = u_min_row[i1];
 				}
-				lInd = lRange[i2] + i3 - lMinCol[i2];
-				uInd = uRange[i1] + i3 - uMinRow[i1];
-				tmp = lMat[thisInd];
-				uPiv = uRange[i1+1] - 1;
-				while(uInd < uPiv) {
-					tmp -= lMat[lInd]*uMat[uInd];
-					lInd++;
-					uInd++;
+				l_ind = l_range[i2] + i3 - l_min_col[i2];
+				u_ind = u_range[i1] + i3 - u_min_row[i1];
+				tmp = l_mat[this_ind];
+				u_piv = u_range[i1+1] - 1;
+				while(u_ind < u_piv) {
+					tmp -= l_mat[l_ind]*u_mat[u_ind];
+					l_ind++;
+					u_ind++;
 				}
-				lMat[thisInd] = tmp/uMat[uPiv];
+				l_mat[this_ind] = tmp/u_mat[u_piv];
 			}
 		}
 	}
@@ -252,65 +252,65 @@ void LUMat::luFactor() {
 	return;
 }
 
-void LUMat::luSolve(vector<double>& solnVec, vector<double>& rhs, bool transpose) {
+void LUMat::lu_solve(vector<double>& soln_vec, vector<double>& rhs, bool transpose) {
 	int i1;
 	int i2;
 	int i3;
-	int maxCol;
-	int maxRow;
-	int uPiv;
+	int max_col;
+	int max_row;
+	int u_piv;
 	double tmp;
 	
 	if(!transpose) {
 		for (i1 = 0; i1 < dim; i1++) {
 			tmp = rhs[i1];
-			i2 = lMinCol[i1];
-			for (i3 = lRange[i1]; i3 < lRange[i1+1]; i3++) {
-				tmp -= lMat[i3]*zVec[i2];
+			i2 = l_min_col[i1];
+			for (i3 = l_range[i1]; i3 < l_range[i1+1]; i3++) {
+				tmp -= l_mat[i3]*z_vec[i2];
 				i2++;
 			}
-			zVec[i1] = tmp;
+			z_vec[i1] = tmp;
 		}
 		for (i1 = (dim-1); i1 >= 0; i1--) {
-			tmp = zVec[i1];
-			maxCol = i1 + maxBandwidth;
-			if(maxCol > dim) {
-				maxCol = dim;
+			tmp = z_vec[i1];
+			max_col = i1 + max_bandwidth;
+			if(max_col > dim) {
+				max_col = dim;
 			}
-			for (i2 = (i1+1); i2 < maxCol; i2++) {
-				if(uMinRow[i2] <= i1) {
-					i3 = uRange[i2] + i1 - uMinRow[i2];
-					tmp -= uMat[i3]*solnVec[i2];
+			for (i2 = (i1+1); i2 < max_col; i2++) {
+				if(u_min_row[i2] <= i1) {
+					i3 = u_range[i2] + i1 - u_min_row[i2];
+					tmp -= u_mat[i3]*soln_vec[i2];
 				}
 			}
-			uPiv = uRange[i1+1] - 1;
-			solnVec[i1] = tmp/uMat[uPiv];
+			u_piv = u_range[i1+1] - 1;
+			soln_vec[i1] = tmp/u_mat[u_piv];
 		}
 	}
 	else {
 		for (i1 = 0; i1 < dim; i1++) {
 			tmp = rhs[i1];
-			i2 = uMinRow[i1];
-			for (i3 = uRange[i1]; i3 < (uRange[i1+1]-1); i3++) {
-				tmp -= uMat[i3]*zVec[i2];
+			i2 = u_min_row[i1];
+			for (i3 = u_range[i1]; i3 < (u_range[i1+1]-1); i3++) {
+				tmp -= u_mat[i3]*z_vec[i2];
 				i2++;
 			}
-			uPiv = uRange[i1+1] - 1;
-			zVec[i1] = tmp/uMat[uPiv];
+			u_piv = u_range[i1+1] - 1;
+			z_vec[i1] = tmp/u_mat[u_piv];
 		}
 		for (i1 = (dim-1); i1 >= 0; i1--) {
-			tmp = zVec[i1];
-			maxRow = i1 + maxBandwidth;
-			if(maxRow > dim) {
-				maxRow = dim;
+			tmp = z_vec[i1];
+			max_row = i1 + max_bandwidth;
+			if(max_row > dim) {
+				max_row = dim;
 			}
-			for (i2 = (i1+1); i2 < maxRow; i2++) {
-				if(lMinCol[i2] <= i1) {
- 					i3 = lRange[i2] + i1 - lMinCol[i2];
-                    tmp -= lMat[i3]*solnVec[i2];
+			for (i2 = (i1+1); i2 < max_row; i2++) {
+				if(l_min_col[i2] <= i1) {
+ 					i3 = l_range[i2] + i1 - l_min_col[i2];
+                    tmp -= l_mat[i3]*soln_vec[i2];
 				}
 			}
-			solnVec[i1] = tmp;
+			soln_vec[i1] = tmp;
 		}
 	}
 	

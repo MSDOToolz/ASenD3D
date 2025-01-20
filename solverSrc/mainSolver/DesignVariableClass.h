@@ -1,5 +1,5 @@
-#ifndef DVARCLASS
-#define DVARCLASS
+#ifndef dvarclass
+#define dvarclass
 #include <string>
 #include <vector>
 #include "ListEntClass.h"
@@ -11,25 +11,25 @@ class DesignVariable {
 	    std::string category;
 		int component;
 		int layer;
-		double activeTime[2];
-		std::string elSetName;
-		int elSetPtr;
-		std::string ndSetName;
-		int ndSetPtr;
+		double active_time[2];
+		std::string el_set_name;
+		int el_set_ptr;
+		std::string nd_set_name;
+		int nd_set_ptr;
 		std::list<double> coefs;
 		DiffDoub0 value;
-		DiffDoub1 diffVal;
-		std::list<int> compElList;
+		DiffDoub1 diff_val;
+		std::list<int> comp_el_list;
 		
 	    DesignVariable();
 		
-		void setActiveTime(double newAt[]);
+		void set_active_time(double new_at[]);
 		
-		void getValue(DiffDoub0& inp);
+		void get_value(DiffDoub0& inp);
 		
-		void getValue(DiffDoub1& inp);
+		void get_value(DiffDoub1& inp);
 
-		void addCompEl(int eli);
+		void add_comp_el(int eli);
 
 };
 

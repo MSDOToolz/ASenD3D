@@ -1,5 +1,5 @@
-#ifndef FACE
-#define FACE
+#ifndef face
+#define face
 #include <vector>
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
@@ -8,31 +8,31 @@
 
 class Face {
 	public:
-	    int numNds;
-	    int locNodes[6];
-		int globNodes[6];
-		bool onSurf;
+	    int num_nds;
+	    int loc_nodes[6];
+		int glob_nodes[6];
+		bool on_surf;
 
 	    Face();
 		
-		void setNode(int place, int locNd, int globNd);
+		void set_node(int place, int loc_nd, int glob_nd);
 		
-		void sortedNodes(int srtNds[]);
+		void sorted_nodes(int srt_nds[]);
 		
-		int getLowNd();
+		int get_low_nd();
 
 		//dup1
 
-		void getAreaNormal(DiffDoub0& area, DiffDoub0 norm[], std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_area_normal(DiffDoub0& area, DiffDoub0 norm[], std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
 		//end dup
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 		//dup1
 
-		void getAreaNormal(DiffDoub1& area, DiffDoub1 norm[], std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_area_normal(DiffDoub1& area, DiffDoub1 norm[], std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
 		//end dup
  
@@ -43,13 +43,13 @@ class Face {
 
 class FacePtList {
     public:
-		std::list<int> fcList;
+		std::list<int> fc_list;
 
 		FacePtList();
 
-		void addFace(int newI);
+		void add_face(int new_i);
 
-		bool addIfAbsent(int newI, std::vector<Face>& globFaces);
+		bool add_if_absent(int new_i, std::vector<Face>& glob_faces);
 };
 
 #endif

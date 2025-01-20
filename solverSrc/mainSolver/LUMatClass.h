@@ -1,35 +1,35 @@
-#ifndef LUMAT
-#define LUMAT
+#ifndef lumat
+#define lumat
 #include "ListEntClass.h"
 #include "ConstraintClass.h"
 #include <vector>
 
 class LUMat {
 public:
-    std::vector<double> lMat;
-	std::vector<int> lRange;
-	std::vector<int> lMinCol;
-	int lSize;
-	std::vector<double> uMat;
-	std::vector<int> uRange;
-	std::vector<int> uMinRow;
-	int uSize;
-	std::vector<double> zVec;
+    std::vector<double> l_mat;
+	std::vector<int> l_range;
+	std::vector<int> l_min_col;
+	int l_size;
+	std::vector<double> u_mat;
+	std::vector<int> u_range;
+	std::vector<int> u_min_row;
+	int u_size;
+	std::vector<double> z_vec;
 	int dim;
-	int maxBandwidth;
+	int max_bandwidth;
 	bool allocated;
 	
     LUMat();
 	
-	void setDim(int newDim);
+	void set_dim(int new_dim);
 	
-	void allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int blockDim);
+	void allocate_from_sparse_mat(SparseMat& sp_mat, ConstraintList& c_list, int block_dim);
 	
-	void populateFromSparseMat(SparseMat& spMat, ConstraintList& cList);
+	void populate_from_sparse_mat(SparseMat& sp_mat, ConstraintList& c_list);
 	
-	void luFactor();
+	void lu_factor();
 	
-	void luSolve(std::vector<double>& solnVec, std::vector<double>& rhs, bool transpose);
+	void lu_solve(std::vector<double>& soln_vec, std::vector<double>& rhs, bool transpose);
 };
 
 #endif

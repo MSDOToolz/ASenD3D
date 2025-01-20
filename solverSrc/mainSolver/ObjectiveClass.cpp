@@ -11,601 +11,601 @@ const int max_int = 2000000000;
 
 ObjectiveTerm::ObjectiveTerm() {
 	category = "";
-	elSetPtr = max_int;
-	ndSetPtr = max_int;
-	qVec.clear();
-	elVolVec.clear();
-	tgtVec.clear();
-	errNormVec.clear();
-	activeTime[0] = -1.0;
-	activeTime[1] = 1.0e+100;
-	qLen = 0;
+	el_set_ptr = max_int;
+	nd_set_ptr = max_int;
+	q_vec.clear();
+	el_vol_vec.clear();
+	tgt_vec.clear();
+	err_norm_vec.clear();
+	active_time[0] = -1.0;
+	active_time[1] = 1.0e+100;
+	q_len = 0;
 }
 
-void ObjectiveTerm::setActiveTime(double newAt[]) {
-	activeTime[0] = newAt[0];
-	activeTime[1] = newAt[1];
+void ObjectiveTerm::set_active_time(double new_at[]) {
+	active_time[0] = new_at[0];
+	active_time[1] = new_at[1];
 	return;
 }
 
-void ObjectiveTerm::allocateObj(vector<Set>& ndSets, vector<Set>& elSets) {
+void ObjectiveTerm::allocate_obj(vector<Set>& nd_sets, vector<Set>& el_sets) {
 	int i1;
-	if (qLen == 0) {
-		if (elSetPtr < max_int) {
-			qLen = elSets[elSetPtr].labels.size();
+	if (q_len == 0) {
+		if (el_set_ptr < max_int) {
+			q_len = el_sets[el_set_ptr].labels.size();
 		}
-		else if (ndSetPtr < max_int) {
-			qLen = ndSets[ndSetPtr].labels.size();
+		else if (nd_set_ptr < max_int) {
+			q_len = nd_sets[nd_set_ptr].labels.size();
 		}
-		if (qLen > 0) {
-			qVec = vector<double>(qLen);
+		if (q_len > 0) {
+			q_vec = vector<double>(q_len);
 			if (optr == "powerNorm") {
-				tgtVec = vector<double>(qLen);
+				tgt_vec = vector<double>(q_len);
 			} else if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				elVolVec = vector<double>(qLen);
-				tgtVec = vector<double>(1);
+				el_vol_vec = vector<double>(q_len);
+				tgt_vec = vector<double>(1);
 			}
 		}
 	}
 
-	for (i1 = 0; i1 < qLen; i1++) {
-		qVec[i1] = 0.0;
+	for (i1 = 0; i1 < q_len; i1++) {
+		q_vec[i1] = 0.0;
 		if (optr == "powerNorm") {
-			tgtVec[i1] = 0.0;
+			tgt_vec[i1] = 0.0;
 		}
 		else {
-			elVolVec[i1] = 0.0;
+			el_vol_vec[i1] = 0.0;
 		}
 	}
 	if (optr == "volumeIntegral" || optr == "volumeAverage") {
-		tgtVec[0] = 0.0;
+		tgt_vec[0] = 0.0;
 	}
 
 	return;
 }
 
-void ObjectiveTerm::allocateObjGrad() {
+void ObjectiveTerm::allocate_obj_grad() {
 	int i1;
-	if (qLen > 0 && dQdU.dim == 0) {
-		dQdU.setDim(qLen);
-		dQdV.setDim(qLen);
-		dQdA.setDim(qLen);
-		dQdT.setDim(qLen);
-		dQdTdot.setDim(qLen);
-		dQdD.setDim(qLen);
-		dVdD.setDim(qLen);
+	if (q_len > 0 && d_qd_u.dim == 0) {
+		d_qd_u.set_dim(q_len);
+		d_qd_v.set_dim(q_len);
+		d_qd_a.set_dim(q_len);
+		d_qd_t.set_dim(q_len);
+		d_qd_tdot.set_dim(q_len);
+		d_qd_d.set_dim(q_len);
+		d_vd_d.set_dim(q_len);
 		if (optr == "powerNorm") {
-			errNormVec = vector<double>(qLen);
+			err_norm_vec = vector<double>(q_len);
 		}
 	}
-	dQdU.zeroAll();
-	dQdV.zeroAll();
-	dQdA.zeroAll();
-	dQdT.zeroAll();
-	dQdTdot.zeroAll();
-	dQdD.zeroAll();
-	dVdD.zeroAll();
-	for (i1 = 0; i1 < qLen; i1++) {
-		errNormVec[i1] = 0.0;
+	d_qd_u.zero_all();
+	d_qd_v.zero_all();
+	d_qd_a.zero_all();
+	d_qd_t.zero_all();
+	d_qd_tdot.zero_all();
+	d_qd_d.zero_all();
+	d_vd_d.zero_all();
+	for (i1 = 0; i1 < q_len; i1++) {
+		err_norm_vec[i1] = 0.0;
 	}
 	return;
 }
 
-double ObjectiveTerm::getPowerNorm() {
+double ObjectiveTerm::get_power_norm() {
 	int i1;
-	double qErr;
-	double pSum = 0.0;
-	for (i1 = 0; i1 < qLen; i1++) {
-		qErr = qVec[i1] - tgtVec[i1];
-		pSum += pow(qErr, expnt);
+	double q_err;
+	double p_sum = 0.0;
+	for (i1 = 0; i1 < q_len; i1++) {
+		q_err = q_vec[i1] - tgt_vec[i1];
+		p_sum += pow(q_err, expnt);
 	}
-	return coef * pSum;
+	return coef * p_sum;
 }
 
-void ObjectiveTerm::dPowerNormdU(vector<double>& dLdU, vector<double>& dLdV, vector<double>& dLdA, vector<double>& dLdT, vector<double>& dLdTdot) {
-	dQdU.vectorMultiply(dLdU, errNormVec, true);
-	dQdV.vectorMultiply(dLdV, errNormVec, true);
-	dQdA.vectorMultiply(dLdA, errNormVec, true);
-	dQdT.vectorMultiply(dLdT, errNormVec, true);
-	dQdTdot.vectorMultiply(dLdTdot, errNormVec, true);
+void ObjectiveTerm::d_power_normd_u(vector<double>& d_ld_u, vector<double>& d_ld_v, vector<double>& d_ld_a, vector<double>& d_ld_t, vector<double>& d_ld_tdot) {
+	d_qd_u.vector_multiply(d_ld_u, err_norm_vec, true);
+	d_qd_v.vector_multiply(d_ld_v, err_norm_vec, true);
+	d_qd_a.vector_multiply(d_ld_a, err_norm_vec, true);
+	d_qd_t.vector_multiply(d_ld_t, err_norm_vec, true);
+	d_qd_tdot.vector_multiply(d_ld_tdot, err_norm_vec, true);
 
 	return;
 }
 
-void ObjectiveTerm::dPowerNormdD(vector<double>& dLdD) {
-	dQdD.vectorMultiply(dLdD, errNormVec, true);
+void ObjectiveTerm::d_power_normd_d(vector<double>& d_ld_d) {
+	d_qd_d.vector_multiply(d_ld_d, err_norm_vec, true);
 
 	return;
 }
 
-double ObjectiveTerm::getVolIntegral() {
+double ObjectiveTerm::get_vol_integral() {
 	int i1;
-	double vInt = 0.0;
-	for (i1 = 0; i1 < qLen; i1++) {
-		vInt += qVec[i1] * elVolVec[i1];
+	double v_int = 0.0;
+	for (i1 = 0; i1 < q_len; i1++) {
+		v_int += q_vec[i1] * el_vol_vec[i1];
 	}
-	vInt -= tgtVec[0];
-	return coef * pow(vInt, expnt);
+	v_int -= tgt_vec[0];
+	return coef * pow(v_int, expnt);
 }
 
-void ObjectiveTerm::dVolIntegraldU(vector<double>& dLdU, vector<double>& dLdV, vector<double>& dLdA, vector<double>& dLdT, vector<double>& dLdTdot) {
+void ObjectiveTerm::d_vol_integrald_u(vector<double>& d_ld_u, vector<double>& d_ld_v, vector<double>& d_ld_a, vector<double>& d_ld_t, vector<double>& d_ld_tdot) {
 	int i1;
-	double vInt = 0.0;
-	for (i1 = 0; i1 < qLen; i1++) {
-		vInt += qVec[i1] * elVolVec[i1];
+	double v_int = 0.0;
+	for (i1 = 0; i1 < q_len; i1++) {
+		v_int += q_vec[i1] * el_vol_vec[i1];
 	}
-	vInt -= tgtVec[0];
-	vInt = coef*expnt*pow(vInt, expnt - 1.0);
+	v_int -= tgt_vec[0];
+	v_int = coef*expnt*pow(v_int, expnt - 1.0);
 	
-	for (i1 = 0; i1 < qLen; i1++) {
-		 elVolVec[i1]*= vInt;
+	for (i1 = 0; i1 < q_len; i1++) {
+		 el_vol_vec[i1]*= v_int;
 	}
 
-	dQdU.vectorMultiply(dLdU, elVolVec, true);
-	dQdV.vectorMultiply(dLdV, elVolVec, true);
-	dQdA.vectorMultiply(dLdA, elVolVec, true);
-	dQdT.vectorMultiply(dLdT, elVolVec, true);
-	dQdTdot.vectorMultiply(dLdTdot, elVolVec, true);
+	d_qd_u.vector_multiply(d_ld_u, el_vol_vec, true);
+	d_qd_v.vector_multiply(d_ld_v, el_vol_vec, true);
+	d_qd_a.vector_multiply(d_ld_a, el_vol_vec, true);
+	d_qd_t.vector_multiply(d_ld_t, el_vol_vec, true);
+	d_qd_tdot.vector_multiply(d_ld_tdot, el_vol_vec, true);
 
-	vInt = 1.0 / vInt;
-	for (i1 = 0; i1 < qLen; i1++) {
-		elVolVec[i1] *= vInt;
-	}
-
-	return;
-}
-
-void ObjectiveTerm::dVolIntegraldD(vector<double>& dLdD) {
-	int i1;
-	double vInt = 0.0;
-	for (i1 = 0; i1 < qLen; i1++) {
-		vInt += qVec[i1] * elVolVec[i1];
-	}
-	vInt -= tgtVec[0];
-	vInt = coef * expnt * pow(vInt, expnt - 1.0);
-
-	for (i1 = 0; i1 < qLen; i1++) {
-		qVec[i1] *= vInt;
-		elVolVec[i1] *= vInt;
-	}
-
-	dQdD.vectorMultiply(dLdD, elVolVec, true);
-	dVdD.vectorMultiply(dLdD, qVec, true);
-
-	vInt = 1.0 / vInt;
-	for (i1 = 0; i1 < qLen; i1++) {
-		qVec[i1] *= vInt;
-		elVolVec[i1] *= vInt;
+	v_int = 1.0 / v_int;
+	for (i1 = 0; i1 < q_len; i1++) {
+		el_vol_vec[i1] *= v_int;
 	}
 
 	return;
 }
 
-double ObjectiveTerm::getVolAverage() {
+void ObjectiveTerm::d_vol_integrald_d(vector<double>& d_ld_d) {
 	int i1;
-	double vInt = 0.0;
-	double totVol = 0.0;
-	double volAvg;
-	double vaErr;
-	for (i1 = 0; i1 < qLen; i1++) {
-		vInt += qVec[i1] * elVolVec[i1];
-		totVol += elVolVec[i1];
+	double v_int = 0.0;
+	for (i1 = 0; i1 < q_len; i1++) {
+		v_int += q_vec[i1] * el_vol_vec[i1];
 	}
-	volAvg = vInt/totVol;
-	vaErr = volAvg - tgtVec[0];
-	return coef * pow(vaErr, expnt);
-}
+	v_int -= tgt_vec[0];
+	v_int = coef * expnt * pow(v_int, expnt - 1.0);
 
-void ObjectiveTerm::dVolAveragedU(vector<double>& dLdU, vector<double>& dLdV, vector<double>& dLdA, vector<double>& dLdT, vector<double>& dLdTdot) {
-	int i1;
-	double vInt = 0.0;
-	double totVol = 0.0;
-	double volAvg;
-	double vaErr;
-	for (i1 = 0; i1 < qLen; i1++) {
-		vInt += qVec[i1] * elVolVec[i1];
-		totVol += elVolVec[i1];
-	}
-	volAvg = vInt / totVol;
-	vaErr = volAvg - tgtVec[0];
-	vaErr = coef * expnt * pow(vaErr, expnt - 1.0)/totVol;
-
-	for (i1 = 0; i1 < qLen; i1++) {
-		elVolVec[i1] *= vaErr;
+	for (i1 = 0; i1 < q_len; i1++) {
+		q_vec[i1] *= v_int;
+		el_vol_vec[i1] *= v_int;
 	}
 
-	dQdU.vectorMultiply(dLdU, elVolVec, true);
-	dQdV.vectorMultiply(dLdV, elVolVec, true);
-	dQdA.vectorMultiply(dLdA, elVolVec, true);
-	dQdT.vectorMultiply(dLdT, elVolVec, true);
-	dQdTdot.vectorMultiply(dLdTdot, elVolVec, true);
+	d_qd_d.vector_multiply(d_ld_d, el_vol_vec, true);
+	d_vd_d.vector_multiply(d_ld_d, q_vec, true);
 
-	vaErr = 1.0 / vaErr;
-	for (i1 = 0; i1 < qLen; i1++) {
-		elVolVec[i1] *= vaErr;
+	v_int = 1.0 / v_int;
+	for (i1 = 0; i1 < q_len; i1++) {
+		q_vec[i1] *= v_int;
+		el_vol_vec[i1] *= v_int;
 	}
 
 	return;
 }
 
-void ObjectiveTerm::dVolAveragedD(vector<double>& dLdD) {
+double ObjectiveTerm::get_vol_average() {
+	int i1;
+	double v_int = 0.0;
+	double tot_vol = 0.0;
+	double vol_avg;
+	double va_err;
+	for (i1 = 0; i1 < q_len; i1++) {
+		v_int += q_vec[i1] * el_vol_vec[i1];
+		tot_vol += el_vol_vec[i1];
+	}
+	vol_avg = v_int/tot_vol;
+	va_err = vol_avg - tgt_vec[0];
+	return coef * pow(va_err, expnt);
+}
+
+void ObjectiveTerm::d_vol_averaged_u(vector<double>& d_ld_u, vector<double>& d_ld_v, vector<double>& d_ld_a, vector<double>& d_ld_t, vector<double>& d_ld_tdot) {
+	int i1;
+	double v_int = 0.0;
+	double tot_vol = 0.0;
+	double vol_avg;
+	double va_err;
+	for (i1 = 0; i1 < q_len; i1++) {
+		v_int += q_vec[i1] * el_vol_vec[i1];
+		tot_vol += el_vol_vec[i1];
+	}
+	vol_avg = v_int / tot_vol;
+	va_err = vol_avg - tgt_vec[0];
+	va_err = coef * expnt * pow(va_err, expnt - 1.0)/tot_vol;
+
+	for (i1 = 0; i1 < q_len; i1++) {
+		el_vol_vec[i1] *= va_err;
+	}
+
+	d_qd_u.vector_multiply(d_ld_u, el_vol_vec, true);
+	d_qd_v.vector_multiply(d_ld_v, el_vol_vec, true);
+	d_qd_a.vector_multiply(d_ld_a, el_vol_vec, true);
+	d_qd_t.vector_multiply(d_ld_t, el_vol_vec, true);
+	d_qd_tdot.vector_multiply(d_ld_tdot, el_vol_vec, true);
+
+	va_err = 1.0 / va_err;
+	for (i1 = 0; i1 < q_len; i1++) {
+		el_vol_vec[i1] *= va_err;
+	}
+
+	return;
+}
+
+void ObjectiveTerm::d_vol_averaged_d(vector<double>& d_ld_d) {
 	int i1;
 	int col;
-	double vInt = 0.0;
-	double totVol = 0.0;
-	double volAvg;
-	double vaErr;
-	for (i1 = 0; i1 < qLen; i1++) {
-		vInt += qVec[i1] * elVolVec[i1];
-		totVol += elVolVec[i1];
+	double v_int = 0.0;
+	double tot_vol = 0.0;
+	double vol_avg;
+	double va_err;
+	for (i1 = 0; i1 < q_len; i1++) {
+		v_int += q_vec[i1] * el_vol_vec[i1];
+		tot_vol += el_vol_vec[i1];
 	}
-	volAvg = vInt / totVol;
-	vaErr = volAvg - tgtVec[0];
-	vaErr = coef * expnt * pow(vaErr, expnt - 1.0) / totVol;
+	vol_avg = v_int / tot_vol;
+	va_err = vol_avg - tgt_vec[0];
+	va_err = coef * expnt * pow(va_err, expnt - 1.0) / tot_vol;
 
-	for (i1 = 0; i1 < qLen; i1++) {
-		elVolVec[i1] *= vaErr;
-		qVec[i1] *= vaErr;
+	for (i1 = 0; i1 < q_len; i1++) {
+		el_vol_vec[i1] *= va_err;
+		q_vec[i1] *= va_err;
 	}
 
-	dQdD.vectorMultiply(dLdD, elVolVec, true);
-	dVdD.vectorMultiply(dLdD, qVec, true);
+	d_qd_d.vector_multiply(d_ld_d, el_vol_vec, true);
+	d_vd_d.vector_multiply(d_ld_d, q_vec, true);
 
-	vaErr = 1.0 / vaErr;
-	for (i1 = 0; i1 < qLen; i1++) {
-		elVolVec[i1] *= vaErr;
-		qVec[i1] *= vaErr;
+	va_err = 1.0 / va_err;
+	for (i1 = 0; i1 < q_len; i1++) {
+		el_vol_vec[i1] *= va_err;
+		q_vec[i1] *= va_err;
 	}
-	vaErr = 1.0 / vaErr;
+	va_err = 1.0 / va_err;
 
-	vaErr = vaErr * volAvg;
+	va_err = va_err * vol_avg;
 
-	for (i1 = 0; i1 < qLen; i1++) {
-		MatrixRow& thisRow = dVdD.matrix[i1];
-		for (auto& me : thisRow.rowVec) {
+	for (i1 = 0; i1 < q_len; i1++) {
+		MatrixRow& this_row = d_vd_d.matrix[i1];
+		for (auto& me : this_row.row_vec) {
 			col = me.col;
-			dLdD[col] -= vaErr * me.value;
+			d_ld_d[col] -= va_err * me.value;
 		}
 	}
 
 	return;
 }
 
-void ObjectiveTerm::getObjVal(double time, bool nLGeom, vector<Node>& ndAr, vector<Element>& elAr, vector<Set>& ndSets, vector<Set>& elSets, vector<Section>& secAr, vector<Material>& matAr, vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre) {
-	if (time < activeTime[0] || time > activeTime[1]) {
+void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, vector<Element>& el_ar, vector<Set>& nd_sets, vector<Set>& el_sets, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar, DiffDoub0StressPrereq& st_pre) {
+	if (time < active_time[0] || time > active_time[1]) {
 		return;
 	}
 
 	int i1;
 	int fi;
-	int numLay;
-	int tgtLen;
-	double tgtVal;
-	allocateObj(ndSets,elSets);
-	int qInd;
-	double ndData[6];
+	int num_lay;
+	int tgt_len;
+	double tgt_val;
+	allocate_obj(nd_sets,el_sets);
+	int q_ind;
+	double nd_data[6];
 	DiffDoub0 strain[6];
 	DiffDoub0 stress[6];
-	double seDen;
+	double se_den;
 	DiffDoub0 def[9];
-	DiffDoub0 frcMom[9];
+	DiffDoub0 frc_mom[9];
 	DiffDoub0 flux[3];
-	DiffDoub0 tGrad[3];
-	DiffDoub0 eVol;
-	DiffDoub0 eDen;
+	DiffDoub0 t_grad[3];
+	DiffDoub0 e_vol;
+	DiffDoub0 e_den;
 	DiffDoub0 tmp;
 
-	string catList = "displacement velocity acceleration temperature tdot";
-	fi = catList.find(category);
+	string cat_list = "displacement velocity acceleration temperature tdot";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (ndSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid node set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the node set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (nd_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Node Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Node Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& ndi : ndSets[ndSetPtr].labels) {
+		q_ind = 0;
+		for (auto& ndi : nd_sets[nd_set_ptr].labels) {
 			if (category == "displacement") {
-				qVec[qInd] = ndAr[ndi].displacement[component - 1];
+				q_vec[q_ind] = nd_ar[ndi].displacement[component - 1];
 			} else if (category == "velocity") {
-				qVec[qInd] = ndAr[ndi].velocity[component - 1];
+				q_vec[q_ind] = nd_ar[ndi].velocity[component - 1];
 			} else if (category == "acceleration") {
-				qVec[qInd] = ndAr[ndi].acceleration[component - 1];
+				q_vec[q_ind] = nd_ar[ndi].acceleration[component - 1];
 			} else if (category == "temperature") {
-				qVec[qInd] = ndAr[ndi].temperature;
+				q_vec[q_ind] = nd_ar[ndi].temperature;
 			} else if (category == "tdot") {
-				qVec[qInd] = ndAr[ndi].tempChangeRate;
+				q_vec[q_ind] = nd_ar[ndi].temp_change_rate;
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			tgtLen = tgtVals.size();
-			if (tgtLen == 0) {
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = 0.0;
+			tgt_len = tgt_vals.size();
+			if (tgt_len == 0) {
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = 0.0;
 				}
-			} else if (tgtLen == 1) {
-				tgtVal = *tgtVals.begin();
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = tgtVal;
+			} else if (tgt_len == 1) {
+				tgt_val = *tgt_vals.begin();
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = tgt_val;
 				}
 			} else {
-				qInd = 0;
-				for (auto& tv : tgtVals) {
-					tgtVec[qInd] = tv;
-					qInd++;
+				q_ind = 0;
+				for (auto& tv : tgt_vals) {
+					tgt_vec[q_ind] = tv;
+					q_ind++;
 				}
 			}
-			value+= getPowerNorm();
+			value+= get_power_norm();
 			return;
 		} else if (optr == "volumeIntegral" || optr == "volumeAverage") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				elVolVec[i1] = 1.0;
+			for (i1 = 0; i1 < q_len; i1++) {
+				el_vol_vec[i1] = 1.0;
 			}
-			tgtLen = tgtVals.size();
-			if (tgtLen == 0) {
-				tgtVec[0] = 0.0;
+			tgt_len = tgt_vals.size();
+			if (tgt_len == 0) {
+				tgt_vec[0] = 0.0;
 			} else {
-				tgtVec[0] = *tgtVals.begin();
+				tgt_vec[0] = *tgt_vals.begin();
 			}
 			if (optr == "volumeIntegral") {
-				value+= getVolIntegral();
+				value+= get_vol_integral();
 				return;
 			} else {
-				value+= getVolAverage();
+				value+= get_vol_average();
 				return;
 			}
 		}
 	}
-	catList = "stress strain strainEnergyDen";
-	fi = catList.find(category);
+	cat_list = "stress strain strainEnergyDen";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-			thisEl.getStressStrain(stress, strain, thisEl.sCent, layer, nLGeom, stPre);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_stress_strain(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
 			if (category == "stress") {
-				qVec[qInd] = stress[component - 1].val;
+				q_vec[q_ind] = stress[component - 1].val;
 			} else if (category == "strain") {
-				qVec[qInd] = strain[component - 1].val;
+				q_vec[q_ind] = strain[component - 1].val;
 			} else {
-				seDen = 0.0;
+				se_den = 0.0;
 				for (i1 = 0; i1 < 6; i1++) {
-					seDen += stress[i1].val * strain[i1].val;
+					se_den += stress[i1].val * strain[i1].val;
 				}
-				seDen *= 0.5;
-				qVec[qInd] = seDen;
+				se_den *= 0.5;
+				q_vec[q_ind] = se_den;
 			}
 			if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				thisEl.getVolume(eVol, stPre, layer, secAr, dvAr);
-				elVolVec[qInd] = eVol.val;
+				this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+				el_vol_vec[q_ind] = e_vol.val;
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			tgtLen = tgtVals.size();
-			if (tgtLen == 0) {
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = 0.0;
+			tgt_len = tgt_vals.size();
+			if (tgt_len == 0) {
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = 0.0;
 				}
 			}
-			else if (tgtLen == 1) {
-				tgtVal = *tgtVals.begin();
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = tgtVal;
+			else if (tgt_len == 1) {
+				tgt_val = *tgt_vals.begin();
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = tgt_val;
 				}
 			}
 			else {
-				qInd = 0;
-				for (auto& tv : tgtVals) {
-					tgtVec[qInd] = tv;
-					qInd++;
+				q_ind = 0;
+				for (auto& tv : tgt_vals) {
+					tgt_vec[q_ind] = tv;
+					q_ind++;
 				}
 			}
-			value+= getPowerNorm();
+			value+= get_power_norm();
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
-			if (tgtVals.size() == 0) {
-				tgtVec[0] = 0.0;
+			if (tgt_vals.size() == 0) {
+				tgt_vec[0] = 0.0;
 			} else {
-				tgtVec[0] = *tgtVals.begin();
+				tgt_vec[0] = *tgt_vals.begin();
 			}
 			if (optr == "volumeIntegral") {
-				value+= getVolIntegral();
+				value+= get_vol_integral();
 				return;
 			} else {
-				value+= getVolAverage();
+				value+= get_vol_average();
 				return;
 			}
 		}
 	}
 
-	catList = "sectionDef sectionFrcMom";
-	fi = catList.find(category);
+	cat_list = "sectionDef sectionFrcMom";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-			thisEl.getDefFrcMom(def, frcMom, thisEl.sCent, nLGeom, stPre);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			//this_el->get_stress_strain(stress, strain, spt, layer, n_lgeom, st_pre);
+			this_el.get_def_frc_mom(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
 			if (category == "sectionDef") {
-				qVec[qInd] = def[component - 1].val;
+				q_vec[q_ind] = def[component - 1].val;
 			}
 			else if (category == "sectionFrcMom") {
-				qVec[qInd] = frcMom[component - 1].val;
+				q_vec[q_ind] = frc_mom[component - 1].val;
 			}
 			if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				numLay = secAr[thisEl.sectPtr].layers.size();
-				if (numLay > 1) {
-					eVol.setVal(0.0);
-					for (i1 = 0; i1 < numLay; i1++) {
-						thisEl.getVolume(tmp, stPre, i1, secAr, dvAr);
-						eVol.add(tmp);
+				num_lay = sec_ar[this_el.sect_ptr].layers.size();
+				if (num_lay > 1) {
+					e_vol.set_val(0.0);
+					for (i1 = 0; i1 < num_lay; i1++) {
+						this_el.get_volume(tmp, st_pre, i1, sec_ar, dv_ar);
+						e_vol.add(tmp);
 					}
 				}
 				else {
-					thisEl.getVolume(eVol, stPre, 0, secAr, dvAr);
+					this_el.get_volume(e_vol, st_pre, 0, sec_ar, dv_ar);
 				}
-				elVolVec[qInd] = eVol.val;
+				el_vol_vec[q_ind] = e_vol.val;
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			tgtLen = tgtVals.size();
-			if (tgtLen == 0) {
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = 0.0;
+			tgt_len = tgt_vals.size();
+			if (tgt_len == 0) {
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = 0.0;
 				}
 			}
-			else if (tgtLen == 1) {
-				tgtVal = *tgtVals.begin();
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = tgtVal;
+			else if (tgt_len == 1) {
+				tgt_val = *tgt_vals.begin();
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = tgt_val;
 				}
 			}
 			else {
-				qInd = 0;
-				for (auto& tv : tgtVals) {
-					tgtVec[qInd] = tv;
-					qInd++;
+				q_ind = 0;
+				for (auto& tv : tgt_vals) {
+					tgt_vec[q_ind] = tv;
+					q_ind++;
 				}
 			}
-			value += getPowerNorm();
+			value += get_power_norm();
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
-			if (tgtVals.size() == 0) {
-				tgtVec[0] = 0.0;
+			if (tgt_vals.size() == 0) {
+				tgt_vec[0] = 0.0;
 			}
 			else {
-				tgtVec[0] = *tgtVals.begin();
+				tgt_vec[0] = *tgt_vals.begin();
 			}
 			if (optr == "volumeIntegral") {
-				value += getVolIntegral();
+				value += get_vol_integral();
 				return;
 			}
 			else {
-				value += getVolAverage();
+				value += get_vol_average();
 				return;
 			}
 		}
 	}
 	
-	catList = "flux tempGradient";
-	fi = catList.find(category);
+	cat_list = "flux tempGradient";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-			thisEl.getFluxTGrad(flux, tGrad, thisEl.sCent, layer, stPre);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_flux_tgrad(flux, t_grad, this_el.s_cent, layer, st_pre);
 			if (category == "flux") {
-				qVec[qInd] = flux[component - 1].val;
+				q_vec[q_ind] = flux[component - 1].val;
 			}
 			else if (category == "tempGradient") {
-				qVec[qInd] = tGrad[component - 1].val;
+				q_vec[q_ind] = t_grad[component - 1].val;
 			}
 			if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				thisEl.getVolume(eVol, stPre, layer, secAr, dvAr);
-				elVolVec[qInd] = eVol.val;
+				this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+				el_vol_vec[q_ind] = e_vol.val;
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			tgtLen = tgtVals.size();
-			if (tgtLen == 0) {
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = 0.0;
+			tgt_len = tgt_vals.size();
+			if (tgt_len == 0) {
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = 0.0;
 				}
 			}
-			else if (tgtLen == 1) {
-				tgtVal = *tgtVals.begin();
-				for (i1 = 0; i1 < qLen; i1++) {
-					tgtVec[i1] = tgtVal;
+			else if (tgt_len == 1) {
+				tgt_val = *tgt_vals.begin();
+				for (i1 = 0; i1 < q_len; i1++) {
+					tgt_vec[i1] = tgt_val;
 				}
 			}
 			else {
-				qInd = 0;
-				for (auto& tv : tgtVals) {
-					tgtVec[qInd] = tv;
-					qInd++;
+				q_ind = 0;
+				for (auto& tv : tgt_vals) {
+					tgt_vec[q_ind] = tv;
+					q_ind++;
 				}
 			}
-			value += getPowerNorm();
+			value += get_power_norm();
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
-			if (tgtVals.size() == 0) {
-				tgtVec[0] = 0.0;
+			if (tgt_vals.size() == 0) {
+				tgt_vec[0] = 0.0;
 			}
 			else {
-				tgtVec[0] = *tgtVals.begin();
+				tgt_vec[0] = *tgt_vals.begin();
 			}
 			if (optr == "volumeIntegral") {
-				value += getVolIntegral();
+				value += get_vol_integral();
 				return;
 			}
 			else {
-				value += getVolAverage();
+				value += get_vol_average();
 				return;
 			}
 		}
 	}
 
-	catList = "mass volume";
-	fi = catList.find(category);
+	cat_list = "mass volume";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-			thisEl.getVolume(eVol,stPre,layer,secAr,dvAr);
-			elVolVec[qInd] = eVol.val;
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_volume(e_vol,st_pre,layer,sec_ar,dv_ar);
+			el_vol_vec[q_ind] = e_vol.val;
 			if (category == "volume") {
-				qVec[qInd] = 1.0;
+				q_vec[q_ind] = 1.0;
 			} else {
-				thisEl.getDensity(eDen, layer, secAr, matAr, dvAr);
-				qVec[qInd] = eDen.val;
+				this_el.get_density(e_den, layer, sec_ar, mat_ar, dv_ar);
+				q_vec[q_ind] = e_den.val;
 			}
-			qInd++;
+			q_ind++;
 		}
-		if (tgtVals.size() == 0) {
-			tgtVec[0] = 0.0;
+		if (tgt_vals.size() == 0) {
+			tgt_vec[0] = 0.0;
 		} else {
-			tgtVec[0] = *tgtVals.begin();
+			tgt_vec[0] = *tgt_vals.begin();
 		}
-		value+= getVolIntegral();
+		value+= get_vol_integral();
 		return;
 	}
 
 	return;
 }
 
-void ObjectiveTerm::getdLdU(vector<double>& dLdU, vector<double>& dLdV, vector<double>& dLdA, vector<double>& dLdT, vector<double>& dLdTdot, double time, bool nLGeom, vector<Node>& ndAr, vector<Element>& elAr, vector<Set>& ndSets, vector<Set>& elSets, vector<Section>& secAr, vector<Material>& matAr, vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre) {
-	if (time < activeTime[0] || time > activeTime[1]) {
+void ObjectiveTerm::getd_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, vector<double>& d_ld_a, vector<double>& d_ld_t, vector<double>& d_ld_tdot, double time, bool n_lgeom, vector<Node>& nd_ar, vector<Element>& el_ar, vector<Set>& nd_sets, vector<Set>& el_sets, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar, DiffDoub0StressPrereq& st_pre) {
+	if (time < active_time[0] || time > active_time[1]) {
 		return;
 	}
 
@@ -613,246 +613,246 @@ void ObjectiveTerm::getdLdU(vector<double>& dLdU, vector<double>& dLdV, vector<d
 	int i2;
 	int i3;
 	int fi;
-	allocateObjGrad();
-	int qInd;
-	int dofInd;
-	int currRank;
+	allocate_obj_grad();
+	int q_ind;
+	int dof_ind;
+	int curr_rank;
 	DiffDoub0 strain[6];
 	DiffDoub0 stress[6];
-	vector<DiffDoub0> dsdU(288);
-	vector<DiffDoub0> dedU(288);
-	vector<DiffDoub0> dsdT(90);
-	DiffDoub0 dseDendU[33];
-	DiffDoub0 dseDendT[10];
+	vector<DiffDoub0> dsd_u(288);
+	vector<DiffDoub0> ded_u(288);
+	vector<DiffDoub0> dsd_t(90);
+	DiffDoub0 dse_dend_u[33];
+	DiffDoub0 dse_dend_t[10];
 	DiffDoub0 def[9];
-	DiffDoub0 frcMom[9];
+	DiffDoub0 frc_mom[9];
 	DiffDoub0 flux[3];
-	DiffDoub0 tGrad[3];
-	vector<DiffDoub0> dFdT(30);
-	vector<DiffDoub0> dTGdT(30);
-	int elNumNds;
-	int elDofPerNd;
-	int elNumIntDof;
-	int elTotDof;
-	DiffDoub0 eVol;
-	DiffDoub0 eDen;
+	DiffDoub0 t_grad[3];
+	vector<DiffDoub0> d_fd_t(30);
+	vector<DiffDoub0> d_tgd_t(30);
+	int el_num_nds;
+	int el_dof_per_nd;
+	int el_num_int_dof;
+	int el_tot_dof;
+	DiffDoub0 e_vol;
+	DiffDoub0 e_den;
 
-	string catList = "displacement velocity acceleration temperature tdot";
-	fi = catList.find(category);
+	string cat_list = "displacement velocity acceleration temperature tdot";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (ndSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid node set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the node set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (nd_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Node Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Node Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& ndi : ndSets[ndSetPtr].labels) {
-			dofInd = ndAr[ndi].dofIndex[component - 1];
-			currRank = ndAr[ndi].sortedRank;
+		q_ind = 0;
+		for (auto& ndi : nd_sets[nd_set_ptr].labels) {
+			dof_ind = nd_ar[ndi].dof_index[component - 1];
+			curr_rank = nd_ar[ndi].sorted_rank;
 			if (category == "displacement") {
-				dQdU.addEntry(qInd, dofInd, 1.0);
+				d_qd_u.add_entry(q_ind, dof_ind, 1.0);
 			}
 			else if (category == "velocity") {
-				dQdV.addEntry(qInd, dofInd, 1.0);
+				d_qd_v.add_entry(q_ind, dof_ind, 1.0);
 			}
 			else if (category == "acceleration") {
-				dQdA.addEntry(qInd, dofInd, 1.0);
+				d_qd_a.add_entry(q_ind, dof_ind, 1.0);
 			}
 			else if (category == "temperature") {
-				dQdT.addEntry(qInd, currRank, 1.0);
+				d_qd_t.add_entry(q_ind, curr_rank, 1.0);
 			}
 			else if (category == "tdot") {
-				dQdTdot.addEntry(qInd, currRank, 1.0);
+				d_qd_tdot.add_entry(q_ind, curr_rank, 1.0);
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			for (i1 = 0; i1 < q_len; i1++) {
+				err_norm_vec[i1] = coef * expnt * pow((q_vec[i1] - tgt_vec[i1]), (expnt - 1.0));
 			}
-			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+			d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 			return;
 		}
 		else if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 			else {
-				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 		}
 	}
 
-	catList = "stress strain strainEnergyDen";
-	fi = catList.find(category);
+	cat_list = "stress strain strainEnergyDen";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-			thisEl.getStressStrain(stress, strain, thisEl.sCent, layer, nLGeom, stPre);
-			thisEl.dStressStraindU(dsdU, dedU, dsdT, thisEl.sCent, layer, nLGeom, stPre);
-			elNumNds = thisEl.numNds;
-			elDofPerNd = thisEl.dofPerNd;
-			elNumIntDof = thisEl.numIntDof;
-			elTotDof = elNumNds * elDofPerNd + elNumIntDof;
-			i1 = elTotDof * (component - 1);
-			i2 = elNumNds * (component - 1);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_stress_strain(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
+			this_el.d_stress_straind_u(dsd_u, ded_u, dsd_t, this_el.s_cent, layer, n_lgeom, st_pre);
+			el_num_nds = this_el.num_nds;
+			el_dof_per_nd = this_el.dof_per_nd;
+			el_num_int_dof = this_el.num_int_dof;
+			el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
+			i1 = el_tot_dof * (component - 1);
+			i2 = el_num_nds * (component - 1);
 			if (category == "stress") {
-				subVec(stPre.scrVec1, dsdU, i1, i1 + elTotDof);
-				thisEl.putVecToGlobMat(dQdU, stPre.scrVec1, false, qInd, ndAr);
-				subVec(stPre.scrVec1, dsdT, i2, i2 + elNumNds);
-				thisEl.putVecToGlobMat(dQdT, stPre.scrVec1, true, qInd, ndAr);
+				sub_vec(st_pre.scr_vec1, dsd_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				sub_vec(st_pre.scr_vec1, dsd_t, i2, i2 + el_num_nds);
+				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			else if (category == "strain") {
-				subVec(stPre.scrVec1, dedU, i1, i1 + elTotDof);
-				thisEl.putVecToGlobMat(dQdU, stPre.scrVec1, false, qInd, ndAr);
+				sub_vec(st_pre.scr_vec1, ded_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
 			}
 			else {
-				for (i2 = 0; i2 < elTotDof; i2++) {
-					dseDendU[i2].setVal(0.0);
+				for (i2 = 0; i2 < el_tot_dof; i2++) {
+					dse_dend_u[i2].set_val(0.0);
 					i3 = i2;
 					for (i1 = 0; i1 < 6; i1++) {
-						dseDendU[i2].val += stress[i1].val * dedU[i3].val + dsdU[i3].val * strain[i1].val;
-						i3 += elTotDof;
+						dse_dend_u[i2].val += stress[i1].val * ded_u[i3].val + dsd_u[i3].val * strain[i1].val;
+						i3 += el_tot_dof;
 					}
-					dseDendU[i2].val *= 0.5;
+					dse_dend_u[i2].val *= 0.5;
 				}
-				for (i2 = 0; i2 < elNumNds; i2++) {
-					dseDendT[i2].setVal(0.0);
+				for (i2 = 0; i2 < el_num_nds; i2++) {
+					dse_dend_t[i2].set_val(0.0);
 					i3 = i2;
 					for (i1 = 0; i1 < 6; i1++) {
-						dseDendT[i2].val += dsdT[i3].val * strain[i1].val;
-						i3 += elNumNds;
+						dse_dend_t[i2].val += dsd_t[i3].val * strain[i1].val;
+						i3 += el_num_nds;
 					}
-					dseDendT[i2].val *= 0.5;
+					dse_dend_t[i2].val *= 0.5;
 				}
-				arToVec(dseDendU, stPre.scrVec1, 0, 33);
-				thisEl.putVecToGlobMat(dQdU, stPre.scrVec1, false, qInd, ndAr);
-				arToVec(dseDendT, stPre.scrVec1, 0, 10);
-				thisEl.putVecToGlobMat(dQdT, stPre.scrVec1, true, qInd, ndAr);
+				ar_to_vec(dse_dend_u, st_pre.scr_vec1, 0, 33);
+				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				ar_to_vec(dse_dend_t, st_pre.scr_vec1, 0, 10);
+				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			for (i1 = 0; i1 < q_len; i1++) {
+				err_norm_vec[i1] = coef * expnt * pow((q_vec[i1] - tgt_vec[i1]), (expnt - 1.0));
 			}
-			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+			d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 			else {
-				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 		}
 	}
 	
-	catList = "sectionDef sectionFrcMom";
-	fi = catList.find(category);
+	cat_list = "sectionDef sectionFrcMom";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-			//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-			//thisEl->dStressStraindU(dsdU, dedU, dsdT, spt, layer, nLGeom, stPre);
-			thisEl.getDefFrcMom(def, frcMom, thisEl.sCent, nLGeom, stPre);
-			thisEl.dDefFrcMomdU(dedU, dsdU, dsdT, thisEl.sCent, nLGeom, stPre);
-			elNumNds = thisEl.numNds;
-			elDofPerNd = thisEl.dofPerNd;
-			elNumIntDof = thisEl.numIntDof;
-			elTotDof = elNumNds * elDofPerNd + elNumIntDof;
-			i1 = elTotDof * (component - 1);
-			i2 = elNumNds * (component - 1);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			//this_el->get_stress_strain(stress, strain, spt, layer, n_lgeom, st_pre);
+			//this_el->d_stress_straind_u(dsd_u, ded_u, dsd_t, spt, layer, n_lgeom, st_pre);
+			this_el.get_def_frc_mom(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
+			this_el.d_def_frc_momd_u(ded_u, dsd_u, dsd_t, this_el.s_cent, n_lgeom, st_pre);
+			el_num_nds = this_el.num_nds;
+			el_dof_per_nd = this_el.dof_per_nd;
+			el_num_int_dof = this_el.num_int_dof;
+			el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
+			i1 = el_tot_dof * (component - 1);
+			i2 = el_num_nds * (component - 1);
 			if (category == "sectionFrcMom") {
-				subVec(stPre.scrVec1, dsdU, i1, i1 + elTotDof);
-				thisEl.putVecToGlobMat(dQdU, stPre.scrVec1, false, qInd, ndAr);
-				subVec(stPre.scrVec1, dsdT, i2, i2 + elNumNds);
-				thisEl.putVecToGlobMat(dQdT, stPre.scrVec1, true, qInd, ndAr);
+				sub_vec(st_pre.scr_vec1, dsd_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				sub_vec(st_pre.scr_vec1, dsd_t, i2, i2 + el_num_nds);
+				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			else if (category == "sectionDef") {
-				subVec(stPre.scrVec1, dedU, i1, i1 + elTotDof);
-				thisEl.putVecToGlobMat(dQdU, stPre.scrVec1, false, qInd, ndAr);
+				sub_vec(st_pre.scr_vec1, ded_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			for (i1 = 0; i1 < q_len; i1++) {
+				err_norm_vec[i1] = coef * expnt * pow((q_vec[i1] - tgt_vec[i1]), (expnt - 1.0));
 			}
-			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+			d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 			else {
-				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 		}
 	}
 
-	catList = "flux tempGradient";
-	fi = catList.find(category);
+	cat_list = "flux tempGradient";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-			thisEl.getFluxTGrad(flux, tGrad, thisEl.sCent, layer, stPre);
-			thisEl.dFluxTGraddT(dFdT, dTGdT, thisEl.sCent, layer, stPre);
-			elNumNds = thisEl.numNds;
-			i1 = elNumNds * (component - 1);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_flux_tgrad(flux, t_grad, this_el.s_cent, layer, st_pre);
+			this_el.d_flux_tgradd_t(d_fd_t, d_tgd_t, this_el.s_cent, layer, st_pre);
+			el_num_nds = this_el.num_nds;
+			i1 = el_num_nds * (component - 1);
 			if (category == "flux") {
-				subVec(stPre.scrVec1, dFdT, i1, i1 + elNumNds);
-				thisEl.putVecToGlobMat(dQdT, stPre.scrVec1, true, qInd, ndAr);
+				sub_vec(st_pre.scr_vec1, d_fd_t, i1, i1 + el_num_nds);
+				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			else if (category == "tempGradient") {
-				subVec(stPre.scrVec1, dTGdT, i1, i1 + elNumNds);
-				thisEl.putVecToGlobMat(dQdT, stPre.scrVec1, true, qInd, ndAr);
+				sub_vec(st_pre.scr_vec1, d_tgd_t, i1, i1 + el_num_nds);
+				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			for (i1 = 0; i1 < q_len; i1++) {
+				err_norm_vec[i1] = coef * expnt * pow((q_vec[i1] - tgt_vec[i1]), (expnt - 1.0));
 			}
-			dPowerNormdU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+			d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				dVolIntegraldU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 			else {
-				dVolAveragedU(dLdU, dLdV, dLdA, dLdT, dLdTdot);
+				d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
 				return;
 			}
 		}
@@ -861,223 +861,223 @@ void ObjectiveTerm::getdLdU(vector<double>& dLdU, vector<double>& dLdV, vector<d
 	return;
 }
 
-void ObjectiveTerm::getdLdD(vector<double>& dLdD, double time, bool nLGeom, vector<Node>& ndAr,  vector<Element>& elAr, vector<Set>& ndSets, vector<Set>& elSets, vector<Section>& secAr, vector<Material>& matAr, vector<DesignVariable>& dvAr, DiffDoub1StressPrereq& stPre) {
-	if (time < activeTime[0] || time > activeTime[1]) {
+void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom, vector<Node>& nd_ar,  vector<Element>& el_ar, vector<Set>& nd_sets, vector<Set>& el_sets, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar, DiffDoub1StressPrereq& st_pre) {
+	if (time < active_time[0] || time > active_time[1]) {
 		return;
 	}
 
 	int i1;
-	int numLay;
+	int num_lay;
 	int fi;
-	int qInd;
-	DiffDoub0 dvVal;
+	int q_ind;
+	DiffDoub0 dv_val;
 	DiffDoub1 strain[6];
 	DiffDoub1 stress[6];
-	double seDen;
+	double se_den;
 	DiffDoub1 def[9];
-	DiffDoub1 frcMom[9];
+	DiffDoub1 frc_mom[9];
 	DiffDoub1 flux[3];
-	DiffDoub1 tGrad[3];
-	DiffDoub1 eVol;
-	DiffDoub1 eDen;
+	DiffDoub1 t_grad[3];
+	DiffDoub1 e_vol;
+	DiffDoub1 e_den;
 	DiffDoub1 tmp;
 
-	string catList = "stress strain strainEnergyDen";
-	fi = catList.find(category);
+	string cat_list = "stress strain strainEnergyDen";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			for (auto& dvi : thisEl.compDVars) {
-				DesignVariable& thisDV = dvAr[dvi];
-				thisDV.getValue(dvVal);
-				thisDV.diffVal.setVal(dvVal.val, 1.0);
-				thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-				thisEl.getStressStrain(stress, strain, thisEl.sCent, layer, nLGeom, stPre);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			for (auto& dvi : this_el.comp_dvars) {
+				DesignVariable& this_dv = dv_ar[dvi];
+				this_dv.get_value(dv_val);
+				this_dv.diff_val.set_val(dv_val.val, 1.0);
+				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				this_el.get_stress_strain(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
 				if (category == "stress") {
-					dQdD.addEntry(qInd, dvi, stress[component - 1].dval);
+					d_qd_d.add_entry(q_ind, dvi, stress[component - 1].dval);
 				}
 				else if (category == "strain") {
-					dQdD.addEntry(qInd, dvi, strain[component - 1].dval);
+					d_qd_d.add_entry(q_ind, dvi, strain[component - 1].dval);
 				}
 				else {
-					seDen = 0.0;
+					se_den = 0.0;
 					for (i1 = 0; i1 < 6; i1++) {
-						seDen += stress[i1].val * strain[i1].dval + stress[i1].dval * strain[i1].val;
+						se_den += stress[i1].val * strain[i1].dval + stress[i1].dval * strain[i1].val;
 					}
-					seDen *= 0.5;
-					dQdD.addEntry(qInd, dvi, seDen);
+					se_den *= 0.5;
+					d_qd_d.add_entry(q_ind, dvi, se_den);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
-					thisEl.getVolume(eVol, stPre, layer, secAr, dvAr);
-					dVdD.addEntry(qInd, dvi, eVol.dval);
+					this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+					d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				}
-				thisDV.diffVal.setVal(dvVal.val, 0.0);
+				this_dv.diff_val.set_val(dv_val.val, 0.0);
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			for (i1 = 0; i1 < q_len; i1++) {
+				err_norm_vec[i1] = coef * expnt * pow((q_vec[i1] - tgt_vec[i1]), (expnt - 1.0));
 			}
-			dPowerNormdD(dLdD);
+			d_power_normd_d(d_ld_d);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				dVolIntegraldD(dLdD);
+				d_vol_integrald_d(d_ld_d);
 				return;
 			}
 			else {
-				dVolAveragedD(dLdD);
+				d_vol_averaged_d(d_ld_d);
 				return;
 			}
 		}
 	}
 
-	catList = "sectionDef sectionFrcMom";
-	fi = catList.find(category);
+	cat_list = "sectionDef sectionFrcMom";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			for (auto& dvi : thisEl.compDVars) {
-				DesignVariable& thisDV = dvAr[dvi];
-				thisDV.getValue(dvVal);
-				thisDV.diffVal.setVal(dvVal.val, 1.0);
-				thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-				//thisEl->getStressStrain(stress, strain, spt, layer, nLGeom, stPre);
-				thisEl.getDefFrcMom(def, frcMom, thisEl.sCent, nLGeom, stPre);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			for (auto& dvi : this_el.comp_dvars) {
+				DesignVariable& this_dv = dv_ar[dvi];
+				this_dv.get_value(dv_val);
+				this_dv.diff_val.set_val(dv_val.val, 1.0);
+				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				//this_el->get_stress_strain(stress, strain, spt, layer, n_lgeom, st_pre);
+				this_el.get_def_frc_mom(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
 				if (category == "sectionFrcMom") {
-					dQdD.addEntry(qInd, dvi, frcMom[component - 1].dval);
+					d_qd_d.add_entry(q_ind, dvi, frc_mom[component - 1].dval);
 				}
 				else if (category == "sectionDef") {
-					dQdD.addEntry(qInd, dvi, def[component - 1].dval);
+					d_qd_d.add_entry(q_ind, dvi, def[component - 1].dval);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
-					numLay = secAr[thisEl.sectPtr].layers.size();
-					if (numLay > 1) {
-						eVol.setVal(0.0);
-						for (i1 = 0; i1 < numLay; i1++) {
-							thisEl.getVolume(tmp, stPre, i1, secAr, dvAr);
-							eVol.add(tmp);
+					num_lay = sec_ar[this_el.sect_ptr].layers.size();
+					if (num_lay > 1) {
+						e_vol.set_val(0.0);
+						for (i1 = 0; i1 < num_lay; i1++) {
+							this_el.get_volume(tmp, st_pre, i1, sec_ar, dv_ar);
+							e_vol.add(tmp);
 						}
 					}
 					else {
-						thisEl.getVolume(eVol, stPre, 0, secAr, dvAr);
+						this_el.get_volume(e_vol, st_pre, 0, sec_ar, dv_ar);
 					}
-					dVdD.addEntry(qInd, dvi, eVol.dval);
+					d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				}
-				thisDV.diffVal.setVal(dvVal.val, 0.0);
+				this_dv.diff_val.set_val(dv_val.val, 0.0);
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			for (i1 = 0; i1 < q_len; i1++) {
+				err_norm_vec[i1] = coef * expnt * pow((q_vec[i1] - tgt_vec[i1]), (expnt - 1.0));
 			}
-			dPowerNormdD(dLdD);
+			d_power_normd_d(d_ld_d);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				dVolIntegraldD(dLdD);
+				d_vol_integrald_d(d_ld_d);
 				return;
 			}
 			else {
-				dVolAveragedD(dLdD);
+				d_vol_averaged_d(d_ld_d);
 				return;
 			}
 		}
 	}
 	
-	catList = "flux tempGradient";
-	fi = catList.find(category);
+	cat_list = "flux tempGradient";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			for (auto& dvi : thisEl.compDVars) {
-				DesignVariable& thisDV = dvAr[dvi];
-				thisDV.getValue(dvVal);
-				thisDV.diffVal.setVal(dvVal.val, 1.0);
-				thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-				thisEl.getFluxTGrad(flux, tGrad, thisEl.sCent, layer, stPre);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			for (auto& dvi : this_el.comp_dvars) {
+				DesignVariable& this_dv = dv_ar[dvi];
+				this_dv.get_value(dv_val);
+				this_dv.diff_val.set_val(dv_val.val, 1.0);
+				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				this_el.get_flux_tgrad(flux, t_grad, this_el.s_cent, layer, st_pre);
 				if (category == "flux") {
-					dQdD.addEntry(qInd, dvi, flux[component - 1].dval);
+					d_qd_d.add_entry(q_ind, dvi, flux[component - 1].dval);
 				}
 				else if (category == "tempGradient") {
-					dQdD.addEntry(qInd, dvi, tGrad[component - 1].dval);
+					d_qd_d.add_entry(q_ind, dvi, t_grad[component - 1].dval);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
-					thisEl.getVolume(eVol, stPre, layer, secAr, dvAr);
-					dVdD.addEntry(qInd, dvi, eVol.dval);
+					this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+					d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				}
-				thisDV.diffVal.setVal(dvVal.val, 0.0);
+				this_dv.diff_val.set_val(dv_val.val, 0.0);
 			}
-			qInd++;
+			q_ind++;
 		}
 		if (optr == "powerNorm") {
-			for (i1 = 0; i1 < qLen; i1++) {
-				errNormVec[i1] = coef * expnt * pow((qVec[i1] - tgtVec[i1]), (expnt - 1.0));
+			for (i1 = 0; i1 < q_len; i1++) {
+				err_norm_vec[i1] = coef * expnt * pow((q_vec[i1] - tgt_vec[i1]), (expnt - 1.0));
 			}
-			dPowerNormdD(dLdD);
+			d_power_normd_d(d_ld_d);
 			return;
 		}
 		if (optr == "volumeIntegral" || optr == "volumeAverage") {
 			if (optr == "volumeIntegral") {
-				dVolIntegraldD(dLdD);
+				d_vol_integrald_d(d_ld_d);
 				return;
 			}
 			else {
-				dVolAveragedD(dLdD);
+				d_vol_averaged_d(d_ld_d);
 				return;
 			}
 		}
 	}
 
-	catList = "mass volume";
-	fi = catList.find(category);
+	cat_list = "mass volume";
+	fi = cat_list.find(category);
 	if (fi > -1) {
-		if (elSetPtr == max_int) {
-			string errStr = "Error: objective terms of category '" + category + "' must have a valid element set specified.\n";
-			errStr = errStr + "Check the objective input file to make sure the element set name is correct and defined in the model input file.";
-			throw runtime_error(errStr);
+		if (el_set_ptr == max_int) {
+			string err_str = "Error: Objective terms of category '" + category + "' must have a valid Element Set specified.\n";
+			err_str = err_str + "Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.";
+			throw runtime_error(err_str);
 		}
-		qInd = 0;
-		for (auto& eli : elSets[elSetPtr].labels) {
-			Element& thisEl = elAr[eli];
-			for (auto& dvi : thisEl.compDVars) {
-				DesignVariable& thisDV = dvAr[dvi];
-				thisDV.getValue(dvVal);
-				thisDV.diffVal.setVal(dvVal.val, 1.0);
-				thisEl.getStressPrereq(stPre, secAr, matAr, ndAr, dvAr);
-				thisEl.getVolume(eVol, stPre, layer, secAr, dvAr);
-				dVdD.addEntry(qInd, dvi, eVol.dval);
+		q_ind = 0;
+		for (auto& eli : el_sets[el_set_ptr].labels) {
+			Element& this_el = el_ar[eli];
+			for (auto& dvi : this_el.comp_dvars) {
+				DesignVariable& this_dv = dv_ar[dvi];
+				this_dv.get_value(dv_val);
+				this_dv.diff_val.set_val(dv_val.val, 1.0);
+				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+				d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				if(category == "mass") {
-					thisEl.getDensity(eDen, layer, secAr, matAr, dvAr);
-					dQdD.addEntry(qInd, dvi, eDen.dval);
+					this_el.get_density(e_den, layer, sec_ar, mat_ar, dv_ar);
+					d_qd_d.add_entry(q_ind, dvi, e_den.dval);
 				}
-				thisDV.diffVal.setVal(dvVal.val, 0.0);
+				this_dv.diff_val.set_val(dv_val.val, 0.0);
 			}
-			qInd++;
+			q_ind++;
 		}
-		dVolIntegraldD(dLdD);
+		d_vol_integrald_d(d_ld_d);
 		return;
 	}
 
@@ -1088,30 +1088,30 @@ Objective::Objective() {
 	terms.clear();
 }
 
-void Objective::clearValues() {
+void Objective::clear_values() {
 	for (auto& tm : terms) {
 		tm.value = 0.0;
 	}
 	return;
 }
 
-void Objective::calculateTerms(double time, bool nLGeom, vector<Node>& ndAr,  vector<Element>& elAr, vector<Set>& ndSets, vector<Set>& elSets, vector<Section>& secAr, vector<Material>& matAr, vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre) {
+void Objective::calculate_terms(double time, bool n_lgeom, vector<Node>& nd_ar,  vector<Element>& el_ar, vector<Set>& nd_sets, vector<Set>& el_sets, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar, DiffDoub0StressPrereq& st_pre) {
 	for (auto& tm : terms) {
-		tm.getObjVal(time, nLGeom, ndAr, elAr, ndSets, elSets, secAr, matAr, dvAr, stPre);
+		tm.get_obj_val(time, n_lgeom, nd_ar, el_ar, nd_sets, el_sets, sec_ar, mat_ar, dv_ar, st_pre);
 	}
 	return;
 }
 
-void Objective::calculatedLdU(vector<double>& dLdU, vector<double>& dLdV, vector<double>& dLdA, vector<double>& dLdT, vector<double>& dLdTdot, double time, bool nLGeom, vector<Node>& ndAr, vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, vector<DesignVariable>& dvAr, DiffDoub0StressPrereq& stPre) {
+void Objective::calculated_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, vector<double>& d_ld_a, vector<double>& d_ld_t, vector<double>& d_ld_tdot, double time, bool n_lgeom, vector<Node>& nd_ar, vector<Element>& el_ar, std::vector<Set>& nd_sets, std::vector<Set>& el_sets, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, vector<DesignVariable>& dv_ar, DiffDoub0StressPrereq& st_pre) {
 	for (auto& tm : terms) {
-		tm.getdLdU(dLdU, dLdV, dLdA, dLdT, dLdTdot, time, nLGeom, ndAr, elAr, ndSets, elSets, secAr, matAr, dvAr, stPre);
+		tm.getd_ld_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot, time, n_lgeom, nd_ar, el_ar, nd_sets, el_sets, sec_ar, mat_ar, dv_ar, st_pre);
 	}
 	return;
 }
 
-void Objective::calculatedLdD(vector<double>& dLdD, double time, bool nLGeom, vector<Node>& ndAr,  vector<Element>& elAr, std::vector<Set>& ndSets, std::vector<Set>& elSets, std::vector<Section>& secAr, std::vector<Material>& matAr, vector<DesignVariable>& dvAr, DiffDoub1StressPrereq& stPre) {
+void Objective::calculated_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom, vector<Node>& nd_ar,  vector<Element>& el_ar, std::vector<Set>& nd_sets, std::vector<Set>& el_sets, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, vector<DesignVariable>& dv_ar, DiffDoub1StressPrereq& st_pre) {
 	for (auto& tm : terms) {
-		tm.getdLdD(dLdD, time, nLGeom, ndAr, elAr, ndSets, elSets, secAr, matAr, dvAr, stPre);
+		tm.getd_ld_d(d_ld_d, time, n_lgeom, nd_ar, el_ar, nd_sets, el_sets, sec_ar, mat_ar, dv_ar, st_pre);
 	}
 	return;
 }

@@ -1,65 +1,65 @@
-#ifndef JOBCLASS
-#define JOBCLASS
+#ifndef jobclass
+#define jobclass
 #include "ListEntClass.h"
 #include <vector>
 #include <string>
 
 class JobCommand {
 	public:
-	    std::string cmdString;
-		std::string fileName;
+	    std::string cmd_string;
+		std::string file_name;
 		
 		// for solve
 		bool dynamic;
 		bool elastic;
-		int loadRampSteps;
-		double newmarkBeta;
-		double newmarkGamma;
-		double rayDampCK;
-		double rayDampCM;
-		bool nonlinearGeom;
-		bool saveSolnHist;
-		double simPeriod;
-		bool lumpMass;
-		int fullReform;
-		int solverBandwidth;
-		int solverBlockDim;
-		std::string solverMethod;
-		int maxIt;
-		double convTol;
-		std::list<double> staticLoadTime;
+		int load_ramp_steps;
+		double newmark_beta;
+		double newmark_gamma;
+		double ray_damp_ck;
+		double ray_damp_cm;
+		bool nonlinear_geom;
+		bool save_soln_hist;
+		double sim_period;
+		bool lump_mass;
+		int full_reform;
+		int solver_bandwidth;
+		int solver_block_dim;
+		std::string solver_method;
+		int max_it;
+		double conv_tol;
+		std::list<double> static_load_time;
 		bool thermal;
-		double timeStep;
+		double time_step;
 		
 		// modal
 		std::string type;
-		int numModes;
-		double tgtEval;
+		int num_modes;
+		double tgt_eval;
 		
-		// setSolnToMode
-		std::string solnField;
+		// set_soln_to_mode
+		std::string soln_field;
 		int mode;
-		double maxAmplitude;
+		double max_amplitude;
 		
-		// writeNodeResults
-		std::string nodeSet;
+		// write_node_results
+		std::string node_set;
 		std::list<std::string> fields;
-		std::list<int> timeSteps;
-		std::string timeStepTag;
+		std::list<int> time_steps;
+		std::string time_step_tag;
 		
-		// writeElementResults
-		std::string elementSet;
+		// write_element_results
+		std::string element_set;
 		std::string position;
 		
-		// writeModalResults
-		bool writeModes;
+		// write_modal_results
+		bool write_modes;
 		
-		// writeElementProperties
+		// write_element_properties
 		std::list<std::string> properties;
 		
-		// writeObjective
-		std::list<std::string> objInclude;
-		bool writeGradient;
+		// write_objective
+		std::list<std::string> obj_include;
+		bool write_gradient;
 		
 		JobCommand();
 };

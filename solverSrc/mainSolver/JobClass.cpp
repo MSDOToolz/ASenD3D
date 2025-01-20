@@ -4,53 +4,53 @@
 using namespace std;
 
 JobCommand::JobCommand() {
-	cmdString = "";
-	fileName = "";
+	cmd_string = "";
+	file_name = "";
 	
 	// for solve
 	dynamic = false;
 	elastic = true;
-	loadRampSteps = 1;
-	newmarkBeta = 0.25;
-	newmarkGamma = 0.5;
-	rayDampCK = 0.0;
-	rayDampCM = 0.0;
-	nonlinearGeom = false;
-	saveSolnHist = false;
-	lumpMass = false;
-	fullReform = 1;
-	simPeriod = 1.0;
-	solverBandwidth = 2000000000;
-	solverBlockDim = 2000000000;
-	solverMethod = "direct";
-	maxIt = 0;
-	convTol = 1.0e-12;
+	load_ramp_steps = 1;
+	newmark_beta = 0.25;
+	newmark_gamma = 0.5;
+	ray_damp_ck = 0.0;
+	ray_damp_cm = 0.0;
+	nonlinear_geom = false;
+	save_soln_hist = false;
+	lump_mass = false;
+	full_reform = 1;
+	sim_period = 1.0;
+	solver_bandwidth = 2000000000;
+	solver_block_dim = 2000000000;
+	solver_method = "direct";
+	max_it = 0;
+	conv_tol = 1.0e-12;
 	thermal = false;
-	timeStep = 1.0;
+	time_step = 1.0;
 	
 	// modal
 	type = "buckling";
-	numModes = 10;
-	tgtEval = 0.0;
+	num_modes = 10;
+	tgt_eval = 0.0;
 	
-	// setSolnToMode
-	solnField = "displacement";
+	// set_soln_to_mode
+	soln_field = "displacement";
 	mode = 1;
-	maxAmplitude = 1.0;
+	max_amplitude = 1.0;
 	
-	// writeNodeResults
-	nodeSet = "all";
-	timeStepTag = "";
+	// write_node_results
+	node_set = "all";
+	time_step_tag = "";
 	
-	// writeElementResults
-	elementSet = "all";
+	// write_element_results
+	element_set = "all";
 	position = "centroid";
 	
-	// writeModalResults
-	writeModes = true;
+	// write_modal_results
+	write_modes = true;
 	
-	// writeObjective
-	writeGradient = true;	
+	// write_objective
+	write_gradient = true;	
 	return;
 }
 

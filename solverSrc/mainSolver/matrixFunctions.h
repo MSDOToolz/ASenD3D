@@ -1,5 +1,5 @@
-#ifndef MATRIXFUN
-#define MATRIXFUN
+#ifndef matrixfun
+#define matrixfun
 #include <vector>
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
@@ -7,150 +7,150 @@
 #include "LowerTriMatClass.h"
 #include "ConstraintClass.h"
 
-void subVec(std::vector<double>& subV, std::vector<double>& vIn, int st, int end);
+void sub_vec(std::vector<double>& sub_v, std::vector<double>& v_in, int st, int end);
 
-void returnSV(std::vector<double>& subV, std::vector<double>& vIn, int st, int end);
+void return_sv(std::vector<double>& sub_v, std::vector<double>& v_in, int st, int end);
 
-void vecToAr(double ar[], std::vector<double>& vc, int st, int end);
+void vec_to_ar(double ar[], std::vector<double>& vc, int st, int end);
 
-double getDist(double p1[], double p2[]);
+double get_dist(double p1[], double p2[]);
 
-void crossProd(double prod[], double v1[], double v2[]);
+void cross_prod(double prod[], double v1[], double v2[]);
 
-void qRFactor(std::vector<double>& mat, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void q_rfactor(std::vector<double>& mat, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void solveqRxEqb(std::vector<double>& xVec, std::vector<double>& mat, std::vector<double>& bVec, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveq_rx_eqb(std::vector<double>& x_vec, std::vector<double>& mat, std::vector<double>& b_vec, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void conjGradSparse(std::vector<double>& soln, SparseMat& mat, ConstraintList& cnst, LowerTriMat& pcMat, std::vector<double>& rhs, double convTol, int maxIt);
+void conj_grad_sparse(std::vector<double>& soln, SparseMat& mat, ConstraintList& cnst, LowerTriMat& pc_mat, std::vector<double>& rhs, double conv_tol, int max_it);
 
-void gMResSparse(std::vector<double>& soln, SparseMat& mat, ConstraintList& cnst, LUMat& pcMat, std::vector<double>& rhs, double convTol, int maxIt, int restart);
+void g_mres_sparse(std::vector<double>& soln, SparseMat& mat, ConstraintList& cnst, LUMat& pc_mat, std::vector<double>& rhs, double conv_tol, int max_it, int restart);
 
-void symFactor(std::vector<double>& mat, std::vector<double>& qMat, int matDim);
+void sym_factor(std::vector<double>& mat, std::vector<double>& q_mat, int mat_dim);
 
-void getCharFun(DiffDoub1& cFun, std::vector<DiffDoub1>& mat, int matDim, std::vector<double>& eVals, double lam, int triDiag);
+void get_char_fun(DiffDoub1& c_fun, std::vector<DiffDoub1>& mat, int mat_dim, std::vector<double>& e_vals, double lam, int tri_diag);
 
-void getEvals(std::vector<double>& eVals, std::vector<double>& mat, int matDim, double lamInit, double convTol, int triDiag);
+void get_evals(std::vector<double>& e_vals, std::vector<double>& mat, int mat_dim, double lam_init, double conv_tol, int tri_diag);
 
-double getLowEval(std::vector<double>& mat, int matDim);
+double get_low_eval(std::vector<double>& mat, int mat_dim);
 
-void eigenSolve(std::vector<double>& eVals, std::vector<double>& eVecs, std::vector<double>& mat, int matDim, int triDiag);
+void eigen_solve(std::vector<double>& e_vals, std::vector<double>& e_vecs, std::vector<double>& mat, int mat_dim, int tri_diag);
 
-void symEigenSolve(std::vector<double>& eVals, std::vector<double>& eVecs, std::vector<double>& mat, int matDim, int triDiag);
+void sym_eigen_solve(std::vector<double>& e_vals, std::vector<double>& e_vecs, std::vector<double>& mat, int mat_dim, int tri_diag);
 
-//void eigenFull(std::vector<double>& eVals, std::vector<double>& eVecs, int numPairs, LowerTriMat& mat, std::vector<double>& massMat, int matDim);
+//void eigen_full(std::vector<double>& e_vals, std::vector<double>& e_vecs, int num_pairs, LowerTriMat& mat, std::vector<double>& mass_mat, int mat_dim);
 
-void eigenSparseDirect(std::vector<double>& eVals, std::vector<double>& eVecs, int numPairs, LowerTriMat& mat, std::vector<double>& massMat, int matDim);
+void eigen_sparse_direct(std::vector<double>& e_vals, std::vector<double>& e_vecs, int num_pairs, LowerTriMat& mat, std::vector<double>& mass_mat, int mat_dim);
 
-double rayQuot(std::vector<double>& grad, std::vector<double>& Kv, std::vector<double>& Mv, SparseMat& mat, ConstraintList& cnst, std::vector<double>& massMat, std::vector<double>& inVec);
+double ray_quot(std::vector<double>& grad, std::vector<double>& kv, std::vector<double>& mv, SparseMat& mat, ConstraintList& cnst, std::vector<double>& mass_mat, std::vector<double>& in_vec);
 
-double unitizeVec(std::vector<double>& vec, int dim);
+double unitize_vec(std::vector<double>& vec, int dim);
 
-void getNearestEvecRQ(SparseMat& mat, ConstraintList& cnst, std::vector<double>& massMat, std::vector<double>& inVecs, std::vector<double>& eVals, int numVecs, int maxIt);
+void get_nearest_evec_rq(SparseMat& mat, ConstraintList& cnst, std::vector<double>& mass_mat, std::vector<double>& in_vecs, std::vector<double>& e_vals, int num_vecs, int max_it);
 
-//void getNearestEvecSubspace(SparseMat& mat, ConstraintList& cnst, std::vector<double>& massMat, std::vector<double>& inVecs, std::vector<double>& eVals, int numVecs);
+//void get_nearest_evec_subspace(SparseMat& mat, ConstraintList& cnst, std::vector<double>& mass_mat, std::vector<double>& in_vecs, std::vector<double>& e_vals, int num_vecs);
 
 //dup1
-void qRFactor(std::vector<DiffDoub0>& mat, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void q_rfactor(std::vector<DiffDoub0>& mat, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void qRFactor(DiffDoub0 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void q_rfactor(DiffDoub0 mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void solveqRxEqb(std::vector<DiffDoub0>& xVec, std::vector<DiffDoub0>& mat, std::vector<DiffDoub0>& bVec, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveq_rx_eqb(std::vector<DiffDoub0>& x_vec, std::vector<DiffDoub0>& mat, std::vector<DiffDoub0>& b_vec, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void solveqRxEqb(DiffDoub0 xVec[], DiffDoub0 mat[], DiffDoub0 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveq_rx_eqb(DiffDoub0 x_vec[], DiffDoub0 mat[], DiffDoub0 b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void getDetInv(DiffDoub0& det, std::vector<DiffDoub0>& inv, std::vector<DiffDoub0>& mat, int colDim, int triDiag, std::vector<DiffDoub0>& xVec, std::vector<DiffDoub0>& bVec);
+void get_det_inv(DiffDoub0& det, std::vector<DiffDoub0>& inv, std::vector<DiffDoub0>& mat, int col_dim, int tri_diag, std::vector<DiffDoub0>& x_vec, std::vector<DiffDoub0>& b_vec);
 
-void getDetInv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int colDim, int triDiag, DiffDoub0 xVec[], DiffDoub0 bVec[]);
+void get_det_inv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int col_dim, int tri_diag, DiffDoub0 x_vec[], DiffDoub0 b_vec[]);
 //end dup
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup1
-void qRFactor(std::vector<DiffDoub1>& mat, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void q_rfactor(std::vector<DiffDoub1>& mat, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void qRFactor(DiffDoub1 mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void q_rfactor(DiffDoub1 mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void solveqRxEqb(std::vector<DiffDoub1>& xVec, std::vector<DiffDoub1>& mat, std::vector<DiffDoub1>& bVec, int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveq_rx_eqb(std::vector<DiffDoub1>& x_vec, std::vector<DiffDoub1>& mat, std::vector<DiffDoub1>& b_vec, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void solveqRxEqb(DiffDoub1 xVec[], DiffDoub1 mat[], DiffDoub1 bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveq_rx_eqb(DiffDoub1 x_vec[], DiffDoub1 mat[], DiffDoub1 b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void getDetInv(DiffDoub1& det, std::vector<DiffDoub1>& inv, std::vector<DiffDoub1>& mat, int colDim, int triDiag, std::vector<DiffDoub1>& xVec, std::vector<DiffDoub1>& bVec);
+void get_det_inv(DiffDoub1& det, std::vector<DiffDoub1>& inv, std::vector<DiffDoub1>& mat, int col_dim, int tri_diag, std::vector<DiffDoub1>& x_vec, std::vector<DiffDoub1>& b_vec);
 
-void getDetInv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int colDim, int triDiag, DiffDoub1 xVec[], DiffDoub1 bVec[]);
+void get_det_inv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int col_dim, int tri_diag, DiffDoub1 x_vec[], DiffDoub1 b_vec[]);
 //end dup
  
 //end skip 
  
  
 //dup2
-void subVec(std::vector<DiffDoub0>& subV, std::vector<DiffDoub0>& inV, int st, int end);
+void sub_vec(std::vector<DiffDoub0>& sub_v, std::vector<DiffDoub0>& in_v, int st, int end);
 
-void returnSV(std::vector<DiffDoub0>& subV, std::vector<DiffDoub0>& inV, int st, int end);
+void return_sv(std::vector<DiffDoub0>& sub_v, std::vector<DiffDoub0>& in_v, int st, int end);
 
-void vecToAr(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end);
+void vec_to_ar(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end);
 
-void arToVec(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end);
+void ar_to_vec(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end);
 
-void matMul(std::vector<DiffDoub0>& prod, std::vector<DiffDoub0>& mat1, std::vector<DiffDoub0>& mat2, int m1Rows, int m1Cols, int m2Cols);
+void mat_mul(std::vector<DiffDoub0>& prod, std::vector<DiffDoub0>& mat1, std::vector<DiffDoub0>& mat2, int m1_rows, int m1_cols, int m2_cols);
 
-void matMul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1Rows, int m1Cols, int m2Cols);
+void mat_mul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1_rows, int m1_cols, int m2_cols);
 
-void transpose(std::vector<DiffDoub0>& matT, std::vector<DiffDoub0>& mat, int rowDim, int colDim);
+void transpose(std::vector<DiffDoub0>& mat_t, std::vector<DiffDoub0>& mat, int row_dim, int col_dim);
 
-void transpose(DiffDoub0 matT[], DiffDoub0 mat[], int rowDim, int colDim);
+void transpose(DiffDoub0 mat_t[], DiffDoub0 mat[], int row_dim, int col_dim);
 
-void crossProd(DiffDoub0 prod[], DiffDoub0 v1[], DiffDoub0 v2[]);
+void cross_prod(DiffDoub0 prod[], DiffDoub0 v1[], DiffDoub0 v2[]);
 
-void rotateOrient(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[]);
+void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]);
 //end dup
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup2
-void subVec(std::vector<DiffDoub1>& subV, std::vector<DiffDoub1>& inV, int st, int end);
+void sub_vec(std::vector<DiffDoub1>& sub_v, std::vector<DiffDoub1>& in_v, int st, int end);
 
-void returnSV(std::vector<DiffDoub1>& subV, std::vector<DiffDoub1>& inV, int st, int end);
+void return_sv(std::vector<DiffDoub1>& sub_v, std::vector<DiffDoub1>& in_v, int st, int end);
 
-void vecToAr(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end);
+void vec_to_ar(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end);
 
-void arToVec(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end);
+void ar_to_vec(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end);
 
-void matMul(std::vector<DiffDoub1>& prod, std::vector<DiffDoub1>& mat1, std::vector<DiffDoub1>& mat2, int m1Rows, int m1Cols, int m2Cols);
+void mat_mul(std::vector<DiffDoub1>& prod, std::vector<DiffDoub1>& mat1, std::vector<DiffDoub1>& mat2, int m1_rows, int m1_cols, int m2_cols);
 
-void matMul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1Rows, int m1Cols, int m2Cols);
+void mat_mul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1_rows, int m1_cols, int m2_cols);
 
-void transpose(std::vector<DiffDoub1>& matT, std::vector<DiffDoub1>& mat, int rowDim, int colDim);
+void transpose(std::vector<DiffDoub1>& mat_t, std::vector<DiffDoub1>& mat, int row_dim, int col_dim);
 
-void transpose(DiffDoub1 matT[], DiffDoub1 mat[], int rowDim, int colDim);
+void transpose(DiffDoub1 mat_t[], DiffDoub1 mat[], int row_dim, int col_dim);
 
-void crossProd(DiffDoub1 prod[], DiffDoub1 v1[], DiffDoub1 v2[]);
+void cross_prod(DiffDoub1 prod[], DiffDoub1 v1[], DiffDoub1 v2[]);
 
-void rotateOrient(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[]);
+void rotate_orient(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]);
 //end dup
  
-//DiffDoub2 versions: 
+//diff_doub2 versions: 
 //dup2
-void subVec(std::vector<DiffDoub2>& subV, std::vector<DiffDoub2>& inV, int st, int end);
+void sub_vec(std::vector<DiffDoub2>& sub_v, std::vector<DiffDoub2>& in_v, int st, int end);
 
-void returnSV(std::vector<DiffDoub2>& subV, std::vector<DiffDoub2>& inV, int st, int end);
+void return_sv(std::vector<DiffDoub2>& sub_v, std::vector<DiffDoub2>& in_v, int st, int end);
 
-void vecToAr(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end);
+void vec_to_ar(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end);
 
-void arToVec(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end);
+void ar_to_vec(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end);
 
-void matMul(std::vector<DiffDoub2>& prod, std::vector<DiffDoub2>& mat1, std::vector<DiffDoub2>& mat2, int m1Rows, int m1Cols, int m2Cols);
+void mat_mul(std::vector<DiffDoub2>& prod, std::vector<DiffDoub2>& mat1, std::vector<DiffDoub2>& mat2, int m1_rows, int m1_cols, int m2_cols);
 
-void matMul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1Rows, int m1Cols, int m2Cols);
+void mat_mul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1_rows, int m1_cols, int m2_cols);
 
-void transpose(std::vector<DiffDoub2>& matT, std::vector<DiffDoub2>& mat, int rowDim, int colDim);
+void transpose(std::vector<DiffDoub2>& mat_t, std::vector<DiffDoub2>& mat, int row_dim, int col_dim);
 
-void transpose(DiffDoub2 matT[], DiffDoub2 mat[], int rowDim, int colDim);
+void transpose(DiffDoub2 mat_t[], DiffDoub2 mat[], int row_dim, int col_dim);
 
-void crossProd(DiffDoub2 prod[], DiffDoub2 v1[], DiffDoub2 v2[]);
+void cross_prod(DiffDoub2 prod[], DiffDoub2 v1[], DiffDoub2 v2[]);
 
-void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]);
+void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]);
 //end dup
  
 //end skip 
@@ -158,16 +158,16 @@ void rotateOrient(DiffDoub2 instOri[], DiffDoub2 locOri[], DiffDoub2 rot[]);
  
 //dup1
 
-void dOridThet(DiffDoub0 instOri[], DiffDoub0 locOri[], DiffDoub0 rot[], int v1, int v2);
+void d_orid_thet(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int v1, int v2);
 
 //end dup
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup1
 
-void dOridThet(DiffDoub1 instOri[], DiffDoub1 locOri[], DiffDoub1 rot[], int v1, int v2);
+void d_orid_thet(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int v1, int v2);
 
 //end dup
  

@@ -12,39 +12,39 @@ DesignVariable::DesignVariable() {
 	category = "";
 	component = 1;
 	layer = 0;
-	elSetName = "";
-	elSetPtr = max_int;
-	ndSetName = "";
-	ndSetPtr = max_int;
+	el_set_name = "";
+	el_set_ptr = max_int;
+	nd_set_name = "";
+	nd_set_ptr = max_int;
 	coefs.clear();
-	activeTime[0] = 0.0;
-	activeTime[1] = 1.0e+100;
-	value.setVal(0.0);
-	diffVal.setVal(0.0);
-	compElList.clear();
+	active_time[0] = 0.0;
+	active_time[1] = 1.0e+100;
+	value.set_val(0.0);
+	diff_val.set_val(0.0);
+	comp_el_list.clear();
 }
 
-void DesignVariable::setActiveTime(double newAt[]) {
-	activeTime[0] = newAt[0];
-	activeTime[1] = newAt[1];
+void DesignVariable::set_active_time(double new_at[]) {
+	active_time[0] = new_at[0];
+	active_time[1] = new_at[1];
 }
 
-void DesignVariable::getValue(DiffDoub0& inp) {
-	inp.setVal(value);
+void DesignVariable::get_value(DiffDoub0& inp) {
+	inp.set_val(value);
 	return;
 }
 
-void DesignVariable::getValue(DiffDoub1& inp) {
-	inp.setVal(diffVal);
+void DesignVariable::get_value(DiffDoub1& inp) {
+	inp.set_val(diff_val);
 	return;
 }
 
-void DesignVariable::addCompEl(int eli) {
-	for (auto& el : compElList) {
+void DesignVariable::add_comp_el(int eli) {
+	for (auto& el : comp_el_list) {
 		if (el == eli) {
 			return;
 		}
 	}
-	compElList.push_back(eli);
+	comp_el_list.push_back(eli);
 	return;
 }

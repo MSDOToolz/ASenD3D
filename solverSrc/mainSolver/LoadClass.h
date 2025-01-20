@@ -1,5 +1,5 @@
-#ifndef LOADCLASS
-#define LOADCLASS
+#ifndef loadclass
+#define loadclass
 #include <string>
 #include <cmath>
 #include "SetClass.h"
@@ -7,29 +7,29 @@
 class Load {
 	public:
 	    std::string type;
-		double activeTime[2];
-		std::string nodeSet;
-		int ndSetPtr;
-		std::string elementSet;
-		int elSetPtr;
+		double active_time[2];
+		std::string node_set;
+		int nd_set_ptr;
+		std::string element_set;
+		int el_set_ptr;
 		double load[6];
-		double normalDir[3];
-		double normTol;
+		double normal_dir[3];
+		double norm_tol;
 		double center[3];
 		double axis[3];
-		double angularVel;
+		double angular_vel;
 		
 	    Load();
 		
-		void setActTime(double newAt[]);
+		void set_act_time(double new_at[]);
 		
-		void setLoad(double newLd[]);
+		void set_load(double new_ld[]);
 		
-		void setNormDir(double newNDir[]);
+		void set_norm_dir(double new_ndir[]);
 		
-		void setCenter(double newCent[]);
+		void set_center(double new_cent[]);
 		
-		void setAxis(double newAxis[]);
+		void set_axis(double new_axis[]);
 };
 
 #endif

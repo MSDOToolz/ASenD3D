@@ -1,5 +1,5 @@
-#ifndef SETCLASS
-#define SETCLASS
+#ifndef setclass
+#define setclass
 #include <string>
 #include <vector>
 #include "ListEntClass.h"
@@ -11,7 +11,7 @@ class Set {
 		
 	    Set();
 
-		bool addIfAbsent(int newI);
+		bool add_if_absent(int new_i);
 };
 
 #endif

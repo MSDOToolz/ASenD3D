@@ -1,5 +1,5 @@
-#ifndef LOWERTRIMAT
-#define LOWERTRIMAT
+#ifndef lowertrimat
+#define lowertrimat
 #include <fstream>
 #include <vector>
 #include "ListEntClass.h"
@@ -9,32 +9,32 @@ class LowerTriMat {
 	public:
 	    std::vector<double> mat;
 		std::vector<int> range;
-		std::vector<int> minCol;
-		std::vector<double> zVec;
+		std::vector<int> min_col;
+		std::vector<double> z_vec;
 		int dim;
 		int size;
-		int maxBandwidth;
+		int max_bandwidth;
 		bool allocated;
 	
         LowerTriMat();
 		
-		void setDim(int newDim);
+		void set_dim(int new_dim);
 		
-		void allocateFromSparseMat(SparseMat& spMat, ConstraintList& cList, int blockDim);
+		void allocate_from_sparse_mat(SparseMat& sp_mat, ConstraintList& c_list, int block_dim);
 		
-		bool isAllocated();
+		bool is_allocated();
 		
-		void populateFromSparseMat(SparseMat& spMat, ConstraintList& cList);
+		void populate_from_sparse_mat(SparseMat& sp_mat, ConstraintList& c_list);
 
-		//void copyToFullMat(double matFP[]);
+		//void copy_to_full_mat(double mat_fp[]);
 		
-		void ldlFactor();
+		void ldl_factor();
 		
-		void ldlSolve(std::vector<double>& solnVec, std::vector<double>& rhs);
+		void ldl_solve(std::vector<double>& soln_vec, std::vector<double>& rhs);
 
-		bool posDef();
+		bool pos_def();
 
-		void writeToFile(std::ofstream& outFile);
+		void write_to_file(std::ofstream& out_file);
 };
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef NODECLASS
-#define NODECLASS
+#ifndef nodeclass
+#define nodeclass
 #include <string>
 #include <iostream>
 #include <vector>
@@ -11,152 +11,152 @@ class Node {
 	public:
 	    int label;
 		bool fluid;
-		int numDof;
-		int dofIndex[6];
-		int sortedRank;
+		int num_dof;
+		int dof_index[6];
+		int sorted_rank;
 	    double coord[3];
 		double displacement[6];
 		double velocity[6];
-		double flVel[3];
-		double flVelDot[3];
+		double fl_vel[3];
+		double fl_vel_dot[3];
 		double acceleration[6];
 		double temperature;
-		double tempChangeRate;
-		double flDen;
-		double flDenDot;
-		double turbE;
-		double turbEDot;
-		double prevDisp[6];
-		double prevVel[6];
-		double prevFlVel[3];
-		double pFlVelLF[3];
-		double prevFlVelDot[3];
-		double prevAcc[6];
-		double prevTemp;
-		double pTempLF;
-		double prevTdot;
-		double prevFlDen;
-		double pFlDenLF;
-		double prevFlDenDot;
-		double prevTurbE;
-		double prevTurbEDot;
-		double pTurbELF;
-		double initialDisp[6];
-		double initialVel[6];
-		double initialFlVel[3];
-		double initialFlVelDot[3];
-		double initialAcc[6];
-		double initialTemp;
-		double initialTdot;
-		double initialFlDen;
-		double initialFlDenDot;
-		double initialTurbE;
-		double initialTurbEDot;
-		std::list<IDCapsule> dVarLst;
+		double temp_change_rate;
+		double fl_den;
+		double fl_den_dot;
+		double turb_e;
+		double turb_edot;
+		double prev_disp[6];
+		double prev_vel[6];
+		double prev_fl_vel[3];
+		double p_fl_vel_lf[3];
+		double prev_fl_vel_dot[3];
+		double prev_acc[6];
+		double prev_temp;
+		double p_temp_lf;
+		double prev_tdot;
+		double prev_fl_den;
+		double p_fl_den_lf;
+		double prev_fl_den_dot;
+		double prev_turb_e;
+		double prev_turb_edot;
+		double p_turb_elf;
+		double initial_disp[6];
+		double initial_vel[6];
+		double initial_fl_vel[3];
+		double initial_fl_vel_dot[3];
+		double initial_acc[6];
+		double initial_temp;
+		double initial_tdot;
+		double initial_fl_den;
+		double initial_fl_den_dot;
+		double initial_turb_e;
+		double initial_turb_edot;
+		std::list<IDCapsule> d_var_lst;
 		
 	    Node();
 		
-		void setCrd(double newCrd[]);
+		void set_crd(double new_crd[]);
 		
-		void setDisplacement(double newDisp[]);
+		void set_displacement(double new_disp[]);
 
-		void setVelocity(double newVel[]);
+		void set_velocity(double new_vel[]);
 
-		void setAcceleration(double newAcc[]);
+		void set_acceleration(double new_acc[]);
 
-		void setFlVel(double newVel[]);
+		void set_fl_vel(double new_vel[]);
 
-		void setFlVelDot(double newFlVDot[]);
+		void set_fl_vel_dot(double new_fl_vdot[]);
 		
-		void addToDisplacement(double delDisp[]);
+		void add_to_displacement(double del_disp[]);
 
-		void addToFlVel(double delFlVel[]);
+		void add_to_fl_vel(double del_fl_vel[]);
 		
-		void setInitialDisp(double newDisp[]);
+		void set_initial_disp(double new_disp[]);
 		
-		void setInitialVel(double newVel[]);
+		void set_initial_vel(double new_vel[]);
 		
-		void setInitialAcc(double newAcc[]);
+		void set_initial_acc(double new_acc[]);
 
-		void setInitialFlVel(double newFlVel[]);
+		void set_initial_fl_vel(double new_fl_vel[]);
 
-		void setInitialFlVDot(double newFlVDot[]);
+		void set_initial_fl_vdot(double new_fl_vdot[]);
 
-		void setPrevDisp(double newDisp[]);
+		void set_prev_disp(double new_disp[]);
 
-		void setPrevVel(double newVel[]);
+		void set_prev_vel(double new_vel[]);
 
-		void setPrevAcc(double newAcc[]);
+		void set_prev_acc(double new_acc[]);
 
-		void setPrevFlVel(double newFlVel[]);
+		void set_prev_fl_vel(double new_fl_vel[]);
 
-		void setPFlVelLF(double newVel[]);
+		void set_pfl_vel_lf(double new_vel[]);
 
-		void setPrevFlVDot(double newFlVDot[]);
+		void set_prev_fl_vdot(double new_fl_vdot[]);
 		
-		void initializeDisp();
+		void initialize_disp();
 
-		void initializeFlVel();
+		void initialize_fl_vel();
 
-		void initializeTemp();
+		void initialize_temp();
 
-		void initializeFlDen();
+		void initialize_fl_den();
 
-		void initializeTurbE();
+		void initialize_turb_e();
 		
-		void updateVelAcc(double nmBeta, double nmGamma, double delT);
+		void update_vel_acc(double nm_beta, double nm_gamma, double del_t);
 
-		void updateFlVelDot(double nmGamma, double delT);
+		void update_fl_vel_dot(double nm_gamma, double del_t);
 		
-		void updateTdot(double nmGamma, double delT);
+		void update_tdot(double nm_gamma, double del_t);
 
-		void updateFlDenDot(double nmGamma, double delT);
+		void update_fl_den_dot(double nm_gamma, double del_t);
 
-		void updateTurbEDot(double nmGamma, double delT);
+		void update_turb_edot(double nm_gamma, double del_t);
 		
-		void advanceDisp();
+		void advance_disp();
 
-		void advanceFlVel();
+		void advance_fl_vel();
 
-		void advanceTemp();
+		void advance_temp();
 
-		void advanceFlDen();
+		void advance_fl_den();
 
-		void advanceTurbE();
+		void advance_turb_e();
 
-		void backstepDisp();
+		void backstep_disp();
 
-		void backstepFlVel();
+		void backstep_fl_vel();
 
-		void backstepTemp();
+		void backstep_temp();
 
-		void backstepFlDen();
+		void backstep_fl_den();
 
-		void backstepTurbE();
+		void backstep_turb_e();
 		
-		void addDesignVariable(int dIndex, double coef);
+		void add_design_variable(int d_index, double coef);
 		
 //dup1
-		void getCrd(DiffDoub0 crdOut[], std::vector<DesignVariable>& dvAr);
+		void get_crd(DiffDoub0 crd_out[], std::vector<DesignVariable>& dv_ar);
 		
-		void getDisp(DiffDoub0 disp[]);
+		void get_disp(DiffDoub0 disp[]);
 		
-		void getElasticDVLoad(DiffDoub0 ld[], std::vector<DesignVariable>& dvAr);
+		void get_elastic_dvload(DiffDoub0 ld[], std::vector<DesignVariable>& dv_ar);
 
-		void getThermalDVLoad(DiffDoub0& ld, std::vector<DesignVariable>& dvAr);
+		void get_thermal_dvload(DiffDoub0& ld, std::vector<DesignVariable>& dv_ar);
 //end dup	
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup1
-		void getCrd(DiffDoub1 crdOut[], std::vector<DesignVariable>& dvAr);
+		void get_crd(DiffDoub1 crd_out[], std::vector<DesignVariable>& dv_ar);
 		
-		void getDisp(DiffDoub1 disp[]);
+		void get_disp(DiffDoub1 disp[]);
 		
-		void getElasticDVLoad(DiffDoub1 ld[], std::vector<DesignVariable>& dvAr);
+		void get_elastic_dvload(DiffDoub1 ld[], std::vector<DesignVariable>& dv_ar);
 
-		void getThermalDVLoad(DiffDoub1& ld, std::vector<DesignVariable>& dvAr);
+		void get_thermal_dvload(DiffDoub1& ld, std::vector<DesignVariable>& dv_ar);
 //end dup	
  
 //end skip 

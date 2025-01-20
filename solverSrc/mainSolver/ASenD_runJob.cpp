@@ -16,11 +16,11 @@ int main(int argc, char* argv[]) {
 		cout << "Error: no job script file name provided." << endl;
 		return 0;
 	} else {
-		string jobFile = argv[1];
-		cout << "Beginning Job: " << jobFile << endl;
-		Model jobModel;
-		jobModel.readJob(jobFile);
-		jobModel.executeJob();
+		string job_file = argv[1];
+		cout << "Beginning Job: " << job_file << endl;
+		Model job_model;
+		job_model.read_job(job_file);
+		job_model.execute_job();
 		return 0;
 	}
 }

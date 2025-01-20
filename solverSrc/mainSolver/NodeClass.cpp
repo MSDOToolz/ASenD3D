@@ -11,8 +11,8 @@ using namespace std;
 Node::Node() {
 	label = 0;
 	fluid = false;
-	numDof = 3;
-	sortedRank = 0;
+	num_dof = 3;
+	sorted_rank = 0;
 	coord[0] = 0.0;
 	coord[1] = 0.0;
 	coord[2] = 0.0;
@@ -21,451 +21,451 @@ Node::Node() {
 		displacement[i1] = 0.0;
 		velocity[i1] = 0.0;
 		acceleration[i1] = 0.0;
-		prevDisp[i1] = 0.0;
-		prevVel[i1] = 0.0;
-		prevAcc[i1] = 0.0;
-		initialDisp[i1] = 0.0;
-		initialVel[i1] = 0.0;
-		initialAcc[i1] = 0.0;
-		dofIndex[i1] = 0;
+		prev_disp[i1] = 0.0;
+		prev_vel[i1] = 0.0;
+		prev_acc[i1] = 0.0;
+		initial_disp[i1] = 0.0;
+		initial_vel[i1] = 0.0;
+		initial_acc[i1] = 0.0;
+		dof_index[i1] = 0;
 	}
 	for (i1 = 0; i1 < 3; i1++) {
-		flVel[i1] = 0.0;
-		flVelDot[i1] = 0.0;
-		prevFlVel[i1] = 0.0;
-		pFlVelLF[i1] = 0.0;
-		prevFlVelDot[i1] = 0.0;
-		initialFlVel[i1] = 0.0;
-		initialFlVelDot[i1] = 0.0;
+		fl_vel[i1] = 0.0;
+		fl_vel_dot[i1] = 0.0;
+		prev_fl_vel[i1] = 0.0;
+		p_fl_vel_lf[i1] = 0.0;
+		prev_fl_vel_dot[i1] = 0.0;
+		initial_fl_vel[i1] = 0.0;
+		initial_fl_vel_dot[i1] = 0.0;
 	}
 	temperature = 0.0;
-	tempChangeRate = 0.0;
-	flDen = 0.0;
-	flDenDot = 0.0;
-	turbE = 0.0;
-	turbEDot = 0.0;
-	prevTemp = 0.0;
-	pTempLF = 0.0;
-	prevTdot = 0.0;
-	prevFlDen = 0.0;
-	pFlDenLF = 0.0;
-	prevFlDenDot = 0.0;
-	prevTurbE = 0.0;
-	prevTurbEDot = 0.0;
-	pTurbELF = 0.0;
-	initialTemp = 0.0;
-	initialTdot = 0.0;
-	initialFlDen = 0.0;
-	initialFlDenDot = 0.0;
-	initialTurbE = 0.0;
-	initialTurbEDot = 0.0;
-	dVarLst.clear();
+	temp_change_rate = 0.0;
+	fl_den = 0.0;
+	fl_den_dot = 0.0;
+	turb_e = 0.0;
+	turb_edot = 0.0;
+	prev_temp = 0.0;
+	p_temp_lf = 0.0;
+	prev_tdot = 0.0;
+	prev_fl_den = 0.0;
+	p_fl_den_lf = 0.0;
+	prev_fl_den_dot = 0.0;
+	prev_turb_e = 0.0;
+	prev_turb_edot = 0.0;
+	p_turb_elf = 0.0;
+	initial_temp = 0.0;
+	initial_tdot = 0.0;
+	initial_fl_den = 0.0;
+	initial_fl_den_dot = 0.0;
+	initial_turb_e = 0.0;
+	initial_turb_edot = 0.0;
+	d_var_lst.clear();
 }
 
-void Node::setCrd(double newCrd[]) {
-	coord[0] = newCrd[0];
-	coord[1] = newCrd[1];
-	coord[2] = newCrd[2];
+void Node::set_crd(double new_crd[]) {
+	coord[0] = new_crd[0];
+	coord[1] = new_crd[1];
+	coord[2] = new_crd[2];
 	return;
 }
 
-void Node::setDisplacement(double newDisp[]) {
+void Node::set_displacement(double new_disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		displacement[i1] = newDisp[i1];
+		displacement[i1] = new_disp[i1];
 	}
 	return;
 }
 
-void Node::setVelocity(double newVel[]) {
+void Node::set_velocity(double new_vel[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		velocity[i1] = newVel[i1];
+		velocity[i1] = new_vel[i1];
 	}
 	return;
 }
 
-void Node::setAcceleration(double newAcc[]) {
+void Node::set_acceleration(double new_acc[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		acceleration[i1] = newAcc[i1];
+		acceleration[i1] = new_acc[i1];
 	}
 	return;
 }
 
-void Node::setFlVel(double newVel[]) {
-	flVel[0] = newVel[0];
-	flVel[1] = newVel[1];
-	flVel[2] = newVel[2];
+void Node::set_fl_vel(double new_vel[]) {
+	fl_vel[0] = new_vel[0];
+	fl_vel[1] = new_vel[1];
+	fl_vel[2] = new_vel[2];
 	return;
 }
 
-void Node::setFlVelDot(double newFlVDot[]) {
-	flVelDot[0] = newFlVDot[0];
-	flVelDot[1] = newFlVDot[1];
-	flVelDot[2] = newFlVDot[2];
+void Node::set_fl_vel_dot(double new_fl_vdot[]) {
+	fl_vel_dot[0] = new_fl_vdot[0];
+	fl_vel_dot[1] = new_fl_vdot[1];
+	fl_vel_dot[2] = new_fl_vdot[2];
 	return;
 }
 
-void Node::addToDisplacement(double delDisp[]) {
+void Node::add_to_displacement(double del_disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		displacement[i1] += delDisp[i1];
+		displacement[i1] += del_disp[i1];
 	}	
 	return;
 }
 
-void Node::addToFlVel(double delFlVel[]) {
-	flVel[0] += delFlVel[0];
-	flVel[1] += delFlVel[1];
-	flVel[2] += delFlVel[2];
+void Node::add_to_fl_vel(double del_fl_vel[]) {
+	fl_vel[0] += del_fl_vel[0];
+	fl_vel[1] += del_fl_vel[1];
+	fl_vel[2] += del_fl_vel[2];
 	return;
 }
 
-void Node::setInitialDisp(double newDisp[]) {
+void Node::set_initial_disp(double new_disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		initialDisp[i1] = newDisp[i1];
+		initial_disp[i1] = new_disp[i1];
 	}
 	return;
 }
 
-void Node::setInitialVel(double newVel[]) {
+void Node::set_initial_vel(double new_vel[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		initialVel[i1] = newVel[i1];
+		initial_vel[i1] = new_vel[i1];
 	}
 	return;
 }
 
-void Node::setInitialAcc(double newAcc[]) {
+void Node::set_initial_acc(double new_acc[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		initialAcc[i1] = newAcc[i1];
+		initial_acc[i1] = new_acc[i1];
 	}
 	return;
 }
 
-void Node::setInitialFlVel(double newFlVel[]) {
-	initialFlVel[0] = newFlVel[0];
-	initialFlVel[1] = newFlVel[1];
-	initialFlVel[2] = newFlVel[2];
+void Node::set_initial_fl_vel(double new_fl_vel[]) {
+	initial_fl_vel[0] = new_fl_vel[0];
+	initial_fl_vel[1] = new_fl_vel[1];
+	initial_fl_vel[2] = new_fl_vel[2];
 	return;
 }
 
-void Node::setInitialFlVDot(double newFlVDot[]) {
-	initialFlVelDot[0] = newFlVDot[0];
-	initialFlVelDot[1] = newFlVDot[1];
-	initialFlVelDot[2] = newFlVDot[2];
+void Node::set_initial_fl_vdot(double new_fl_vdot[]) {
+	initial_fl_vel_dot[0] = new_fl_vdot[0];
+	initial_fl_vel_dot[1] = new_fl_vdot[1];
+	initial_fl_vel_dot[2] = new_fl_vdot[2];
 	return;
 }
 
-void Node::setPrevDisp(double newDisp[]) {
+void Node::set_prev_disp(double new_disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		prevDisp[i1] = newDisp[i1];
+		prev_disp[i1] = new_disp[i1];
 	}
 	return;
 }
 
-void Node::setPrevVel(double newVel[]) {
+void Node::set_prev_vel(double new_vel[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		prevVel[i1] = newVel[i1];
+		prev_vel[i1] = new_vel[i1];
 	}
 	return;
 }
 
-void Node::setPrevAcc(double newAcc[]) {
+void Node::set_prev_acc(double new_acc[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		prevAcc[i1] = newAcc[i1];
+		prev_acc[i1] = new_acc[i1];
 	}
 	return;
 }
 
-void Node::setPrevFlVel(double newFlVel[]) {
-	prevFlVel[0] = newFlVel[0];
-	prevFlVel[1] = newFlVel[1];
-	prevFlVel[2] = newFlVel[2];
+void Node::set_prev_fl_vel(double new_fl_vel[]) {
+	prev_fl_vel[0] = new_fl_vel[0];
+	prev_fl_vel[1] = new_fl_vel[1];
+	prev_fl_vel[2] = new_fl_vel[2];
 	return;
 }
 
-void Node::setPFlVelLF(double newVel[]) {
-	pFlVelLF[0] = newVel[0];
-	pFlVelLF[1] = newVel[1];
-	pFlVelLF[2] = newVel[2];
+void Node::set_pfl_vel_lf(double new_vel[]) {
+	p_fl_vel_lf[0] = new_vel[0];
+	p_fl_vel_lf[1] = new_vel[1];
+	p_fl_vel_lf[2] = new_vel[2];
 	return;
 }
 
-void Node::setPrevFlVDot(double newFlVDot[]) {
-	prevFlVelDot[0] = newFlVDot[0];
-	prevFlVelDot[1] = newFlVDot[1];
-	prevFlVelDot[2] = newFlVDot[2];
+void Node::set_prev_fl_vdot(double new_fl_vdot[]) {
+	prev_fl_vel_dot[0] = new_fl_vdot[0];
+	prev_fl_vel_dot[1] = new_fl_vdot[1];
+	prev_fl_vel_dot[2] = new_fl_vdot[2];
 	return;
 }
 
-void Node::initializeDisp() {
+void Node::initialize_disp() {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		prevDisp[i1] = initialDisp[i1];
-		prevVel[i1] = initialVel[i1];
-		prevAcc[i1] = initialAcc[i1];
-		displacement[i1] = initialDisp[i1];
+		prev_disp[i1] = initial_disp[i1];
+		prev_vel[i1] = initial_vel[i1];
+		prev_acc[i1] = initial_acc[i1];
+		displacement[i1] = initial_disp[i1];
 	}
 	return;
 }
 
-void Node::initializeFlVel() {
+void Node::initialize_fl_vel() {
 	int i1;
 	for (i1 = 0; i1 < 3; i1++) {
-		prevFlVel[i1] = initialFlVel[i1];
-		prevFlVelDot[i1] = initialFlVelDot[i1];
-		flVel[i1] = initialFlVel[i1];
+		prev_fl_vel[i1] = initial_fl_vel[i1];
+		prev_fl_vel_dot[i1] = initial_fl_vel_dot[i1];
+		fl_vel[i1] = initial_fl_vel[i1];
 	}
 	return;
 }
 
-void Node::initializeTemp() {
-	prevTemp = initialTemp;
-	prevTdot = initialTdot;
-	temperature = initialTemp;
+void Node::initialize_temp() {
+	prev_temp = initial_temp;
+	prev_tdot = initial_tdot;
+	temperature = initial_temp;
 	return;
 }
 
-void Node::initializeFlDen() {
-	prevFlDen = initialFlDen;
-	prevFlDenDot = initialFlDenDot;
+void Node::initialize_fl_den() {
+	prev_fl_den = initial_fl_den;
+	prev_fl_den_dot = initial_fl_den_dot;
 	return;
 }
 
-void Node::initializeTurbE() {
-	prevTurbE = initialTurbE;
-	prevTurbEDot = initialTurbEDot;
+void Node::initialize_turb_e() {
+	prev_turb_e = initial_turb_e;
+	prev_turb_edot = initial_turb_edot;
 	return;
 }
 
-void Node::updateVelAcc(double nmBeta, double nmGamma, double delT) {
+void Node::update_vel_acc(double nm_beta, double nm_gamma, double del_t) {
 	double c1;
 	double c2;
 	int i1;
-	c1 = 1.0 / (delT * delT * (nmBeta - nmGamma));
-	c2 = delT * delT * (0.5 + nmBeta - nmGamma);
+	c1 = 1.0 / (del_t * del_t * (nm_beta - nm_gamma));
+	c2 = del_t * del_t * (0.5 + nm_beta - nm_gamma);
 	for (i1 = 0; i1 < 6; i1++) {
-		acceleration[i1] = c1 * (prevDisp[i1] - displacement[i1] + delT * prevVel[i1] + c2 * prevAcc[i1]);
-		velocity[i1] = prevVel[i1] + delT * ((1.0 - nmGamma) * prevAcc[i1] + nmGamma * acceleration[i1]);
+		acceleration[i1] = c1 * (prev_disp[i1] - displacement[i1] + del_t * prev_vel[i1] + c2 * prev_acc[i1]);
+		velocity[i1] = prev_vel[i1] + del_t * ((1.0 - nm_gamma) * prev_acc[i1] + nm_gamma * acceleration[i1]);
 	}
 	
 	return;
 }
 
-void Node::updateFlVelDot(double nmGamma, double delT) {
+void Node::update_fl_vel_dot(double nm_gamma, double del_t) {
 	int i1;
 	double c1;
 	double c2;
-	c1 = 1.0 / nmGamma;
-	c2 = 1.0 / delT;
+	c1 = 1.0 / nm_gamma;
+	c2 = 1.0 / del_t;
 	for (i1 = 0; i1 < 3; i1++) {
-		flVelDot[i1] = c1 * (c2 * (flVel[i1] - pFlVelLF[i1]) - (1.0 - nmGamma) * prevFlVelDot[i1]);
+		fl_vel_dot[i1] = c1 * (c2 * (fl_vel[i1] - p_fl_vel_lf[i1]) - (1.0 - nm_gamma) * prev_fl_vel_dot[i1]);
 	}
 	return;
 }
 
-void Node::updateTdot(double nmGamma, double delT) {
+void Node::update_tdot(double nm_gamma, double del_t) {
 	double c1;
 	double c2;
-	c1 = 1.0 / nmGamma;
-	c2 = 1.0 / delT;
+	c1 = 1.0 / nm_gamma;
+	c2 = 1.0 / del_t;
 	if (fluid) {
-		tempChangeRate = c1 * (c2 * (temperature - pTempLF) - (1.0 - nmGamma) * prevTdot);
+		temp_change_rate = c1 * (c2 * (temperature - p_temp_lf) - (1.0 - nm_gamma) * prev_tdot);
 	}
 	else {
-		tempChangeRate = c1 * (c2 * (temperature - prevTemp) - (1.0 - nmGamma) * prevTdot);
+		temp_change_rate = c1 * (c2 * (temperature - prev_temp) - (1.0 - nm_gamma) * prev_tdot);
 	}
 	return;
 }
 
-void Node::updateFlDenDot(double nmGamma, double delT) {
+void Node::update_fl_den_dot(double nm_gamma, double del_t) {
 	double c1;
 	double c2;
-	c1 = 1.0 / nmGamma;
-	c2 = 1.0 / delT;
+	c1 = 1.0 / nm_gamma;
+	c2 = 1.0 / del_t;
 	if (fluid) {
-		flDenDot = c1 * (c2 * (flDen - pFlDenLF) - (1.0 - nmGamma) * prevFlDenDot);
+		fl_den_dot = c1 * (c2 * (fl_den - p_fl_den_lf) - (1.0 - nm_gamma) * prev_fl_den_dot);
 	}
 	else {
-	    flDenDot = c1 * (c2 * (flDen - prevFlDen) - (1.0 - nmGamma) * prevFlDenDot);
+	    fl_den_dot = c1 * (c2 * (fl_den - prev_fl_den) - (1.0 - nm_gamma) * prev_fl_den_dot);
 	}
 	return;
 }
 
-void Node::updateTurbEDot(double nmGamma, double delT) {
+void Node::update_turb_edot(double nm_gamma, double del_t) {
 	double c1;
 	double c2;
-	c1 = 1.0 / nmGamma;
-	c2 = 1.0 / delT;
+	c1 = 1.0 / nm_gamma;
+	c2 = 1.0 / del_t;
 	if (fluid) {
-		turbEDot = c1 * (c2 * (turbE - pTurbELF) - (1.0 - nmGamma) * prevTurbEDot);
+		turb_edot = c1 * (c2 * (turb_e - p_turb_elf) - (1.0 - nm_gamma) * prev_turb_edot);
 	}
 	return;
 }
 
-void Node::advanceDisp() {
+void Node::advance_disp() {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		prevDisp[i1] = displacement[i1];
-		prevVel[i1] = velocity[i1];
-		prevAcc[i1] = acceleration[i1];
+		prev_disp[i1] = displacement[i1];
+		prev_vel[i1] = velocity[i1];
+		prev_acc[i1] = acceleration[i1];
 	}
 	return;	
 }
 
-void Node::advanceFlVel() {
+void Node::advance_fl_vel() {
 	int i1;
 	for (i1 = 0; i1 < 3; i1++) {
-		prevFlVel[i1] = flVel[i1];
-		prevFlVelDot[i1] = flVelDot[i1];
+		prev_fl_vel[i1] = fl_vel[i1];
+		prev_fl_vel_dot[i1] = fl_vel_dot[i1];
 	}
 	return;
 }
 
-void Node::advanceTemp() {
-	prevTemp = temperature;
-	prevTdot = tempChangeRate;
+void Node::advance_temp() {
+	prev_temp = temperature;
+	prev_tdot = temp_change_rate;
 	return;
 }
 
-void Node::advanceFlDen() {
-	prevFlDen = flDen;
-	prevFlDenDot = flDenDot;
+void Node::advance_fl_den() {
+	prev_fl_den = fl_den;
+	prev_fl_den_dot = fl_den_dot;
 	return;
 }
 
-void Node::advanceTurbE() {
-	prevTurbE = turbE;
-	prevTurbEDot = turbEDot;
+void Node::advance_turb_e() {
+	prev_turb_e = turb_e;
+	prev_turb_edot = turb_edot;
 	return;
 }
 
-void Node::backstepDisp() {
+void Node::backstep_disp() {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-		displacement[i1] = prevDisp[i1];
-		velocity[i1] = prevVel[i1];
-		acceleration[i1] = prevAcc[i1];
+		displacement[i1] = prev_disp[i1];
+		velocity[i1] = prev_vel[i1];
+		acceleration[i1] = prev_acc[i1];
 	}
 	return;
 }
 
-void Node::backstepFlVel() {
+void Node::backstep_fl_vel() {
 	int i1;
 	for (i1 = 0; i1 < 3; i1++) {
-		flVel[i1] = prevFlVel[i1];
-		flVelDot[i1] = prevFlVelDot[i1];
+		fl_vel[i1] = prev_fl_vel[i1];
+		fl_vel_dot[i1] = prev_fl_vel_dot[i1];
 	}
 	return;
 }
 
-void Node::backstepTemp() {
-	temperature = prevTemp;
-	tempChangeRate = prevTdot;
+void Node::backstep_temp() {
+	temperature = prev_temp;
+	temp_change_rate = prev_tdot;
 	return;
 }
 
-void Node::backstepFlDen() {
-	flDen = prevFlDen;
-	flDenDot = prevFlDenDot;
+void Node::backstep_fl_den() {
+	fl_den = prev_fl_den;
+	fl_den_dot = prev_fl_den_dot;
 	return;
 }
 
-void Node::backstepTurbE() {
-	turbE = prevTurbE;
-	turbEDot = prevTurbEDot;
+void Node::backstep_turb_e() {
+	turb_e = prev_turb_e;
+	turb_edot = prev_turb_edot;
 	return;
 }
 
-void Node::addDesignVariable(int dIndex, double coef) {
+void Node::add_design_variable(int d_index, double coef) {
 	IDCapsule dv;
-	dv.intDat = dIndex;
-	dv.doubDat = coef;
-	dVarLst.push_back(dv);
+	dv.int_dat = d_index;
+	dv.doub_dat = coef;
+	d_var_lst.push_back(dv);
 	return;
 }
 
 //dup1
-void Node::getCrd(DiffDoub0 crdOut[], vector<DesignVariable>& dvAr) {
-	crdOut[0].setVal(coord[0]);
-	crdOut[1].setVal(coord[1]);
-	crdOut[2].setVal(coord[2]);
-	int dIndex;
-	DiffDoub0 dVal;
+void Node::get_crd(DiffDoub0 crd_out[], vector<DesignVariable>& dv_ar) {
+	crd_out[0].set_val(coord[0]);
+	crd_out[1].set_val(coord[1]);
+	crd_out[2].set_val(coord[2]);
+	int d_index;
+	DiffDoub0 d_val;
 	int comp;
 	string cat;
 	DiffDoub0 coef;
-	for (auto& dv : dVarLst) {
-		dIndex = dv.intDat;
-		DesignVariable& thisDV = dvAr[dIndex];
-		thisDV.getValue(dVal);
-		cat = thisDV.category;
-		comp = thisDV.component - 1;
+	for (auto& dv : d_var_lst) {
+		d_index = dv.int_dat;
+		DesignVariable& this_dv = dv_ar[d_index];
+		this_dv.get_value(d_val);
+		cat = this_dv.category;
+		comp = this_dv.component - 1;
 		if(cat == "nodeCoord") {
-			coef.setVal(dv.doubDat);
-			coef.mult(dVal);
-			crdOut[comp].add(coef);
+			coef.set_val(dv.doub_dat);
+			coef.mult(d_val);
+			crd_out[comp].add(coef);
 		}
 	}
 	return;
 }
 
-void Node::getDisp(DiffDoub0 disp[]) {
+void Node::get_disp(DiffDoub0 disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-	    disp[i1].setVal(displacement[i1]);
+	    disp[i1].set_val(displacement[i1]);
 	}
 	return;
 }
 
-void Node::getElasticDVLoad(DiffDoub0 ld[], vector<DesignVariable>& dvAr) {
+void Node::get_elastic_dvload(DiffDoub0 ld[], vector<DesignVariable>& dv_ar) {
 	int i1;
-	int dIndex;
-	DiffDoub0 dVal;
+	int d_index;
+	DiffDoub0 d_val;
 	DiffDoub0 coef;
 	string cat;
 	int comp;
 	
 	for (i1 = 0; i1 < 6; i1++) {
-		ld[i1].setVal(0.0);
+		ld[i1].set_val(0.0);
 	}
-	for (auto& dv : dVarLst) {
-		dIndex = dv.intDat;
-		DesignVariable& thisDV = dvAr[dIndex];
-		thisDV.getValue(dVal);
-		cat = thisDV.category;
-		comp = thisDV.component - 1;
+	for (auto& dv : d_var_lst) {
+		d_index = dv.int_dat;
+		DesignVariable& this_dv = dv_ar[d_index];
+		this_dv.get_value(d_val);
+		cat = this_dv.category;
+		comp = this_dv.component - 1;
 		if(cat == "elasticLoad") {
-			coef.setVal(dv.doubDat);
-			coef.mult(dVal);
+			coef.set_val(dv.doub_dat);
+			coef.mult(d_val);
 			ld[comp].add(coef);
 		}
 	}
 	return;
 }
 
-void Node::getThermalDVLoad(DiffDoub0& ld, vector<DesignVariable>& dvAr) {
-	int dIndex;
-	DiffDoub0 dVal;
+void Node::get_thermal_dvload(DiffDoub0& ld, vector<DesignVariable>& dv_ar) {
+	int d_index;
+	DiffDoub0 d_val;
 	DiffDoub0 coef;
 	string cat;
 	
-	ld.setVal(0.0);
-	for (auto& dv : dVarLst) {
-		dIndex = dv.intDat;
-		DesignVariable& thisDV = dvAr[dIndex];
-		thisDV.getValue(dVal);
-		cat = thisDV.category;
+	ld.set_val(0.0);
+	for (auto& dv : d_var_lst) {
+		d_index = dv.int_dat;
+		DesignVariable& this_dv = dv_ar[d_index];
+		this_dv.get_value(d_val);
+		cat = this_dv.category;
 		if (cat == "thermalLoad") {
-			coef.setVal(dv.doubDat);
-			coef.mult(dVal);
+			coef.set_val(dv.doub_dat);
+			coef.mult(d_val);
 			ld.add(coef);
 		}
 	}
@@ -476,81 +476,81 @@ void Node::getThermalDVLoad(DiffDoub0& ld, vector<DesignVariable>& dvAr) {
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup1
-void Node::getCrd(DiffDoub1 crdOut[], vector<DesignVariable>& dvAr) {
-	crdOut[0].setVal(coord[0]);
-	crdOut[1].setVal(coord[1]);
-	crdOut[2].setVal(coord[2]);
-	int dIndex;
-	DiffDoub1 dVal;
+void Node::get_crd(DiffDoub1 crd_out[], vector<DesignVariable>& dv_ar) {
+	crd_out[0].set_val(coord[0]);
+	crd_out[1].set_val(coord[1]);
+	crd_out[2].set_val(coord[2]);
+	int d_index;
+	DiffDoub1 d_val;
 	int comp;
 	string cat;
 	DiffDoub1 coef;
-	for (auto& dv : dVarLst) {
-		dIndex = dv.intDat;
-		DesignVariable& thisDV = dvAr[dIndex];
-		thisDV.getValue(dVal);
-		cat = thisDV.category;
-		comp = thisDV.component - 1;
+	for (auto& dv : d_var_lst) {
+		d_index = dv.int_dat;
+		DesignVariable& this_dv = dv_ar[d_index];
+		this_dv.get_value(d_val);
+		cat = this_dv.category;
+		comp = this_dv.component - 1;
 		if(cat == "nodeCoord") {
-			coef.setVal(dv.doubDat);
-			coef.mult(dVal);
-			crdOut[comp].add(coef);
+			coef.set_val(dv.doub_dat);
+			coef.mult(d_val);
+			crd_out[comp].add(coef);
 		}
 	}
 	return;
 }
 
-void Node::getDisp(DiffDoub1 disp[]) {
+void Node::get_disp(DiffDoub1 disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
-	    disp[i1].setVal(displacement[i1]);
+	    disp[i1].set_val(displacement[i1]);
 	}
 	return;
 }
 
-void Node::getElasticDVLoad(DiffDoub1 ld[], vector<DesignVariable>& dvAr) {
+void Node::get_elastic_dvload(DiffDoub1 ld[], vector<DesignVariable>& dv_ar) {
 	int i1;
-	int dIndex;
-	DiffDoub1 dVal;
+	int d_index;
+	DiffDoub1 d_val;
 	DiffDoub1 coef;
 	string cat;
 	int comp;
 	
 	for (i1 = 0; i1 < 6; i1++) {
-		ld[i1].setVal(0.0);
+		ld[i1].set_val(0.0);
 	}
-	for (auto& dv : dVarLst) {
-		dIndex = dv.intDat;
-		DesignVariable& thisDV = dvAr[dIndex];
-		thisDV.getValue(dVal);
-		cat = thisDV.category;
-		comp = thisDV.component - 1;
+	for (auto& dv : d_var_lst) {
+		d_index = dv.int_dat;
+		DesignVariable& this_dv = dv_ar[d_index];
+		this_dv.get_value(d_val);
+		cat = this_dv.category;
+		comp = this_dv.component - 1;
 		if(cat == "elasticLoad") {
-			coef.setVal(dv.doubDat);
-			coef.mult(dVal);
+			coef.set_val(dv.doub_dat);
+			coef.mult(d_val);
 			ld[comp].add(coef);
 		}
 	}
 	return;
 }
 
-void Node::getThermalDVLoad(DiffDoub1& ld, vector<DesignVariable>& dvAr) {
-	int dIndex;
-	DiffDoub1 dVal;
+void Node::get_thermal_dvload(DiffDoub1& ld, vector<DesignVariable>& dv_ar) {
+	int d_index;
+	DiffDoub1 d_val;
 	DiffDoub1 coef;
 	string cat;
 	
-	ld.setVal(0.0);
-	for (auto& dv : dVarLst) {
-		dIndex = dv.intDat;
-		DesignVariable& thisDV = dvAr[dIndex];
-		thisDV.getValue(dVal);
-		cat = thisDV.category;
+	ld.set_val(0.0);
+	for (auto& dv : d_var_lst) {
+		d_index = dv.int_dat;
+		DesignVariable& this_dv = dv_ar[d_index];
+		this_dv.get_value(d_val);
+		cat = this_dv.category;
 		if (cat == "thermalLoad") {
-			coef.setVal(dv.doubDat);
-			coef.mult(dVal);
+			coef.set_val(dv.doub_dat);
+			coef.mult(d_val);
 			ld.add(coef);
 		}
 	}

@@ -17,403 +17,403 @@ using namespace std;
 
 const int max_int = 2000000000;
 
-void Model::writeTimeStepSoln(int tStep) {
+void Model::write_time_step_soln(int t_step) {
 	int i1;
-	int dofPerNd;
-	int numIntDof;
-	double ndDat[6];
-	double elDat[9];
+	int dof_per_nd;
+	int num_int_dof;
+	double nd_dat[6];
+	double el_dat[9];
 	char* buf;
-	JobCommand& scmd = job[solveCmd];
-	string fullFile = scmd.fileName + "/solnTStep" + to_string(tStep) + ".out";
-	ofstream outFile;
-	outFile.open(fullFile, std::ofstream::binary);
+	JobCommand& scmd = job[solve_cmd];
+	string full_file = scmd.file_name + "/solnTStep" + to_string(t_step) + ".out";
+	ofstream out_file;
+	out_file.open(full_file, std::ofstream::binary);
 
-	for (auto& thisNd : nodes) {
+	for (auto& this_nd : nodes) {
 		if (scmd.thermal) {
-			buf = reinterpret_cast<char*>(&thisNd.prevTemp);
-			outFile.write(buf, 8);
-			buf = reinterpret_cast<char*>(&thisNd.prevTdot);
-			outFile.write(buf, 8);
+			buf = reinterpret_cast<char*>(&this_nd.prev_temp);
+			out_file.write(buf, 8);
+			buf = reinterpret_cast<char*>(&this_nd.prev_tdot);
+			out_file.write(buf, 8);
 		}
 		if (scmd.elastic) {
-			dofPerNd = thisNd.numDof;
-			i1 = 8 * dofPerNd;
-			buf = reinterpret_cast<char*>(&thisNd.prevDisp[0]);
-			outFile.write(buf, i1);
-			buf = reinterpret_cast<char*>(&thisNd.prevVel[0]);
-			outFile.write(buf, i1);
-			buf = reinterpret_cast<char*>(&thisNd.prevAcc[0]);
-			outFile.write(buf, i1);
+			dof_per_nd = this_nd.num_dof;
+			i1 = 8 * dof_per_nd;
+			buf = reinterpret_cast<char*>(&this_nd.prev_disp[0]);
+			out_file.write(buf, i1);
+			buf = reinterpret_cast<char*>(&this_nd.prev_vel[0]);
+			out_file.write(buf, i1);
+			buf = reinterpret_cast<char*>(&this_nd.prev_acc[0]);
+			out_file.write(buf, i1);
 		}
 	}
 
 	if (scmd.elastic) {
-		buf = reinterpret_cast<char*>(&elDat[0]);
-		for (auto& thisEl : elements) {
-			numIntDof = thisEl.numIntDof;
-			if (numIntDof > 0) {
-				i1 = 8 * numIntDof;
-				vecToAr(elDat, thisEl.intPrevDisp, 0, numIntDof);
-				outFile.write(buf, i1);
+		buf = reinterpret_cast<char*>(&el_dat[0]);
+		for (auto& this_el : elements) {
+			num_int_dof = this_el.num_int_dof;
+			if (num_int_dof > 0) {
+				i1 = 8 * num_int_dof;
+				vec_to_ar(el_dat, this_el.int_prev_disp, 0, num_int_dof);
+				out_file.write(buf, i1);
 			}
 		}
 	}
 
-	outFile.close();
+	out_file.close();
 	return;
 }
 
-void Model::writeNodeResults(string fileName, string nodeSet, list<string>& fields, int timeStep) {
+void Model::write_node_results(string file_name, string node_set, list<string>& fields, int time_step) {
 	int i1;
-	int globInd;
-	int setPt;
-	string errStr;
-	string thisField;
-	double ndDat[6];
+	int glob_ind;
+	int set_pt;
+	string err_str;
+	string this_field;
+	double nd_dat[6];
 	int ndof;
 	double time;
 
-	JobCommand& scmd = job[solveCmd];
+	JobCommand& scmd = job[solve_cmd];
 	
-	if(timeStep < max_int) {
-		// Read the results from the time step file and store them in nodes
-		readTimeStepSoln(timeStep);
-		for (auto& ndPt : nodes) {
+	if(time_step < max_int) {
+		// read the results from the time step file and store them in nodes
+		read_time_step_soln(time_step);
+		for (auto& nd_pt : nodes) {
 			if (scmd.thermal) {
-				ndPt.backstepTemp();
+				nd_pt.backstep_temp();
 			}
 			if (scmd.elastic) {
-				ndPt.backstepDisp();
+				nd_pt.backstep_disp();
 			}
 		}
 		if (scmd.dynamic) {
-			time = scmd.timeStep * timeStep;
+			time = scmd.time_step * time_step;
 		}
 		else {
-			auto thisLdTm = scmd.staticLoadTime.begin();
+			auto this_ld_tm = scmd.static_load_time.begin();
 			i1 = 0;
-			while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
-				++thisLdTm;
+			while (this_ld_tm != scmd.static_load_time.end() && i1 < time_step) {
+				++this_ld_tm;
 				i1++;
 			}
-			time = *thisLdTm;
+			time = *this_ld_tm;
 		}
 	}
 	else {
 		time = -1.0;
 	}
 	
-	if (key_in_map(nsMap,nodeSet)) {
-		setPt = nsMap.at(nodeSet);
+	if (key_in_map(ns_map,node_set)) {
+		set_pt = ns_map.at(node_set);
 	}
 	else {
-		errStr = "Warning: there is no node set named " + nodeSet + ". Defaulting to all nodes in writeNodeResults";
-		cout << errStr << endl;
-		setPt = nsMap.at("all");
+		err_str = "Warning: there is no Node Set named " + node_set + ". Defaulting to all nodes in writeNodeResults";
+		cout << err_str << endl;
+		set_pt = ns_map.at("all");
 	}
-	Set& thisSet = nodeSets[setPt];
+	Set& this_set = node_sets[set_pt];
 	
-	ofstream outFile;
-	outFile.open(fileName);
-	outFile << setprecision(12);
+	ofstream out_file;
+	out_file.open(file_name);
+	out_file << setprecision(12);
 	
-	outFile << "nodeResults:\n";
-	outFile << "    time: " << time << "\n";
-	outFile << "    nodeSet: " << nodeSet << "\n";
+	out_file << "nodeResults:\n";
+	out_file << "    time: " << time << "\n";
+	out_file << "    nodeSet: " << node_set << "\n";
 	
-	for (auto& thisField : fields) {
-		outFile << "    " << thisField << ":\n";
+	for (auto& this_field : fields) {
+		out_file << "    " << this_field << ":\n";
 		// -----------------
-		// Calculate reaction force if necessary
-		if (thisField == "reactionForce") {
-			for (i1 = 0; i1 < elMatDim; i1++) {
-				tempV1[i1] = 0.0;
+		// calculate reaction force if necessary
+		if (this_field == "reactionForce") {
+			for (i1 = 0; i1 < el_mat_dim; i1++) {
+				temp_v1[i1] = 0.0;
 			}
-			buildElasticSolnLoad(tempV1, false, false);
-			for (auto& ndLabel : thisSet.labels) {
-				Node& ndPt = nodes[ndLabel];
-				outFile << "        - [" << ndLabel;
-				ndof = ndPt.numDof;
+			build_elastic_soln_load(temp_v1, false, false);
+			for (auto& nd_label : this_set.labels) {
+				Node& nd_pt = nodes[nd_label];
+				out_file << "        - [" << nd_label;
+				ndof = nd_pt.num_dof;
 				for (i1 = 0; i1 < ndof; i1++) {
-					globInd = ndPt.dofIndex[i1];
-					outFile << ", " << -tempV1[globInd];
+					glob_ind = nd_pt.dof_index[i1];
+					out_file << ", " << -temp_v1[glob_ind];
 				}
-				outFile << "]\n";
+				out_file << "]\n";
 			}
 		}
-		else if (thisField == "reactionHeatGen") {
-			for (i1 = 0; i1 < elMatDim; i1++) {
-				tempV1[i1] = 0.0;
+		else if (this_field == "reactionHeatGen") {
+			for (i1 = 0; i1 < el_mat_dim; i1++) {
+				temp_v1[i1] = 0.0;
 			}
-			buildThermalSolnLoad(tempV1, false);
-			for (auto& ndLabel : thisSet.labels) {
-				Node& ndPt = nodes[ndLabel];
-				outFile << "        - [" << ndLabel;
-				globInd = ndPt.sortedRank;
-				outFile << ", " << -tempV1[globInd] << "\n";
+			build_thermal_soln_load(temp_v1, false);
+			for (auto& nd_label : this_set.labels) {
+				Node& nd_pt = nodes[nd_label];
+				out_file << "        - [" << nd_label;
+				glob_ind = nd_pt.sorted_rank;
+				out_file << ", " << -temp_v1[glob_ind] << "\n";
 			}
 		}
 		else {
-			for (auto& ndLabel : thisSet.labels) {
-				Node& ndPt = nodes[ndLabel];
-				outFile << "        - [" << ndLabel;
-				if (thisField == "displacement") {
-					ndof = ndPt.numDof;
+			for (auto& nd_label : this_set.labels) {
+				Node& nd_pt = nodes[nd_label];
+				out_file << "        - [" << nd_label;
+				if (this_field == "displacement") {
+					ndof = nd_pt.num_dof;
 					for (i1 = 0; i1 < ndof; i1++) {
-						outFile << ", " << ndPt.displacement[i1];
+						out_file << ", " << nd_pt.displacement[i1];
 					}
-					outFile << "]\n";
+					out_file << "]\n";
 				}
-				else if (thisField == "velocity") {
-					ndof = ndPt.numDof;
+				else if (this_field == "velocity") {
+					ndof = nd_pt.num_dof;
 					for (i1 = 0; i1 < ndof; i1++) {
-						outFile << ", " << ndPt.velocity[i1];
+						out_file << ", " << nd_pt.velocity[i1];
 					}
-					outFile << "]\n";
+					out_file << "]\n";
 				}
-				else if (thisField == "acceleration") {
-					ndof = ndPt.numDof;
+				else if (this_field == "acceleration") {
+					ndof = nd_pt.num_dof;
 					for (i1 = 0; i1 < ndof; i1++) {
-						outFile << ", " << ndPt.acceleration[i1];
+						out_file << ", " << nd_pt.acceleration[i1];
 					}
-					outFile << "]\n";
+					out_file << "]\n";
 				}
-				else if (thisField == "temperature") {
-					ndDat[0] = ndPt.temperature;
-					outFile << ", " << ndDat[0] << "]\n";
+				else if (this_field == "temperature") {
+					nd_dat[0] = nd_pt.temperature;
+					out_file << ", " << nd_dat[0] << "]\n";
 				}
-				else if (thisField == "tdot") {
-					ndDat[0] = ndPt.tempChangeRate;
-					outFile << ", " << ndDat[0] << "]\n";
+				else if (this_field == "tdot") {
+					nd_dat[0] = nd_pt.temp_change_rate;
+					out_file << ", " << nd_dat[0] << "]\n";
 				}
 			}
 		}
 	}
 	
-	outFile.close();
+	out_file.close();
 	
 	return;
 }
 
-void Model::writeElementResults(string fileName, string elSet, list<string>& fields, string position, int timeStep) {
+void Model::write_element_results(string file_name, string el_set, list<string>& fields, string position, int time_step) {
 	int i1;
 	int i2;
 	int i3;
-	string errStr;
-	string thisField;
-	int setPt;
+	string err_str;
+	string this_field;
+	int set_pt;
 	int type;
-	int numIP;
-	int numLay;
-	double intPts[24];
+	int num_ip;
+	int num_lay;
+	double int_pts[24];
 	double cent[3] = { 0.0,0.0,0.0 };
 	DiffDoub0 strain[6];
 	DiffDoub0 stress[6];
-	double SEDen;
+	double seden;
 	DiffDoub0 def[9];
-	DiffDoub0 frcMom[9];
-	DiffDoub0 tGrad[3];
+	DiffDoub0 frc_mom[9];
+	DiffDoub0 t_grad[3];
 	DiffDoub0 flux[3];
-	string fieldList;
+	string field_list;
 	double time;
 
-	JobCommand& scmd = job[solveCmd];
+	JobCommand& scmd = job[solve_cmd];
 
-	if (timeStep < max_int) {
-		// Read the results from the time step file and store them in nodes
-		readTimeStepSoln(timeStep);
-		for (auto& ndPt : nodes) {
+	if (time_step < max_int) {
+		// read the results from the time step file and store them in nodes
+		read_time_step_soln(time_step);
+		for (auto& nd_pt : nodes) {
 			if (scmd.thermal) {
-				ndPt.backstepTemp();
+				nd_pt.backstep_temp();
 			}
 			if (scmd.elastic) {
-				ndPt.backstepDisp();
+				nd_pt.backstep_disp();
 			}
 		}
 		if (scmd.elastic) {
-			for (auto& elPt : elements) {
-				elPt.backstepIntDisp();
+			for (auto& el_pt : elements) {
+				el_pt.backstep_int_disp();
 			}
 		}
 		if (scmd.dynamic) {
-			time = scmd.timeStep * timeStep;
+			time = scmd.time_step * time_step;
 		}
 		else {
-			auto thisLdTm = scmd.staticLoadTime.begin();
+			auto this_ld_tm = scmd.static_load_time.begin();
 			i1 = 0;
-			while (thisLdTm != scmd.staticLoadTime.end() && i1 < timeStep) {
-				++thisLdTm;
+			while (this_ld_tm != scmd.static_load_time.end() && i1 < time_step) {
+				++this_ld_tm;
 				i1++;
 			}
-			time = *thisLdTm;
+			time = *this_ld_tm;
 		}
 	}
 	else {
 		time = -1.0;
 	}
 
-	if (key_in_map(esMap,elSet)) {
-		setPt = esMap.at(elSet);
+	if (key_in_map(es_map,el_set)) {
+		set_pt = es_map.at(el_set);
 	}
 	else {
-		errStr = "Warning: there is no element set named " + elSet + ". Defaulting to all elements in writeNodeResults";
-		cout << errStr << endl;
-		setPt = esMap.at("all");
+		err_str = "Warning: there is no Element Set named " + el_set + ". Defaulting to all elements in writeNodeResults";
+		cout << err_str << endl;
+		set_pt = es_map.at("all");
 	}
-	Set& thisSet = elementSets[setPt];
+	Set& this_set = element_sets[set_pt];
 
-	ofstream outFile;
-	outFile.open(fileName);
-	outFile << setprecision(12);
+	ofstream out_file;
+	out_file.open(file_name);
+	out_file << setprecision(12);
 
-	outFile << "elementResults:\n";
-	outFile << "    time: " << time << "\n";
-	outFile << "    elSet: " << elSet << "\n";
+	out_file << "elementResults:\n";
+	out_file << "    time: " << time << "\n";
+	out_file << "    elSet: " << el_set << "\n";
 
-	for (auto& thisField : fields) {
-		outFile << "    " << thisField << ":\n";
-		fieldList = "stress strain";
-		i2 = fieldList.find(thisField);
+	for (auto& this_field : fields) {
+		out_file << "    " << this_field << ":\n";
+		field_list = "stress strain";
+		i2 = field_list.find(this_field);
 		if (i2 > -1) {
-			outFile << "    ##  - [element label, integration pt, layer, S11, S22, S33, S12, S13, S23]\n";
+			out_file << "    ##  - [element label, integration pt, layer, S11, S22, S33, S12, S13, S23]\n";
 		}
-		fieldList = "strainEnergyDen";
-		i2 = fieldList.find(thisField);
+		field_list = "strainEnergyDen";
+		i2 = field_list.find(this_field);
 		if (i2 > -1) {
-			outFile << "    ##  - [element label, integration pt, layer, strain energy]\n";
+			out_file << "    ##  - [element label, integration pt, layer, strain energy]\n";
 		}
-		fieldList = "sectionDef sectionFrcMom";
-		i2 = fieldList.find(thisField);
+		field_list = "sectionDef sectionFrcMom";
+		i2 = field_list.find(this_field);
 		if (i2 > -1) {
-			outFile << "    ## for shells:  - [element label, integration pt, S11, S22, S12, K11, K22, K12]\n";
-			outFile << "    ## for beams:  - [element label, integration pt, S11, S12, S13, K11, K12, K13]\n";
+			out_file << "    ## for shells:  - [element label, integration pt, S11, S22, S12, K11, K22, K12]\n";
+			out_file << "    ## for beams:  - [element label, integration pt, S11, S12, S13, K11, K12, K13]\n";
 		}
-		if (thisField == "heatFlux") {
-			outFile << "    ##  - [element label, integration pt, layer, f1, f2, f3]\n";
+		if (this_field == "heatFlux") {
+			out_file << "    ##  - [element label, integration pt, layer, f1, f2, f3]\n";
 		}
-		if (thisField == "tempGradient") {
-			outFile << "    ##  - [element label, integration pt, layer, dT/dx, dT/dy, dT/dz]\n";
+		if (this_field == "tempGradient") {
+			out_file << "    ##  - [element label, integration pt, layer, dT/dx, dT/dy, dT/dz]\n";
 		}
 
-		for (auto& elLabel : thisSet.labels) {
-			Element& elPt = elements[elLabel];
-			type = elPt.type;
+		for (auto& el_label : this_set.labels) {
+			Element& el_pt = elements[el_label];
+			type = el_pt.type;
 			
-			fieldList = "stress strain strainEnergyDen";
-			i2 = fieldList.find(thisField);
+			field_list = "stress strain strainEnergyDen";
+			i2 = field_list.find(this_field);
 			if (i2 > -1) {
-				elPt.getStressPrereq(d0Pre, sections, materials, nodes, designVars);
+				el_pt.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
 				if (position == "intPts") {
-					numIP = elPt.numIP;
-					vecToAr(intPts, elPt.intPts, 0, 3 * numIP);
+					num_ip = el_pt.num_ip;
+					vec_to_ar(int_pts, el_pt.int_pts, 0, 3 * num_ip);
 				}
 				else {
-					numIP = 1;
-					intPts[0] = elPt.sCent[0];
-					intPts[1] = elPt.sCent[1];
-					intPts[2] = elPt.sCent[2];
+					num_ip = 1;
+					int_pts[0] = el_pt.s_cent[0];
+					int_pts[1] = el_pt.s_cent[1];
+					int_pts[2] = el_pt.s_cent[2];
 				}
-				for (i1 = 0; i1 < numIP; i1++) {
+				for (i1 = 0; i1 < num_ip; i1++) {
 					if (type == 3 || type == 41) {
-						numLay = sections[elPt.sectPtr].layers.size();
+						num_lay = sections[el_pt.sect_ptr].layers.size();
 					} else {
-						numLay = 1;
+						num_lay = 1;
 					}
-					for (i2 = 0; i2 < numLay; i2++) {
-						elPt.getStressStrain(stress, strain, &intPts[3 * i1], i2, scmd.nonlinearGeom, d0Pre);
-						outFile << "        - [" << elLabel << ", ";
-						if (thisField == "strain") {
-							outFile << i1 << ", " << i2 << ", " << strain[0].val;
+					for (i2 = 0; i2 < num_lay; i2++) {
+						el_pt.get_stress_strain(stress, strain, &int_pts[3 * i1], i2, scmd.nonlinear_geom, d0_pre);
+						out_file << "        - [" << el_label << ", ";
+						if (this_field == "strain") {
+							out_file << i1 << ", " << i2 << ", " << strain[0].val;
 							for (i3 = 1; i3 < 6; i3++) {
-								outFile << ", " << strain[i3].val;
+								out_file << ", " << strain[i3].val;
 							}
-							outFile << "]\n";
-						} else if(thisField == "stress") {
-							outFile << i1 << ", " << i2 << ", " << stress[0].val;
+							out_file << "]\n";
+						} else if(this_field == "stress") {
+							out_file << i1 << ", " << i2 << ", " << stress[0].val;
 							for (i3 = 1; i3 < 6; i3++) {
-								outFile << ", " << stress[i3].val;
+								out_file << ", " << stress[i3].val;
 							}
-							outFile << "]\n";
+							out_file << "]\n";
 						} else {
-							SEDen = 0.0;
+							seden = 0.0;
 							for (i3 = 0; i3 < 6; i3++) {
-								SEDen += stress[i3].val * strain[i3].val;
+								seden += stress[i3].val * strain[i3].val;
 							}
-							SEDen *= 0.5;
-							outFile << i1 << ", " << i2 << ", " << SEDen << "]\n";
+							seden *= 0.5;
+							out_file << i1 << ", " << i2 << ", " << seden << "]\n";
 						}
 					}
 				}
 			}
 
-			fieldList = "sectionDef sectionFrcMom";
-			i2 = fieldList.find(thisField);
-			if (i2 > -1 && elPt.dofPerNd == 6) {
-				elPt.getStressPrereq(d0Pre, sections, materials, nodes, designVars);
+			field_list = "sectionDef sectionFrcMom";
+			i2 = field_list.find(this_field);
+			if (i2 > -1 && el_pt.dof_per_nd == 6) {
+				el_pt.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
 				if (position == "intPts") {
-					numIP = elPt.numIP;
-					vecToAr(intPts, elPt.intPts, 0, 3 * numIP);
+					num_ip = el_pt.num_ip;
+					vec_to_ar(int_pts, el_pt.int_pts, 0, 3 * num_ip);
 				}
 				else {
-					numIP = 1;
-					intPts[0] = elPt.sCent[0];
-					intPts[1] = elPt.sCent[1];
-					intPts[2] = elPt.sCent[2];
+					num_ip = 1;
+					int_pts[0] = el_pt.s_cent[0];
+					int_pts[1] = el_pt.s_cent[1];
+					int_pts[2] = el_pt.s_cent[2];
 				}
-				for (i1 = 0; i1 < numIP; i1++) {
-					type = elPt.type;
-					//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
-					elPt.getDefFrcMom(def, frcMom, &intPts[3 * i1], scmd.nonlinearGeom, d0Pre);
-					outFile << "        - [" << elLabel << ", ";
-					if (thisField == "sectionDef") {
-						outFile << i1 << ", " << def[0].val;
+				for (i1 = 0; i1 < num_ip; i1++) {
+					type = el_pt.type;
+					//el_pt->get_stress_strain(stress, strain, &int_pts[3 * i1], i2, solve_cmd->nonlinear_geom, st_pre);
+					el_pt.get_def_frc_mom(def, frc_mom, &int_pts[3 * i1], scmd.nonlinear_geom, d0_pre);
+					out_file << "        - [" << el_label << ", ";
+					if (this_field == "sectionDef") {
+						out_file << i1 << ", " << def[0].val;
 						for (i3 = 1; i3 < 6; i3++) {
-							outFile << ", " << def[i3].val;
+							out_file << ", " << def[i3].val;
 						}
-						outFile << "]\n";
+						out_file << "]\n";
 					}
-					else if (thisField == "sectionFrcMom") {
-						outFile << i1 << ", " << frcMom[0].val;
+					else if (this_field == "sectionFrcMom") {
+						out_file << i1 << ", " << frc_mom[0].val;
 						for (i3 = 1; i3 < 6; i3++) {
-							outFile << ", " << frcMom[i3].val;
+							out_file << ", " << frc_mom[i3].val;
 						}
-						outFile << "]\n";
+						out_file << "]\n";
 					}
 				}
 			}
 
-			fieldList = "tempGradient heatFlux";
-			i2 = fieldList.find(thisField);
+			field_list = "tempGradient heatFlux";
+			i2 = field_list.find(this_field);
 			if (i2 > -1) {
-				elPt.getStressPrereq(d0Pre, sections, materials, nodes, designVars);
+				el_pt.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
 				if (position == "intPts") {
-					numIP = elPt.numIP;
-					vecToAr(intPts, elPt.intPts, 0, 3 * numIP);
+					num_ip = el_pt.num_ip;
+					vec_to_ar(int_pts, el_pt.int_pts, 0, 3 * num_ip);
 				}
 				else {
-					numIP = 1;
-					intPts[0] = elPt.sCent[0];
-					intPts[1] = elPt.sCent[1];
-					intPts[2] = elPt.sCent[2];
+					num_ip = 1;
+					int_pts[0] = el_pt.s_cent[0];
+					int_pts[1] = el_pt.s_cent[1];
+					int_pts[2] = el_pt.s_cent[2];
 				}
-				for (i1 = 0; i1 < numIP; i1++) {
-					type = elPt.type;
+				for (i1 = 0; i1 < num_ip; i1++) {
+					type = el_pt.type;
 					if (type == 3 || type == 41) {
-						numLay = sections[elPt.sectPtr].layers.size();
+						num_lay = sections[el_pt.sect_ptr].layers.size();
 					}
 					else {
-						numLay = 1;
+						num_lay = 1;
 					}
-					for (i2 = 0; i2 < numLay; i2++) {
-						//elPt->getStressStrain(stress, strain, &intPts[3 * i1], i2, solveCmd->nonlinearGeom, stPre);
-						elPt.getFluxTGrad(flux, tGrad, &intPts[3 * i1], i2, d0Pre);
-						outFile << "        - [" << elLabel << ", " << i1 << ", " << i2 << ", ";
-						if (thisField == "tempGradient") {
-							outFile << tGrad[0].val << ", " << tGrad[1].val << ", " << tGrad[2].val << "]\n";
+					for (i2 = 0; i2 < num_lay; i2++) {
+						//el_pt->get_stress_strain(stress, strain, &int_pts[3 * i1], i2, solve_cmd->nonlinear_geom, st_pre);
+						el_pt.get_flux_tgrad(flux, t_grad, &int_pts[3 * i1], i2, d0_pre);
+						out_file << "        - [" << el_label << ", " << i1 << ", " << i2 << ", ";
+						if (this_field == "tempGradient") {
+							out_file << t_grad[0].val << ", " << t_grad[1].val << ", " << t_grad[2].val << "]\n";
 						}
-						else if (thisField == "heatFlux") {
-							outFile << flux[0].val << ", " << flux[1].val << ", " << flux[2].val << "]\n";
+						else if (this_field == "heatFlux") {
+							out_file << flux[0].val << ", " << flux[1].val << ", " << flux[2].val << "]\n";
 						}
 					}
 				}
@@ -422,123 +422,123 @@ void Model::writeElementResults(string fileName, string elSet, list<string>& fie
 		}
 	}
 
-	outFile.close();
+	out_file.close();
 
 	return;
 }
 
-void Model::writeModalResults(string fileName, bool writeModes) {
+void Model::write_modal_results(string file_name, bool write_modes) {
 	int i1;
 	int i2;
 	int i3;
 	int nd;
-	int dofPerNd;
-	int globInd;
-	JobCommand& mcmd = job[modalCmd];
-	int nMds = mcmd.numModes;
-	Node* thisNd;
+	int dof_per_nd;
+	int glob_ind;
+	JobCommand& mcmd = job[modal_cmd];
+	int n_mds = mcmd.num_modes;
+	Node* this_nd;
 
-	ofstream outFile;
-	outFile.open(fileName);
-	outFile << setprecision(12);
+	ofstream out_file;
+	out_file.open(file_name);
+	out_file << setprecision(12);
 
-	outFile << "modalResults:\n";
-	outFile << "    eigenValues:\n";
-	for (i1 = 0; i1 < nMds; i1++) {
-		outFile << "      - " << eigVals[i1] << "\n";
+	out_file << "modalResults:\n";
+	out_file << "    eigenValues:\n";
+	for (i1 = 0; i1 < n_mds; i1++) {
+		out_file << "      - " << eig_vals[i1] << "\n";
 	}
 	if (mcmd.type == "buckling") {
-		outFile << "    loadFactors:\n";
+		out_file << "    loadFactors:\n";
 	}
 	else {
-		outFile << "    frequencies:\n";
+		out_file << "    frequencies:\n";
 	}
-	for (i1 = 0; i1 < nMds; i1++) {
-		outFile << "      - " << loadFact[i1] << "\n";
+	for (i1 = 0; i1 < n_mds; i1++) {
+		out_file << "      - " << load_fact[i1] << "\n";
 	}
 
-	if (mcmd.writeModes) {
-		outFile << "    modes:\n";
-		for (i1 = 0; i1 < nMds; i1++) {
-			outFile << "      - mode: " << i1 << "\n";
-			outFile << "        displacement:\n";
-			for (auto& thisNd : nodes) {
-				nd = thisNd.label;
-				outFile << "          - [" << nd;
-				dofPerNd = thisNd.numDof;
-				for (i2 = 0; i2 < dofPerNd; i2++) {
-					globInd = thisNd.dofIndex[i2];
-					i3 = i1 * elMatDim + globInd;
-					outFile << ", " << eigVecs[i3];
+	if (mcmd.write_modes) {
+		out_file << "    modes:\n";
+		for (i1 = 0; i1 < n_mds; i1++) {
+			out_file << "      - mode: " << i1 << "\n";
+			out_file << "        displacement:\n";
+			for (auto& this_nd : nodes) {
+				nd = this_nd.label;
+				out_file << "          - [" << nd;
+				dof_per_nd = this_nd.num_dof;
+				for (i2 = 0; i2 < dof_per_nd; i2++) {
+					glob_ind = this_nd.dof_index[i2];
+					i3 = i1 * el_mat_dim + glob_ind;
+					out_file << ", " << eig_vecs[i3];
 				}
-				outFile << "]\n";
+				out_file << "]\n";
 			}
 		}
 	}
 
-	outFile.close();
+	out_file.close();
 
 	return;
 }
 
-void Model::writeObjective(string fileName, list<string>& includeFields, bool writeGrad) {
+void Model::write_objective(string file_name, list<string>& include_fields, bool write_grad) {
 	int i1;
-	int numDV;
-	double totObj;
-	double thisVal;
-	string fldStr;
+	int num_dv;
+	double tot_obj;
+	double this_val;
+	string fld_str;
 
-	ofstream outFile;
-	outFile.open(fileName);
-	outFile << setprecision(12);
+	ofstream out_file;
+	out_file.open(file_name);
+	out_file << setprecision(12);
 
-	outFile << "objective:\n";
-	outFile << "    terms:\n";
-	totObj = 0.0;
-	for (auto& thisTerm : objective.terms) {
-		thisVal = thisTerm.value;
-		outFile << "        - value: " << thisVal << "\n";
-		for (auto& fldStr : includeFields) {
-			if (fldStr == "category") {
-				outFile << "          category: " << thisTerm.category << "\n";
+	out_file << "objective:\n";
+	out_file << "    terms:\n";
+	tot_obj = 0.0;
+	for (auto& this_term : obj.terms) {
+		this_val = this_term.value;
+		out_file << "        - value: " << this_val << "\n";
+		for (auto& fld_str : include_fields) {
+			if (fld_str == "category") {
+				out_file << "          category: " << this_term.category << "\n";
 			}
-			else if (fldStr == "operator") {
-				outFile << "          operator: " << thisTerm.optr << "\n";
+			else if (fld_str == "operator") {
+				out_file << "          operator: " << this_term.optr << "\n";
 			}
-			else if (fldStr == "component") {
-				outFile << "          component: " << thisTerm.component << "\n";
+			else if (fld_str == "component") {
+				out_file << "          component: " << this_term.component << "\n";
 			}
-			else if (fldStr == "layer") {
-				outFile << "          layer: " << thisTerm.layer << "\n";
+			else if (fld_str == "layer") {
+				out_file << "          Layer: " << this_term.layer << "\n";
 			}
-			else if (fldStr == "coefficient") {
-				outFile << "          coefficient: " << thisTerm.coef << "\n";
+			else if (fld_str == "coefficient") {
+				out_file << "          coefficient: " << this_term.coef << "\n";
 			}
-			else if (fldStr == "exponent") {
-				outFile << "          exponent: " << thisTerm.expnt << "\n";
+			else if (fld_str == "exponent") {
+				out_file << "          exponent: " << this_term.expnt << "\n";
 			}
-			else if (fldStr == "elementSet") {
-				outFile << "          elementSet: " << thisTerm.elSetName << "\n";
+			else if (fld_str == "elementSet") {
+				out_file << "          elementSet: " << this_term.el_set_name << "\n";
 			}
-			else if (fldStr == "nodeSet") {
-				outFile << "          nodeSet: " << thisTerm.ndSetName << "\n";
+			else if (fld_str == "nodeSet") {
+				out_file << "          nodeSet: " << this_term.nd_set_name << "\n";
 			}
-			else if (fldStr == "activeTime") {
-				outFile << "          activeTime: [" << thisTerm.activeTime[0] << ", " << thisTerm.activeTime[1] << "]\n";
+			else if (fld_str == "activeTime") {
+				out_file << "          activeTime: [" << this_term.active_time[0] << ", " << this_term.active_time[1] << "]\n";
 			}
 		}
-		totObj += thisVal;
+		tot_obj += this_val;
 	}
-	outFile << "    totalValue: " << totObj << "\n";
-	if (writeGrad) {
-		outFile << "objectiveGradient:\n";
-		numDV = designVars.size();
-		for (i1 = 0; i1 < numDV; i1++) {
-			outFile << "    - [" << i1 << ", " << dLdD[i1] << "]\n";
+	out_file << "    totalValue: " << tot_obj << "\n";
+	if (write_grad) {
+		out_file << "objectiveGradient:\n";
+		num_dv = design_vars.size();
+		for (i1 = 0; i1 < num_dv; i1++) {
+			out_file << "    - [" << i1 << ", " << d_ld_d[i1] << "]\n";
 		}
 	}
 
-	outFile.close();
+	out_file.close();
 
 	return;
 }

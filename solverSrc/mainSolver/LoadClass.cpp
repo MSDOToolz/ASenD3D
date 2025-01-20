@@ -9,52 +9,52 @@ const int max_int = 2000000000;
 
 Load::Load() {
 	type = "";
-	activeTime[0] = 0.0;
-	activeTime[1] = 1.0e+100;
-	ndSetPtr = max_int;
-	elSetPtr = max_int;
+	active_time[0] = 0.0;
+	active_time[1] = 1.0e+100;
+	nd_set_ptr = max_int;
+	el_set_ptr = max_int;
 	return;
 }
 
-void Load::setActTime(double newAt[]) {
-	activeTime[0] = newAt[0];
-	activeTime[1] = newAt[1];
+void Load::set_act_time(double new_at[]) {
+	active_time[0] = new_at[0];
+	active_time[1] = new_at[1];
 	return;
 }
 
-void Load::setLoad(double newLd[]) {
-	load[0] = newLd[0];
-	load[1] = newLd[1];
-	load[2] = newLd[2];
-	load[3] = newLd[3];
-	load[4] = newLd[4];
-	load[5] = newLd[5];
+void Load::set_load(double new_ld[]) {
+	load[0] = new_ld[0];
+	load[1] = new_ld[1];
+	load[2] = new_ld[2];
+	load[3] = new_ld[3];
+	load[4] = new_ld[4];
+	load[5] = new_ld[5];
 	return;
 }
 
-void Load::setNormDir(double newNDir[]) {
-	normalDir[0] = newNDir[0];
-	normalDir[1] = newNDir[1];
-	normalDir[2] = newNDir[2];
-	double mag = normalDir[0]*normalDir[0] + normalDir[1]*normalDir[1] + normalDir[2]*normalDir[2];
+void Load::set_norm_dir(double new_ndir[]) {
+	normal_dir[0] = new_ndir[0];
+	normal_dir[1] = new_ndir[1];
+	normal_dir[2] = new_ndir[2];
+	double mag = normal_dir[0]*normal_dir[0] + normal_dir[1]*normal_dir[1] + normal_dir[2]*normal_dir[2];
 	mag = 1.0/sqrt(mag);
-	normalDir[0] = mag*normalDir[0];
-	normalDir[1] = mag*normalDir[1];
-	normalDir[2] = mag*normalDir[2];
+	normal_dir[0] = mag*normal_dir[0];
+	normal_dir[1] = mag*normal_dir[1];
+	normal_dir[2] = mag*normal_dir[2];
 	return;
 }
 
-void Load::setCenter(double newCent[]) {
-	center[0] = newCent[0];
-	center[1] = newCent[1];
-	center[2] = newCent[2];
+void Load::set_center(double new_cent[]) {
+	center[0] = new_cent[0];
+	center[1] = new_cent[1];
+	center[2] = new_cent[2];
 	return;
 }
 
-void Load::setAxis(double newAxis[]) {
-	axis[0] = newAxis[0];
-	axis[1] = newAxis[1];
-	axis[2] = newAxis[2];
+void Load::set_axis(double new_axis[]) {
+	axis[0] = new_axis[0];
+	axis[1] = new_axis[1];
+	axis[2] = new_axis[2];
 	double mag = axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2];
 	mag = 1.0/sqrt(mag);
 	axis[0] = mag*axis[0];

@@ -1,5 +1,5 @@
-#ifndef LISTENT
-#define LISTENT
+#ifndef listent
+#define listent
 #include <string>
 #include <fstream>
 #include <vector>
@@ -7,8 +7,8 @@
 
 class IDCapsule {
 public:
-	int intDat;
-	double doubDat;
+	int int_dat;
+	double doub_dat;
 
 	IDCapsule();
 };
@@ -24,11 +24,11 @@ class MatrixEnt {
 
 class MatrixRow {
 public:
-	std::list<MatrixEnt> rowVec;
+	std::list<MatrixEnt> row_vec;
 
 	MatrixRow();
 
-	void addEntry(int row, int col, double val);
+	void add_entry(int row, int col, double val);
 };
 
 class SparseMat {
@@ -38,18 +38,18 @@ class SparseMat {
 		
 	    SparseMat();
 		
-		void setDim(int newDim);
+		void set_dim(int new_dim);
 		
-		void zeroAll();
+		void zero_all();
 		
-		void addEntry(int row, int col, double val);
+		void add_entry(int row, int col, double val);
 
-		void addMatrix(SparseMat& inpMat);
+		void add_matrix(SparseMat& inp_mat);
 		
-		void vectorMultiply(std::vector<double>& prod, std::vector<double>& inpVec, bool transpose);
+		void vector_multiply(std::vector<double>& prod, std::vector<double>& inp_vec, bool transpose);
 
-		double getMaxAbsVal();
+		double get_max_abs_val();
 
-		void writeToFile(std::ofstream& outFile);
+		void write_to_file(std::ofstream& out_file);
 };
 #endif

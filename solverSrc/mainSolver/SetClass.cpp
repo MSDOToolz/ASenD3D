@@ -11,13 +11,13 @@ Set::Set() {
 	return;
 }
 
-bool Set::addIfAbsent(int newI) {
+bool Set::add_if_absent(int new_i) {
 	for (auto& i : labels) {
-		if (i == newI) {
+		if (i == new_i) {
 			return false;
 		}
 	}
-	labels.push_back(newI);
+	labels.push_back(new_i);
 	return true;
 }
 

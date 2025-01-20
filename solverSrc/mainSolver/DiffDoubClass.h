@@ -1,5 +1,5 @@
-#ifndef DIFFDOUB
-#define DIFFDOUB
+#ifndef diffdoub
+#define diffdoub
 #include <cmath>
 
 class DiffDoub0 {
@@ -9,13 +9,13 @@ class DiffDoub0 {
 	
 	    DiffDoub0();
 		
-		bool diffType();
+		bool diff_type();
 		
-		void setVal(double inp);
+		void set_val(double inp);
 
-		void setVal(double inp, double dinp);
+		void set_val(double inp, double dinp);
 		
-		void setVal(DiffDoub0& inp);
+		void set_val(DiffDoub0& inp);
 		
 		void add(DiffDoub0& inp);
 		
@@ -49,15 +49,15 @@ class DiffDoub1 {
 	
 	    DiffDoub1();
 		
-		bool diffType();
+		bool diff_type();
 		
-		void setVal(double inp);
+		void set_val(double inp);
 		
-		void setVal(double inp, double dinp);
+		void set_val(double inp, double dinp);
 
-		void setVal(DiffDoub0& inp);
+		void set_val(DiffDoub0& inp);
 		
-		void setVal(DiffDoub1& inp);
+		void set_val(DiffDoub1& inp);
 		
 		void add(DiffDoub1& inp);
 		
@@ -95,15 +95,15 @@ class DiffDoub2 {
 	
 	    DiffDoub2();
 		
-		bool diffType();
+		bool diff_type();
 		
-		void setVal(double inp);
+		void set_val(double inp);
 		
-		void setVal(double inp, double dinp);
+		void set_val(double inp, double dinp);
 		
-		void setVal(double inp, double dinp1, double dinp2);
+		void set_val(double inp, double dinp1, double dinp2);
 		
-		void setVal(DiffDoub2& inp);
+		void set_val(DiffDoub2& inp);
 		
 		void add(DiffDoub2& inp);
 		

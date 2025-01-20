@@ -1,5 +1,5 @@
-#ifndef CONSTRAINTS
-#define CONSTRAINTS
+#ifndef constraints
+#define constraints
 #include "ListEntClass.h"
 #include "SetClass.h"
 #include "NodeClass.h"
@@ -8,8 +8,8 @@
 
 class ConstraintTerm {
 	public:
-	    std::string nodeSet;
-		int nsPtr;
+	    std::string node_set;
+		int ns_ptr;
 		int dof;
 		double coef;
 		
@@ -23,32 +23,32 @@ class Constraint {
 		std::list<ConstraintTerm> terms;
 		double rhs;
 		SparseMat mat;
-		double scaleFact;
+		double scale_fact;
 		
 	    Constraint();
 		
-		void buildMat(std::vector<Node>& ndAr, std::vector<Set>& setAr);
+		void build_mat(std::vector<Node>& nd_ar, std::vector<Set>& set_ar);
 
-		void fullVecMultiply(std::vector<double>& prod, std::vector<double>& vec, std::vector<double>& tmpV);
+		void full_vec_multiply(std::vector<double>& prod, std::vector<double>& vec, std::vector<double>& tmp_v);
 
-		void getLoad(std::vector<double>& cLd, std::vector<double>& uVec, std::vector<double>& qVec,int resDim);
+		void get_load(std::vector<double>& c_ld, std::vector<double>& u_vec, std::vector<double>& q_vec,int res_dim);
 
-		void writeToFile(std::ofstream& outFile);
+		void write_to_file(std::ofstream& out_file);
 };
 
 class ConstraintList {
 	public:
-		std::vector<Constraint> constVec;
+		std::vector<Constraint> const_vec;
 	
 	    ConstraintList();
 
-		void setScaleFact(double newSF);
+		void set_scale_fact(double new_sf);
 
-		void getTotalVecMult(std::vector<double>& prod, std::vector<double>& vec, std::vector<double>& tmpV);
+		void get_total_vec_mult(std::vector<double>& prod, std::vector<double>& vec, std::vector<double>& tmp_v);
 
-		void getTotalLoad(std::vector<double>& cLd, std::vector<double>& uVec, std::vector<double>& qVec, int resDim);
+		void get_total_load(std::vector<double>& c_ld, std::vector<double>& u_vec, std::vector<double>& q_vec, int res_dim);
 
-		void writeAllToFile(std::string fileName);
+		void write_all_to_file(std::string file_name);
 };
 
 #endif

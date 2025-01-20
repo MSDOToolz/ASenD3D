@@ -1,5 +1,5 @@
-#ifndef ELEMENT
-#define ELEMENT
+#ifndef element
+#define element
 #include <vector>
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
@@ -14,88 +14,88 @@
 //dup1
 class DiffDoub0StressPrereq {
 public:
-	std::vector<DiffDoub0> globNds;  //globNds[30];
-	std::vector<DiffDoub0> locNds;// [30] ;
-	std::vector<DiffDoub0> locOri;// [9] ;
-	std::vector<DiffDoub0> instOri;// [720] ;
-	std::vector<DiffDoub0> globDisp;// [60] ;
-	std::vector<DiffDoub0> globVel;
-	std::vector<DiffDoub0> globAcc;// [30];
-	std::vector<DiffDoub0> globTemp;
-	std::vector<DiffDoub0> globTdot;
-	std::vector<DiffDoub0> Cmat;// [81] ;
-	std::vector<DiffDoub0> Mmat;// [36];
-	std::vector<DiffDoub0> Dmat;
-	std::vector<DiffDoub0> thermExp;
-	std::vector<DiffDoub0> Einit;
-	std::vector<DiffDoub0> TCmat;
-	DiffDoub0 SpecHeat;
-	std::vector<DiffDoub0> BMat;
-	std::vector<DiffDoub0> CBMat;
-	std::vector<DiffDoub0> layerZ;
-	std::vector<DiffDoub0> layerThk;
-	std::vector<DiffDoub0> layerAng;
-	std::vector<DiffDoub0> layerQ;
-	std::vector<DiffDoub0> layerD;
-	std::vector<DiffDoub0> layerTE;
-	std::vector<DiffDoub0> layerE0;
-	std::vector<DiffDoub0> layerDen;
-	std::vector<DiffDoub0> layerTC;
-	std::vector<DiffDoub0> layerSH;
-	std::vector<DiffDoub0> frcFldCoef;
-	std::vector<DiffDoub0> frcFldExp;
-	std::vector<DiffDoub0> thrmFldCoef;
-	DiffDoub0 refTemp;
-	DiffDoub0 massPerEl;
-	std::vector<double> scrMat1;
-	std::vector<double> scrMat2;
-	std::vector<double> scrMat3;
-	std::vector<double> scrMat4;
-	std::vector<double> scrMat5;
-	std::vector<DiffDoub0> scrVec1;
-	std::vector<DiffDoub0> scrVec2;
-	std::vector<DiffDoub0> scrVec3;
-	std::vector<DiffDoub0> scrVec4;
-	std::vector<DiffDoub0> scrVec5;
+	std::vector<DiffDoub0> glob_nds;  //glob_nds[30];
+	std::vector<DiffDoub0> loc_nds;// [30] ;
+	std::vector<DiffDoub0> loc_ori;// [9] ;
+	std::vector<DiffDoub0> inst_ori;// [720] ;
+	std::vector<DiffDoub0> glob_disp;// [60] ;
+	std::vector<DiffDoub0> glob_vel;
+	std::vector<DiffDoub0> glob_acc;// [30];
+	std::vector<DiffDoub0> glob_temp;
+	std::vector<DiffDoub0> glob_tdot;
+	std::vector<DiffDoub0> cmat;// [81] ;
+	std::vector<DiffDoub0> mmat;// [36];
+	std::vector<DiffDoub0> dmat;
+	std::vector<DiffDoub0> therm_exp;
+	std::vector<DiffDoub0> einit;
+	std::vector<DiffDoub0> tcmat;
+	DiffDoub0 spec_heat;
+	std::vector<DiffDoub0> bmat;
+	std::vector<DiffDoub0> cbmat;
+	std::vector<DiffDoub0> layer_z;
+	std::vector<DiffDoub0> layer_thk;
+	std::vector<DiffDoub0> layer_ang;
+	std::vector<DiffDoub0> layer_q;
+	std::vector<DiffDoub0> layer_d;
+	std::vector<DiffDoub0> layer_te;
+	std::vector<DiffDoub0> layer_e0;
+	std::vector<DiffDoub0> layer_den;
+	std::vector<DiffDoub0> layer_tc;
+	std::vector<DiffDoub0> layer_sh;
+	std::vector<DiffDoub0> frc_fld_coef;
+	std::vector<DiffDoub0> frc_fld_exp;
+	std::vector<DiffDoub0> thrm_fld_coef;
+	DiffDoub0 ref_temp;
+	DiffDoub0 mass_per_el;
+	std::vector<double> scr_mat1;
+	std::vector<double> scr_mat2;
+	std::vector<double> scr_mat3;
+	std::vector<double> scr_mat4;
+	std::vector<double> scr_mat5;
+	std::vector<DiffDoub0> scr_vec1;
+	std::vector<DiffDoub0> scr_vec2;
+	std::vector<DiffDoub0> scr_vec3;
+	std::vector<DiffDoub0> scr_vec4;
+	std::vector<DiffDoub0> scr_vec5;
 
-	int currentLayLen;
+	int current_lay_len;
 
 	DiffDoub0StressPrereq();
 
-	void allocateLayers(int numLayers);
+	void allocate_layers(int num_layers);
 
 };
 
 class DiffDoub0FlPrereq {
 public:
-	std::vector<DiffDoub0> globNds;
-	std::vector<DiffDoub0> globDisp;
-	std::vector<DiffDoub0> globVel;
-	std::vector<DiffDoub0> flDen;
-	std::vector<DiffDoub0> flVel;
-	std::vector<DiffDoub0> flTemp;
-	std::vector<DiffDoub0> flTurbE;
-	std::vector<DiffDoub0> flDenDot;
-	std::vector<DiffDoub0> flVelDot;
-	std::vector<DiffDoub0> flTDot;
-	std::vector<DiffDoub0> flTurbEDot;
-	DiffDoub0 refTurbE;
-	DiffDoub0 gradVTurbCoef;
-	DiffDoub0 dissTurbCoef;
-	DiffDoub0 refVisc;
-	DiffDoub0 denVisCoef;
-	DiffDoub0 tempVisCoef;
-	DiffDoub0 turbVisCoef;
-	DiffDoub0 refEnth;
-	DiffDoub0 denEnthCoef;
-	DiffDoub0 denEnthExp;
-	DiffDoub0 denPresCoef;
-	DiffDoub0 denPresExp;
-	DiffDoub0 refDen;
-	DiffDoub0 refTemp;
-	DiffDoub0 thermCond;
-	DiffDoub0 specHeat;
-	DiffDoub0 iGConst;
+	std::vector<DiffDoub0> glob_nds;
+	std::vector<DiffDoub0> glob_disp;
+	std::vector<DiffDoub0> glob_vel;
+	std::vector<DiffDoub0> fl_den;
+	std::vector<DiffDoub0> fl_vel;
+	std::vector<DiffDoub0> fl_temp;
+	std::vector<DiffDoub0> fl_turb_e;
+	std::vector<DiffDoub0> fl_den_dot;
+	std::vector<DiffDoub0> fl_vel_dot;
+	std::vector<DiffDoub0> fl_tdot;
+	std::vector<DiffDoub0> fl_turb_edot;
+	DiffDoub0 ref_turb_e;
+	DiffDoub0 grad_vturb_coef;
+	DiffDoub0 diss_turb_coef;
+	DiffDoub0 ref_visc;
+	DiffDoub0 den_vis_coef;
+	DiffDoub0 temp_vis_coef;
+	DiffDoub0 turb_vis_coef;
+	DiffDoub0 ref_enth;
+	DiffDoub0 den_enth_coef;
+	DiffDoub0 den_enth_exp;
+	DiffDoub0 den_pres_coef;
+	DiffDoub0 den_pres_exp;
+	DiffDoub0 ref_den;
+	DiffDoub0 ref_temp;
+	DiffDoub0 therm_cond;
+	DiffDoub0 spec_heat;
+	DiffDoub0 i_gconst;
 	std::vector<double> scratch;
 
 	DiffDoub0FlPrereq();
@@ -106,92 +106,92 @@ public:
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup1
 class DiffDoub1StressPrereq {
 public:
-	std::vector<DiffDoub1> globNds;  //globNds[30];
-	std::vector<DiffDoub1> locNds;// [30] ;
-	std::vector<DiffDoub1> locOri;// [9] ;
-	std::vector<DiffDoub1> instOri;// [720] ;
-	std::vector<DiffDoub1> globDisp;// [60] ;
-	std::vector<DiffDoub1> globVel;
-	std::vector<DiffDoub1> globAcc;// [30];
-	std::vector<DiffDoub1> globTemp;
-	std::vector<DiffDoub1> globTdot;
-	std::vector<DiffDoub1> Cmat;// [81] ;
-	std::vector<DiffDoub1> Mmat;// [36];
-	std::vector<DiffDoub1> Dmat;
-	std::vector<DiffDoub1> thermExp;
-	std::vector<DiffDoub1> Einit;
-	std::vector<DiffDoub1> TCmat;
-	DiffDoub1 SpecHeat;
-	std::vector<DiffDoub1> BMat;
-	std::vector<DiffDoub1> CBMat;
-	std::vector<DiffDoub1> layerZ;
-	std::vector<DiffDoub1> layerThk;
-	std::vector<DiffDoub1> layerAng;
-	std::vector<DiffDoub1> layerQ;
-	std::vector<DiffDoub1> layerD;
-	std::vector<DiffDoub1> layerTE;
-	std::vector<DiffDoub1> layerE0;
-	std::vector<DiffDoub1> layerDen;
-	std::vector<DiffDoub1> layerTC;
-	std::vector<DiffDoub1> layerSH;
-	std::vector<DiffDoub1> frcFldCoef;
-	std::vector<DiffDoub1> frcFldExp;
-	std::vector<DiffDoub1> thrmFldCoef;
-	DiffDoub1 refTemp;
-	DiffDoub1 massPerEl;
-	std::vector<double> scrMat1;
-	std::vector<double> scrMat2;
-	std::vector<double> scrMat3;
-	std::vector<double> scrMat4;
-	std::vector<double> scrMat5;
-	std::vector<DiffDoub1> scrVec1;
-	std::vector<DiffDoub1> scrVec2;
-	std::vector<DiffDoub1> scrVec3;
-	std::vector<DiffDoub1> scrVec4;
-	std::vector<DiffDoub1> scrVec5;
+	std::vector<DiffDoub1> glob_nds;  //glob_nds[30];
+	std::vector<DiffDoub1> loc_nds;// [30] ;
+	std::vector<DiffDoub1> loc_ori;// [9] ;
+	std::vector<DiffDoub1> inst_ori;// [720] ;
+	std::vector<DiffDoub1> glob_disp;// [60] ;
+	std::vector<DiffDoub1> glob_vel;
+	std::vector<DiffDoub1> glob_acc;// [30];
+	std::vector<DiffDoub1> glob_temp;
+	std::vector<DiffDoub1> glob_tdot;
+	std::vector<DiffDoub1> cmat;// [81] ;
+	std::vector<DiffDoub1> mmat;// [36];
+	std::vector<DiffDoub1> dmat;
+	std::vector<DiffDoub1> therm_exp;
+	std::vector<DiffDoub1> einit;
+	std::vector<DiffDoub1> tcmat;
+	DiffDoub1 spec_heat;
+	std::vector<DiffDoub1> bmat;
+	std::vector<DiffDoub1> cbmat;
+	std::vector<DiffDoub1> layer_z;
+	std::vector<DiffDoub1> layer_thk;
+	std::vector<DiffDoub1> layer_ang;
+	std::vector<DiffDoub1> layer_q;
+	std::vector<DiffDoub1> layer_d;
+	std::vector<DiffDoub1> layer_te;
+	std::vector<DiffDoub1> layer_e0;
+	std::vector<DiffDoub1> layer_den;
+	std::vector<DiffDoub1> layer_tc;
+	std::vector<DiffDoub1> layer_sh;
+	std::vector<DiffDoub1> frc_fld_coef;
+	std::vector<DiffDoub1> frc_fld_exp;
+	std::vector<DiffDoub1> thrm_fld_coef;
+	DiffDoub1 ref_temp;
+	DiffDoub1 mass_per_el;
+	std::vector<double> scr_mat1;
+	std::vector<double> scr_mat2;
+	std::vector<double> scr_mat3;
+	std::vector<double> scr_mat4;
+	std::vector<double> scr_mat5;
+	std::vector<DiffDoub1> scr_vec1;
+	std::vector<DiffDoub1> scr_vec2;
+	std::vector<DiffDoub1> scr_vec3;
+	std::vector<DiffDoub1> scr_vec4;
+	std::vector<DiffDoub1> scr_vec5;
 
-	int currentLayLen;
+	int current_lay_len;
 
 	DiffDoub1StressPrereq();
 
-	void allocateLayers(int numLayers);
+	void allocate_layers(int num_layers);
 
 };
 
 class DiffDoub1FlPrereq {
 public:
-	std::vector<DiffDoub1> globNds;
-	std::vector<DiffDoub1> globDisp;
-	std::vector<DiffDoub1> globVel;
-	std::vector<DiffDoub1> flDen;
-	std::vector<DiffDoub1> flVel;
-	std::vector<DiffDoub1> flTemp;
-	std::vector<DiffDoub1> flTurbE;
-	std::vector<DiffDoub1> flDenDot;
-	std::vector<DiffDoub1> flVelDot;
-	std::vector<DiffDoub1> flTDot;
-	std::vector<DiffDoub1> flTurbEDot;
-	DiffDoub1 refTurbE;
-	DiffDoub1 gradVTurbCoef;
-	DiffDoub1 dissTurbCoef;
-	DiffDoub1 refVisc;
-	DiffDoub1 denVisCoef;
-	DiffDoub1 tempVisCoef;
-	DiffDoub1 turbVisCoef;
-	DiffDoub1 refEnth;
-	DiffDoub1 denEnthCoef;
-	DiffDoub1 denEnthExp;
-	DiffDoub1 denPresCoef;
-	DiffDoub1 denPresExp;
-	DiffDoub1 refDen;
-	DiffDoub1 refTemp;
-	DiffDoub1 thermCond;
-	DiffDoub1 specHeat;
-	DiffDoub1 iGConst;
+	std::vector<DiffDoub1> glob_nds;
+	std::vector<DiffDoub1> glob_disp;
+	std::vector<DiffDoub1> glob_vel;
+	std::vector<DiffDoub1> fl_den;
+	std::vector<DiffDoub1> fl_vel;
+	std::vector<DiffDoub1> fl_temp;
+	std::vector<DiffDoub1> fl_turb_e;
+	std::vector<DiffDoub1> fl_den_dot;
+	std::vector<DiffDoub1> fl_vel_dot;
+	std::vector<DiffDoub1> fl_tdot;
+	std::vector<DiffDoub1> fl_turb_edot;
+	DiffDoub1 ref_turb_e;
+	DiffDoub1 grad_vturb_coef;
+	DiffDoub1 diss_turb_coef;
+	DiffDoub1 ref_visc;
+	DiffDoub1 den_vis_coef;
+	DiffDoub1 temp_vis_coef;
+	DiffDoub1 turb_vis_coef;
+	DiffDoub1 ref_enth;
+	DiffDoub1 den_enth_coef;
+	DiffDoub1 den_enth_exp;
+	DiffDoub1 den_pres_coef;
+	DiffDoub1 den_pres_exp;
+	DiffDoub1 ref_den;
+	DiffDoub1 ref_temp;
+	DiffDoub1 therm_cond;
+	DiffDoub1 spec_heat;
+	DiffDoub1 i_gconst;
 	std::vector<double> scratch;
 
 	DiffDoub1FlPrereq();
@@ -208,412 +208,412 @@ class Element {
 	    int type;
 		int label;
 	    std::vector<int> nodes;
-		int numNds;
-		int dofPerNd;
-		int numIntDof;
-		int nDim;
-		int defDim;
-		std::vector<int> dofTable;  //dofTable[2*i] = nd/basis function of dof i, dofTable[2*i+1] = component of dof i
-		int intDofIndex;
-		std::vector<double> intPts;
-		std::vector<double> ipWt;
-		std::vector<double> ndSpts;
-		double sCent[3];
-		int numIP;
-		int numFaces;
+		int num_nds;
+		int dof_per_nd;
+		int num_int_dof;
+		int n_dim;
+		int def_dim;
+		std::vector<int> dof_table;  //dof_table[2*i] = nd/basis function of dof i, dof_table[2*i+1] = component of dof i
+		int int_dof_index;
+		std::vector<double> int_pts;
+		std::vector<double> ip_wt;
+		std::vector<double> nd_spts;
+		double s_cent[3];
+		int num_ip;
+		int num_faces;
 		std::list<int> faces;
-		std::vector<double> internalDisp;
-		std::vector<double> intPrevDisp;
-		std::vector<double> internaldLdu;
-		std::vector<double> internalAdj;
-		std::vector<DiffDoub1> internalRu;
-		std::vector<double> internalMat;
-		std::list<IDCapsule> designVars;
-		std::list<int> compDVars;
-		int sectPtr;
+		std::vector<double> internal_disp;
+		std::vector<double> int_prev_disp;
+		std::vector<double> internald_ldu;
+		std::vector<double> internal_adj;
+		std::vector<DiffDoub1> internal_ru;
+		std::vector<double> internal_mat;
+		std::list<IDCapsule> design_vars;
+		std::list<int> comp_dvars;
+		int sect_ptr;
 		
 		Element();
 
-	    void initializeType(int newType);
+	    void initialize_type(int new_type);
 
-        void setNodes(int newNds[]);
+        void set_nodes(int new_nds[]);
 
-        void initializeFaces(std::vector<Face>& globFcLst, int& fi);	
+        void initialize_faces(std::vector<Face>& glob_fc_lst, int& fi);	
 
-		void setIntDisp(double newDisp[]);
+		void set_int_disp(double new_disp[]);
 
-		void setIntPrevDisp(double newDisp[]);
+		void set_int_prev_disp(double new_disp[]);
 
-		void advanceIntDisp();
+		void advance_int_disp();
 
-		void backstepIntDisp();
+		void backstep_int_disp();
 
-		void setIntdLdU(std::vector<double>& globdLdU);
+		void set_intd_ld_u(std::vector<double>& globd_ld_u);
 
-		int getNumLayers(std::vector<Section>& secLst);
+		int get_num_layers(std::vector<Section>& sec_lst);
 		
-		void addDesignVariable(int dIndex, double coef);
+		void add_design_variable(int d_index, double coef);
 
-		void addCompDVar(int dIndex);
+		void add_comp_dvar(int d_index);
 
 //dup1
 
-// Properties
-		void getGenProp(DiffDoub0& prop, std::string propKey, std::vector<DesignVariable>& dvAr);
+// properties
+		void get_gen_prop(DiffDoub0& prop, std::string prop_key, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerThkZ(std::vector<DiffDoub0>& layThk, std::vector<DiffDoub0>& layZ, DiffDoub0& zOffset, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_thk_z(std::vector<DiffDoub0>& lay_thk, std::vector<DiffDoub0>& lay_z, DiffDoub0& z_offset, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerQ(std::vector<DiffDoub0>& layQ, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_q(std::vector<DiffDoub0>& lay_q, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerD(std::vector<DiffDoub0>& layD, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_d(std::vector<DiffDoub0>& lay_d, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerAngle(std::vector<DiffDoub0>& layAng, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_angle(std::vector<DiffDoub0>& lay_ang, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerThExp(std::vector<DiffDoub0>& layThExp, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_th_exp(std::vector<DiffDoub0>& lay_th_exp, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerEinit(std::vector<DiffDoub0>& layEinit, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_einit(std::vector<DiffDoub0>& lay_einit, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerDen(std::vector<DiffDoub0>& layerDen, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_den(std::vector<DiffDoub0>& layer_den, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerCond(std::vector<DiffDoub0>& layCond, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_cond(std::vector<DiffDoub0>& lay_cond, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerSpecHeat(std::vector<DiffDoub0>& laySH, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_spec_heat(std::vector<DiffDoub0>& lay_sh, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void transformStrain(DiffDoub0 stnNew[], DiffDoub0 stnOrig[], DiffDoub0& angle);
+		void transform_strain(DiffDoub0 stn_new[], DiffDoub0 stn_orig[], DiffDoub0& angle);
 
-		void transformQ(DiffDoub0 qNew[], DiffDoub0 qOrig[], DiffDoub0& angle);
+		void transform_q(DiffDoub0 q_new[], DiffDoub0 q_orig[], DiffDoub0& angle);
 
-		void getSolidStiff(std::vector<DiffDoub0>& Cmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_solid_stiff(std::vector<DiffDoub0>& cmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getABD(std::vector<DiffDoub0>& Cmat, std::vector<DiffDoub0>& layThk, std::vector<DiffDoub0>& layZ, std::vector<DiffDoub0>& layQ, std::vector<DiffDoub0>& layAng, std::vector<Section>& secAr);
+		void get_abd(std::vector<DiffDoub0>& cmat, std::vector<DiffDoub0>& lay_thk, std::vector<DiffDoub0>& lay_z, std::vector<DiffDoub0>& lay_q, std::vector<DiffDoub0>& lay_ang, std::vector<Section>& sec_ar);
 
-		void getBeamStiff(std::vector<DiffDoub0>& Cmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_stiff(std::vector<DiffDoub0>& cmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getThermalExp(std::vector<DiffDoub0>& thExp, std::vector<DiffDoub0>& Einit, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_thermal_exp(std::vector<DiffDoub0>& th_exp, std::vector<DiffDoub0>& einit, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellExpLoad(std::vector<DiffDoub0>& expLd, std::vector<DiffDoub0>& E0Ld, std::vector<DiffDoub0>& layThk, std::vector<DiffDoub0>& layZ, std::vector<DiffDoub0>& layQ, std::vector<DiffDoub0>& layThExp, std::vector<DiffDoub0>& layEInit, std::vector<DiffDoub0>& layAng, std::vector<Section>& secAr);
+		void get_shell_exp_load(std::vector<DiffDoub0>& exp_ld, std::vector<DiffDoub0>& e0_ld, std::vector<DiffDoub0>& lay_thk, std::vector<DiffDoub0>& lay_z, std::vector<DiffDoub0>& lay_q, std::vector<DiffDoub0>& lay_th_exp, std::vector<DiffDoub0>& lay_einit, std::vector<DiffDoub0>& lay_ang, std::vector<Section>& sec_ar);
 
-		void getBeamExpLoad(std::vector<DiffDoub0>& expLd, std::vector<DiffDoub0>& E0Ld, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_exp_load(std::vector<DiffDoub0>& exp_ld, std::vector<DiffDoub0>& e0_ld, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getDensity(DiffDoub0& den, int layer, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_density(DiffDoub0& den, int layer, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellMass(std::vector<DiffDoub0>& Mmat, std::vector<DiffDoub0>& layThk, std::vector<DiffDoub0>& layZ, std::vector<DiffDoub0>& layDen, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_shell_mass(std::vector<DiffDoub0>& mmat, std::vector<DiffDoub0>& lay_thk, std::vector<DiffDoub0>& lay_z, std::vector<DiffDoub0>& lay_den, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getBeamMass(std::vector<DiffDoub0>& Mmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_mass(std::vector<DiffDoub0>& mmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getSolidDamp(std::vector<DiffDoub0>& Dmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_solid_damp(std::vector<DiffDoub0>& dmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellDamp(std::vector<DiffDoub0>& Dmat, std::vector<DiffDoub0>& layThk, std::vector<DiffDoub0>& layZ, std::vector<DiffDoub0>& layD, std::vector<DiffDoub0>& layAng, std::vector<Section>& secAr);
+		void get_shell_damp(std::vector<DiffDoub0>& dmat, std::vector<DiffDoub0>& lay_thk, std::vector<DiffDoub0>& lay_z, std::vector<DiffDoub0>& lay_d, std::vector<DiffDoub0>& lay_ang, std::vector<Section>& sec_ar);
 
-		void getBeamDamp(std::vector<DiffDoub0>& Dmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_damp(std::vector<DiffDoub0>& dmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getConductivity(std::vector<DiffDoub0>& tCond, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_conductivity(std::vector<DiffDoub0>& t_cond, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellCond(std::vector<DiffDoub0>& tCond, std::vector<DiffDoub0>& layThk, std::vector<DiffDoub0>& layAng, std::vector<DiffDoub0>& layCond, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_shell_cond(std::vector<DiffDoub0>& t_cond, std::vector<DiffDoub0>& lay_thk, std::vector<DiffDoub0>& lay_ang, std::vector<DiffDoub0>& lay_cond, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getBeamCond(std::vector<DiffDoub0>& tCond, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_cond(std::vector<DiffDoub0>& t_cond, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getSpecificHeat(DiffDoub0& specHeat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_specific_heat(DiffDoub0& spec_heat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellSpecHeat(DiffDoub0& specHeat, std::vector<DiffDoub0>& layThk, std::vector<DiffDoub0>& laySH, std::vector<DiffDoub0>& layDen, std::vector<Section>& secAr);
+		void get_shell_spec_heat(DiffDoub0& spec_heat, std::vector<DiffDoub0>& lay_thk, std::vector<DiffDoub0>& lay_sh, std::vector<DiffDoub0>& lay_den, std::vector<Section>& sec_ar);
 
-		void getBeamSpecHeat(DiffDoub0& specHeat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_spec_heat(DiffDoub0& spec_heat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-        void getNdCrds(std::vector<DiffDoub0>& xGlob, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+        void get_nd_crds(std::vector<DiffDoub0>& x_glob, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getLocOri(std::vector<DiffDoub0>& locOri, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_loc_ori(std::vector<DiffDoub0>& loc_ori, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void correctOrient(std::vector<DiffDoub0>& locOri, std::vector<DiffDoub0>& xGlob);
+		void correct_orient(std::vector<DiffDoub0>& loc_ori, std::vector<DiffDoub0>& x_glob);
 
-		void getFrcFldConst(std::vector<DiffDoub0>& coef, std::vector<DiffDoub0>& exp, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_frc_fld_const(std::vector<DiffDoub0>& coef, std::vector<DiffDoub0>& exp, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getThrmFldConst(std::vector<DiffDoub0>& coef, DiffDoub0& refT, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_thrm_fld_const(std::vector<DiffDoub0>& coef, DiffDoub0& ref_t, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getMassPerEl(DiffDoub0& massPerEl, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_mass_per_el(DiffDoub0& mass_per_el, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-// Solution Fields
-		void getNdDisp(std::vector<DiffDoub0>& globDisp, std::vector<Node>& ndAr);
+// solution fields
+		void get_nd_disp(std::vector<DiffDoub0>& glob_disp, std::vector<Node>& nd_ar);
 
-		void getNdVel(std::vector<DiffDoub0>& globVel, std::vector<Node>& ndAr);
+		void get_nd_vel(std::vector<DiffDoub0>& glob_vel, std::vector<Node>& nd_ar);
 
-		void getNdAcc(std::vector<DiffDoub0>& globAcc, std::vector<Node>& ndAr);
+		void get_nd_acc(std::vector<DiffDoub0>& glob_acc, std::vector<Node>& nd_ar);
 
-		void getNdFlVel(std::vector<DiffDoub0>& flVel, std::vector<Node>& ndAr);
+		void get_nd_fl_vel(std::vector<DiffDoub0>& fl_vel, std::vector<Node>& nd_ar);
 
-		void getNdFlVDot(std::vector<DiffDoub0>& flVDot, std::vector<Node>& ndAr);
+		void get_nd_fl_vdot(std::vector<DiffDoub0>& fl_vdot, std::vector<Node>& nd_ar);
 
-		void getNdTemp(std::vector<DiffDoub0>& globTemp, std::vector<Node>& ndAr);
+		void get_nd_temp(std::vector<DiffDoub0>& glob_temp, std::vector<Node>& nd_ar);
 
-		void getNdTdot(std::vector<DiffDoub0>& globTdot, std::vector<Node>& ndAr);
+		void get_nd_tdot(std::vector<DiffDoub0>& glob_tdot, std::vector<Node>& nd_ar);
 
-		void getNdFlDen(std::vector<DiffDoub0>& flDen, std::vector<Node>& ndAr);
+		void get_nd_fl_den(std::vector<DiffDoub0>& fl_den, std::vector<Node>& nd_ar);
 
-		void getNdFlDenDot(std::vector<DiffDoub0>& flDenDot, std::vector<Node>& ndAr);
+		void get_nd_fl_den_dot(std::vector<DiffDoub0>& fl_den_dot, std::vector<Node>& nd_ar);
 
-		void getNdTurbE(std::vector<DiffDoub0>& turbE, std::vector<Node>& ndAr);
+		void get_nd_turb_e(std::vector<DiffDoub0>& turb_e, std::vector<Node>& nd_ar);
 
-		void getNdTurbEDot(std::vector<DiffDoub0>& turbEDot, std::vector<Node>& ndAr);
+		void get_nd_turb_edot(std::vector<DiffDoub0>& turb_edot, std::vector<Node>& nd_ar);
 
-		void evalN(DiffDoub0 nVec[], DiffDoub0 dNds[], double spt[]);
+		void eval_n(DiffDoub0 n_vec[], DiffDoub0 d_nds[], double spt[]);
 		
-		void getIpData(DiffDoub0 nVec[], DiffDoub0 dNdx[], DiffDoub0& detJ, std::vector<DiffDoub0>& locNds, double spt[]);
+		void get_ip_data(DiffDoub0 n_vec[], DiffDoub0 d_ndx[], DiffDoub0& det_j, std::vector<DiffDoub0>& loc_nds, double spt[]);
 		
-		void getInstOri(std::vector<DiffDoub0>& instOriMat, std::vector<DiffDoub0>& locOri, std::vector<DiffDoub0>& globDisp, int stat);
+		void get_inst_ori(std::vector<DiffDoub0>& inst_ori_mat, std::vector<DiffDoub0>& loc_ori, std::vector<DiffDoub0>& glob_disp, int stat);
 		
-		void getInstDisp(DiffDoub0 instDisp[], std::vector<DiffDoub0>& globDisp, std::vector<DiffDoub0>& instOriMat, std::vector<DiffDoub0>& locOri, std::vector<DiffDoub0>& xGlob, bool nLGeom, int dv1, int dv2);
+		void get_inst_disp(DiffDoub0 inst_disp[], std::vector<DiffDoub0>& glob_disp, std::vector<DiffDoub0>& inst_ori_mat, std::vector<DiffDoub0>& loc_ori, std::vector<DiffDoub0>& x_glob, bool n_lgeom, int dv1, int dv2);
 
-		void getStressPrereq(DiffDoub0StressPrereq& pre, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_stress_prereq(DiffDoub0StressPrereq& pre, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getFluidPrereq(DiffDoub0FlPrereq& pre, std::vector<Section>& secAr, std::vector<Fluid>& flAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_fluid_prereq(DiffDoub0FlPrereq& pre, std::vector<Section>& sec_ar, std::vector<Fluid>& fl_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getVolume(DiffDoub0& vol, DiffDoub0StressPrereq& pre, int layer, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_volume(DiffDoub0& vol, DiffDoub0StressPrereq& pre, int layer, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getSectionDef(DiffDoub0 secDef[], std::vector<DiffDoub0>& globDisp, std::vector<DiffDoub0>& instOriMat, std::vector<DiffDoub0>& locOri, std::vector<DiffDoub0>& xGlob, DiffDoub0 dNdx[], DiffDoub0 nVec[], bool nLGeom, int dv1, int dv2);
+		void get_section_def(DiffDoub0 sec_def[], std::vector<DiffDoub0>& glob_disp, std::vector<DiffDoub0>& inst_ori_mat, std::vector<DiffDoub0>& loc_ori, std::vector<DiffDoub0>& x_glob, DiffDoub0 d_ndx[], DiffDoub0 n_vec[], bool n_lgeom, int dv1, int dv2);
 		
-		void getSolidStrain(DiffDoub0 strain[], DiffDoub0 ux[], DiffDoub0 dNdx[], std::vector<DiffDoub0>& locOri, int dv1, int dv2, bool nLGeom);
+		void get_solid_strain(DiffDoub0 strain[], DiffDoub0 ux[], DiffDoub0 d_ndx[], std::vector<DiffDoub0>& loc_ori, int dv1, int dv2, bool n_lgeom);
 
-		void getStressStrain(DiffDoub0 stress[], DiffDoub0 strain[], double spt[], int layer, bool nLGeom, DiffDoub0StressPrereq& pre);
+		void get_stress_strain(DiffDoub0 stress[], DiffDoub0 strain[], double spt[], int layer, bool n_lgeom, DiffDoub0StressPrereq& pre);
 
-		void dStressStraindU(std::vector<DiffDoub0>& dsdU, std::vector<DiffDoub0>& dedU, std::vector<DiffDoub0>& dsdT, double spt[], int layer, bool nLGeom, DiffDoub0StressPrereq& pre);
+		void d_stress_straind_u(std::vector<DiffDoub0>& dsd_u, std::vector<DiffDoub0>& ded_u, std::vector<DiffDoub0>& dsd_t, double spt[], int layer, bool n_lgeom, DiffDoub0StressPrereq& pre);
 
-		void getDefFrcMom(DiffDoub0 def[], DiffDoub0 frcMom[], double spt[], bool nLGeom, DiffDoub0StressPrereq& pre);
+		void get_def_frc_mom(DiffDoub0 def[], DiffDoub0 frc_mom[], double spt[], bool n_lgeom, DiffDoub0StressPrereq& pre);
 
-		void dDefFrcMomdU(std::vector<DiffDoub0>& dDefdU, std::vector<DiffDoub0>& dFrcMomdU, std::vector<DiffDoub0>& dFrcMomdT, double spt[], bool nLGeom, DiffDoub0StressPrereq& pre);
+		void d_def_frc_momd_u(std::vector<DiffDoub0>& d_defd_u, std::vector<DiffDoub0>& d_frc_momd_u, std::vector<DiffDoub0>& d_frc_momd_t, double spt[], bool n_lgeom, DiffDoub0StressPrereq& pre);
 
-		void getFluxTGrad(DiffDoub0 flux[], DiffDoub0 tGrad[], double spt[], int layer, DiffDoub0StressPrereq& pre);
+		void get_flux_tgrad(DiffDoub0 flux[], DiffDoub0 t_grad[], double spt[], int layer, DiffDoub0StressPrereq& pre);
 
-		void dFluxTGraddT(std::vector<DiffDoub0>& dFdT, std::vector<DiffDoub0>& dTG, double spt[], int layer, DiffDoub0StressPrereq& pre);
+		void d_flux_tgradd_t(std::vector<DiffDoub0>& d_fd_t, std::vector<DiffDoub0>& d_tg, double spt[], int layer, DiffDoub0StressPrereq& pre);
 
-		void putVecToGlobMat(SparseMat& qMat, std::vector<DiffDoub0>& elQVec, bool forTherm, int matRow, std::vector<Node>& ndAr);
+		void put_vec_to_glob_mat(SparseMat& q_mat, std::vector<DiffDoub0>& el_qvec, bool for_therm, int mat_row, std::vector<Node>& nd_ar);
 		
 //end dup
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup1
 
-// Properties
-		void getGenProp(DiffDoub1& prop, std::string propKey, std::vector<DesignVariable>& dvAr);
+// properties
+		void get_gen_prop(DiffDoub1& prop, std::string prop_key, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerThkZ(std::vector<DiffDoub1>& layThk, std::vector<DiffDoub1>& layZ, DiffDoub1& zOffset, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_thk_z(std::vector<DiffDoub1>& lay_thk, std::vector<DiffDoub1>& lay_z, DiffDoub1& z_offset, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerQ(std::vector<DiffDoub1>& layQ, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_q(std::vector<DiffDoub1>& lay_q, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerD(std::vector<DiffDoub1>& layD, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_d(std::vector<DiffDoub1>& lay_d, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerAngle(std::vector<DiffDoub1>& layAng, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_angle(std::vector<DiffDoub1>& lay_ang, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerThExp(std::vector<DiffDoub1>& layThExp, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_th_exp(std::vector<DiffDoub1>& lay_th_exp, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerEinit(std::vector<DiffDoub1>& layEinit, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_einit(std::vector<DiffDoub1>& lay_einit, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerDen(std::vector<DiffDoub1>& layerDen, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_den(std::vector<DiffDoub1>& layer_den, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerCond(std::vector<DiffDoub1>& layCond, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_cond(std::vector<DiffDoub1>& lay_cond, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getLayerSpecHeat(std::vector<DiffDoub1>& laySH, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_layer_spec_heat(std::vector<DiffDoub1>& lay_sh, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void transformStrain(DiffDoub1 stnNew[], DiffDoub1 stnOrig[], DiffDoub1& angle);
+		void transform_strain(DiffDoub1 stn_new[], DiffDoub1 stn_orig[], DiffDoub1& angle);
 
-		void transformQ(DiffDoub1 qNew[], DiffDoub1 qOrig[], DiffDoub1& angle);
+		void transform_q(DiffDoub1 q_new[], DiffDoub1 q_orig[], DiffDoub1& angle);
 
-		void getSolidStiff(std::vector<DiffDoub1>& Cmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_solid_stiff(std::vector<DiffDoub1>& cmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getABD(std::vector<DiffDoub1>& Cmat, std::vector<DiffDoub1>& layThk, std::vector<DiffDoub1>& layZ, std::vector<DiffDoub1>& layQ, std::vector<DiffDoub1>& layAng, std::vector<Section>& secAr);
+		void get_abd(std::vector<DiffDoub1>& cmat, std::vector<DiffDoub1>& lay_thk, std::vector<DiffDoub1>& lay_z, std::vector<DiffDoub1>& lay_q, std::vector<DiffDoub1>& lay_ang, std::vector<Section>& sec_ar);
 
-		void getBeamStiff(std::vector<DiffDoub1>& Cmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_stiff(std::vector<DiffDoub1>& cmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getThermalExp(std::vector<DiffDoub1>& thExp, std::vector<DiffDoub1>& Einit, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_thermal_exp(std::vector<DiffDoub1>& th_exp, std::vector<DiffDoub1>& einit, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellExpLoad(std::vector<DiffDoub1>& expLd, std::vector<DiffDoub1>& E0Ld, std::vector<DiffDoub1>& layThk, std::vector<DiffDoub1>& layZ, std::vector<DiffDoub1>& layQ, std::vector<DiffDoub1>& layThExp, std::vector<DiffDoub1>& layEInit, std::vector<DiffDoub1>& layAng, std::vector<Section>& secAr);
+		void get_shell_exp_load(std::vector<DiffDoub1>& exp_ld, std::vector<DiffDoub1>& e0_ld, std::vector<DiffDoub1>& lay_thk, std::vector<DiffDoub1>& lay_z, std::vector<DiffDoub1>& lay_q, std::vector<DiffDoub1>& lay_th_exp, std::vector<DiffDoub1>& lay_einit, std::vector<DiffDoub1>& lay_ang, std::vector<Section>& sec_ar);
 
-		void getBeamExpLoad(std::vector<DiffDoub1>& expLd, std::vector<DiffDoub1>& E0Ld, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_exp_load(std::vector<DiffDoub1>& exp_ld, std::vector<DiffDoub1>& e0_ld, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getDensity(DiffDoub1& den, int layer, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_density(DiffDoub1& den, int layer, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellMass(std::vector<DiffDoub1>& Mmat, std::vector<DiffDoub1>& layThk, std::vector<DiffDoub1>& layZ, std::vector<DiffDoub1>& layDen, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_shell_mass(std::vector<DiffDoub1>& mmat, std::vector<DiffDoub1>& lay_thk, std::vector<DiffDoub1>& lay_z, std::vector<DiffDoub1>& lay_den, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getBeamMass(std::vector<DiffDoub1>& Mmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_mass(std::vector<DiffDoub1>& mmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getSolidDamp(std::vector<DiffDoub1>& Dmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_solid_damp(std::vector<DiffDoub1>& dmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellDamp(std::vector<DiffDoub1>& Dmat, std::vector<DiffDoub1>& layThk, std::vector<DiffDoub1>& layZ, std::vector<DiffDoub1>& layD, std::vector<DiffDoub1>& layAng, std::vector<Section>& secAr);
+		void get_shell_damp(std::vector<DiffDoub1>& dmat, std::vector<DiffDoub1>& lay_thk, std::vector<DiffDoub1>& lay_z, std::vector<DiffDoub1>& lay_d, std::vector<DiffDoub1>& lay_ang, std::vector<Section>& sec_ar);
 
-		void getBeamDamp(std::vector<DiffDoub1>& Dmat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_damp(std::vector<DiffDoub1>& dmat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getConductivity(std::vector<DiffDoub1>& tCond, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_conductivity(std::vector<DiffDoub1>& t_cond, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellCond(std::vector<DiffDoub1>& tCond, std::vector<DiffDoub1>& layThk, std::vector<DiffDoub1>& layAng, std::vector<DiffDoub1>& layCond, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_shell_cond(std::vector<DiffDoub1>& t_cond, std::vector<DiffDoub1>& lay_thk, std::vector<DiffDoub1>& lay_ang, std::vector<DiffDoub1>& lay_cond, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getBeamCond(std::vector<DiffDoub1>& tCond, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_cond(std::vector<DiffDoub1>& t_cond, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getSpecificHeat(DiffDoub1& specHeat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_specific_heat(DiffDoub1& spec_heat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getShellSpecHeat(DiffDoub1& specHeat, std::vector<DiffDoub1>& layThk, std::vector<DiffDoub1>& laySH, std::vector<DiffDoub1>& layDen, std::vector<Section>& secAr);
+		void get_shell_spec_heat(DiffDoub1& spec_heat, std::vector<DiffDoub1>& lay_thk, std::vector<DiffDoub1>& lay_sh, std::vector<DiffDoub1>& lay_den, std::vector<Section>& sec_ar);
 
-		void getBeamSpecHeat(DiffDoub1& specHeat, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<DesignVariable>& dvAr);
+		void get_beam_spec_heat(DiffDoub1& spec_heat, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<DesignVariable>& dv_ar);
 
-        void getNdCrds(std::vector<DiffDoub1>& xGlob, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+        void get_nd_crds(std::vector<DiffDoub1>& x_glob, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getLocOri(std::vector<DiffDoub1>& locOri, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_loc_ori(std::vector<DiffDoub1>& loc_ori, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void correctOrient(std::vector<DiffDoub1>& locOri, std::vector<DiffDoub1>& xGlob);
+		void correct_orient(std::vector<DiffDoub1>& loc_ori, std::vector<DiffDoub1>& x_glob);
 
-		void getFrcFldConst(std::vector<DiffDoub1>& coef, std::vector<DiffDoub1>& exp, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_frc_fld_const(std::vector<DiffDoub1>& coef, std::vector<DiffDoub1>& exp, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getThrmFldConst(std::vector<DiffDoub1>& coef, DiffDoub1& refT, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_thrm_fld_const(std::vector<DiffDoub1>& coef, DiffDoub1& ref_t, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getMassPerEl(DiffDoub1& massPerEl, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_mass_per_el(DiffDoub1& mass_per_el, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 
-// Solution Fields
-		void getNdDisp(std::vector<DiffDoub1>& globDisp, std::vector<Node>& ndAr);
+// solution fields
+		void get_nd_disp(std::vector<DiffDoub1>& glob_disp, std::vector<Node>& nd_ar);
 
-		void getNdVel(std::vector<DiffDoub1>& globVel, std::vector<Node>& ndAr);
+		void get_nd_vel(std::vector<DiffDoub1>& glob_vel, std::vector<Node>& nd_ar);
 
-		void getNdAcc(std::vector<DiffDoub1>& globAcc, std::vector<Node>& ndAr);
+		void get_nd_acc(std::vector<DiffDoub1>& glob_acc, std::vector<Node>& nd_ar);
 
-		void getNdFlVel(std::vector<DiffDoub1>& flVel, std::vector<Node>& ndAr);
+		void get_nd_fl_vel(std::vector<DiffDoub1>& fl_vel, std::vector<Node>& nd_ar);
 
-		void getNdFlVDot(std::vector<DiffDoub1>& flVDot, std::vector<Node>& ndAr);
+		void get_nd_fl_vdot(std::vector<DiffDoub1>& fl_vdot, std::vector<Node>& nd_ar);
 
-		void getNdTemp(std::vector<DiffDoub1>& globTemp, std::vector<Node>& ndAr);
+		void get_nd_temp(std::vector<DiffDoub1>& glob_temp, std::vector<Node>& nd_ar);
 
-		void getNdTdot(std::vector<DiffDoub1>& globTdot, std::vector<Node>& ndAr);
+		void get_nd_tdot(std::vector<DiffDoub1>& glob_tdot, std::vector<Node>& nd_ar);
 
-		void getNdFlDen(std::vector<DiffDoub1>& flDen, std::vector<Node>& ndAr);
+		void get_nd_fl_den(std::vector<DiffDoub1>& fl_den, std::vector<Node>& nd_ar);
 
-		void getNdFlDenDot(std::vector<DiffDoub1>& flDenDot, std::vector<Node>& ndAr);
+		void get_nd_fl_den_dot(std::vector<DiffDoub1>& fl_den_dot, std::vector<Node>& nd_ar);
 
-		void getNdTurbE(std::vector<DiffDoub1>& turbE, std::vector<Node>& ndAr);
+		void get_nd_turb_e(std::vector<DiffDoub1>& turb_e, std::vector<Node>& nd_ar);
 
-		void getNdTurbEDot(std::vector<DiffDoub1>& turbEDot, std::vector<Node>& ndAr);
+		void get_nd_turb_edot(std::vector<DiffDoub1>& turb_edot, std::vector<Node>& nd_ar);
 
-		void evalN(DiffDoub1 nVec[], DiffDoub1 dNds[], double spt[]);
+		void eval_n(DiffDoub1 n_vec[], DiffDoub1 d_nds[], double spt[]);
 		
-		void getIpData(DiffDoub1 nVec[], DiffDoub1 dNdx[], DiffDoub1& detJ, std::vector<DiffDoub1>& locNds, double spt[]);
+		void get_ip_data(DiffDoub1 n_vec[], DiffDoub1 d_ndx[], DiffDoub1& det_j, std::vector<DiffDoub1>& loc_nds, double spt[]);
 		
-		void getInstOri(std::vector<DiffDoub1>& instOriMat, std::vector<DiffDoub1>& locOri, std::vector<DiffDoub1>& globDisp, int stat);
+		void get_inst_ori(std::vector<DiffDoub1>& inst_ori_mat, std::vector<DiffDoub1>& loc_ori, std::vector<DiffDoub1>& glob_disp, int stat);
 		
-		void getInstDisp(DiffDoub1 instDisp[], std::vector<DiffDoub1>& globDisp, std::vector<DiffDoub1>& instOriMat, std::vector<DiffDoub1>& locOri, std::vector<DiffDoub1>& xGlob, bool nLGeom, int dv1, int dv2);
+		void get_inst_disp(DiffDoub1 inst_disp[], std::vector<DiffDoub1>& glob_disp, std::vector<DiffDoub1>& inst_ori_mat, std::vector<DiffDoub1>& loc_ori, std::vector<DiffDoub1>& x_glob, bool n_lgeom, int dv1, int dv2);
 
-		void getStressPrereq(DiffDoub1StressPrereq& pre, std::vector<Section>& secAr, std::vector<Material>& matAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_stress_prereq(DiffDoub1StressPrereq& pre, std::vector<Section>& sec_ar, std::vector<Material>& mat_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getFluidPrereq(DiffDoub1FlPrereq& pre, std::vector<Section>& secAr, std::vector<Fluid>& flAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_fluid_prereq(DiffDoub1FlPrereq& pre, std::vector<Section>& sec_ar, std::vector<Fluid>& fl_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getVolume(DiffDoub1& vol, DiffDoub1StressPrereq& pre, int layer, std::vector<Section>& secAr, std::vector<DesignVariable>& dvAr);
+		void get_volume(DiffDoub1& vol, DiffDoub1StressPrereq& pre, int layer, std::vector<Section>& sec_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getSectionDef(DiffDoub1 secDef[], std::vector<DiffDoub1>& globDisp, std::vector<DiffDoub1>& instOriMat, std::vector<DiffDoub1>& locOri, std::vector<DiffDoub1>& xGlob, DiffDoub1 dNdx[], DiffDoub1 nVec[], bool nLGeom, int dv1, int dv2);
+		void get_section_def(DiffDoub1 sec_def[], std::vector<DiffDoub1>& glob_disp, std::vector<DiffDoub1>& inst_ori_mat, std::vector<DiffDoub1>& loc_ori, std::vector<DiffDoub1>& x_glob, DiffDoub1 d_ndx[], DiffDoub1 n_vec[], bool n_lgeom, int dv1, int dv2);
 		
-		void getSolidStrain(DiffDoub1 strain[], DiffDoub1 ux[], DiffDoub1 dNdx[], std::vector<DiffDoub1>& locOri, int dv1, int dv2, bool nLGeom);
+		void get_solid_strain(DiffDoub1 strain[], DiffDoub1 ux[], DiffDoub1 d_ndx[], std::vector<DiffDoub1>& loc_ori, int dv1, int dv2, bool n_lgeom);
 
-		void getStressStrain(DiffDoub1 stress[], DiffDoub1 strain[], double spt[], int layer, bool nLGeom, DiffDoub1StressPrereq& pre);
+		void get_stress_strain(DiffDoub1 stress[], DiffDoub1 strain[], double spt[], int layer, bool n_lgeom, DiffDoub1StressPrereq& pre);
 
-		void dStressStraindU(std::vector<DiffDoub1>& dsdU, std::vector<DiffDoub1>& dedU, std::vector<DiffDoub1>& dsdT, double spt[], int layer, bool nLGeom, DiffDoub1StressPrereq& pre);
+		void d_stress_straind_u(std::vector<DiffDoub1>& dsd_u, std::vector<DiffDoub1>& ded_u, std::vector<DiffDoub1>& dsd_t, double spt[], int layer, bool n_lgeom, DiffDoub1StressPrereq& pre);
 
-		void getDefFrcMom(DiffDoub1 def[], DiffDoub1 frcMom[], double spt[], bool nLGeom, DiffDoub1StressPrereq& pre);
+		void get_def_frc_mom(DiffDoub1 def[], DiffDoub1 frc_mom[], double spt[], bool n_lgeom, DiffDoub1StressPrereq& pre);
 
-		void dDefFrcMomdU(std::vector<DiffDoub1>& dDefdU, std::vector<DiffDoub1>& dFrcMomdU, std::vector<DiffDoub1>& dFrcMomdT, double spt[], bool nLGeom, DiffDoub1StressPrereq& pre);
+		void d_def_frc_momd_u(std::vector<DiffDoub1>& d_defd_u, std::vector<DiffDoub1>& d_frc_momd_u, std::vector<DiffDoub1>& d_frc_momd_t, double spt[], bool n_lgeom, DiffDoub1StressPrereq& pre);
 
-		void getFluxTGrad(DiffDoub1 flux[], DiffDoub1 tGrad[], double spt[], int layer, DiffDoub1StressPrereq& pre);
+		void get_flux_tgrad(DiffDoub1 flux[], DiffDoub1 t_grad[], double spt[], int layer, DiffDoub1StressPrereq& pre);
 
-		void dFluxTGraddT(std::vector<DiffDoub1>& dFdT, std::vector<DiffDoub1>& dTG, double spt[], int layer, DiffDoub1StressPrereq& pre);
+		void d_flux_tgradd_t(std::vector<DiffDoub1>& d_fd_t, std::vector<DiffDoub1>& d_tg, double spt[], int layer, DiffDoub1StressPrereq& pre);
 
-		void putVecToGlobMat(SparseMat& qMat, std::vector<DiffDoub1>& elQVec, bool forTherm, int matRow, std::vector<Node>& ndAr);
+		void put_vec_to_glob_mat(SparseMat& q_mat, std::vector<DiffDoub1>& el_qvec, bool for_therm, int mat_row, std::vector<Node>& nd_ar);
 		
 //end dup
  
 //end skip 
  
  
-		void getElVec(std::vector<double>& elVec, std::vector<double>& globVec, bool forTherm, bool intnl, std::vector<Node>& ndAr);
+		void get_el_vec(std::vector<double>& el_vec, std::vector<double>& glob_vec, bool for_therm, bool intnl, std::vector<Node>& nd_ar);
 
-		void addToGlobVec(std::vector<double>& elVec, std::vector<double>& globVec, bool forTherm, bool intnl, std::vector<Node>& ndAr);
+		void add_to_glob_vec(std::vector<double>& el_vec, std::vector<double>& glob_vec, bool for_therm, bool intnl, std::vector<Node>& nd_ar);
  
  
-// Equations
-		void condenseMat(std::vector<double>& mat, std::vector<double>& scr1, std::vector<double>& scr2);
+// equations
+		void condense_mat(std::vector<double>& mat, std::vector<double>& scr1, std::vector<double>& scr2);
 		
-		void updateExternal(std::vector<double>& extVec, int forSoln, std::vector<Node>& ndAr, std::vector<double>& scr1, std::vector<double>& scr2);
+		void update_external(std::vector<double>& ext_vec, int for_soln, std::vector<Node>& nd_ar, std::vector<double>& scr1, std::vector<double>& scr2);
 		
-		void updateInternal(std::vector<double>& extVec, int forSoln, std::vector<Node>& ndAr, std::vector<double>& scr1, std::vector<double>& scr2);
+		void update_internal(std::vector<double>& ext_vec, int for_soln, std::vector<Node>& nd_ar, std::vector<double>& scr1, std::vector<double>& scr2);
 
-		double getIntAdjdRdD();
+		double get_int_adjd_rd_d();
 
 //dup1
-        void getRuk(std::vector<DiffDoub0>& Rvec, std::vector<double>& dRdu, std::vector<double>& dRdT, bool getMatrix, bool nLGeom, DiffDoub0StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+        void get_ruk(std::vector<DiffDoub0>& rvec, std::vector<double>& d_rdu, std::vector<double>& d_rd_t, bool get_matrix, bool n_lgeom, DiffDoub0StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getRum(std::vector<DiffDoub0>& Rvec, std::vector<double>& dRdA, bool getMatrix, bool actualProps, bool nLGeom, DiffDoub0StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_rum(std::vector<DiffDoub0>& rvec, std::vector<double>& d_rd_a, bool get_matrix, bool actual_props, bool n_lgeom, DiffDoub0StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getRud(std::vector<DiffDoub0>& Rvec, std::vector<double>& dRdV, bool getMatrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_rud(std::vector<DiffDoub0>& rvec, std::vector<double>& d_rd_v, bool get_matrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getRu(std::vector<DiffDoub0>& globR, SparseMat& globdRdu, bool getMatrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_ru(std::vector<DiffDoub0>& glob_r, SparseMat& globd_rdu, bool get_matrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getRtk(std::vector<DiffDoub0>& Rvec, std::vector<double>& dRdT, bool getMatrix, DiffDoub0StressPrereq& pre);
+		void get_rtk(std::vector<DiffDoub0>& rvec, std::vector<double>& d_rd_t, bool get_matrix, DiffDoub0StressPrereq& pre);
 
-		void getRtm(std::vector<DiffDoub0>& Rvec, std::vector<double>& dRdTdot, bool getMatrix, bool actualProps, DiffDoub0StressPrereq& pre);
+		void get_rtm(std::vector<DiffDoub0>& rvec, std::vector<double>& d_rd_tdot, bool get_matrix, bool actual_props, DiffDoub0StressPrereq& pre);
 
-		void getRt(std::vector<DiffDoub0>& globR, SparseMat& globdRdT, bool getMatrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& ndAr);
+		void get_rt(std::vector<DiffDoub0>& glob_r, SparseMat& globd_rd_t, bool get_matrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& nd_ar);
 
-		void getRuFrcFld(std::vector<DiffDoub0>& globR, SparseMat& globdRdu, bool getMatrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& ndAr);
+		void get_ru_frc_fld(std::vector<DiffDoub0>& glob_r, SparseMat& globd_rdu, bool get_matrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& nd_ar);
 
-		void getRtFrcFld(std::vector<DiffDoub0>& globR, SparseMat& globdRdT, std::vector<double>& dRdU, std::vector<double>& dRdV, bool getMatrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& ndAr);
+		void get_rt_frc_fld(std::vector<DiffDoub0>& glob_r, SparseMat& globd_rd_t, std::vector<double>& d_rd_u, std::vector<double>& d_rd_v, bool get_matrix, JobCommand& cmd, DiffDoub0StressPrereq& pre, std::vector<Node>& nd_ar);
 
-		void getAppLoad(std::vector<DiffDoub0>& AppLd, Load& ldPt, bool nLGeom, DiffDoub0StressPrereq& pre, std::vector<Section>& secAr, std::vector<Face>& fcAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_app_load(std::vector<DiffDoub0>& app_ld, Load& ld_pt, bool n_lgeom, DiffDoub0StressPrereq& pre, std::vector<Section>& sec_ar, std::vector<Face>& fc_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getAppThermLoad(std::vector<DiffDoub0>& AppLd, Load& ldPt, DiffDoub0StressPrereq& pre, std::vector<Section>& secAr, std::vector<Face>& fcAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_app_therm_load(std::vector<DiffDoub0>& app_ld, Load& ld_pt, DiffDoub0StressPrereq& pre, std::vector<Section>& sec_ar, std::vector<Face>& fc_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getRfUnst(std::vector<DiffDoub0>& Rvec, DiffDoub0FlPrereq& pre);
+		void get_rf_unst(std::vector<DiffDoub0>& rvec, DiffDoub0FlPrereq& pre);
 
-		void getRfConv(std::vector<DiffDoub0>& Rvec, DiffDoub0FlPrereq& pre);
+		void get_rf_conv(std::vector<DiffDoub0>& rvec, DiffDoub0FlPrereq& pre);
 
-		void getRfVisc(std::vector<DiffDoub0>& Rvec, DiffDoub0FlPrereq& pre);
+		void get_rf_visc(std::vector<DiffDoub0>& rvec, DiffDoub0FlPrereq& pre);
 
-		void getRfPres(std::vector<DiffDoub0>& Rvec, DiffDoub0FlPrereq& pre);
+		void get_rf_pres(std::vector<DiffDoub0>& rvec, DiffDoub0FlPrereq& pre);
 
-		void getRfLoad(std::vector<DiffDoub0>& Rvec, DiffDoub0FlPrereq& pre, std::vector<DiffDoub0>& bodyF, DiffDoub0& bodyQ);
+		void get_rf_load(std::vector<DiffDoub0>& rvec, DiffDoub0FlPrereq& pre, std::vector<DiffDoub0>& body_f, DiffDoub0& body_q);
 
-		void getRf(std::vector<DiffDoub0>& globR, SparseMat& globdRdV, bool getMatrix, JobCommand& cmd, DiffDoub0FlPrereq& pre);
+		void get_rf(std::vector<DiffDoub0>& glob_r, SparseMat& globd_rd_v, bool get_matrix, JobCommand& cmd, DiffDoub0FlPrereq& pre);
 
 //end dup
  
 //skip 
  
-//DiffDoub1 versions: 
+//diff_doub1 versions: 
 //dup1
-        void getRuk(std::vector<DiffDoub1>& Rvec, std::vector<double>& dRdu, std::vector<double>& dRdT, bool getMatrix, bool nLGeom, DiffDoub1StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+        void get_ruk(std::vector<DiffDoub1>& rvec, std::vector<double>& d_rdu, std::vector<double>& d_rd_t, bool get_matrix, bool n_lgeom, DiffDoub1StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getRum(std::vector<DiffDoub1>& Rvec, std::vector<double>& dRdA, bool getMatrix, bool actualProps, bool nLGeom, DiffDoub1StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_rum(std::vector<DiffDoub1>& rvec, std::vector<double>& d_rd_a, bool get_matrix, bool actual_props, bool n_lgeom, DiffDoub1StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getRud(std::vector<DiffDoub1>& Rvec, std::vector<double>& dRdV, bool getMatrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_rud(std::vector<DiffDoub1>& rvec, std::vector<double>& d_rd_v, bool get_matrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getRu(std::vector<DiffDoub1>& globR, SparseMat& globdRdu, bool getMatrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_ru(std::vector<DiffDoub1>& glob_r, SparseMat& globd_rdu, bool get_matrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 		
-		void getRtk(std::vector<DiffDoub1>& Rvec, std::vector<double>& dRdT, bool getMatrix, DiffDoub1StressPrereq& pre);
+		void get_rtk(std::vector<DiffDoub1>& rvec, std::vector<double>& d_rd_t, bool get_matrix, DiffDoub1StressPrereq& pre);
 
-		void getRtm(std::vector<DiffDoub1>& Rvec, std::vector<double>& dRdTdot, bool getMatrix, bool actualProps, DiffDoub1StressPrereq& pre);
+		void get_rtm(std::vector<DiffDoub1>& rvec, std::vector<double>& d_rd_tdot, bool get_matrix, bool actual_props, DiffDoub1StressPrereq& pre);
 
-		void getRt(std::vector<DiffDoub1>& globR, SparseMat& globdRdT, bool getMatrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& ndAr);
+		void get_rt(std::vector<DiffDoub1>& glob_r, SparseMat& globd_rd_t, bool get_matrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& nd_ar);
 
-		void getRuFrcFld(std::vector<DiffDoub1>& globR, SparseMat& globdRdu, bool getMatrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& ndAr);
+		void get_ru_frc_fld(std::vector<DiffDoub1>& glob_r, SparseMat& globd_rdu, bool get_matrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& nd_ar);
 
-		void getRtFrcFld(std::vector<DiffDoub1>& globR, SparseMat& globdRdT, std::vector<double>& dRdU, std::vector<double>& dRdV, bool getMatrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& ndAr);
+		void get_rt_frc_fld(std::vector<DiffDoub1>& glob_r, SparseMat& globd_rd_t, std::vector<double>& d_rd_u, std::vector<double>& d_rd_v, bool get_matrix, JobCommand& cmd, DiffDoub1StressPrereq& pre, std::vector<Node>& nd_ar);
 
-		void getAppLoad(std::vector<DiffDoub1>& AppLd, Load& ldPt, bool nLGeom, DiffDoub1StressPrereq& pre, std::vector<Section>& secAr, std::vector<Face>& fcAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_app_load(std::vector<DiffDoub1>& app_ld, Load& ld_pt, bool n_lgeom, DiffDoub1StressPrereq& pre, std::vector<Section>& sec_ar, std::vector<Face>& fc_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getAppThermLoad(std::vector<DiffDoub1>& AppLd, Load& ldPt, DiffDoub1StressPrereq& pre, std::vector<Section>& secAr, std::vector<Face>& fcAr, std::vector<Node>& ndAr, std::vector<DesignVariable>& dvAr);
+		void get_app_therm_load(std::vector<DiffDoub1>& app_ld, Load& ld_pt, DiffDoub1StressPrereq& pre, std::vector<Section>& sec_ar, std::vector<Face>& fc_ar, std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
-		void getRfUnst(std::vector<DiffDoub1>& Rvec, DiffDoub1FlPrereq& pre);
+		void get_rf_unst(std::vector<DiffDoub1>& rvec, DiffDoub1FlPrereq& pre);
 
-		void getRfConv(std::vector<DiffDoub1>& Rvec, DiffDoub1FlPrereq& pre);
+		void get_rf_conv(std::vector<DiffDoub1>& rvec, DiffDoub1FlPrereq& pre);
 
-		void getRfVisc(std::vector<DiffDoub1>& Rvec, DiffDoub1FlPrereq& pre);
+		void get_rf_visc(std::vector<DiffDoub1>& rvec, DiffDoub1FlPrereq& pre);
 
-		void getRfPres(std::vector<DiffDoub1>& Rvec, DiffDoub1FlPrereq& pre);
+		void get_rf_pres(std::vector<DiffDoub1>& rvec, DiffDoub1FlPrereq& pre);
 
-		void getRfLoad(std::vector<DiffDoub1>& Rvec, DiffDoub1FlPrereq& pre, std::vector<DiffDoub1>& bodyF, DiffDoub1& bodyQ);
+		void get_rf_load(std::vector<DiffDoub1>& rvec, DiffDoub1FlPrereq& pre, std::vector<DiffDoub1>& body_f, DiffDoub1& body_q);
 
-		void getRf(std::vector<DiffDoub1>& globR, SparseMat& globdRdV, bool getMatrix, JobCommand& cmd, DiffDoub1FlPrereq& pre);
+		void get_rf(std::vector<DiffDoub1>& glob_r, SparseMat& globd_rd_v, bool get_matrix, JobCommand& cmd, DiffDoub1FlPrereq& pre);
 
 //end dup
  
