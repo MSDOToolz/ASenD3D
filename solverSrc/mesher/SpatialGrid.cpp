@@ -1,121 +1,28 @@
 #include "SpatialGrid.h"
+#include <list>
+#include <vector>
 
-MeshEnt::MeshEnt() {
-	nd = nullptr;
-	el = nullptr;
-	fc = nullptr;
-	next = nullptr;
+using namespace std;
+
+IntList::IntList() {
+	iLst.clear();
 	return;
 }
 
-void MeshEnt::setPt(MeshNode* newNd) {
-	nd = newNd;
-	return;
-}
-
-void MeshEnt::setPt(MeshElement* newEl) {
-	el = newEl;
-	return;
-}
-
-void MeshEnt::setPt(MeshFace* newFc) {
-	fc = newFc;
-	return;
-}
-
-void MeshEnt::setNext(MeshEnt* newNext) {
-	next = newNext;
-}
-
-MeshNode* MeshEnt::getPt(MeshNode* pt) {
-	return nd;
-}
-
-MeshElement* MeshEnt::getPt(MeshElement* pt) {
-	return el;
-}
-
-MeshFace* MeshEnt::getPt(MeshFace* pt) {
-	return fc;
-}
-
-MeshEnt* MeshEnt::getNext() {
-	return next;
-}
-
-EntityList::EntityList() {
-	first = nullptr;
-	last = nullptr;
-	length = 0;
-	return;
-}
-
-void EntityList::addEntry(MeshNode* newNd) {
-	MeshEnt* newEnt = new MeshEnt;
-	newEnt->setPt(newNd);
-	if (!first) {
-		first = newEnt;
-		last = newEnt;
+int IntList::copy_to_vector(vector<int>& in_vec, int st_i, int max_len) {
+	int i1 = st_i;
+	for (auto& i2 : iLst) {
+		if (i1 >= max_len) {
+			return i1;
+		}
+		in_vec[i1] = i2;
+		i1++;
 	}
-	else {
-		last->setNext(newEnt);
-		last = newEnt;
-	}
-	length++;
-}
-
-void EntityList::addEntry(MeshElement* newEl) {
-	MeshEnt* newEnt = new MeshEnt;
-	newEnt->setPt(newEl);
-	if (!first) {
-		first = newEnt;
-		last = newEnt;
-	}
-	else {
-		last->setNext(newEnt);
-		last = newEnt;
-	}
-	length++;
-}
-
-void EntityList::addEntry(MeshFace* newFc) {
-	MeshEnt* newEnt = new MeshEnt;
-	newEnt->setPt(newFc);
-	if (!first) {
-		first = newEnt;
-		last = newEnt;
-	}
-	else {
-		last->setNext(newEnt);
-		last = newEnt;
-	}
-	length++;
-}
-
-int EntityList::copyToArray(MeshEnt* outLst[], int maxLen) {
-	int lstLen = 0;
-	MeshEnt* thisEnt = first;
-	while (thisEnt && lstLen < maxLen) {
-		outLst[lstLen] = thisEnt;
-		thisEnt = thisEnt->getNext();
-		lstLen++;
-	}
-	return lstLen;
-}
-
-EntityList::~EntityList() {
-	MeshEnt* thisEnt = first;
-	MeshEnt* nextEnt = nullptr;
-	while (thisEnt) {
-		nextEnt = thisEnt->getNext();
-		delete thisEnt;
-		thisEnt = nextEnt;
-	}
-	return;
+	return i1;
 }
 
 SpatialGrid::SpatialGrid() {
-	listAr = nullptr;
+	listAr.clear();
 	return;
 }
 
@@ -130,11 +37,11 @@ void SpatialGrid::initialize(double xRange[], double xSpacing, double yRange[], 
 	yBins = (yRange[1] - yMin) / ySp + 1;
 	zBins = (zRange[1] - zMin) / zSp + 1;
 	int totBins = xBins * yBins * zBins;
-	listAr = new EntityList[totBins];
+	listAr = vector<IntList>(totBins);
 	return;
 }
 
-void SpatialGrid::addEnt(MeshNode* newNd, double crd[]) {
+void SpatialGrid::addEnt(int label, double crd[]) {
 	int xB = (crd[0] - xMin) / xSp;
 	if (xB < 0) {
 		xB = 0;
@@ -157,62 +64,10 @@ void SpatialGrid::addEnt(MeshNode* newNd, double crd[]) {
 		zB = zBins - 1;
 	}
 	int ind = (zB*yBins + yB)*xBins + xB;
-	listAr[ind].addEntry(newNd);
+	listAr[ind].iLst.push_back(label);
 }
 
-void SpatialGrid::addEnt(MeshElement* newEl, double crd[]) {
-	int xB = (crd[0] - xMin) / xSp;
-	if (xB < 0) {
-		xB = 0;
-	}
-	if (xB >= xBins) {
-		xB = xBins - 1;
-	}
-	int yB = (crd[1] - yMin) / ySp;
-	if (yB < 0) {
-		yB = 0;
-	}
-	if (yB >= yBins) {
-		yB = yBins - 1;
-	}
-	int zB = (crd[2] - zMin) / zSp;
-	if (zB < 0) {
-		zB = 0;
-	}
-	if (zB >= zBins) {
-		zB = zBins - 1;
-	}
-	int ind = (zB * yBins + yB) * xBins + xB;
-	listAr[ind].addEntry(newEl);
-}
-
-void SpatialGrid::addEnt(MeshFace* newFc, double crd[]) {
-	int xB = (crd[0] - xMin) / xSp;
-	if (xB < 0) {
-		xB = 0;
-	}
-	if (xB >= xBins) {
-		xB = xBins - 1;
-	}
-	int yB = (crd[1] - yMin) / ySp;
-	if (yB < 0) {
-		yB = 0;
-	}
-	if (yB >= yBins) {
-		yB = yBins - 1;
-	}
-	int zB = (crd[2] - zMin) / zSp;
-	if (zB < 0) {
-		zB = 0;
-	}
-	if (zB >= zBins) {
-		zB = zBins - 1;
-	}
-	int ind = (zB * yBins + yB) * xBins + xB;
-	listAr[ind].addEntry(newFc);
-}
-
-int SpatialGrid::getInXYZRange(MeshEnt* outLst[], int maxLen, double xRange[], double yRange[], double zRange[]) {
+int SpatialGrid::getInXYZRange(vector<int>& outLst, int maxLen, double xRange[], double yRange[], double zRange[]) {
 	int iMin;
 	int iMax;
 	int jMin;
@@ -275,8 +130,7 @@ int SpatialGrid::getInXYZRange(MeshEnt* outLst[], int maxLen, double xRange[], d
 		for (j = jMin; j <= jMax; j++) {
 			for (i = iMin; i <= iMax; i++) {
 				ind = (k * yBins + j)*xBins + i;
-				numAdded = listAr[ind].copyToArray(&outLst[lstLen], (maxLen - lstLen));
-				lstLen += numAdded;
+				lstLen = listAr[ind].copy_to_vector(outLst, lstLen, maxLen);
 			}
 		}
 	}
@@ -284,7 +138,7 @@ int SpatialGrid::getInXYZRange(MeshEnt* outLst[], int maxLen, double xRange[], d
 	return lstLen;
 }
 
-int SpatialGrid::getInRadius(MeshEnt* outList[], int maxLen, double pt[], double rad) {
+int SpatialGrid::getInRadius(vector<int>& outList, int maxLen, double pt[], double rad) {
 	double range[6];
 	range[0] = pt[0] - rad;
 	range[1] = pt[0] + rad;
@@ -294,11 +148,4 @@ int SpatialGrid::getInRadius(MeshEnt* outList[], int maxLen, double pt[], double
 	range[5] = pt[2] + rad;
 
 	return getInXYZRange(outList, maxLen, &range[0], &range[2], &range[4]);
-}
-
-SpatialGrid::~SpatialGrid() {
-	if (listAr) {
-		delete[] listAr;
-	}
-	return;
 }

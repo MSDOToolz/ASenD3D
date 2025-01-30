@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include "ModelClass.h"
+#include "constants.h"
 #include "ListEntClass.h"
 #include "NodeClass.h"
 #include "ElementClass.h"
@@ -13,8 +14,6 @@
 #include "ObjectiveClass.h"
 
 using namespace std;
-
-const int max_int = 2000000000;
 
 Model::Model() {
 	an_prep_run = false;

@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\solverSrc\mainSolver\constants.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\ConstraintClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\DesignVariableClass.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mainSolver\DiffDoubClass.h" />

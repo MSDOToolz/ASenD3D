@@ -55,44 +55,44 @@ int Face::get_low_nd() {
 
 //dup1
 
-void Face::get_area_normal(DiffDoub0& area, DiffDoub0 norm[], vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
+void Face::get_area_normal_dfd0(DiffDoub0& area, DiffDoub0 norm[], vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub0 v1[3];
 	DiffDoub0 v2[3];
 	DiffDoub0 tmp_v[3];
 	DiffDoub0 tmp;
 
 	if (num_nds == 4) {
-		nd_ar[glob_nodes[2]].get_crd(v1, dv_ar);
-		nd_ar[glob_nodes[0]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[2]].get_crd_dfd0(v1, dv_ar);
+		nd_ar[glob_nodes[0]].get_crd_dfd0(tmp_v, dv_ar);
 		v1[0].sub(tmp_v[0]);
 		v1[1].sub(tmp_v[1]);
 		v1[2].sub(tmp_v[2]);
-		nd_ar[glob_nodes[3]].get_crd(v2, dv_ar);
-		nd_ar[glob_nodes[1]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[3]].get_crd_dfd0(v2, dv_ar);
+		nd_ar[glob_nodes[1]].get_crd_dfd0(tmp_v, dv_ar);
 		v2[0].sub(tmp_v[0]);
 		v2[1].sub(tmp_v[1]);
 		v2[2].sub(tmp_v[2]);
 	}
 	else {
-		nd_ar[glob_nodes[1]].get_crd(v1, dv_ar);
-		nd_ar[glob_nodes[0]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[1]].get_crd_dfd0(v1, dv_ar);
+		nd_ar[glob_nodes[0]].get_crd_dfd0(tmp_v, dv_ar);
 		v1[0].sub(tmp_v[0]);
 		v1[1].sub(tmp_v[1]);
 		v1[2].sub(tmp_v[2]);
-		nd_ar[glob_nodes[2]].get_crd(v2, dv_ar);
-		nd_ar[glob_nodes[0]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[2]].get_crd_dfd0(v2, dv_ar);
+		nd_ar[glob_nodes[0]].get_crd_dfd0(tmp_v, dv_ar);
 		v2[0].sub(tmp_v[0]);
 		v2[1].sub(tmp_v[1]);
 		v2[2].sub(tmp_v[2]);
 	}
 
-	cross_prod(norm, v1, v2);
-	area.set_val(norm[0]);
+	cross_prod_dfd0(norm, v1, v2);
+	area.set_val_dfd0(norm[0]);
 	area.sqr();
-	tmp.set_val(norm[1]);
+	tmp.set_val_dfd0(norm[1]);
 	tmp.sqr();
 	area.add(tmp);
-	tmp.set_val(norm[2]);
+	tmp.set_val_dfd0(norm[2]);
 	tmp.sqr();
 	area.add(tmp);
 	area.sqt();
@@ -113,47 +113,47 @@ void Face::get_area_normal(DiffDoub0& area, DiffDoub0 norm[], vector<Node>& nd_a
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup1
 
-void Face::get_area_normal(DiffDoub1& area, DiffDoub1 norm[], vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
+void Face::get_area_normal_dfd1(DiffDoub1& area, DiffDoub1 norm[], vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub1 v1[3];
 	DiffDoub1 v2[3];
 	DiffDoub1 tmp_v[3];
 	DiffDoub1 tmp;
 
 	if (num_nds == 4) {
-		nd_ar[glob_nodes[2]].get_crd(v1, dv_ar);
-		nd_ar[glob_nodes[0]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[2]].get_crd_dfd1(v1, dv_ar);
+		nd_ar[glob_nodes[0]].get_crd_dfd1(tmp_v, dv_ar);
 		v1[0].sub(tmp_v[0]);
 		v1[1].sub(tmp_v[1]);
 		v1[2].sub(tmp_v[2]);
-		nd_ar[glob_nodes[3]].get_crd(v2, dv_ar);
-		nd_ar[glob_nodes[1]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[3]].get_crd_dfd1(v2, dv_ar);
+		nd_ar[glob_nodes[1]].get_crd_dfd1(tmp_v, dv_ar);
 		v2[0].sub(tmp_v[0]);
 		v2[1].sub(tmp_v[1]);
 		v2[2].sub(tmp_v[2]);
 	}
 	else {
-		nd_ar[glob_nodes[1]].get_crd(v1, dv_ar);
-		nd_ar[glob_nodes[0]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[1]].get_crd_dfd1(v1, dv_ar);
+		nd_ar[glob_nodes[0]].get_crd_dfd1(tmp_v, dv_ar);
 		v1[0].sub(tmp_v[0]);
 		v1[1].sub(tmp_v[1]);
 		v1[2].sub(tmp_v[2]);
-		nd_ar[glob_nodes[2]].get_crd(v2, dv_ar);
-		nd_ar[glob_nodes[0]].get_crd(tmp_v, dv_ar);
+		nd_ar[glob_nodes[2]].get_crd_dfd1(v2, dv_ar);
+		nd_ar[glob_nodes[0]].get_crd_dfd1(tmp_v, dv_ar);
 		v2[0].sub(tmp_v[0]);
 		v2[1].sub(tmp_v[1]);
 		v2[2].sub(tmp_v[2]);
 	}
 
-	cross_prod(norm, v1, v2);
-	area.set_val(norm[0]);
+	cross_prod_dfd1(norm, v1, v2);
+	area.set_val_dfd1(norm[0]);
 	area.sqr();
-	tmp.set_val(norm[1]);
+	tmp.set_val_dfd1(norm[1]);
 	tmp.sqr();
 	area.add(tmp);
-	tmp.set_val(norm[2]);
+	tmp.set_val_dfd1(norm[2]);
 	tmp.sqr();
 	area.add(tmp);
 	area.sqt();
@@ -173,6 +173,7 @@ void Face::get_area_normal(DiffDoub1& area, DiffDoub1 norm[], vector<Node>& nd_a
 //end dup
  
 //end skip 
+ 
  
  
 //face_pt_list

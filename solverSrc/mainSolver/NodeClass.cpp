@@ -393,7 +393,7 @@ void Node::add_design_variable(int d_index, double coef) {
 }
 
 //dup1
-void Node::get_crd(DiffDoub0 crd_out[], vector<DesignVariable>& dv_ar) {
+void Node::get_crd_dfd0(DiffDoub0 crd_out[], vector<DesignVariable>& dv_ar) {
 	crd_out[0].set_val(coord[0]);
 	crd_out[1].set_val(coord[1]);
 	crd_out[2].set_val(coord[2]);
@@ -405,7 +405,7 @@ void Node::get_crd(DiffDoub0 crd_out[], vector<DesignVariable>& dv_ar) {
 	for (auto& dv : d_var_lst) {
 		d_index = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_index];
-		this_dv.get_value(d_val);
+		this_dv.get_value_dfd0(d_val);
 		cat = this_dv.category;
 		comp = this_dv.component - 1;
 		if(cat == "nodeCoord") {
@@ -417,7 +417,7 @@ void Node::get_crd(DiffDoub0 crd_out[], vector<DesignVariable>& dv_ar) {
 	return;
 }
 
-void Node::get_disp(DiffDoub0 disp[]) {
+void Node::get_disp_dfd0(DiffDoub0 disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
 	    disp[i1].set_val(displacement[i1]);
@@ -425,7 +425,7 @@ void Node::get_disp(DiffDoub0 disp[]) {
 	return;
 }
 
-void Node::get_elastic_dvload(DiffDoub0 ld[], vector<DesignVariable>& dv_ar) {
+void Node::get_elastic_dvload_dfd0(DiffDoub0 ld[], vector<DesignVariable>& dv_ar) {
 	int i1;
 	int d_index;
 	DiffDoub0 d_val;
@@ -439,7 +439,7 @@ void Node::get_elastic_dvload(DiffDoub0 ld[], vector<DesignVariable>& dv_ar) {
 	for (auto& dv : d_var_lst) {
 		d_index = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_index];
-		this_dv.get_value(d_val);
+		this_dv.get_value_dfd0(d_val);
 		cat = this_dv.category;
 		comp = this_dv.component - 1;
 		if(cat == "elasticLoad") {
@@ -451,7 +451,7 @@ void Node::get_elastic_dvload(DiffDoub0 ld[], vector<DesignVariable>& dv_ar) {
 	return;
 }
 
-void Node::get_thermal_dvload(DiffDoub0& ld, vector<DesignVariable>& dv_ar) {
+void Node::get_thermal_dvload_dfd0(DiffDoub0& ld, vector<DesignVariable>& dv_ar) {
 	int d_index;
 	DiffDoub0 d_val;
 	DiffDoub0 coef;
@@ -461,7 +461,7 @@ void Node::get_thermal_dvload(DiffDoub0& ld, vector<DesignVariable>& dv_ar) {
 	for (auto& dv : d_var_lst) {
 		d_index = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_index];
-		this_dv.get_value(d_val);
+		this_dv.get_value_dfd0(d_val);
 		cat = this_dv.category;
 		if (cat == "thermalLoad") {
 			coef.set_val(dv.doub_dat);
@@ -476,9 +476,9 @@ void Node::get_thermal_dvload(DiffDoub0& ld, vector<DesignVariable>& dv_ar) {
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup1
-void Node::get_crd(DiffDoub1 crd_out[], vector<DesignVariable>& dv_ar) {
+void Node::get_crd_dfd1(DiffDoub1 crd_out[], vector<DesignVariable>& dv_ar) {
 	crd_out[0].set_val(coord[0]);
 	crd_out[1].set_val(coord[1]);
 	crd_out[2].set_val(coord[2]);
@@ -490,7 +490,7 @@ void Node::get_crd(DiffDoub1 crd_out[], vector<DesignVariable>& dv_ar) {
 	for (auto& dv : d_var_lst) {
 		d_index = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_index];
-		this_dv.get_value(d_val);
+		this_dv.get_value_dfd1(d_val);
 		cat = this_dv.category;
 		comp = this_dv.component - 1;
 		if(cat == "nodeCoord") {
@@ -502,7 +502,7 @@ void Node::get_crd(DiffDoub1 crd_out[], vector<DesignVariable>& dv_ar) {
 	return;
 }
 
-void Node::get_disp(DiffDoub1 disp[]) {
+void Node::get_disp_dfd1(DiffDoub1 disp[]) {
 	int i1;
 	for (i1 = 0; i1 < 6; i1++) {
 	    disp[i1].set_val(displacement[i1]);
@@ -510,7 +510,7 @@ void Node::get_disp(DiffDoub1 disp[]) {
 	return;
 }
 
-void Node::get_elastic_dvload(DiffDoub1 ld[], vector<DesignVariable>& dv_ar) {
+void Node::get_elastic_dvload_dfd1(DiffDoub1 ld[], vector<DesignVariable>& dv_ar) {
 	int i1;
 	int d_index;
 	DiffDoub1 d_val;
@@ -524,7 +524,7 @@ void Node::get_elastic_dvload(DiffDoub1 ld[], vector<DesignVariable>& dv_ar) {
 	for (auto& dv : d_var_lst) {
 		d_index = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_index];
-		this_dv.get_value(d_val);
+		this_dv.get_value_dfd1(d_val);
 		cat = this_dv.category;
 		comp = this_dv.component - 1;
 		if(cat == "elasticLoad") {
@@ -536,7 +536,7 @@ void Node::get_elastic_dvload(DiffDoub1 ld[], vector<DesignVariable>& dv_ar) {
 	return;
 }
 
-void Node::get_thermal_dvload(DiffDoub1& ld, vector<DesignVariable>& dv_ar) {
+void Node::get_thermal_dvload_dfd1(DiffDoub1& ld, vector<DesignVariable>& dv_ar) {
 	int d_index;
 	DiffDoub1 d_val;
 	DiffDoub1 coef;
@@ -546,7 +546,7 @@ void Node::get_thermal_dvload(DiffDoub1& ld, vector<DesignVariable>& dv_ar) {
 	for (auto& dv : d_var_lst) {
 		d_index = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_index];
-		this_dv.get_value(d_val);
+		this_dv.get_value_dfd1(d_val);
 		cat = this_dv.category;
 		if (cat == "thermalLoad") {
 			coef.set_val(dv.doub_dat);
@@ -560,5 +560,6 @@ void Node::get_thermal_dvload(DiffDoub1& ld, vector<DesignVariable>& dv_ar) {
 //end dup
  
 //end skip 
+ 
  
  

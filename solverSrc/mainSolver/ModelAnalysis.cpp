@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include "ModelClass.h"
+#include "constants.h"
 #include "ListEntClass.h"
 #include "SetClass.h"
 #include "LowerTriMatClass.h"
@@ -14,8 +15,6 @@
 #include "matrixFunctions.h"
 
 using namespace std;
-
-const int max_int = 2000000000;
 
 void Model::reorder_nodes(int block_dim) {
 	int i1;
@@ -538,8 +537,8 @@ void Model::analysis_prep() {
 		}
 	}
 	if (i1 > 0) {
-		d0_pre.allocate_layers(i1);
-		d1_pre.allocate_layers(i1);
+		d0_pre.allocate_layers_dfd0(i1);
+		d1_pre.allocate_layers_dfd1(i1);
 	}
 
 	update_reference();
@@ -581,9 +580,9 @@ void Model::build_elastic_app_load(vector<double>& app_ld, double time) {
 			else {
 				for (auto& eli : element_sets[this_load.el_set_ptr].labels) {
 					Element& this_el = elements[eli];
-					this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
+					this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
 					JobCommand& scmd = job[solve_cmd];
-					this_el.get_app_load(temp_d1, this_load, scmd.nonlinear_geom, d0_pre, sections, faces, nodes, design_vars);
+					this_el.get_app_load_dfd0(temp_d1, this_load, scmd.nonlinear_geom, d0_pre, sections, faces, nodes, design_vars);
 				}
 			}
 		}
@@ -595,7 +594,7 @@ void Model::build_elastic_app_load(vector<double>& app_ld, double time) {
 	
 	// design variable dependent loads.
 	for (auto& this_nd : nodes) {
-		this_nd.get_elastic_dvload(nd_dvld,design_vars);
+		this_nd.get_elastic_dvload_dfd0(nd_dvld,design_vars);
 		num_dof = this_nd.num_dof;
 		for (i1 = 0; i1 < num_dof; i1++) {
 			dof_ind = this_nd.dof_index[i1];
@@ -639,8 +638,8 @@ void Model::build_thermal_app_load(vector<double>& app_ld, double time) {
 			else {
 				for (auto& eli : element_sets[this_load.el_set_ptr].labels) {
 					Element& this_el = elements[eli];
-					this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
-					this_el.get_app_therm_load(temp_d1, this_load, d0_pre, sections, faces, nodes, design_vars);
+					this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
+					this_el.get_app_therm_load_dfd0(temp_d1, this_load, d0_pre, sections, faces, nodes, design_vars);
 				}
 			}
 		}
@@ -652,7 +651,7 @@ void Model::build_thermal_app_load(vector<double>& app_ld, double time) {
 
 	// design variable dependent loads.
 	for (auto& this_nd : nodes) {
-		this_nd.get_thermal_dvload(nd_dvld, design_vars);
+		this_nd.get_thermal_dvload_dfd0(nd_dvld, design_vars);
 		dof_ind = this_nd.sorted_rank;
 		app_ld[dof_ind] += nd_dvld.val;
 	}
@@ -675,16 +674,16 @@ void Model::build_elastic_soln_load(vector<double>& soln_ld, bool build_mat, boo
 	
 	JobCommand& scmd = job[solve_cmd];
 	for (auto& this_el : elements) {
-		this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
+		this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
 		if (this_el.type == 21) {
-			this_el.get_ru(temp_d1, elastic_mat, build_mat, scmd, d0_pre, nodes, design_vars);
+			this_el.get_ru_dfd0(temp_d1, elastic_mat, build_mat, scmd, d0_pre, nodes, design_vars);
 		}
 		else {
 			if (full_ref) {
-				this_el.get_ru(temp_d1, non_frc_el_mat, true, scmd, d0_pre, nodes, design_vars);
+				this_el.get_ru_dfd0(temp_d1, non_frc_el_mat, true, scmd, d0_pre, nodes, design_vars);
 			}
 			else {
-				this_el.get_ru(temp_d1, non_frc_el_mat, false, scmd, d0_pre, nodes, design_vars);
+				this_el.get_ru_dfd0(temp_d1, non_frc_el_mat, false, scmd, d0_pre, nodes, design_vars);
 			}
 		}
 	}
@@ -715,8 +714,8 @@ void Model::build_thermal_soln_load(vector<double>& soln_ld, bool build_mat) {
 
 	JobCommand& scmd = job[solve_cmd];
 	for (auto& this_el : elements) {
-		this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
-		this_el.get_rt(temp_d1, therm_mat, build_mat, scmd, d0_pre, nodes);
+		this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
+		this_el.get_rt_dfd0(temp_d1, therm_mat, build_mat, scmd, d0_pre, nodes);
 	}
 
 	for (i1 = 0; i1 < num_nodes; i1++) {
@@ -782,8 +781,6 @@ void Model::solve_step(double time, double app_ld_fact, bool full_ref) {
 	int ndof;
 	int dof_ind;
 	double nd_del_disp[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-	Node *this_nd;
-	Element *this_el;
 
 	JobCommand& cmd = job[solve_cmd];
 	if(cmd.thermal) {
@@ -1081,12 +1078,12 @@ void Model::eigen_solve() {
 			diag_mass[i1] = 0.0;
 		}
 		for (auto& this_el : elements) {
-			this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
+			this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
 			i2 = this_el.num_nds * this_el.dof_per_nd;
 			for (i1 = 0; i1 < i2; i1++) {
 				d0_pre.glob_acc[i1].set_val(1.0);
 			}
-			this_el.get_rum(rvec, d_rd_a, false, true, scmd.nonlinear_geom, d0_pre, nodes, design_vars);
+			this_el.get_rum_dfd0(rvec, d_rd_a, false, true, scmd.nonlinear_geom, d0_pre, nodes, design_vars);
 			for (i1 = 0; i1 < i2; i1++) {
 				rv2[i1] = rvec[i1].val;
 			}
@@ -1306,8 +1303,8 @@ void Model::augmentd_ld_u() {
 
 	if (scmd.thermal) {
 		for (auto& this_el : elements) {
-			this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
-			this_el.get_rtm(rvec, mmat, true, true, d0_pre);
+			this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
+			this_el.get_rtm_dfd0(rvec, mmat, true, true, d0_pre);
 			this_el.get_el_vec(el_adj, t_adj, true, false, nodes);
 			num_nds = this_el.num_nds;
 			i3 = 0;
@@ -1332,9 +1329,9 @@ void Model::augmentd_ld_u() {
 
 	if (scmd.elastic) {
 		for (auto& this_el : elements) {
-			this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
-			this_el.get_rum(rvec, mmat, true, true, scmd.nonlinear_geom, d0_pre, nodes, design_vars);
-			this_el.get_rud(rvec, dmat, true, scmd, d0_pre, nodes, design_vars);
+			this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
+			this_el.get_rum_dfd0(rvec, mmat, true, true, scmd.nonlinear_geom, d0_pre, nodes, design_vars);
+			this_el.get_rud_dfd0(rvec, dmat, true, scmd, d0_pre, nodes, design_vars);
 			this_el.get_el_vec(el_adj, u_adj, false, false, nodes);
 			nd_dof = this_el.num_nds * this_el.dof_per_nd;
 			i3 = 0;
@@ -1423,8 +1420,8 @@ void Model::solve_for_adjoint(double time, bool full_ref) {
 	if (scmd.thermal) {
 		if (scmd.elastic) {
 			for (auto& this_el : elements) {
-				this_el.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
-				this_el.get_ruk(rvec, d_rd_u, d_rd_t, true, scmd.nonlinear_geom, d0_pre, nodes, design_vars);
+				this_el.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
+				this_el.get_ruk_dfd0(rvec, d_rd_u, d_rd_t, true, scmd.nonlinear_geom, d0_pre, nodes, design_vars);
 				this_el.get_el_vec(el_adj, u_adj, false, false, nodes);
 				el_num_nds = this_el.num_nds;
 				el_dof_per_nd = this_el.dof_per_nd;
@@ -1475,8 +1472,8 @@ void Model::d_rthermald_d(int d_var_num) {
 
 	JobCommand& scmd = job[solve_cmd];
 	DesignVariable& this_dv = design_vars[d_var_num];
-	this_dv.get_value(dv_val);
-	this_dv.diff_val.set_val(dv_val.val,1.0);
+	this_dv.get_value_dfd0(dv_val);
+	this_dv.diff_val.set_val_2(dv_val.val,1.0);
 
 	tot_nodes = nodes.size();
 	for (i1 = 0; i1 < tot_nodes; i1++) {
@@ -1497,8 +1494,8 @@ void Model::d_rthermald_d(int d_var_num) {
 			for (auto& eli : element_sets[this_ld.el_set_ptr].labels) {
 				if (el_in_d[eli]) {
 					Element& this_el = elements[eli];
-					this_el.get_stress_prereq(d1_pre, sections, materials, nodes, design_vars);
-					this_el.get_app_therm_load(d_rtd_d, this_ld, d1_pre, sections, faces, nodes, design_vars);
+					this_el.get_stress_prereq_dfd1(d1_pre, sections, materials, nodes, design_vars);
+					this_el.get_app_therm_load_dfd1(d_rtd_d, this_ld, d1_pre, sections, faces, nodes, design_vars);
 				}
 			}
 		}
@@ -1511,8 +1508,8 @@ void Model::d_rthermald_d(int d_var_num) {
 	// solution-dependent contribution of load
 	for (auto& eli : this_dv.comp_el_list) {
 		Element& this_el = elements[eli];
-		this_el.get_stress_prereq(d1_pre, sections, materials, nodes, design_vars);
-		this_el.get_rt(d_rtd_d,therm_mat,false,scmd,d1_pre,nodes);
+		this_el.get_stress_prereq_dfd1(d1_pre, sections, materials, nodes, design_vars);
+		this_el.get_rt_dfd1(d_rtd_d,therm_mat,false,scmd,d1_pre,nodes);
 	}
 
 
@@ -1521,13 +1518,13 @@ void Model::d_rthermald_d(int d_var_num) {
 		DiffDoub1 nd_ld;
 		for (auto& ndi : node_sets[this_dv.nd_set_ptr].labels) {
 			Node& this_nd = nodes[ndi];
-			this_nd.get_thermal_dvload(nd_ld, design_vars);
+			this_nd.get_thermal_dvload_dfd1(nd_ld, design_vars);
 			glob_ind = this_nd.sorted_rank;
 			d_rtd_d[glob_ind].sub(nd_ld);
 		}
 	}
 
-	this_dv.diff_val.set_val(dv_val.val, 0.0);
+	this_dv.diff_val.set_val_2(dv_val.val, 0.0);
 	
 	return;
 }
@@ -1540,8 +1537,8 @@ void Model::d_relasticd_d(int d_var_num) {
 
 	JobCommand& scmd = job[solve_cmd];
 	DesignVariable& this_dv = design_vars[d_var_num];
-	this_dv.get_value(dv_val);
-	this_dv.diff_val.set_val(dv_val.val, 1.0);
+	this_dv.get_value_dfd0(dv_val);
+	this_dv.diff_val.set_val_2(dv_val.val, 1.0);
 
 	for (i1 = 0; i1 < el_mat_dim; i1++) {
 		d_rud_d[i1].set_val(0.0);
@@ -1562,8 +1559,8 @@ void Model::d_relasticd_d(int d_var_num) {
 			for (auto eli : element_sets[this_ld.el_set_ptr].labels) {
 				if (el_in_d[eli] > 0) {
 					Element& this_el = elements[eli];
-					this_el.get_stress_prereq(d1_pre, sections, materials, nodes, design_vars);
-					this_el.get_app_load(d_rud_d, this_ld, scmd.nonlinear_geom, d1_pre, sections, faces, nodes, design_vars);
+					this_el.get_stress_prereq_dfd1(d1_pre, sections, materials, nodes, design_vars);
+					this_el.get_app_load_dfd1(d_rud_d, this_ld, scmd.nonlinear_geom, d1_pre, sections, faces, nodes, design_vars);
 				}
 			}
 		}
@@ -1576,8 +1573,8 @@ void Model::d_relasticd_d(int d_var_num) {
 	// solution-dependent contribution of load
 	for (auto& eli : this_dv.comp_el_list) {
 		Element& this_el = elements[eli];
-		this_el.get_stress_prereq(d1_pre, sections, materials, nodes, design_vars);
-		this_el.get_ru(d_rud_d, elastic_mat, false, scmd, d1_pre, nodes, design_vars);
+		this_el.get_stress_prereq_dfd1(d1_pre, sections, materials, nodes, design_vars);
+		this_el.get_ru_dfd1(d_rud_d, elastic_mat, false, scmd, d1_pre, nodes, design_vars);
 	}
 
 
@@ -1587,7 +1584,7 @@ void Model::d_relasticd_d(int d_var_num) {
 		DiffDoub1 nd_ld[6];
 		for (auto& ndi : node_sets[this_dv.nd_set_ptr].labels) {
 			Node& this_nd = nodes[ndi];
-			this_nd.get_elastic_dvload(nd_ld, design_vars);
+			this_nd.get_elastic_dvload_dfd1(nd_ld, design_vars);
 			num_dof = this_nd.num_dof;
 			for (i1 = 0; i1 < num_dof; i1++) {
 				glob_ind = this_nd.dof_index[i1];
@@ -1597,7 +1594,7 @@ void Model::d_relasticd_d(int d_var_num) {
 		}
 	}
 
-	this_dv.diff_val.set_val(dv_val.val, 0.0);
+	this_dv.diff_val.set_val_2(dv_val.val, 0.0);
 
 	return;
 }

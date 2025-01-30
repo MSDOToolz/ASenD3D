@@ -1,5 +1,6 @@
 #include <vector>
 #include "ElementClass.h"
+#include "constants.h"
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
 #include "DesignVariableClass.h"
@@ -9,17 +10,6 @@
 #include "matrixFunctions.h"
 
 using namespace std;
-
-const int max_int = 2000000000;
-const double r_1ort3 = 0.577350269189625765; //0.577350269189625765;
-const double r_2o3 = 0.666666666666666667;
-const double r_1o3 = 0.333333333333333333;
-const double r_1o6 = 0.166666666666666667;
-const double r_1o24 = 0.041666666666666667;
-const double r_pi = 3.14159265358979324;
-const double r_pio180 = 0.0174532925199432958;
-const double r_tet1 = 0.1381966011250071;
-const double r_tet2 = 0.585410196624929;
 
 // stress prerequisite classes
 
@@ -59,7 +49,7 @@ DiffDoub0StressPrereq::DiffDoub0StressPrereq() {
 	return;
 }
 
-void DiffDoub0StressPrereq::allocate_layers(int num_layers) {
+void DiffDoub0StressPrereq::allocate_layers_dfd0(int num_layers) {
 	if (num_layers != 0) {
 		layer_z = vector<DiffDoub0>(num_layers);
 		layer_thk = vector<DiffDoub0>(num_layers);
@@ -97,7 +87,7 @@ DiffDoub0FlPrereq::DiffDoub0FlPrereq() {
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup1
 DiffDoub1StressPrereq::DiffDoub1StressPrereq() {
 	glob_nds = vector<DiffDoub1>(30);
@@ -134,7 +124,7 @@ DiffDoub1StressPrereq::DiffDoub1StressPrereq() {
 	return;
 }
 
-void DiffDoub1StressPrereq::allocate_layers(int num_layers) {
+void DiffDoub1StressPrereq::allocate_layers_dfd1(int num_layers) {
 	if (num_layers != 0) {
 		layer_z = vector<DiffDoub1>(num_layers);
 		layer_thk = vector<DiffDoub1>(num_layers);
@@ -171,6 +161,7 @@ DiffDoub1FlPrereq::DiffDoub1FlPrereq() {
 //end dup 
  
 //end skip 
+ 
  
  
 Element::Element() {

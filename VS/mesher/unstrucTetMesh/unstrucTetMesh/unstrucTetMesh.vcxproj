@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\solverSrc\mesher\constants.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mesher\MeshElement.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mesher\Mesher.h" />
     <ClInclude Include="..\..\..\..\solverSrc\mesher\MeshFace.h" />

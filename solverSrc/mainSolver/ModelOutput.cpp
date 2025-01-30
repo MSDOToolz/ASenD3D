@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <string>
 #include "ModelClass.h"
+#include "constants.h"
 #include "NodeClass.h"
 #include "ElementClass.h"
 #include "ListEntClass.h"
@@ -15,7 +16,6 @@
 
 using namespace std;
 
-const int max_int = 2000000000;
 
 void Model::write_time_step_soln(int t_step) {
 	int i1;
@@ -303,7 +303,7 @@ void Model::write_element_results(string file_name, string el_set, list<string>&
 			field_list = "stress strain strainEnergyDen";
 			i2 = field_list.find(this_field);
 			if (i2 > -1) {
-				el_pt.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
+				el_pt.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
 				if (position == "intPts") {
 					num_ip = el_pt.num_ip;
 					vec_to_ar(int_pts, el_pt.int_pts, 0, 3 * num_ip);
@@ -321,7 +321,7 @@ void Model::write_element_results(string file_name, string el_set, list<string>&
 						num_lay = 1;
 					}
 					for (i2 = 0; i2 < num_lay; i2++) {
-						el_pt.get_stress_strain(stress, strain, &int_pts[3 * i1], i2, scmd.nonlinear_geom, d0_pre);
+						el_pt.get_stress_strain_dfd0(stress, strain, &int_pts[3 * i1], i2, scmd.nonlinear_geom, d0_pre);
 						out_file << "        - [" << el_label << ", ";
 						if (this_field == "strain") {
 							out_file << i1 << ", " << i2 << ", " << strain[0].val;
@@ -350,7 +350,7 @@ void Model::write_element_results(string file_name, string el_set, list<string>&
 			field_list = "sectionDef sectionFrcMom";
 			i2 = field_list.find(this_field);
 			if (i2 > -1 && el_pt.dof_per_nd == 6) {
-				el_pt.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
+				el_pt.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
 				if (position == "intPts") {
 					num_ip = el_pt.num_ip;
 					vec_to_ar(int_pts, el_pt.int_pts, 0, 3 * num_ip);
@@ -363,8 +363,8 @@ void Model::write_element_results(string file_name, string el_set, list<string>&
 				}
 				for (i1 = 0; i1 < num_ip; i1++) {
 					type = el_pt.type;
-					//el_pt->get_stress_strain(stress, strain, &int_pts[3 * i1], i2, solve_cmd->nonlinear_geom, st_pre);
-					el_pt.get_def_frc_mom(def, frc_mom, &int_pts[3 * i1], scmd.nonlinear_geom, d0_pre);
+					//el_pt->get_stress_strain_dfd0(stress, strain, &int_pts[3 * i1], i2, solve_cmd->nonlinear_geom, st_pre);
+					el_pt.get_def_frc_mom_dfd0(def, frc_mom, &int_pts[3 * i1], scmd.nonlinear_geom, d0_pre);
 					out_file << "        - [" << el_label << ", ";
 					if (this_field == "sectionDef") {
 						out_file << i1 << ", " << def[0].val;
@@ -386,7 +386,7 @@ void Model::write_element_results(string file_name, string el_set, list<string>&
 			field_list = "tempGradient heatFlux";
 			i2 = field_list.find(this_field);
 			if (i2 > -1) {
-				el_pt.get_stress_prereq(d0_pre, sections, materials, nodes, design_vars);
+				el_pt.get_stress_prereq_dfd0(d0_pre, sections, materials, nodes, design_vars);
 				if (position == "intPts") {
 					num_ip = el_pt.num_ip;
 					vec_to_ar(int_pts, el_pt.int_pts, 0, 3 * num_ip);
@@ -406,8 +406,8 @@ void Model::write_element_results(string file_name, string el_set, list<string>&
 						num_lay = 1;
 					}
 					for (i2 = 0; i2 < num_lay; i2++) {
-						//el_pt->get_stress_strain(stress, strain, &int_pts[3 * i1], i2, solve_cmd->nonlinear_geom, st_pre);
-						el_pt.get_flux_tgrad(flux, t_grad, &int_pts[3 * i1], i2, d0_pre);
+						//el_pt->get_stress_strain_dfd0(stress, strain, &int_pts[3 * i1], i2, solve_cmd->nonlinear_geom, st_pre);
+						el_pt.get_flux_tgrad_dfd0(flux, t_grad, &int_pts[3 * i1], i2, d0_pre);
 						out_file << "        - [" << el_label << ", " << i1 << ", " << i2 << ", ";
 						if (this_field == "tempGradient") {
 							out_file << t_grad[0].val << ", " << t_grad[1].val << ", " << t_grad[2].val << "]\n";

@@ -1,48 +1,20 @@
 #ifndef MESHELEMENT
 #define MESHELEMENT
 #include "MeshNode.h"
+#include <vector>
 
 class MeshElement {
-private:
-	MeshNode* nodes[4];
-	MeshElement* next;
-
 public:
+	int nodes[4];
+
 	MeshElement();
 
-	void setNdPt(MeshNode* newNds[]);
+	void getCentroid(double cent[], std::vector<MeshNode>& nd_ar);
 
-	void setNext(MeshElement* newNext);
+	double getVolume(std::vector<MeshNode>& nd_ar);
 
-	MeshNode** getNodes();
-
-	void getCentroid(double cent[]);
-
-	double getVolume();
-
-	bool pointIn(double pt[]);
-
-	MeshElement* getNext();
+	bool pointIn(double pt[], std::vector<MeshNode>& nd_ar);
 	
-};
-
-class MEList {
-private:
-	MeshElement* first;
-	MeshElement* last;
-	int length;
-
-public:
-	MEList();
-
-	void addEnt(MeshElement* newEl);
-
-	MeshElement* getFirst();
-
-	int getLength();
-
-	~MEList();
-
 };
 
 #endif

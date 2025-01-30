@@ -1,4 +1,5 @@
 #include "ConstraintClass.h"
+#include "constants.h"
 #include "ListEntClass.h"
 #include "SetClass.h"
 #include "NodeClass.h"
@@ -7,8 +8,6 @@
 #include <vector>
 
 using namespace std;
-
-const int max_int = 2000000000;
 
 ConstraintTerm::ConstraintTerm() {
 	node_set = "";

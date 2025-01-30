@@ -1,12 +1,12 @@
 #include "DesignVariableClass.h"
 #include <string>
 #include <vector>
+#include "constants.h"
 #include "ListEntClass.h"
 #include "DiffDoubClass.h"
 #include "SetClass.h"
-using namespace std;
 
-const int max_int = 2000000000;
+using namespace std;
 
 DesignVariable::DesignVariable() {
 	category = "";
@@ -29,13 +29,13 @@ void DesignVariable::set_active_time(double new_at[]) {
 	active_time[1] = new_at[1];
 }
 
-void DesignVariable::get_value(DiffDoub0& inp) {
-	inp.set_val(value);
+void DesignVariable::get_value_dfd0(DiffDoub0& inp) {
+	inp.set_val_dfd0(value);
 	return;
 }
 
-void DesignVariable::get_value(DiffDoub1& inp) {
-	inp.set_val(diff_val);
+void DesignVariable::get_value_dfd1(DiffDoub1& inp) {
+	inp.set_val_dfd1(diff_val);
 	return;
 }
 

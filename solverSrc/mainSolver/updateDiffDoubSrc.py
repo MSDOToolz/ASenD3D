@@ -40,6 +40,7 @@ for fn in fileNames:
                         outFile.write(ln)
                     else:
                         ln = ln.replace('DiffDoub0','DiffDoub1')
+                        ln = ln.replace('_dfd0','_dfd1')
                         outFile.write(ln)
                     
             outFile.write(' \n')
@@ -71,6 +72,7 @@ for fn in fileNames:
                         outFile.write(ln)
                     else:
                         ln = ln.replace('DiffDoub0','DiffDoub1')
+                        ln = ln.replace('_dfd0','_dfd1')
                         outFile.write(ln)
                     
             outFile.write(' \n')
@@ -87,6 +89,7 @@ for fn in fileNames:
                         outFile.write(ln)
                     else:
                         ln = ln.replace('DiffDoub0','DiffDoub2')
+                        ln = ln.replace('_dfd0','_dfd2')
                         outFile.write(ln)
             
             outFile.write(' \n')            

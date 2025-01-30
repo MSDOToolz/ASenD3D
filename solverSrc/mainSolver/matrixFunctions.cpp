@@ -1,4 +1,5 @@
 #include "matrixFunctions.h"
+#include "constants.h"
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -10,12 +11,6 @@
 #include "ConstraintClass.h"
 
 using namespace std;
-
-const double pi_2 = 1.57079632679489662;
-const double tol = 1.0e-12;
-const double magtol = 1.0e-8;
-const double max_mag = 1.0e+12;
-const double min_mag = 1.0e-12;
 
 void sub_vec(vector<double>& sub_v, vector<double>& v_in, int st, int end) {
 	int i1;
@@ -495,13 +490,13 @@ void get_char_fun(DiffDoub1& c_fun, vector<DiffDoub1>& mat, int mat_dim, vector<
 			if(abs(mat[k11].val) < tol) {
 				mat[k11].val = tol;
 			}
-			theta.set_val(mat[k12]);
-			tmp.set_val(mat[k11]);
+			theta.set_val_dfd1(mat[k12]);
+			tmp.set_val_dfd1(mat[k11]);
 			theta.dvd(tmp);
 			theta.atn();
-			sth.set_val(theta);
+			sth.set_val_dfd1(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd1(theta);
 			cth.cs();
 			i3_min = i1;
 			if(tri_diag == 2) {
@@ -515,25 +510,25 @@ void get_char_fun(DiffDoub1& c_fun, vector<DiffDoub1>& mat, int mat_dim, vector<
 			for (i3 = i3_min; i3 <= i3_max; i3++) {
 				k22 = (i2_min-1)*mat_dim + i3;
 				k23 = i2*mat_dim + i3;
-				p1.set_val(cth);
+				p1.set_val_dfd1(cth);
 				p1.mult(mat[k22]);
-				tmp.set_val(sth);
+				tmp.set_val_dfd1(sth);
 				tmp.mult(mat[k23]);
 				p1.add(tmp);
-				p2.set_val(sth);
+				p2.set_val_dfd1(sth);
 				p2.neg();
 				p2.mult(mat[k22]);
-				tmp.set_val(cth);
+				tmp.set_val_dfd1(cth);
 				tmp.mult(mat[k23]);
 				p2.add(tmp);
-				mat[k22].set_val(p1);
-				mat[k23].set_val(p2);
+				mat[k22].set_val_dfd1(p1);
+				mat[k23].set_val_dfd1(p2);
 			}
-			mat[k12].set_val(theta);
+			mat[k12].set_val_dfd1(theta);
 		}
 	}
 	
-	c_fun.set_val(mat[0]);
+	c_fun.set_val_dfd1(mat[0]);
 	i2 = mat_dim + 1;
 	for (i1 = 1; i1 < mat_dim; i1++) {
 		c_fun.mult(mat[i2]);
@@ -551,7 +546,7 @@ void get_char_fun(DiffDoub1& c_fun, vector<DiffDoub1>& mat, int mat_dim, vector<
 	double term;
 	for (auto& ev : e_vals) {
 		term = ev - lam;
-		tmp.set_val(term,-1.0);
+		tmp.set_val_2(term,-1.0);
 		c_fun.dvd(tmp);
 		while(abs(c_fun.val) > max_mag) {
 			c_fun.val*= min_mag;
@@ -587,7 +582,7 @@ void get_evals(vector<double>& e_vals, vector<double>& mat, int mat_dim, double 
 			for (i2 = 0; i2 < mat_dim; i2++) {
 				if(i1 == i2) {
 					d_trm = mat[i3] - lam;
-					mat_copy[i3].set_val(d_trm,-1.0);
+					mat_copy[i3].set_val_2(d_trm,-1.0);
 				} else {
 					mat_copy[i3].set_val(mat[i3]);
 				}
@@ -1008,87 +1003,6 @@ void sym_eigen_solve(vector<double>& e_vals, vector<double>& e_vecs, vector<doub
 	return;
 }
 
-//void eigen_full(vector<double>& e_vals, vector<double>& e_vecs, int num_pairs, LowerTriMat& mat, vector<double>& mass_mat, int mat_dim) {
-//	int i1;
-//	int i2;
-//	int i3;
-//	int i4;
-//	int i5;
-//	double tmp;
-//	double mag;
-//
-//	i3 = mat_dim * mat_dim;
-//	double* mat_fp = new double[i3];
-//	double* q_mat = new double[i3];
-//	double* e_vectmp = new double[i3];
-//	double* e_valtmp = new double[mat_dim];
-//	double* vtmp = new double[mat_dim];
-//
-//	for (i1 = 0; i1 < i3; i1++) {
-//		mat_fp[i1] = 0.0;
-//	}
-//
-//	mat.copy_to_full_mat(mat_fp);
-//
-//	for (i1 = 0; i1 < mat_dim; i1++) {
-//		mass_mat[i1] = 1.0 / sqrt(mass_mat[i1]);
-//		i3 = i1 * mat_dim;
-//		i4 = i1;
-//		for (i2 = 0; i2 < mat_dim; i2++) {
-//			mat_fp[i3] *= mass_mat[i1];
-//			mat_fp[i4] *= mass_mat[i1];
-//			i3++;
-//			i4 += mat_dim;
-//		}
-//	}
-//
-//	//sym_factor(mat_fp, q_mat, mat_dim);
-//
-//	sym_eigen_solve(e_valtmp, e_vectmp, mat_fp, mat_dim, 1);
-//
-//	for (i1 = 0; i1 < num_pairs; i1++) {
-//		i4 = 0;
-//		i5 = i1 * mat_dim;
-//		for (i2 = 0; i2 < mat_dim; i2++) {
-//			/*vtmp[i2] = 0.0;
-//			i5 = i1 * mat_dim;
-//			for (i3 = 0; i3 < mat_dim; i3++) {
-//				vtmp[i2] += q_mat[i4] * e_vectmp[i5];
-//				i4++;
-//				i5++;
-//			}*/
-//			vtmp[i2] = e_vectmp[i5];
-//			i5++;
-//		}
-//		mag = 0.0;
-//		for (i2 = 0; i2 < mat_dim; i2++) {
-//			tmp = vtmp[i2] * mass_mat[i2];
-//			vtmp[i2] = tmp;
-//			mag += tmp * tmp;
-//		}
-//		mag = 1.0/sqrt(mag);
-//		i3 = i1 * mat_dim;
-//		for (i2 = 0; i2 < mat_dim; i2++) {
-//			e_vecs[i3] = mag * vtmp[i2];
-//			i3++;
-//		}
-//		e_vals[i1] = e_valtmp[i1];
-//	}
-//
-//	for (i1 = 0; i1 < mat_dim; i1++) {
-//		tmp = 1.0 / mass_mat[i1];
-//		mass_mat[i1] = tmp * tmp;
-//	}
-//
-//	delete[] mat_fp;
-//	delete[] q_mat;
-//	delete[] e_vectmp;
-//	delete[] e_valtmp;
-//	delete[] vtmp;
-//
-//	return;
-//}
-
 void eigen_sparse_direct(vector<double>& e_vals, vector<double>& e_vecs, int num_pairs, LowerTriMat& mat, vector<double>& mass_mat, int mat_dim) {
 	int i1;
 	int i2;
@@ -1375,114 +1289,8 @@ void get_nearest_evec_rq(SparseMat& mat, ConstraintList& cnst, vector<double>& m
 
 }
 
-//void get_nearest_evec_subspace(SparseMat& mat, ConstraintList& cnst, vector<double>& mass_mat, vector<double>& in_vecs, vector<double>& e_vals, int num_vecs) {
-//	int i1;
-//	int i2;
-//	int i3;
-//	int i4;
-//	int i5;
-//	int i6;
-//	double dp;
-//	int dim = mat.get_dim();
-//	
-//	double* g_mat = new double[dim * num_vecs];
-//	i1 = num_vecs * num_vecs;
-//	double* cond_mat = new double[i1];
-//	double* cond_evecs = new double[i1];
-//	double* t1 = new double[dim];
-//	double* t2 = new double[dim];
-//	double* t3 = new double[dim];
-//
-//	for (i1 = 0; i1 < dim; i1++) {
-//		mass_mat[i1] = sqrt(mass_mat[i1]);
-//	}
-//
-//	for (i1 = 0; i1 < num_vecs; i1++) {
-//		i2 = dim * i1;
-//		for (i3 = 0; i3 < dim; i3++) {
-//			g_mat[i2 + i3] = mass_mat[i3] * in_vecs[i2 + i3];
-//		}
-//		for (i3 = 0; i3 < i1; i3++) {
-//			i5 = dim * i3;
-//			dp = 0.0;
-//			for (i4 = 0; i4 < dim; i4++) {
-//				dp += g_mat[i5 + i4] * g_mat[i2 + i4];
-//			}
-//			for (i4 = 0; i4 < dim; i4++) {
-//				g_mat[i2 + i4] -= dp * g_mat[i5 + i4];
-//			}
-//		}
-//		unitize_vec(&g_mat[i2], dim);
-//	}
-//
-//	for (i1 = 0; i1 < dim; i1++) {
-//		mass_mat[i1] = 1.0/mass_mat[i1];
-//	}
-//
-//	for (i1 = 0; i1 < num_vecs; i1++) {
-//		i3 = i1 * dim;
-//		for (i2 = 0; i2 < dim; i2++) {
-//			t1[i2] = mass_mat[i2] * g_mat[i3 + i2];
-//			t2[i2] = 0.0;
-//		}
-//		mat.std::vector_multiply(t2, t1, false);
-//		cnst.get_total_vec_mult(t2, t1, t3);
-//		for (i2 = 0; i2 < dim; i2++) {
-//			t1[i2] = mass_mat[i2] * t2[i2];
-//		}
-//		i6 = i1 * num_vecs;
-//		i5 = 0;
-//		for (i2 = 0; i2 < num_vecs; i2++) {
-//			//i6 = i1 * num_vecs + i2;
-//			cond_mat[i6] = 0.0;
-//			//i5 = i2 * dim;
-//			for (i4 = 0; i4 < dim; i4++) {
-//				//i5 = i2 * dim + i4;
-//				cond_mat[i6] += g_mat[i5] * t1[i4];
-//				i5++;
-//			}
-//			i6++;
-//		}
-//	}
-//
-//	sym_eigen_solve(e_vals, cond_evecs, cond_mat, num_vecs, 0);
-//
-//	for (i1 = 0; i1 < num_vecs; i1++) {
-//		for (i2 = 0; i2 < dim; i2++) {
-//			t1[i2] = 0.0;
-//		}
-//		i5 = 0;
-//		i6 = i1 * num_vecs;
-//		for (i2 = 0; i2 < num_vecs; i2++) {
-//			//i6 = i1 * num_vecs + i2;
-//			for (i3 = 0; i3 < dim; i3++) {
-//				t1[i3] += g_mat[i5] * cond_evecs[i6];
-//				i5++;
-//			}
-//			i6++;
-//		}
-//		i3 = i1 * dim;
-//		for (i2 = 0; i2 < dim; i2++) {
-//			in_vecs[i3 + i2] = mass_mat[i2] * t1[i2];
-//		}
-//		unitize_vec(&in_vecs[i3], dim);
-//	}
-//
-//	for (i1 = 0; i1 < dim; i1++) {
-//		dp = 1.0 / mass_mat[i1];
-//		mass_mat[i1] = dp * dp;
-//	}
-//
-//	delete[] g_mat;
-//	delete[] cond_mat;
-//	delete[] cond_evecs;
-//	delete[] t1;
-//	delete[] t2;
-//	delete[] t3;
-//}
-
 //dup1
-void q_rfactor(vector<DiffDoub0>& mat, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void q_rfactor_dfd0(vector<DiffDoub0>& mat, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1517,13 +1325,13 @@ void q_rfactor(vector<DiffDoub0>& mat, int col_dim, int st_row, int end_row, int
 			if(abs(mat[k11].val) < tol) {
 				mat[k11].val = tol;
 			}
-			theta.set_val(mat[k12]);
-			tmp.set_val(mat[k11]);
+			theta.set_val_dfd0(mat[k12]);
+			tmp.set_val_dfd0(mat[k11]);
 			theta.dvd(tmp);
 			theta.atn();
-			sth.set_val(theta);
+			sth.set_val_dfd0(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd0(theta);
 			cth.cs();
 			i3_min = i1;
 			if(tri_diag == 2) {
@@ -1537,27 +1345,27 @@ void q_rfactor(vector<DiffDoub0>& mat, int col_dim, int st_row, int end_row, int
 			for (i3 = i3_min; i3 <= i3_max; i3++) {
 				k22 = (i2_min-1)*col_dim + i3;
 				k23 = i2*col_dim + i3;
-				p1.set_val(cth);
+				p1.set_val_dfd0(cth);
 				p1.mult(mat[k22]);
-				tmp.set_val(sth);
+				tmp.set_val_dfd0(sth);
 				tmp.mult(mat[k23]);
 				p1.add(tmp);
-				p2.set_val(sth);
+				p2.set_val_dfd0(sth);
 				p2.neg();
 				p2.mult(mat[k22]);
-				tmp.set_val(cth);
+				tmp.set_val_dfd0(cth);
 				tmp.mult(mat[k23]);
 				p2.add(tmp);
-				mat[k22].set_val(p1);
-				mat[k23].set_val(p2);
+				mat[k22].set_val_dfd0(p1);
+				mat[k23].set_val_dfd0(p2);
 			}
-			mat[k12].set_val(theta);
+			mat[k12].set_val_dfd0(theta);
 		}
 	}
 	return;
 }
 
-void q_rfactor(DiffDoub0 mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void q_rfactor_ar_dfd0(DiffDoub0 mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1593,13 +1401,13 @@ void q_rfactor(DiffDoub0 mat[], int col_dim, int st_row, int end_row, int st_col
 			if (abs(mat[k11].val) < tol) {
 				mat[k11].val = tol;
 			}
-			theta.set_val(mat[k12]);
-			tmp.set_val(mat[k11]);
+			theta.set_val_dfd0(mat[k12]);
+			tmp.set_val_dfd0(mat[k11]);
 			theta.dvd(tmp);
 			theta.atn();
-			sth.set_val(theta);
+			sth.set_val_dfd0(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd0(theta);
 			cth.cs();
 			i3_min = i1;
 			if (tri_diag == 2) {
@@ -1614,27 +1422,27 @@ void q_rfactor(DiffDoub0 mat[], int col_dim, int st_row, int end_row, int st_col
 			for (i3 = i3_min; i3 <= i3_max; i3++) {
 				k22 = (i2_min - 1) * col_dim + i3;
 				k23 = i2 * col_dim + i3;
-				p1.set_val(cth);
+				p1.set_val_dfd0(cth);
 				p1.mult(mat[k22]);
-				tmp.set_val(sth);
+				tmp.set_val_dfd0(sth);
 				tmp.mult(mat[k23]);
 				p1.add(tmp);
-				p2.set_val(sth);
+				p2.set_val_dfd0(sth);
 				p2.neg();
 				p2.mult(mat[k22]);
-				tmp.set_val(cth);
+				tmp.set_val_dfd0(cth);
 				tmp.mult(mat[k23]);
 				p2.add(tmp);
-				mat[k22].set_val(p1);
-				mat[k23].set_val(p2);
+				mat[k22].set_val_dfd0(p1);
+				mat[k23].set_val_dfd0(p2);
 			}
-			mat[k12].set_val(theta);
+			mat[k12].set_val_dfd0(theta);
 		}
 	}
 	return;
 }
 
-void solveq_rx_eqb(vector<DiffDoub0>& x_vec, vector<DiffDoub0>& mat, vector<DiffDoub0>& b_vec, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void solveq_rx_eqb_dfd0(vector<DiffDoub0>& x_vec, vector<DiffDoub0>& mat, vector<DiffDoub0>& b_vec, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1663,24 +1471,24 @@ void solveq_rx_eqb(vector<DiffDoub0>& x_vec, vector<DiffDoub0>& mat, vector<Diff
 		i3 = i2_min - 1;
 		for (i2 = i2_min; i2 <=i2_max; i2++) {
 			k12 = i2*col_dim + i1;
-			theta.set_val(mat[k12]);
-			sth.set_val(theta);
+			theta.set_val_dfd0(mat[k12]);
+			sth.set_val_dfd0(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd0(theta);
 			cth.cs();
-			p1.set_val(cth);
+			p1.set_val_dfd0(cth);
 			p1.mult(b_vec[i3]);
-			tmp.set_val(sth);
+			tmp.set_val_dfd0(sth);
 			tmp.mult(b_vec[i2]);
 			p1.add(tmp);
-			p2.set_val(sth);
+			p2.set_val_dfd0(sth);
 			p2.neg();
 			p2.mult(b_vec[i3]);
-			tmp.set_val(cth);
+			tmp.set_val_dfd0(cth);
 			tmp.mult(b_vec[i2]);
 			p2.add(tmp);
-		    b_vec[i3].set_val(p1);
-			b_vec[i2].set_val(p2);
+		    b_vec[i3].set_val_dfd0(p1);
+			b_vec[i2].set_val_dfd0(p2);
 		}
 		x_vec[i1].set_val(0.0);
 	}
@@ -1700,22 +1508,22 @@ void solveq_rx_eqb(vector<DiffDoub0>& x_vec, vector<DiffDoub0>& mat, vector<Diff
 		row_sum.set_val(0.0);
 		k11 = i3*col_dim + i2_min;
 		for (i2 = i2_min; i2 <= i2_max; i2++) {
-			tmp.set_val(mat[k11]);
+			tmp.set_val_dfd0(mat[k11]);
 			tmp.mult(x_vec[i2]);
 			row_sum.add(tmp);
 			k11++;
 		}
-		tmp.set_val(b_vec[i3]);
+		tmp.set_val_dfd0(b_vec[i3]);
 		tmp.sub(row_sum);
 		k11 = i3*col_dim + i1;
 		tmp.dvd(mat[k11]);
-		x_vec[i1].set_val(tmp);
+		x_vec[i1].set_val_dfd0(tmp);
 	}
 	
 	return;
 }
 
-void solveq_rx_eqb(DiffDoub0 x_vec[], DiffDoub0 mat[], DiffDoub0 b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void solveq_rx_eqb_ar_dfd0(DiffDoub0 x_vec[], DiffDoub0 mat[], DiffDoub0 b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1745,24 +1553,24 @@ void solveq_rx_eqb(DiffDoub0 x_vec[], DiffDoub0 mat[], DiffDoub0 b_vec[], int co
 		i3 = i2_min - 1;
 		for (i2 = i2_min; i2 <= i2_max; i2++) {
 			k12 = i2 * col_dim + i1;
-			theta.set_val(mat[k12]);
-			sth.set_val(theta);
+			theta.set_val_dfd0(mat[k12]);
+			sth.set_val_dfd0(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd0(theta);
 			cth.cs();
-			p1.set_val(cth);
+			p1.set_val_dfd0(cth);
 			p1.mult(b_vec[i3]);
-			tmp.set_val(sth);
+			tmp.set_val_dfd0(sth);
 			tmp.mult(b_vec[i2]);
 			p1.add(tmp);
-			p2.set_val(sth);
+			p2.set_val_dfd0(sth);
 			p2.neg();
 			p2.mult(b_vec[i3]);
-			tmp.set_val(cth);
+			tmp.set_val_dfd0(cth);
 			tmp.mult(b_vec[i2]);
 			p2.add(tmp);
-			b_vec[i3].set_val(p1);
-			b_vec[i2].set_val(p2);
+			b_vec[i3].set_val_dfd0(p1);
+			b_vec[i2].set_val_dfd0(p2);
 		}
 		x_vec[i1].set_val(0.0);
 	}
@@ -1783,23 +1591,23 @@ void solveq_rx_eqb(DiffDoub0 x_vec[], DiffDoub0 mat[], DiffDoub0 b_vec[], int co
 		row_sum.set_val(0.0);
 		k11 = i3 * col_dim + i2_min;
 		for (i2 = i2_min; i2 <= i2_max; i2++) {
-			tmp.set_val(mat[k11]);
+			tmp.set_val_dfd0(mat[k11]);
 			tmp.mult(x_vec[i2]);
 			row_sum.add(tmp);
 			k11++;
 		}
-		tmp.set_val(b_vec[i3]);
+		tmp.set_val_dfd0(b_vec[i3]);
 		tmp.sub(row_sum);
 		k11 = i3 * col_dim + i1;
 		tmp.dvd(mat[k11]);
-		x_vec[i1].set_val(tmp);
+		x_vec[i1].set_val_dfd0(tmp);
 	}
 
 	return;
 }
 
-void get_det_inv(DiffDoub0& det, vector<DiffDoub0>& inv, vector<DiffDoub0>& mat, int col_dim, int tri_diag, vector<DiffDoub0>& x_vec, vector<DiffDoub0>& b_vec) {
-	q_rfactor(mat, col_dim, 0, (col_dim-1), 0, (col_dim-1), tri_diag);
+void get_det_inv_dfd0(DiffDoub0& det, vector<DiffDoub0>& inv, vector<DiffDoub0>& mat, int col_dim, int tri_diag, vector<DiffDoub0>& x_vec, vector<DiffDoub0>& b_vec) {
+	q_rfactor_dfd0(mat, col_dim, 0, (col_dim-1), 0, (col_dim-1), tri_diag);
 	int i1;
     int i2;
 	int i3;
@@ -1812,10 +1620,10 @@ void get_det_inv(DiffDoub0& det, vector<DiffDoub0>& inv, vector<DiffDoub0>& mat,
 			    b_vec[i2].set_val(0.0);
 			}
 		}
-		solveq_rx_eqb(x_vec,mat,b_vec,col_dim,0,(col_dim-1),0,(col_dim-1),tri_diag);
+		solveq_rx_eqb_dfd0(x_vec,mat,b_vec,col_dim,0,(col_dim-1),0,(col_dim-1),tri_diag);
 		for (i2 = 0; i2 < col_dim; i2++) {
 			i3 = i2*col_dim + i1;
-			inv[i3].set_val(x_vec[i2]);
+			inv[i3].set_val_dfd0(x_vec[i2]);
 		}
 		i3 = i1*col_dim + i1;
 		det.mult(mat[i3]);
@@ -1823,8 +1631,8 @@ void get_det_inv(DiffDoub0& det, vector<DiffDoub0>& inv, vector<DiffDoub0>& mat,
 	return;
 }
 
-void get_det_inv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int col_dim, int tri_diag, DiffDoub0 x_vec[], DiffDoub0 b_vec[]) {
-	q_rfactor(mat, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
+void get_det_inv_ar_dfd0(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int col_dim, int tri_diag, DiffDoub0 x_vec[], DiffDoub0 b_vec[]) {
+	q_rfactor_ar_dfd0(mat, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
 	int i1;
 	int i2;
 	int i3;
@@ -1838,10 +1646,10 @@ void get_det_inv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int col_dim, 
 				b_vec[i2].set_val(0.0);
 			}
 		}
-		solveq_rx_eqb(x_vec, mat, b_vec, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
+		solveq_rx_eqb_ar_dfd0(x_vec, mat, b_vec, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
 		for (i2 = 0; i2 < col_dim; i2++) {
 			i3 = i2 * col_dim + i1;
-			inv[i3].set_val(x_vec[i2]);
+			inv[i3].set_val_dfd0(x_vec[i2]);
 		}
 		i3 = i1 * col_dim + i1;
 		det.mult(mat[i3]);
@@ -1853,9 +1661,9 @@ void get_det_inv(DiffDoub0& det, DiffDoub0 inv[], DiffDoub0 mat[], int col_dim, 
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup1
-void q_rfactor(vector<DiffDoub1>& mat, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void q_rfactor_dfd1(vector<DiffDoub1>& mat, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1890,13 +1698,13 @@ void q_rfactor(vector<DiffDoub1>& mat, int col_dim, int st_row, int end_row, int
 			if(abs(mat[k11].val) < tol) {
 				mat[k11].val = tol;
 			}
-			theta.set_val(mat[k12]);
-			tmp.set_val(mat[k11]);
+			theta.set_val_dfd1(mat[k12]);
+			tmp.set_val_dfd1(mat[k11]);
 			theta.dvd(tmp);
 			theta.atn();
-			sth.set_val(theta);
+			sth.set_val_dfd1(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd1(theta);
 			cth.cs();
 			i3_min = i1;
 			if(tri_diag == 2) {
@@ -1910,27 +1718,27 @@ void q_rfactor(vector<DiffDoub1>& mat, int col_dim, int st_row, int end_row, int
 			for (i3 = i3_min; i3 <= i3_max; i3++) {
 				k22 = (i2_min-1)*col_dim + i3;
 				k23 = i2*col_dim + i3;
-				p1.set_val(cth);
+				p1.set_val_dfd1(cth);
 				p1.mult(mat[k22]);
-				tmp.set_val(sth);
+				tmp.set_val_dfd1(sth);
 				tmp.mult(mat[k23]);
 				p1.add(tmp);
-				p2.set_val(sth);
+				p2.set_val_dfd1(sth);
 				p2.neg();
 				p2.mult(mat[k22]);
-				tmp.set_val(cth);
+				tmp.set_val_dfd1(cth);
 				tmp.mult(mat[k23]);
 				p2.add(tmp);
-				mat[k22].set_val(p1);
-				mat[k23].set_val(p2);
+				mat[k22].set_val_dfd1(p1);
+				mat[k23].set_val_dfd1(p2);
 			}
-			mat[k12].set_val(theta);
+			mat[k12].set_val_dfd1(theta);
 		}
 	}
 	return;
 }
 
-void q_rfactor(DiffDoub1 mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void q_rfactor_ar_dfd1(DiffDoub1 mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -1966,13 +1774,13 @@ void q_rfactor(DiffDoub1 mat[], int col_dim, int st_row, int end_row, int st_col
 			if (abs(mat[k11].val) < tol) {
 				mat[k11].val = tol;
 			}
-			theta.set_val(mat[k12]);
-			tmp.set_val(mat[k11]);
+			theta.set_val_dfd1(mat[k12]);
+			tmp.set_val_dfd1(mat[k11]);
 			theta.dvd(tmp);
 			theta.atn();
-			sth.set_val(theta);
+			sth.set_val_dfd1(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd1(theta);
 			cth.cs();
 			i3_min = i1;
 			if (tri_diag == 2) {
@@ -1987,27 +1795,27 @@ void q_rfactor(DiffDoub1 mat[], int col_dim, int st_row, int end_row, int st_col
 			for (i3 = i3_min; i3 <= i3_max; i3++) {
 				k22 = (i2_min - 1) * col_dim + i3;
 				k23 = i2 * col_dim + i3;
-				p1.set_val(cth);
+				p1.set_val_dfd1(cth);
 				p1.mult(mat[k22]);
-				tmp.set_val(sth);
+				tmp.set_val_dfd1(sth);
 				tmp.mult(mat[k23]);
 				p1.add(tmp);
-				p2.set_val(sth);
+				p2.set_val_dfd1(sth);
 				p2.neg();
 				p2.mult(mat[k22]);
-				tmp.set_val(cth);
+				tmp.set_val_dfd1(cth);
 				tmp.mult(mat[k23]);
 				p2.add(tmp);
-				mat[k22].set_val(p1);
-				mat[k23].set_val(p2);
+				mat[k22].set_val_dfd1(p1);
+				mat[k23].set_val_dfd1(p2);
 			}
-			mat[k12].set_val(theta);
+			mat[k12].set_val_dfd1(theta);
 		}
 	}
 	return;
 }
 
-void solveq_rx_eqb(vector<DiffDoub1>& x_vec, vector<DiffDoub1>& mat, vector<DiffDoub1>& b_vec, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void solveq_rx_eqb_dfd1(vector<DiffDoub1>& x_vec, vector<DiffDoub1>& mat, vector<DiffDoub1>& b_vec, int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -2036,24 +1844,24 @@ void solveq_rx_eqb(vector<DiffDoub1>& x_vec, vector<DiffDoub1>& mat, vector<Diff
 		i3 = i2_min - 1;
 		for (i2 = i2_min; i2 <=i2_max; i2++) {
 			k12 = i2*col_dim + i1;
-			theta.set_val(mat[k12]);
-			sth.set_val(theta);
+			theta.set_val_dfd1(mat[k12]);
+			sth.set_val_dfd1(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd1(theta);
 			cth.cs();
-			p1.set_val(cth);
+			p1.set_val_dfd1(cth);
 			p1.mult(b_vec[i3]);
-			tmp.set_val(sth);
+			tmp.set_val_dfd1(sth);
 			tmp.mult(b_vec[i2]);
 			p1.add(tmp);
-			p2.set_val(sth);
+			p2.set_val_dfd1(sth);
 			p2.neg();
 			p2.mult(b_vec[i3]);
-			tmp.set_val(cth);
+			tmp.set_val_dfd1(cth);
 			tmp.mult(b_vec[i2]);
 			p2.add(tmp);
-		    b_vec[i3].set_val(p1);
-			b_vec[i2].set_val(p2);
+		    b_vec[i3].set_val_dfd1(p1);
+			b_vec[i2].set_val_dfd1(p2);
 		}
 		x_vec[i1].set_val(0.0);
 	}
@@ -2073,22 +1881,22 @@ void solveq_rx_eqb(vector<DiffDoub1>& x_vec, vector<DiffDoub1>& mat, vector<Diff
 		row_sum.set_val(0.0);
 		k11 = i3*col_dim + i2_min;
 		for (i2 = i2_min; i2 <= i2_max; i2++) {
-			tmp.set_val(mat[k11]);
+			tmp.set_val_dfd1(mat[k11]);
 			tmp.mult(x_vec[i2]);
 			row_sum.add(tmp);
 			k11++;
 		}
-		tmp.set_val(b_vec[i3]);
+		tmp.set_val_dfd1(b_vec[i3]);
 		tmp.sub(row_sum);
 		k11 = i3*col_dim + i1;
 		tmp.dvd(mat[k11]);
-		x_vec[i1].set_val(tmp);
+		x_vec[i1].set_val_dfd1(tmp);
 	}
 	
 	return;
 }
 
-void solveq_rx_eqb(DiffDoub1 x_vec[], DiffDoub1 mat[], DiffDoub1 b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
+void solveq_rx_eqb_ar_dfd1(DiffDoub1 x_vec[], DiffDoub1 mat[], DiffDoub1 b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
@@ -2118,24 +1926,24 @@ void solveq_rx_eqb(DiffDoub1 x_vec[], DiffDoub1 mat[], DiffDoub1 b_vec[], int co
 		i3 = i2_min - 1;
 		for (i2 = i2_min; i2 <= i2_max; i2++) {
 			k12 = i2 * col_dim + i1;
-			theta.set_val(mat[k12]);
-			sth.set_val(theta);
+			theta.set_val_dfd1(mat[k12]);
+			sth.set_val_dfd1(theta);
 			sth.sn();
-			cth.set_val(theta);
+			cth.set_val_dfd1(theta);
 			cth.cs();
-			p1.set_val(cth);
+			p1.set_val_dfd1(cth);
 			p1.mult(b_vec[i3]);
-			tmp.set_val(sth);
+			tmp.set_val_dfd1(sth);
 			tmp.mult(b_vec[i2]);
 			p1.add(tmp);
-			p2.set_val(sth);
+			p2.set_val_dfd1(sth);
 			p2.neg();
 			p2.mult(b_vec[i3]);
-			tmp.set_val(cth);
+			tmp.set_val_dfd1(cth);
 			tmp.mult(b_vec[i2]);
 			p2.add(tmp);
-			b_vec[i3].set_val(p1);
-			b_vec[i2].set_val(p2);
+			b_vec[i3].set_val_dfd1(p1);
+			b_vec[i2].set_val_dfd1(p2);
 		}
 		x_vec[i1].set_val(0.0);
 	}
@@ -2156,23 +1964,23 @@ void solveq_rx_eqb(DiffDoub1 x_vec[], DiffDoub1 mat[], DiffDoub1 b_vec[], int co
 		row_sum.set_val(0.0);
 		k11 = i3 * col_dim + i2_min;
 		for (i2 = i2_min; i2 <= i2_max; i2++) {
-			tmp.set_val(mat[k11]);
+			tmp.set_val_dfd1(mat[k11]);
 			tmp.mult(x_vec[i2]);
 			row_sum.add(tmp);
 			k11++;
 		}
-		tmp.set_val(b_vec[i3]);
+		tmp.set_val_dfd1(b_vec[i3]);
 		tmp.sub(row_sum);
 		k11 = i3 * col_dim + i1;
 		tmp.dvd(mat[k11]);
-		x_vec[i1].set_val(tmp);
+		x_vec[i1].set_val_dfd1(tmp);
 	}
 
 	return;
 }
 
-void get_det_inv(DiffDoub1& det, vector<DiffDoub1>& inv, vector<DiffDoub1>& mat, int col_dim, int tri_diag, vector<DiffDoub1>& x_vec, vector<DiffDoub1>& b_vec) {
-	q_rfactor(mat, col_dim, 0, (col_dim-1), 0, (col_dim-1), tri_diag);
+void get_det_inv_dfd1(DiffDoub1& det, vector<DiffDoub1>& inv, vector<DiffDoub1>& mat, int col_dim, int tri_diag, vector<DiffDoub1>& x_vec, vector<DiffDoub1>& b_vec) {
+	q_rfactor_dfd1(mat, col_dim, 0, (col_dim-1), 0, (col_dim-1), tri_diag);
 	int i1;
     int i2;
 	int i3;
@@ -2185,10 +1993,10 @@ void get_det_inv(DiffDoub1& det, vector<DiffDoub1>& inv, vector<DiffDoub1>& mat,
 			    b_vec[i2].set_val(0.0);
 			}
 		}
-		solveq_rx_eqb(x_vec,mat,b_vec,col_dim,0,(col_dim-1),0,(col_dim-1),tri_diag);
+		solveq_rx_eqb_dfd1(x_vec,mat,b_vec,col_dim,0,(col_dim-1),0,(col_dim-1),tri_diag);
 		for (i2 = 0; i2 < col_dim; i2++) {
 			i3 = i2*col_dim + i1;
-			inv[i3].set_val(x_vec[i2]);
+			inv[i3].set_val_dfd1(x_vec[i2]);
 		}
 		i3 = i1*col_dim + i1;
 		det.mult(mat[i3]);
@@ -2196,8 +2004,8 @@ void get_det_inv(DiffDoub1& det, vector<DiffDoub1>& inv, vector<DiffDoub1>& mat,
 	return;
 }
 
-void get_det_inv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int col_dim, int tri_diag, DiffDoub1 x_vec[], DiffDoub1 b_vec[]) {
-	q_rfactor(mat, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
+void get_det_inv_ar_dfd1(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int col_dim, int tri_diag, DiffDoub1 x_vec[], DiffDoub1 b_vec[]) {
+	q_rfactor_ar_dfd1(mat, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
 	int i1;
 	int i2;
 	int i3;
@@ -2211,10 +2019,10 @@ void get_det_inv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int col_dim, 
 				b_vec[i2].set_val(0.0);
 			}
 		}
-		solveq_rx_eqb(x_vec, mat, b_vec, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
+		solveq_rx_eqb_ar_dfd1(x_vec, mat, b_vec, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
 		for (i2 = 0; i2 < col_dim; i2++) {
 			i3 = i2 * col_dim + i1;
-			inv[i3].set_val(x_vec[i2]);
+			inv[i3].set_val_dfd1(x_vec[i2]);
 		}
 		i3 = i1 * col_dim + i1;
 		det.mult(mat[i3]);
@@ -2227,44 +2035,45 @@ void get_det_inv(DiffDoub1& det, DiffDoub1 inv[], DiffDoub1 mat[], int col_dim, 
 //end skip 
  
  
+ 
 //dup2
-void sub_vec(vector<DiffDoub0>& sub_v, vector<DiffDoub0>& v_in, int st, int end) {
+void sub_vec_dfd0(vector<DiffDoub0>& sub_v, vector<DiffDoub0>& v_in, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		sub_v[i2].set_val(v_in[i1]);
+		sub_v[i2].set_val_dfd0(v_in[i1]);
 		i2++;
 	}
 }
 
-void return_sv(vector<DiffDoub0>& sub_v, vector<DiffDoub0>& v_in, int st, int end) {
+void return_sv_dfd0(vector<DiffDoub0>& sub_v, vector<DiffDoub0>& v_in, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		v_in[i1].set_val(sub_v[i2]);
+		v_in[i1].set_val_dfd0(sub_v[i2]);
 		i2++;
 	}
 }
 
-void vec_to_ar(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end) {
+void vec_to_ar_dfd0(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		ar[i2].set_val(vc[i1]);
+		ar[i2].set_val_dfd0(vc[i1]);
 		i2++;
 	}
 }
 
-void ar_to_vec(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end) {
+void ar_to_vec_dfd0(DiffDoub0 ar[], std::vector<DiffDoub0>& vc, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		vc[i1].set_val(ar[i2]);
+		vc[i1].set_val_dfd0(ar[i2]);
 		i2++;
 	}
 }
 
-void mat_mul(vector<DiffDoub0>& prod, vector<DiffDoub0>& mat1, vector<DiffDoub0>& mat2, int m1_rows, int m1_cols, int m2_cols) {
+void mat_mul_dfd0(vector<DiffDoub0>& prod, vector<DiffDoub0>& mat1, vector<DiffDoub0>& mat2, int m1_rows, int m1_cols, int m2_cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -2280,7 +2089,7 @@ void mat_mul(vector<DiffDoub0>& prod, vector<DiffDoub0>& mat1, vector<DiffDoub0>
 			i6 = i2;
 			prod[i4].set_val(0.0);
 			for (i3 = 0; i3 < m1_cols; i3++) {
-				tmp.set_val(mat1[i5]);
+				tmp.set_val_dfd0(mat1[i5]);
 				tmp.mult(mat2[i6]);
 				prod[i4].add(tmp);
 				i5++;
@@ -2294,7 +2103,7 @@ void mat_mul(vector<DiffDoub0>& prod, vector<DiffDoub0>& mat1, vector<DiffDoub0>
 	return;
 }
 
-void mat_mul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1_rows, int m1_cols, int m2_cols) {
+void mat_mul_ar_dfd0(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1_rows, int m1_cols, int m2_cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -2310,7 +2119,7 @@ void mat_mul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1_rows, 
 			i6 = i2;
 			prod[i4].set_val(0.0);
 			for (i3 = 0; i3 < m1_cols; i3++) {
-				tmp.set_val(mat1[i5]);
+				tmp.set_val_dfd0(mat1[i5]);
 				tmp.mult(mat2[i6]);
 				prod[i4].add(tmp);
 				i5++;
@@ -2324,7 +2133,7 @@ void mat_mul(DiffDoub0 prod[], DiffDoub0 mat1[], DiffDoub0 mat2[], int m1_rows, 
 	return;
 }
 
-void transpose(vector<DiffDoub0>& mat_t, vector<DiffDoub0>& mat, int row_dim, int col_dim) {
+void transpose_dfd0(vector<DiffDoub0>& mat_t, vector<DiffDoub0>& mat, int row_dim, int col_dim) {
 	DiffDoub0 tmp;
 	int i1;
 	int i2;
@@ -2335,7 +2144,7 @@ void transpose(vector<DiffDoub0>& mat_t, vector<DiffDoub0>& mat, int row_dim, in
 	for (i1 = 0; i1 < row_dim; i1++) {
 		i4 = i1;
 		for (i2 = 0; i2 < col_dim; i2++) {
-			mat_t[i4].set_val(mat[i3]);
+			mat_t[i4].set_val_dfd0(mat[i3]);
 			i3++;
 			i4+= row_dim;
 		}
@@ -2343,7 +2152,7 @@ void transpose(vector<DiffDoub0>& mat_t, vector<DiffDoub0>& mat, int row_dim, in
 	return;
 }
 
-void transpose(DiffDoub0 mat_t[], DiffDoub0 mat[], int row_dim, int col_dim) {
+void transpose_ar_dfd0(DiffDoub0 mat_t[], DiffDoub0 mat[], int row_dim, int col_dim) {
 	DiffDoub0 tmp;
 	int i1;
 	int i2;
@@ -2354,7 +2163,7 @@ void transpose(DiffDoub0 mat_t[], DiffDoub0 mat[], int row_dim, int col_dim) {
 	for (i1 = 0; i1 < row_dim; i1++) {
 		i4 = i1;
 		for (i2 = 0; i2 < col_dim; i2++) {
-			mat_t[i4].set_val(mat[i3]);
+			mat_t[i4].set_val_dfd0(mat[i3]);
 			i3++;
 			i4 += row_dim;
 		}
@@ -2362,30 +2171,30 @@ void transpose(DiffDoub0 mat_t[], DiffDoub0 mat[], int row_dim, int col_dim) {
 	return;
 }
 
-void cross_prod(DiffDoub0 prod[], DiffDoub0 v1[], DiffDoub0 v2[]) {
+void cross_prod_dfd0(DiffDoub0 prod[], DiffDoub0 v1[], DiffDoub0 v2[]) {
 	DiffDoub0 tmp;
 	
-	prod[0].set_val(v1[1]);
+	prod[0].set_val_dfd0(v1[1]);
 	prod[0].mult(v2[2]);
-	tmp.set_val(v1[2]);
+	tmp.set_val_dfd0(v1[2]);
 	tmp.mult(v2[1]);
 	prod[0].sub(tmp);
 	
-	prod[1].set_val(v1[2]);
+	prod[1].set_val_dfd0(v1[2]);
 	prod[1].mult(v2[0]);
-	tmp.set_val(v1[0]);
+	tmp.set_val_dfd0(v1[0]);
 	tmp.mult(v2[2]);
 	prod[1].sub(tmp);
 	
-	prod[2].set_val(v1[0]);
+	prod[2].set_val_dfd0(v1[0]);
 	prod[2].mult(v2[1]);
-	tmp.set_val(v1[1]);
+	tmp.set_val_dfd0(v1[1]);
 	tmp.mult(v2[0]);
 	prod[2].sub(tmp);
 	return;
 }
 
-void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
+void rotate_orient_dfd0(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
 	DiffDoub0 mag;
 	DiffDoub0 tmp;
 	DiffDoub0 tmp2;
@@ -2399,11 +2208,11 @@ void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
 	
 	one_half.set_val(0.5);
 	
-	mag.set_val(rot[0]);
+	mag.set_val_dfd0(rot[0]);
 	mag.sqr();
-	tmp.set_val(rot[1]);
+	tmp.set_val_dfd0(rot[1]);
 	tmp.sqr();
-	tmp2.set_val(rot[2]);
+	tmp2.set_val_dfd0(rot[2]);
 	tmp2.sqr();
 	mag.add(tmp);
 	mag.add(tmp2);
@@ -2414,16 +2223,16 @@ void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
 		for (i1 = 0; i1 < 3; i1++) {
 			loc_rot[i1].set_val(0.0);
 			for (i2 = 0; i2 < 3; i2++) {
-				tmp.set_val(loc_ori[i3]);
+				tmp.set_val_dfd0(loc_ori[i3]);
 				tmp.mult(rot[i2]);
 				loc_rot[i1].add(tmp);
 				i3++;
 			}
 		}
 		a1[0].set_val(1.0);
-		tmp.set_val(loc_rot[1]);
+		tmp.set_val_dfd0(loc_rot[1]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[2]);
+		tmp2.set_val_dfd0(loc_rot[2]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
@@ -2445,9 +2254,9 @@ void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
 		a1[3].sub(loc_rot[2]);
 		
 		a1[4].set_val(1.0);
-		tmp.set_val(loc_rot[0]);
+		tmp.set_val_dfd0(loc_rot[0]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[2]);
+		tmp2.set_val_dfd0(loc_rot[2]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
@@ -2469,37 +2278,37 @@ void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
 		a1[7].sub(loc_rot[0]);
 		
 		a1[8].set_val(1.0);
-		tmp.set_val(loc_rot[0]);
+		tmp.set_val_dfd0(loc_rot[0]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[1]);
+		tmp2.set_val_dfd0(loc_rot[1]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
 		a1[8].sub(tmp);
 		
-		mat_mul(inst_ori, a1, loc_ori, 3, 3, 3);
+		mat_mul_ar_dfd0(inst_ori, a1, loc_ori, 3, 3, 3);
 	} else {
 		DiffDoub0 sth;
 		DiffDoub0 cth;
 		
-		sth.set_val(mag);
+		sth.set_val_dfd0(mag);
 		sth.sn();
-		cth.set_val(mag);
+		cth.set_val_dfd0(mag);
 		cth.cs();
 		
 		DiffDoub0 unit_rot[3];
 		tmp.set_val(1.0);
 		tmp.dvd(mag);
-		unit_rot[0].set_val(rot[0]);
+		unit_rot[0].set_val_dfd0(rot[0]);
 		unit_rot[0].mult(tmp);
-		unit_rot[1].set_val(rot[1]);
+		unit_rot[1].set_val_dfd0(rot[1]);
 		unit_rot[1].mult(tmp);
-		unit_rot[2].set_val(rot[2]);
+		unit_rot[2].set_val_dfd0(rot[2]);
 		unit_rot[2].mult(tmp);
 		
-		a1[0].set_val(unit_rot[0]);
-		a1[1].set_val(unit_rot[1]);
-		a1[2].set_val(unit_rot[2]);
+		a1[0].set_val_dfd0(unit_rot[0]);
+		a1[1].set_val_dfd0(unit_rot[1]);
+		a1[2].set_val_dfd0(unit_rot[2]);
 		
 		i1 = 0;
 		if(abs(unit_rot[1].val) < abs(unit_rot[0].val)) {
@@ -2509,66 +2318,66 @@ void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
 			i1 = 2;
 		}
 		tmp.set_val(1.0);
-		tmp2.set_val(unit_rot[i1]);
+		tmp2.set_val_dfd0(unit_rot[i1]);
 		tmp2.sqr();
 		tmp.sub(tmp2);
 		tmp.sqt(); // tmp = sqrt(1 - unit_rot[i1]^2)
-		a1[3+i1].set_val(tmp);
+		a1[3+i1].set_val_dfd0(tmp);
 		for (i2 = 0; i2 < 3; i2++) {
 			if(i2 != i1) {
 				i3 = 3 + i2;
-				a1[i3].set_val(a1[i1]);
+				a1[i3].set_val_dfd0(a1[i1]);
 				a1[i3].neg();
 				a1[i3].mult(a1[i2]);
 				a1[i3].dvd(tmp);
 			}
 		}
 		
-		cross_prod(&a1[6], &a1[0], &a1[3]);
+		cross_prod_dfd0(&a1[6], &a1[0], &a1[3]);
 		
-		a2[0].set_val(a1[0]);
-		a2[1].set_val(a1[1]);
-		a2[2].set_val(a1[2]);
+		a2[0].set_val_dfd0(a1[0]);
+		a2[1].set_val_dfd0(a1[1]);
+		a2[2].set_val_dfd0(a1[2]);
 		
-		a2[3].set_val(cth);
+		a2[3].set_val_dfd0(cth);
 		a2[3].mult(a1[3]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd0(sth);
 		tmp.mult(a1[6]);
 		a2[3].sub(tmp);
 		
-		a2[4].set_val(cth);
+		a2[4].set_val_dfd0(cth);
 		a2[4].mult(a1[4]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd0(sth);
 		tmp.mult(a1[7]);
 		a2[4].sub(tmp);
 		
-		a2[5].set_val(cth);
+		a2[5].set_val_dfd0(cth);
 		a2[5].mult(a1[5]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd0(sth);
 		tmp.mult(a1[8]);
 		a2[5].sub(tmp);
 		
-		a2[6].set_val(sth);
+		a2[6].set_val_dfd0(sth);
 		a2[6].mult(a1[3]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd0(cth);
 		tmp.mult(a1[6]);
 		a2[6].add(tmp);
 		
-		a2[7].set_val(sth);
+		a2[7].set_val_dfd0(sth);
 		a2[7].mult(a1[4]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd0(cth);
 		tmp.mult(a1[7]);
 		a2[7].add(tmp);
 		
-		a2[8].set_val(sth);
+		a2[8].set_val_dfd0(sth);
 		a2[8].mult(a1[5]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd0(cth);
 		tmp.mult(a1[8]);
 		a2[8].add(tmp);
 		
-		transpose(a3,a2,3,3); // a3 = a2^t
-		mat_mul(a2,a3,a1,3,3,3); //a2 = a2^t*a1
-		mat_mul(inst_ori,loc_ori,a2,3,3,3);
+		transpose_ar_dfd0(a3,a2,3,3); // a3 = a2^t
+		mat_mul_ar_dfd0(a2,a3,a1,3,3,3); //a2 = a2^t*a1
+		mat_mul_ar_dfd0(inst_ori,loc_ori,a2,3,3,3);
 	}
 	return;
 }
@@ -2576,45 +2385,45 @@ void rotate_orient(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[]) {
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup2
-void sub_vec(vector<DiffDoub1>& sub_v, vector<DiffDoub1>& v_in, int st, int end) {
+void sub_vec_dfd1(vector<DiffDoub1>& sub_v, vector<DiffDoub1>& v_in, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		sub_v[i2].set_val(v_in[i1]);
+		sub_v[i2].set_val_dfd1(v_in[i1]);
 		i2++;
 	}
 }
 
-void return_sv(vector<DiffDoub1>& sub_v, vector<DiffDoub1>& v_in, int st, int end) {
+void return_sv_dfd1(vector<DiffDoub1>& sub_v, vector<DiffDoub1>& v_in, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		v_in[i1].set_val(sub_v[i2]);
+		v_in[i1].set_val_dfd1(sub_v[i2]);
 		i2++;
 	}
 }
 
-void vec_to_ar(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end) {
+void vec_to_ar_dfd1(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		ar[i2].set_val(vc[i1]);
+		ar[i2].set_val_dfd1(vc[i1]);
 		i2++;
 	}
 }
 
-void ar_to_vec(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end) {
+void ar_to_vec_dfd1(DiffDoub1 ar[], std::vector<DiffDoub1>& vc, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		vc[i1].set_val(ar[i2]);
+		vc[i1].set_val_dfd1(ar[i2]);
 		i2++;
 	}
 }
 
-void mat_mul(vector<DiffDoub1>& prod, vector<DiffDoub1>& mat1, vector<DiffDoub1>& mat2, int m1_rows, int m1_cols, int m2_cols) {
+void mat_mul_dfd1(vector<DiffDoub1>& prod, vector<DiffDoub1>& mat1, vector<DiffDoub1>& mat2, int m1_rows, int m1_cols, int m2_cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -2630,7 +2439,7 @@ void mat_mul(vector<DiffDoub1>& prod, vector<DiffDoub1>& mat1, vector<DiffDoub1>
 			i6 = i2;
 			prod[i4].set_val(0.0);
 			for (i3 = 0; i3 < m1_cols; i3++) {
-				tmp.set_val(mat1[i5]);
+				tmp.set_val_dfd1(mat1[i5]);
 				tmp.mult(mat2[i6]);
 				prod[i4].add(tmp);
 				i5++;
@@ -2644,7 +2453,7 @@ void mat_mul(vector<DiffDoub1>& prod, vector<DiffDoub1>& mat1, vector<DiffDoub1>
 	return;
 }
 
-void mat_mul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1_rows, int m1_cols, int m2_cols) {
+void mat_mul_ar_dfd1(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1_rows, int m1_cols, int m2_cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -2660,7 +2469,7 @@ void mat_mul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1_rows, 
 			i6 = i2;
 			prod[i4].set_val(0.0);
 			for (i3 = 0; i3 < m1_cols; i3++) {
-				tmp.set_val(mat1[i5]);
+				tmp.set_val_dfd1(mat1[i5]);
 				tmp.mult(mat2[i6]);
 				prod[i4].add(tmp);
 				i5++;
@@ -2674,7 +2483,7 @@ void mat_mul(DiffDoub1 prod[], DiffDoub1 mat1[], DiffDoub1 mat2[], int m1_rows, 
 	return;
 }
 
-void transpose(vector<DiffDoub1>& mat_t, vector<DiffDoub1>& mat, int row_dim, int col_dim) {
+void transpose_dfd1(vector<DiffDoub1>& mat_t, vector<DiffDoub1>& mat, int row_dim, int col_dim) {
 	DiffDoub1 tmp;
 	int i1;
 	int i2;
@@ -2685,7 +2494,7 @@ void transpose(vector<DiffDoub1>& mat_t, vector<DiffDoub1>& mat, int row_dim, in
 	for (i1 = 0; i1 < row_dim; i1++) {
 		i4 = i1;
 		for (i2 = 0; i2 < col_dim; i2++) {
-			mat_t[i4].set_val(mat[i3]);
+			mat_t[i4].set_val_dfd1(mat[i3]);
 			i3++;
 			i4+= row_dim;
 		}
@@ -2693,7 +2502,7 @@ void transpose(vector<DiffDoub1>& mat_t, vector<DiffDoub1>& mat, int row_dim, in
 	return;
 }
 
-void transpose(DiffDoub1 mat_t[], DiffDoub1 mat[], int row_dim, int col_dim) {
+void transpose_ar_dfd1(DiffDoub1 mat_t[], DiffDoub1 mat[], int row_dim, int col_dim) {
 	DiffDoub1 tmp;
 	int i1;
 	int i2;
@@ -2704,7 +2513,7 @@ void transpose(DiffDoub1 mat_t[], DiffDoub1 mat[], int row_dim, int col_dim) {
 	for (i1 = 0; i1 < row_dim; i1++) {
 		i4 = i1;
 		for (i2 = 0; i2 < col_dim; i2++) {
-			mat_t[i4].set_val(mat[i3]);
+			mat_t[i4].set_val_dfd1(mat[i3]);
 			i3++;
 			i4 += row_dim;
 		}
@@ -2712,30 +2521,30 @@ void transpose(DiffDoub1 mat_t[], DiffDoub1 mat[], int row_dim, int col_dim) {
 	return;
 }
 
-void cross_prod(DiffDoub1 prod[], DiffDoub1 v1[], DiffDoub1 v2[]) {
+void cross_prod_dfd1(DiffDoub1 prod[], DiffDoub1 v1[], DiffDoub1 v2[]) {
 	DiffDoub1 tmp;
 	
-	prod[0].set_val(v1[1]);
+	prod[0].set_val_dfd1(v1[1]);
 	prod[0].mult(v2[2]);
-	tmp.set_val(v1[2]);
+	tmp.set_val_dfd1(v1[2]);
 	tmp.mult(v2[1]);
 	prod[0].sub(tmp);
 	
-	prod[1].set_val(v1[2]);
+	prod[1].set_val_dfd1(v1[2]);
 	prod[1].mult(v2[0]);
-	tmp.set_val(v1[0]);
+	tmp.set_val_dfd1(v1[0]);
 	tmp.mult(v2[2]);
 	prod[1].sub(tmp);
 	
-	prod[2].set_val(v1[0]);
+	prod[2].set_val_dfd1(v1[0]);
 	prod[2].mult(v2[1]);
-	tmp.set_val(v1[1]);
+	tmp.set_val_dfd1(v1[1]);
 	tmp.mult(v2[0]);
 	prod[2].sub(tmp);
 	return;
 }
 
-void rotate_orient(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]) {
+void rotate_orient_dfd1(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]) {
 	DiffDoub1 mag;
 	DiffDoub1 tmp;
 	DiffDoub1 tmp2;
@@ -2749,11 +2558,11 @@ void rotate_orient(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]) {
 	
 	one_half.set_val(0.5);
 	
-	mag.set_val(rot[0]);
+	mag.set_val_dfd1(rot[0]);
 	mag.sqr();
-	tmp.set_val(rot[1]);
+	tmp.set_val_dfd1(rot[1]);
 	tmp.sqr();
-	tmp2.set_val(rot[2]);
+	tmp2.set_val_dfd1(rot[2]);
 	tmp2.sqr();
 	mag.add(tmp);
 	mag.add(tmp2);
@@ -2764,16 +2573,16 @@ void rotate_orient(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]) {
 		for (i1 = 0; i1 < 3; i1++) {
 			loc_rot[i1].set_val(0.0);
 			for (i2 = 0; i2 < 3; i2++) {
-				tmp.set_val(loc_ori[i3]);
+				tmp.set_val_dfd1(loc_ori[i3]);
 				tmp.mult(rot[i2]);
 				loc_rot[i1].add(tmp);
 				i3++;
 			}
 		}
 		a1[0].set_val(1.0);
-		tmp.set_val(loc_rot[1]);
+		tmp.set_val_dfd1(loc_rot[1]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[2]);
+		tmp2.set_val_dfd1(loc_rot[2]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
@@ -2795,9 +2604,9 @@ void rotate_orient(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]) {
 		a1[3].sub(loc_rot[2]);
 		
 		a1[4].set_val(1.0);
-		tmp.set_val(loc_rot[0]);
+		tmp.set_val_dfd1(loc_rot[0]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[2]);
+		tmp2.set_val_dfd1(loc_rot[2]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
@@ -2819,37 +2628,37 @@ void rotate_orient(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]) {
 		a1[7].sub(loc_rot[0]);
 		
 		a1[8].set_val(1.0);
-		tmp.set_val(loc_rot[0]);
+		tmp.set_val_dfd1(loc_rot[0]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[1]);
+		tmp2.set_val_dfd1(loc_rot[1]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
 		a1[8].sub(tmp);
 		
-		mat_mul(inst_ori, a1, loc_ori, 3, 3, 3);
+		mat_mul_ar_dfd1(inst_ori, a1, loc_ori, 3, 3, 3);
 	} else {
 		DiffDoub1 sth;
 		DiffDoub1 cth;
 		
-		sth.set_val(mag);
+		sth.set_val_dfd1(mag);
 		sth.sn();
-		cth.set_val(mag);
+		cth.set_val_dfd1(mag);
 		cth.cs();
 		
 		DiffDoub1 unit_rot[3];
 		tmp.set_val(1.0);
 		tmp.dvd(mag);
-		unit_rot[0].set_val(rot[0]);
+		unit_rot[0].set_val_dfd1(rot[0]);
 		unit_rot[0].mult(tmp);
-		unit_rot[1].set_val(rot[1]);
+		unit_rot[1].set_val_dfd1(rot[1]);
 		unit_rot[1].mult(tmp);
-		unit_rot[2].set_val(rot[2]);
+		unit_rot[2].set_val_dfd1(rot[2]);
 		unit_rot[2].mult(tmp);
 		
-		a1[0].set_val(unit_rot[0]);
-		a1[1].set_val(unit_rot[1]);
-		a1[2].set_val(unit_rot[2]);
+		a1[0].set_val_dfd1(unit_rot[0]);
+		a1[1].set_val_dfd1(unit_rot[1]);
+		a1[2].set_val_dfd1(unit_rot[2]);
 		
 		i1 = 0;
 		if(abs(unit_rot[1].val) < abs(unit_rot[0].val)) {
@@ -2859,110 +2668,110 @@ void rotate_orient(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[]) {
 			i1 = 2;
 		}
 		tmp.set_val(1.0);
-		tmp2.set_val(unit_rot[i1]);
+		tmp2.set_val_dfd1(unit_rot[i1]);
 		tmp2.sqr();
 		tmp.sub(tmp2);
 		tmp.sqt(); // tmp = sqrt(1 - unit_rot[i1]^2)
-		a1[3+i1].set_val(tmp);
+		a1[3+i1].set_val_dfd1(tmp);
 		for (i2 = 0; i2 < 3; i2++) {
 			if(i2 != i1) {
 				i3 = 3 + i2;
-				a1[i3].set_val(a1[i1]);
+				a1[i3].set_val_dfd1(a1[i1]);
 				a1[i3].neg();
 				a1[i3].mult(a1[i2]);
 				a1[i3].dvd(tmp);
 			}
 		}
 		
-		cross_prod(&a1[6], &a1[0], &a1[3]);
+		cross_prod_dfd1(&a1[6], &a1[0], &a1[3]);
 		
-		a2[0].set_val(a1[0]);
-		a2[1].set_val(a1[1]);
-		a2[2].set_val(a1[2]);
+		a2[0].set_val_dfd1(a1[0]);
+		a2[1].set_val_dfd1(a1[1]);
+		a2[2].set_val_dfd1(a1[2]);
 		
-		a2[3].set_val(cth);
+		a2[3].set_val_dfd1(cth);
 		a2[3].mult(a1[3]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd1(sth);
 		tmp.mult(a1[6]);
 		a2[3].sub(tmp);
 		
-		a2[4].set_val(cth);
+		a2[4].set_val_dfd1(cth);
 		a2[4].mult(a1[4]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd1(sth);
 		tmp.mult(a1[7]);
 		a2[4].sub(tmp);
 		
-		a2[5].set_val(cth);
+		a2[5].set_val_dfd1(cth);
 		a2[5].mult(a1[5]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd1(sth);
 		tmp.mult(a1[8]);
 		a2[5].sub(tmp);
 		
-		a2[6].set_val(sth);
+		a2[6].set_val_dfd1(sth);
 		a2[6].mult(a1[3]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd1(cth);
 		tmp.mult(a1[6]);
 		a2[6].add(tmp);
 		
-		a2[7].set_val(sth);
+		a2[7].set_val_dfd1(sth);
 		a2[7].mult(a1[4]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd1(cth);
 		tmp.mult(a1[7]);
 		a2[7].add(tmp);
 		
-		a2[8].set_val(sth);
+		a2[8].set_val_dfd1(sth);
 		a2[8].mult(a1[5]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd1(cth);
 		tmp.mult(a1[8]);
 		a2[8].add(tmp);
 		
-		transpose(a3,a2,3,3); // a3 = a2^t
-		mat_mul(a2,a3,a1,3,3,3); //a2 = a2^t*a1
-		mat_mul(inst_ori,loc_ori,a2,3,3,3);
+		transpose_ar_dfd1(a3,a2,3,3); // a3 = a2^t
+		mat_mul_ar_dfd1(a2,a3,a1,3,3,3); //a2 = a2^t*a1
+		mat_mul_ar_dfd1(inst_ori,loc_ori,a2,3,3,3);
 	}
 	return;
 }
 //end dup
  
-//diff_doub2 versions: 
+//DiffDoub2 versions: 
 //dup2
-void sub_vec(vector<DiffDoub2>& sub_v, vector<DiffDoub2>& v_in, int st, int end) {
+void sub_vec_dfd2(vector<DiffDoub2>& sub_v, vector<DiffDoub2>& v_in, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		sub_v[i2].set_val(v_in[i1]);
+		sub_v[i2].set_val_dfd2(v_in[i1]);
 		i2++;
 	}
 }
 
-void return_sv(vector<DiffDoub2>& sub_v, vector<DiffDoub2>& v_in, int st, int end) {
+void return_sv_dfd2(vector<DiffDoub2>& sub_v, vector<DiffDoub2>& v_in, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		v_in[i1].set_val(sub_v[i2]);
+		v_in[i1].set_val_dfd2(sub_v[i2]);
 		i2++;
 	}
 }
 
-void vec_to_ar(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end) {
+void vec_to_ar_dfd2(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		ar[i2].set_val(vc[i1]);
+		ar[i2].set_val_dfd2(vc[i1]);
 		i2++;
 	}
 }
 
-void ar_to_vec(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end) {
+void ar_to_vec_dfd2(DiffDoub2 ar[], std::vector<DiffDoub2>& vc, int st, int end) {
 	int i1;
 	int i2 = 0;
 	for (i1 = st; i1 < end; i1++) {
-		vc[i1].set_val(ar[i2]);
+		vc[i1].set_val_dfd2(ar[i2]);
 		i2++;
 	}
 }
 
-void mat_mul(vector<DiffDoub2>& prod, vector<DiffDoub2>& mat1, vector<DiffDoub2>& mat2, int m1_rows, int m1_cols, int m2_cols) {
+void mat_mul_dfd2(vector<DiffDoub2>& prod, vector<DiffDoub2>& mat1, vector<DiffDoub2>& mat2, int m1_rows, int m1_cols, int m2_cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -2978,7 +2787,7 @@ void mat_mul(vector<DiffDoub2>& prod, vector<DiffDoub2>& mat1, vector<DiffDoub2>
 			i6 = i2;
 			prod[i4].set_val(0.0);
 			for (i3 = 0; i3 < m1_cols; i3++) {
-				tmp.set_val(mat1[i5]);
+				tmp.set_val_dfd2(mat1[i5]);
 				tmp.mult(mat2[i6]);
 				prod[i4].add(tmp);
 				i5++;
@@ -2992,7 +2801,7 @@ void mat_mul(vector<DiffDoub2>& prod, vector<DiffDoub2>& mat1, vector<DiffDoub2>
 	return;
 }
 
-void mat_mul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1_rows, int m1_cols, int m2_cols) {
+void mat_mul_ar_dfd2(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1_rows, int m1_cols, int m2_cols) {
 	int i1;
 	int i2;
 	int i3;
@@ -3008,7 +2817,7 @@ void mat_mul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1_rows, 
 			i6 = i2;
 			prod[i4].set_val(0.0);
 			for (i3 = 0; i3 < m1_cols; i3++) {
-				tmp.set_val(mat1[i5]);
+				tmp.set_val_dfd2(mat1[i5]);
 				tmp.mult(mat2[i6]);
 				prod[i4].add(tmp);
 				i5++;
@@ -3022,7 +2831,7 @@ void mat_mul(DiffDoub2 prod[], DiffDoub2 mat1[], DiffDoub2 mat2[], int m1_rows, 
 	return;
 }
 
-void transpose(vector<DiffDoub2>& mat_t, vector<DiffDoub2>& mat, int row_dim, int col_dim) {
+void transpose_dfd2(vector<DiffDoub2>& mat_t, vector<DiffDoub2>& mat, int row_dim, int col_dim) {
 	DiffDoub2 tmp;
 	int i1;
 	int i2;
@@ -3033,7 +2842,7 @@ void transpose(vector<DiffDoub2>& mat_t, vector<DiffDoub2>& mat, int row_dim, in
 	for (i1 = 0; i1 < row_dim; i1++) {
 		i4 = i1;
 		for (i2 = 0; i2 < col_dim; i2++) {
-			mat_t[i4].set_val(mat[i3]);
+			mat_t[i4].set_val_dfd2(mat[i3]);
 			i3++;
 			i4+= row_dim;
 		}
@@ -3041,7 +2850,7 @@ void transpose(vector<DiffDoub2>& mat_t, vector<DiffDoub2>& mat, int row_dim, in
 	return;
 }
 
-void transpose(DiffDoub2 mat_t[], DiffDoub2 mat[], int row_dim, int col_dim) {
+void transpose_ar_dfd2(DiffDoub2 mat_t[], DiffDoub2 mat[], int row_dim, int col_dim) {
 	DiffDoub2 tmp;
 	int i1;
 	int i2;
@@ -3052,7 +2861,7 @@ void transpose(DiffDoub2 mat_t[], DiffDoub2 mat[], int row_dim, int col_dim) {
 	for (i1 = 0; i1 < row_dim; i1++) {
 		i4 = i1;
 		for (i2 = 0; i2 < col_dim; i2++) {
-			mat_t[i4].set_val(mat[i3]);
+			mat_t[i4].set_val_dfd2(mat[i3]);
 			i3++;
 			i4 += row_dim;
 		}
@@ -3060,30 +2869,30 @@ void transpose(DiffDoub2 mat_t[], DiffDoub2 mat[], int row_dim, int col_dim) {
 	return;
 }
 
-void cross_prod(DiffDoub2 prod[], DiffDoub2 v1[], DiffDoub2 v2[]) {
+void cross_prod_dfd2(DiffDoub2 prod[], DiffDoub2 v1[], DiffDoub2 v2[]) {
 	DiffDoub2 tmp;
 	
-	prod[0].set_val(v1[1]);
+	prod[0].set_val_dfd2(v1[1]);
 	prod[0].mult(v2[2]);
-	tmp.set_val(v1[2]);
+	tmp.set_val_dfd2(v1[2]);
 	tmp.mult(v2[1]);
 	prod[0].sub(tmp);
 	
-	prod[1].set_val(v1[2]);
+	prod[1].set_val_dfd2(v1[2]);
 	prod[1].mult(v2[0]);
-	tmp.set_val(v1[0]);
+	tmp.set_val_dfd2(v1[0]);
 	tmp.mult(v2[2]);
 	prod[1].sub(tmp);
 	
-	prod[2].set_val(v1[0]);
+	prod[2].set_val_dfd2(v1[0]);
 	prod[2].mult(v2[1]);
-	tmp.set_val(v1[1]);
+	tmp.set_val_dfd2(v1[1]);
 	tmp.mult(v2[0]);
 	prod[2].sub(tmp);
 	return;
 }
 
-void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
+void rotate_orient_dfd2(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
 	DiffDoub2 mag;
 	DiffDoub2 tmp;
 	DiffDoub2 tmp2;
@@ -3097,11 +2906,11 @@ void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
 	
 	one_half.set_val(0.5);
 	
-	mag.set_val(rot[0]);
+	mag.set_val_dfd2(rot[0]);
 	mag.sqr();
-	tmp.set_val(rot[1]);
+	tmp.set_val_dfd2(rot[1]);
 	tmp.sqr();
-	tmp2.set_val(rot[2]);
+	tmp2.set_val_dfd2(rot[2]);
 	tmp2.sqr();
 	mag.add(tmp);
 	mag.add(tmp2);
@@ -3112,16 +2921,16 @@ void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
 		for (i1 = 0; i1 < 3; i1++) {
 			loc_rot[i1].set_val(0.0);
 			for (i2 = 0; i2 < 3; i2++) {
-				tmp.set_val(loc_ori[i3]);
+				tmp.set_val_dfd2(loc_ori[i3]);
 				tmp.mult(rot[i2]);
 				loc_rot[i1].add(tmp);
 				i3++;
 			}
 		}
 		a1[0].set_val(1.0);
-		tmp.set_val(loc_rot[1]);
+		tmp.set_val_dfd2(loc_rot[1]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[2]);
+		tmp2.set_val_dfd2(loc_rot[2]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
@@ -3143,9 +2952,9 @@ void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
 		a1[3].sub(loc_rot[2]);
 		
 		a1[4].set_val(1.0);
-		tmp.set_val(loc_rot[0]);
+		tmp.set_val_dfd2(loc_rot[0]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[2]);
+		tmp2.set_val_dfd2(loc_rot[2]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
@@ -3167,37 +2976,37 @@ void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
 		a1[7].sub(loc_rot[0]);
 		
 		a1[8].set_val(1.0);
-		tmp.set_val(loc_rot[0]);
+		tmp.set_val_dfd2(loc_rot[0]);
 		tmp.sqr();
-		tmp2.set_val(loc_rot[1]);
+		tmp2.set_val_dfd2(loc_rot[1]);
 		tmp2.sqr();
 		tmp.add(tmp2);
 		tmp.mult(one_half);
 		a1[8].sub(tmp);
 		
-		mat_mul(inst_ori, a1, loc_ori, 3, 3, 3);
+		mat_mul_ar_dfd2(inst_ori, a1, loc_ori, 3, 3, 3);
 	} else {
 		DiffDoub2 sth;
 		DiffDoub2 cth;
 		
-		sth.set_val(mag);
+		sth.set_val_dfd2(mag);
 		sth.sn();
-		cth.set_val(mag);
+		cth.set_val_dfd2(mag);
 		cth.cs();
 		
 		DiffDoub2 unit_rot[3];
 		tmp.set_val(1.0);
 		tmp.dvd(mag);
-		unit_rot[0].set_val(rot[0]);
+		unit_rot[0].set_val_dfd2(rot[0]);
 		unit_rot[0].mult(tmp);
-		unit_rot[1].set_val(rot[1]);
+		unit_rot[1].set_val_dfd2(rot[1]);
 		unit_rot[1].mult(tmp);
-		unit_rot[2].set_val(rot[2]);
+		unit_rot[2].set_val_dfd2(rot[2]);
 		unit_rot[2].mult(tmp);
 		
-		a1[0].set_val(unit_rot[0]);
-		a1[1].set_val(unit_rot[1]);
-		a1[2].set_val(unit_rot[2]);
+		a1[0].set_val_dfd2(unit_rot[0]);
+		a1[1].set_val_dfd2(unit_rot[1]);
+		a1[2].set_val_dfd2(unit_rot[2]);
 		
 		i1 = 0;
 		if(abs(unit_rot[1].val) < abs(unit_rot[0].val)) {
@@ -3207,66 +3016,66 @@ void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
 			i1 = 2;
 		}
 		tmp.set_val(1.0);
-		tmp2.set_val(unit_rot[i1]);
+		tmp2.set_val_dfd2(unit_rot[i1]);
 		tmp2.sqr();
 		tmp.sub(tmp2);
 		tmp.sqt(); // tmp = sqrt(1 - unit_rot[i1]^2)
-		a1[3+i1].set_val(tmp);
+		a1[3+i1].set_val_dfd2(tmp);
 		for (i2 = 0; i2 < 3; i2++) {
 			if(i2 != i1) {
 				i3 = 3 + i2;
-				a1[i3].set_val(a1[i1]);
+				a1[i3].set_val_dfd2(a1[i1]);
 				a1[i3].neg();
 				a1[i3].mult(a1[i2]);
 				a1[i3].dvd(tmp);
 			}
 		}
 		
-		cross_prod(&a1[6], &a1[0], &a1[3]);
+		cross_prod_dfd2(&a1[6], &a1[0], &a1[3]);
 		
-		a2[0].set_val(a1[0]);
-		a2[1].set_val(a1[1]);
-		a2[2].set_val(a1[2]);
+		a2[0].set_val_dfd2(a1[0]);
+		a2[1].set_val_dfd2(a1[1]);
+		a2[2].set_val_dfd2(a1[2]);
 		
-		a2[3].set_val(cth);
+		a2[3].set_val_dfd2(cth);
 		a2[3].mult(a1[3]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd2(sth);
 		tmp.mult(a1[6]);
 		a2[3].sub(tmp);
 		
-		a2[4].set_val(cth);
+		a2[4].set_val_dfd2(cth);
 		a2[4].mult(a1[4]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd2(sth);
 		tmp.mult(a1[7]);
 		a2[4].sub(tmp);
 		
-		a2[5].set_val(cth);
+		a2[5].set_val_dfd2(cth);
 		a2[5].mult(a1[5]);
-		tmp.set_val(sth);
+		tmp.set_val_dfd2(sth);
 		tmp.mult(a1[8]);
 		a2[5].sub(tmp);
 		
-		a2[6].set_val(sth);
+		a2[6].set_val_dfd2(sth);
 		a2[6].mult(a1[3]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd2(cth);
 		tmp.mult(a1[6]);
 		a2[6].add(tmp);
 		
-		a2[7].set_val(sth);
+		a2[7].set_val_dfd2(sth);
 		a2[7].mult(a1[4]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd2(cth);
 		tmp.mult(a1[7]);
 		a2[7].add(tmp);
 		
-		a2[8].set_val(sth);
+		a2[8].set_val_dfd2(sth);
 		a2[8].mult(a1[5]);
-		tmp.set_val(cth);
+		tmp.set_val_dfd2(cth);
 		tmp.mult(a1[8]);
 		a2[8].add(tmp);
 		
-		transpose(a3,a2,3,3); // a3 = a2^t
-		mat_mul(a2,a3,a1,3,3,3); //a2 = a2^t*a1
-		mat_mul(inst_ori,loc_ori,a2,3,3,3);
+		transpose_ar_dfd2(a3,a2,3,3); // a3 = a2^t
+		mat_mul_ar_dfd2(a2,a3,a1,3,3,3); //a2 = a2^t*a1
+		mat_mul_ar_dfd2(inst_ori,loc_ori,a2,3,3,3);
 	}
 	return;
 }
@@ -3275,10 +3084,11 @@ void rotate_orient(DiffDoub2 inst_ori[], DiffDoub2 loc_ori[], DiffDoub2 rot[]) {
 //end skip 
  
  
+ 
 //dup1
-void d_orid_thet(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int v1, int v2) {
+void d_orid_thet_dfd0(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
-		rotate_orient(inst_ori, loc_ori, rot);
+		rotate_orient_dfd0(inst_ori, loc_ori, rot);
 		return;
 	}
 //preserve
@@ -3303,12 +3113,12 @@ void d_orid_thet(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int
 			for (i1 = 1; i1 < 4; i1++) {
 				param = rot[i1-1].val;
 				if(i1 == v1) {
-					d_rot[i1-1].set_val(param,1.0);
+					d_rot[i1-1].set_val_2(param,1.0);
 				} else {
-					d_rot[i1-1].set_val(param,0.0);
+					d_rot[i1-1].set_val_2(param,0.0);
 				}
 			}
-			rotate_orient(d_inst_ori, d_loc_ori, d_rot);
+			rotate_orient_dfd1(d_inst_ori, d_loc_ori, d_rot);
 			for (i1 = 0; i1 < 9; i1++) {
 				param = d_inst_ori[i1].dval;
 				inst_ori[i1].set_val(param);
@@ -3317,13 +3127,13 @@ void d_orid_thet(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int
 			for (i1 = 0; i1 < 9; i1++) {
 				param = loc_ori[i1].val;
 				param2 = loc_ori[i1].dval;
-			    d2_loc_ori[i1].set_val(param,param2);
+			    d2_loc_ori[i1].set_val_2(param,param2);
 		    }
 			if(v1 == v2) {
 				for (i1 = 1; i1 < 4; i1++) {
 					param = rot[i1-1].val;
 					if(i1 == v1) {
-						d2_rot[i1-1].set_val(param,1.0,1.0);
+						d2_rot[i1-1].set_val_3(param,1.0,1.0);
 					} else {
 						d2_rot[i1-1].set_val(param);
 					}
@@ -3332,15 +3142,15 @@ void d_orid_thet(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int
 				for (i1 = 1; i1 < 4; i1++) {
 					param = rot[i1-1].val;
 					if(i1 == v1) {
-						d2_rot[i1-1].set_val(param,1.0);
+						d2_rot[i1-1].set_val_2(param,1.0);
 					} else if(i1 == v2) {
-						d2_rot[i1-1].set_val(param,0.0,1.0);
+						d2_rot[i1-1].set_val_3(param,0.0,1.0);
 					} else {
-						d2_rot[i1-1].set_val(param,0.0);
+						d2_rot[i1-1].set_val_2(param,0.0);
 					}
 				}
 			}
-			rotate_orient(d2_inst_ori, d2_loc_ori, d2_rot);
+			rotate_orient_dfd2(d2_inst_ori, d2_loc_ori, d2_rot);
 			for (i1 = 0; i1 < 9; i1++) {
 				param = d2_inst_ori[i1].dv12;
 				inst_ori[i1].set_val(param);
@@ -3350,22 +3160,22 @@ void d_orid_thet(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int
 		for (i1 = 0; i1 < 9; i1++) {
 			param = loc_ori[i1].val;
 			param2 = loc_ori[i1].dval;
-			d2_loc_ori[i1].set_val(param,param2);
+			d2_loc_ori[i1].set_val_2(param,param2);
 		}
 		v1 = v1 + v2;
 		for (i1 = 1; i1 < 4; i1++) {
 			param = rot[i1-1].val;
 			if(i1 == v1) {
-				d2_rot[i1-1].set_val(param,0.0,1.0);
+				d2_rot[i1-1].set_val_3(param,0.0,1.0);
 			} else {
-				d2_rot[i1-1].set_val(param,0.0);
+				d2_rot[i1-1].set_val_2(param,0.0);
 			}
 		}
-		rotate_orient(d2_inst_ori, d2_loc_ori, d2_rot);
+		rotate_orient_dfd2(d2_inst_ori, d2_loc_ori, d2_rot);
 		for (i1 = 0; i1 < 9; i1++) {
 			param = d2_inst_ori[i1].dv2;
 			param2 = d2_inst_ori[i1].dv12;
-			inst_ori[i1].set_val(param,param2);
+			inst_ori[i1].set_val_2(param,param2);
 		}
 	}
 	return;
@@ -3375,11 +3185,11 @@ void d_orid_thet(DiffDoub0 inst_ori[], DiffDoub0 loc_ori[], DiffDoub0 rot[], int
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup1
-void d_orid_thet(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int v1, int v2) {
+void d_orid_thet_dfd1(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int v1, int v2) {
 	if(v1 + v2 == 0) {
-		rotate_orient(inst_ori, loc_ori, rot);
+		rotate_orient_dfd1(inst_ori, loc_ori, rot);
 		return;
 	}
     DiffDoub1 d_rot[3];
@@ -3402,12 +3212,12 @@ void d_orid_thet(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int
 			for (i1 = 1; i1 < 4; i1++) {
 				param = rot[i1-1].val;
 				if(i1 == v1) {
-					d_rot[i1-1].set_val(param,1.0);
+					d_rot[i1-1].set_val_2(param,1.0);
 				} else {
-					d_rot[i1-1].set_val(param,0.0);
+					d_rot[i1-1].set_val_2(param,0.0);
 				}
 			}
-			rotate_orient(d_inst_ori, d_loc_ori, d_rot);
+			rotate_orient_dfd1(d_inst_ori, d_loc_ori, d_rot);
 			for (i1 = 0; i1 < 9; i1++) {
 				param = d_inst_ori[i1].dval;
 				inst_ori[i1].set_val(param);
@@ -3416,13 +3226,13 @@ void d_orid_thet(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int
 			for (i1 = 0; i1 < 9; i1++) {
 				param = loc_ori[i1].val;
 				param2 = loc_ori[i1].dval;
-			    d2_loc_ori[i1].set_val(param,param2);
+			    d2_loc_ori[i1].set_val_2(param,param2);
 		    }
 			if(v1 == v2) {
 				for (i1 = 1; i1 < 4; i1++) {
 					param = rot[i1-1].val;
 					if(i1 == v1) {
-						d2_rot[i1-1].set_val(param,1.0,1.0);
+						d2_rot[i1-1].set_val_3(param,1.0,1.0);
 					} else {
 						d2_rot[i1-1].set_val(param);
 					}
@@ -3431,15 +3241,15 @@ void d_orid_thet(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int
 				for (i1 = 1; i1 < 4; i1++) {
 					param = rot[i1-1].val;
 					if(i1 == v1) {
-						d2_rot[i1-1].set_val(param,1.0);
+						d2_rot[i1-1].set_val_2(param,1.0);
 					} else if(i1 == v2) {
-						d2_rot[i1-1].set_val(param,0.0,1.0);
+						d2_rot[i1-1].set_val_3(param,0.0,1.0);
 					} else {
-						d2_rot[i1-1].set_val(param,0.0);
+						d2_rot[i1-1].set_val_2(param,0.0);
 					}
 				}
 			}
-			rotate_orient(d2_inst_ori, d2_loc_ori, d2_rot);
+			rotate_orient_dfd2(d2_inst_ori, d2_loc_ori, d2_rot);
 			for (i1 = 0; i1 < 9; i1++) {
 				param = d2_inst_ori[i1].dv12;
 				inst_ori[i1].set_val(param);
@@ -3449,22 +3259,22 @@ void d_orid_thet(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int
 		for (i1 = 0; i1 < 9; i1++) {
 			param = loc_ori[i1].val;
 			param2 = loc_ori[i1].dval;
-			d2_loc_ori[i1].set_val(param,param2);
+			d2_loc_ori[i1].set_val_2(param,param2);
 		}
 		v1 = v1 + v2;
 		for (i1 = 1; i1 < 4; i1++) {
 			param = rot[i1-1].val;
 			if(i1 == v1) {
-				d2_rot[i1-1].set_val(param,0.0,1.0);
+				d2_rot[i1-1].set_val_3(param,0.0,1.0);
 			} else {
-				d2_rot[i1-1].set_val(param,0.0);
+				d2_rot[i1-1].set_val_2(param,0.0);
 			}
 		}
-		rotate_orient(d2_inst_ori, d2_loc_ori, d2_rot);
+		rotate_orient_dfd2(d2_inst_ori, d2_loc_ori, d2_rot);
 		for (i1 = 0; i1 < 9; i1++) {
 			param = d2_inst_ori[i1].dv2;
 			param2 = d2_inst_ori[i1].dv12;
-			inst_ori[i1].set_val(param,param2);
+			inst_ori[i1].set_val_2(param,param2);
 		}
 	}
 	return;
@@ -3473,5 +3283,6 @@ void d_orid_thet(DiffDoub1 inst_ori[], DiffDoub1 loc_ori[], DiffDoub1 rot[], int
 //end dup  
  
 //end skip 
+ 
  
  

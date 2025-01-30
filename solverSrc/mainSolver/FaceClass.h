@@ -23,20 +23,21 @@ class Face {
 
 		//dup1
 
-		void get_area_normal(DiffDoub0& area, DiffDoub0 norm[], std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
+		void get_area_normal_dfd0(DiffDoub0& area, DiffDoub0 norm[], std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
 		//end dup
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 		//dup1
 
-		void get_area_normal(DiffDoub1& area, DiffDoub1 norm[], std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
+		void get_area_normal_dfd1(DiffDoub1& area, DiffDoub1 norm[], std::vector<Node>& nd_ar, std::vector<DesignVariable>& dv_ar);
 
 		//end dup
  
 //end skip 
+ 
  
  
 };

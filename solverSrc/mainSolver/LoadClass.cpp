@@ -1,11 +1,10 @@
 #include <string>
 #include <cmath>
 #include "LoadClass.h"
+#include "constants.h"
 #include "SetClass.h"
 
 using namespace std;
-
-const int max_int = 2000000000;
 
 Load::Load() {
 	type = "";

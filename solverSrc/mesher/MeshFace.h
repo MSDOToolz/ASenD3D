@@ -2,72 +2,35 @@
 #define MESHFACE
 #include "MeshNode.h"
 #include "MeshElement.h"
+#include <vector>
 
 class MeshFace {
-private:
-	int nodeLabs[3];
-	MeshNode* nodes[3];
-	MeshElement* elements[2];
+public:
+
+	int nodes[3];
+	int elements[2];
 	double normDir[3];
 	double projDist;
-	MeshFace* next;
 
-public:
 	MeshFace();
 
-	void setNodeLabs(int newLabs[]);
+	void copy_data(MeshFace& f_in);
 
-	void setNodePt(MeshNode* newNds[]);
+	void initNormDir(std::vector<MeshNode>& nd_ar);
 
-	void setPtFromLabs(MeshNode* ndAr[]);
+	void normDirFromElCent(double cent[], std::vector<MeshNode>& nd_ar);
 
-	void setElPt(MeshElement* newEls[]);
+	void getCentroid(double cent[], std::vector<MeshNode>& nd_ar);
 
-	void initNormDir();
+	double getLongestEdgeLen(std::vector<MeshNode>& nd_ar);
 
-	void normDirFromElCent(double cent[]);
+	bool getIntersection(double outParam[], double pt[], double vec[], std::vector<MeshNode>& nd_ar);
 
-	void setNext(MeshFace* newNext);
+	bool edgesIntersect(int fc, double distTol, std::vector<MeshNode>& nd_ar, std::vector<MeshFace>& fc_ar);
 
-	MeshNode** getNdPt();
+	int getSharedNodes(int ndPts[], bool shared[], int fc, std::vector<MeshNode>& nd_ar, std::vector<MeshFace>& fc_ar);
 
-	MeshElement** getElPt();
-
-	double* getNormDir();
-
-	void getCentroid(double cent[]);
-
-	double getProjDist();
-
-	double getLongestEdgeLen();
-
-	bool getIntersection(double outParam[], double pt[], double vec[]);
-
-	bool edgesIntersect(MeshFace* fc, double distTol);
-
-	int getSharedNodes(MeshNode* ndPts[], bool shared[], MeshFace* fc);
-
-	void printInfo();
-
-	MeshFace* getNext();
-};
-
-class MFList {
-private:
-	MeshFace* first;
-	MeshFace* last;
-	int length;
-
-public:
-	MFList();
-
-	void addEnt(MeshFace* newFc);
-
-	MeshFace* getFirst();
-
-	int getLength();
-
-	~MFList();
+	void printInfo(std::vector<MeshNode>& nd_ar);
 };
 
 #endif

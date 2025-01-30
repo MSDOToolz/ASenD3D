@@ -13,9 +13,9 @@ class DiffDoub0 {
 		
 		void set_val(double inp);
 
-		void set_val(double inp, double dinp);
+		void set_val_2(double inp, double dinp);
 		
-		void set_val(DiffDoub0& inp);
+		void set_val_dfd0(DiffDoub0& inp);
 		
 		void add(DiffDoub0& inp);
 		
@@ -53,11 +53,11 @@ class DiffDoub1 {
 		
 		void set_val(double inp);
 		
-		void set_val(double inp, double dinp);
+		void set_val_2(double inp, double dinp);
 
-		void set_val(DiffDoub0& inp);
+		void set_val_dfd0(DiffDoub0& inp);
 		
-		void set_val(DiffDoub1& inp);
+		void set_val_dfd1(DiffDoub1& inp);
 		
 		void add(DiffDoub1& inp);
 		
@@ -99,11 +99,11 @@ class DiffDoub2 {
 		
 		void set_val(double inp);
 		
-		void set_val(double inp, double dinp);
+		void set_val_2(double inp, double dinp);
 		
-		void set_val(double inp, double dinp1, double dinp2);
+		void set_val_3(double inp, double dinp1, double dinp2);
 		
-		void set_val(DiffDoub2& inp);
+		void set_val_dfd2(DiffDoub2& inp);
 		
 		void add(DiffDoub2& inp);
 		

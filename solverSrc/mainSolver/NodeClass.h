@@ -137,29 +137,30 @@ class Node {
 		void add_design_variable(int d_index, double coef);
 		
 //dup1
-		void get_crd(DiffDoub0 crd_out[], std::vector<DesignVariable>& dv_ar);
+		void get_crd_dfd0(DiffDoub0 crd_out[], std::vector<DesignVariable>& dv_ar);
 		
-		void get_disp(DiffDoub0 disp[]);
+		void get_disp_dfd0(DiffDoub0 disp[]);
 		
-		void get_elastic_dvload(DiffDoub0 ld[], std::vector<DesignVariable>& dv_ar);
+		void get_elastic_dvload_dfd0(DiffDoub0 ld[], std::vector<DesignVariable>& dv_ar);
 
-		void get_thermal_dvload(DiffDoub0& ld, std::vector<DesignVariable>& dv_ar);
+		void get_thermal_dvload_dfd0(DiffDoub0& ld, std::vector<DesignVariable>& dv_ar);
 //end dup	
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup1
-		void get_crd(DiffDoub1 crd_out[], std::vector<DesignVariable>& dv_ar);
+		void get_crd_dfd1(DiffDoub1 crd_out[], std::vector<DesignVariable>& dv_ar);
 		
-		void get_disp(DiffDoub1 disp[]);
+		void get_disp_dfd1(DiffDoub1 disp[]);
 		
-		void get_elastic_dvload(DiffDoub1 ld[], std::vector<DesignVariable>& dv_ar);
+		void get_elastic_dvload_dfd1(DiffDoub1 ld[], std::vector<DesignVariable>& dv_ar);
 
-		void get_thermal_dvload(DiffDoub1& ld, std::vector<DesignVariable>& dv_ar);
+		void get_thermal_dvload_dfd1(DiffDoub1& ld, std::vector<DesignVariable>& dv_ar);
 //end dup	
  
 //end skip 
+ 
  
  
 };

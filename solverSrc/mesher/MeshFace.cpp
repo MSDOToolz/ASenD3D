@@ -1,4 +1,5 @@
 #include "MeshFace.h"
+#include "constants.h"
 #include "MeshNode.h"
 #include "MeshElement.h"
 #include "utilities.h"
@@ -8,51 +9,35 @@
 using namespace std;
 
 MeshFace::MeshFace() {
-	nodes[0] = nullptr;
-	nodes[1] = nullptr;
-	nodes[2] = nullptr;
-	elements[0] = nullptr;
-	elements[1] = nullptr;
-	next = nullptr;
+	nodes[0] = max_int;
+	nodes[1] = max_int;
+	nodes[2] = max_int;
+	elements[0] = max_int;
+	elements[1] = max_int;
 	return;
 }
 
-void MeshFace::setNodeLabs(int newLabs[]) {
-	nodeLabs[0] = newLabs[0];
-	nodeLabs[1] = newLabs[1];
-	nodeLabs[2] = newLabs[2];
+void MeshFace::copy_data(MeshFace& f_in) {
+	int i1;
+	for (i1 = 0; i1 < 3; i1++) {
+		nodes[i1] = f_in.nodes[i1];
+		normDir[i1] = f_in.normDir[i1];
+	}
+	elements[0] = f_in.elements[0];
+	elements[1] = f_in.elements[1];
+	projDist = f_in.projDist;
 	return;
 }
 
-void MeshFace::setNodePt(MeshNode* newNds[]) {
-	nodes[0] = newNds[0];
-	nodes[1] = newNds[1];
-	nodes[2] = newNds[2];
-	return;
-}
-
-void MeshFace::setPtFromLabs(MeshNode* ndAr[]) {
-	nodes[0] = ndAr[nodeLabs[0]];
-	nodes[1] = ndAr[nodeLabs[1]];
-	nodes[2] = ndAr[nodeLabs[2]];
-	return;
-}
-
-void MeshFace::setElPt(MeshElement* newEls[]) {
-	elements[0] = newEls[0];
-	elements[1] = newEls[1];
-	return;
-}
-
-void MeshFace::initNormDir() {
+void MeshFace::initNormDir(vector<MeshNode>& nd_ar) {
 	double v1[3];
 	double v2[3];
 	double cp[3];
 	double mag;
 	double area;
-	double* n1 = nodes[0]->getCrd();
-	double* n2 = nodes[1]->getCrd();
-	double* n3 = nodes[2]->getCrd();
+	double* n1 = &nd_ar[nodes[0]].coord[0];
+	double* n2 = &nd_ar[nodes[1]].coord[0];
+	double* n3 = &nd_ar[nodes[2]].coord[0];
 	int i1;
 	for (i1 = 0; i1 < 3; i1++) {
 		v1[i1] = n2[i1] - n1[i1];
@@ -69,10 +54,10 @@ void MeshFace::initNormDir() {
 	return;
 }
 
-void MeshFace::normDirFromElCent(double cent[]) {
+void MeshFace::normDirFromElCent(double cent[], vector<MeshNode>& nd_ar) {
 	double fcCent[3];
 	double dVec[3];
-	getCentroid(fcCent);
+	getCentroid(fcCent,nd_ar);
 	dVec[0] = fcCent[0] - cent[0];
 	dVec[1] = fcCent[1] - cent[1];
 	dVec[2] = fcCent[2] - cent[2];
@@ -85,44 +70,23 @@ void MeshFace::normDirFromElCent(double cent[]) {
 	return;
 }
 
-void MeshFace::setNext(MeshFace* newNext) {
-	next = newNext;
-	return;
-}
-
-MeshNode** MeshFace::getNdPt() {
-	return &nodes[0];
-}
-
-MeshElement** MeshFace::getElPt() {
-	return &elements[0];
-}
-
-double* MeshFace::getNormDir() {
-	return &normDir[0];
-}
-
-void MeshFace::getCentroid(double cent[]) {
-	double* n1 = nodes[0]->getCrd();
-	double* n2 = nodes[1]->getCrd();
-	double* n3 = nodes[2]->getCrd();
+void MeshFace::getCentroid(double cent[], vector<MeshNode>& nd_ar) {
+	double* n1 = &nd_ar[nodes[0]].coord[0];
+	double* n2 = &nd_ar[nodes[1]].coord[0];
+	double* n3 = &nd_ar[nodes[2]].coord[0];
 	cent[0] = 0.333333333333333 * (n1[0] + n2[0] + n3[0]);
 	cent[1] = 0.333333333333333 * (n1[1] + n2[1] + n3[1]);
 	cent[2] = 0.333333333333333 * (n1[2] + n2[2] + n3[2]);
 	return;
 }
 
-double MeshFace::getProjDist() {
-	return projDist; 
-}
-
-double MeshFace::getLongestEdgeLen() {
+double MeshFace::getLongestEdgeLen(vector<MeshNode>& nd_ar) {
 	double dVec[3];
 	double dist;
 	double maxDist = 0.0;
-	double* n1 = nodes[0]->getCrd();
-	double* n2 = nodes[1]->getCrd();
-	double* n3 = nodes[2]->getCrd();
+	double* n1 = &nd_ar[nodes[0]].coord[0];
+	double* n2 = &nd_ar[nodes[1]].coord[0];
+	double* n3 = &nd_ar[nodes[2]].coord[0];
 	dVec[0] = n2[0] - n1[0];
 	dVec[1] = n2[1] - n1[1];
 	dVec[2] = n2[2] - n1[2];
@@ -147,14 +111,14 @@ double MeshFace::getLongestEdgeLen() {
 	return maxDist;
 }
 
-bool MeshFace::getIntersection(double outParam[], double pt[], double vec[]) {
+bool MeshFace::getIntersection(double outParam[], double pt[], double vec[], vector<MeshNode>& nd_ar) {
 	int i1;
 	double mat[9];
 	double matMag;
 	double rhs[3];
-	double* n1 = nodes[0]->getCrd();
-	double* n2 = nodes[1]->getCrd();
-	double* n3 = nodes[2]->getCrd();
+	double* n1 = &nd_ar[nodes[0]].coord[0];
+	double* n2 = &nd_ar[nodes[1]].coord[0];
+	double* n3 = &nd_ar[nodes[2]].coord[0];
 	mat[0] = vec[0];
 	mat[3] = vec[1];
 	mat[6] = vec[2];
@@ -188,7 +152,7 @@ bool MeshFace::getIntersection(double outParam[], double pt[], double vec[]) {
 	}
 }
 
-bool MeshFace::edgesIntersect(MeshFace* fc, double distTol) {
+bool MeshFace::edgesIntersect(int fc, double distTol, vector<MeshNode>& nd_ar, vector<MeshFace>& fc_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -207,22 +171,22 @@ bool MeshFace::edgesIntersect(MeshFace* fc, double distTol) {
 	double* n21;
 	double* n12;
 	double* n22;
-	MeshNode** fcNodes = fc->getNdPt();
+	int* fcNodes = &fc_ar[fc].nodes[0];
 	
 	for (i1 = 0; i1 < 3; i1++) {
-		n11 = nodes[i1]->getCrd();
+		n11 = &nd_ar[nodes[i1]].coord[0];
 		i3 = i1 + 1;
 		if (i3 > 2) {
 			i3 = 0;
 		}
-		n21 = nodes[i3]->getCrd();
+		n21 = &nd_ar[nodes[i3]].coord[0];
 		for (i2 = 0; i2 < 3; i2++) {
-			n12 = fcNodes[i2]->getCrd();
+			n12 = &nd_ar[fcNodes[i2]].coord[0];
 			i4 = i2 + 1;
 			if (i4 > 2) {
 				i4 = 0;
 			}
-			n22 = fcNodes[i4]->getCrd();
+			n22 = &nd_ar[fcNodes[i4]].coord[0];
 			v1[0] = n21[0] - n11[0];
 			v1[1] = n21[1] - n11[1];
 			v1[2] = n21[2] - n11[2];
@@ -262,10 +226,10 @@ bool MeshFace::edgesIntersect(MeshFace* fc, double distTol) {
 	return false;
 }
 
-int MeshFace::getSharedNodes(MeshNode* ndPts[], bool shared[], MeshFace* fc) {
+int MeshFace::getSharedNodes(int ndPts[], bool shared[], int fc, vector<MeshNode>& nd_ar, vector<MeshFace>& fc_ar) {
 	int i1;
 	int i2;
-	MeshNode** fcNds = fc->getNdPt();
+	int* fcNds = &fc_ar[fc].nodes[0];
 	ndPts[0] = nodes[0];
 	ndPts[1] = nodes[1];
 	ndPts[2] = nodes[2];
@@ -284,56 +248,13 @@ int MeshFace::getSharedNodes(MeshNode* ndPts[], bool shared[], MeshFace* fc) {
 	return numShared;
 }
 
-void MeshFace::printInfo() {
+void MeshFace::printInfo(vector<MeshNode>& nd_ar) {
 	int i1;
 	double* crd;
 	cout << "nodes:" << endl;
 	for (i1 = 0; i1 < 3; i1++) {
-		crd = nodes[i1]->getCrd();
+		crd = &nd_ar[nodes[i1]].coord[0];
 		cout << crd[0] << ", " << crd[1] << ", " << crd[2] << endl;
-	}
-	return;
-}
-
-MeshFace* MeshFace::getNext() {
-	return next;
-}
-
-MFList::MFList() {
-	first = nullptr;
-	last = nullptr;
-	length = 0;
-	return;
-}
-
-void MFList::addEnt(MeshFace* newFc) {
-	if (!first) {
-		first = newFc;
-		last = newFc;
-	}
-	else {
-		last->setNext(newFc);
-		last = newFc;
-	}
-	length++;
-	return;
-}
-
-MeshFace* MFList::getFirst() {
-	return first;
-}
-
-int MFList::getLength() {
-	return length;
-}
-
-MFList::~MFList() {
-	MeshFace* thisEnt = first;
-	MeshFace* nextEnt = nullptr;
-	while (thisEnt) {
-		nextEnt = thisEnt->getNext();
-		delete thisEnt;
-		thisEnt = nextEnt;
 	}
 	return;
 }

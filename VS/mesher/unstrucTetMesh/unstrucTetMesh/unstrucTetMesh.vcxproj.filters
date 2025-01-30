@@ -33,6 +33,9 @@
     <ClInclude Include="..\..\..\..\solverSrc\mesher\utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\solverSrc\mesher\constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\solverSrc\mesher\MeshElement.cpp">

@@ -5,18 +5,25 @@
 #include "MeshFace.h"
 #include "SpatialGrid.h"
 #include <string>
+#include <vector>
 
 class Mesher {
 private:
-	MNList nodes;
+	std::vector<MeshNode> nodes;
+	int nd_ct;
+	int nd_cap;
 	SpatialGrid nodeGrid;
-	MEList elements;
+	std::vector<MeshElement> elements;
+	int el_ct;
+	int el_cap;
 	SpatialGrid elementGrid;
-	MFList faces;
+	std::vector<MeshFace> faces;
+	int fc_ct;
+	int fc_cap;
 	SpatialGrid faceGrid;
 	
-	MeshEnt** gridOut1;
-	MeshEnt** gridOut2;
+	std::vector<int> gridOut1;
+	std::vector<int> gridOut2;
 	int gOLen;
 
 	int numBoundNds;
@@ -26,9 +33,9 @@ private:
 	double globProjWt;
 	int maxNumEls;
 
-	MeshElement* newEl;
-	MeshFace* newElFcs[4];
-	MeshNode* newNd;
+	int newEl;
+	std::vector<MeshFace> newElFcs;
+	int newNd;
 
 public:
 	Mesher();
@@ -39,15 +46,15 @@ public:
 
 	void prep();
 
-	bool checkNewEl(MeshElement* newEl, MeshFace* newFaces[]);
+	bool checkNewEl(MeshElement& newEl, std::vector<MeshFace>& newFaces);
 
-	bool addFaceIfAbsent(MeshFace* newFace, MeshElement* newEl);
+	bool addFaceIfAbsent(int newEl);
 
-	bool adoptConnectedNd(MeshFace* thisFc, double tgtPt[], double srchRad);
+	bool adoptConnectedNd(int fc_i, double tgtPt[], double srchRad);
 
-	bool adoptAnyNd(MeshFace* thisFc, double tgtPt[], double srchRad);
+	bool adoptAnyNd(int fc_i, double tgtPt[], double srchRad);
 
-	bool createNewNd(MeshFace* thisFc, double tgtPt[]);
+	bool createNewNd(int fc_i, double tgtPt[]);
 
 	bool generateMesh();
 
@@ -56,8 +63,6 @@ public:
 	void writeOutput(std::string fileName);
 
 	void printCurrentMesh();
-
-	~Mesher();
 };
 
 #endif

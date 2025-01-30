@@ -1,4 +1,5 @@
 #include "SectionClass.h"
+#include "constants.h"
 #include "matrixFunctions.h"
 #include <string>
 #include <cmath>
@@ -6,7 +7,6 @@
 
 using namespace std;
 
-const int max_int = 2000000000;
 
 Material::Material() {
 	name = "";

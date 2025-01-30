@@ -25,9 +25,9 @@ class DesignVariable {
 		
 		void set_active_time(double new_at[]);
 		
-		void get_value(DiffDoub0& inp);
+		void get_value_dfd0(DiffDoub0& inp);
 		
-		void get_value(DiffDoub1& inp);
+		void get_value_dfd1(DiffDoub1& inp);
 
 		void add_comp_el(int eli);
 

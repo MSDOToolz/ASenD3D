@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "ModelClass.h"
+#include "constants.h"
 #include "JobClass.h"
 #include "NodeClass.h"
 #include "ElementClass.h"
@@ -12,8 +13,6 @@
 #include "ObjectiveClass.h"
 
 using namespace std;
-
-const int max_int = 2000000000;
 
 // input
 

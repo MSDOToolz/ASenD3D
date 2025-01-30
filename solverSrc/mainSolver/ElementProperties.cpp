@@ -1,5 +1,6 @@
 #include <string>
 #include "ElementClass.h"
+#include "constants.h"
 #include "DiffDoubClass.h"
 #include "ListEntClass.h"
 #include "DesignVariableClass.h"
@@ -9,16 +10,9 @@
 
 using namespace std;
 
-const double r_2o3 = 0.666666666666666667;
-const double r_1o3 = 0.333333333333333333;
-const double r_1o6 = 0.166666666666666667;
-const double r_pi = 3.14159265358979324;
-const double r_pio180 = 0.0174532925199432958;
-const double r_1ort3 = 0.577350269189625765;
-
 //dup1
 
-void Element::get_gen_prop(DiffDoub0& prop, string prop_key, vector<DesignVariable>& dv_ar) {
+void Element::get_gen_prop_dfd0(DiffDoub0& prop, string prop_key, vector<DesignVariable>& dv_ar) {
 	int d_vind;
 	DiffDoub0 dv_val;
 	DiffDoub0 tmp;
@@ -27,7 +21,7 @@ void Element::get_gen_prop(DiffDoub0& prop, string prop_key, vector<DesignVariab
 		d_vind = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_vind];
 		if (this_dv.category == prop_key) {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			prop.add(dv_val);
@@ -37,7 +31,7 @@ void Element::get_gen_prop(DiffDoub0& prop, string prop_key, vector<DesignVariab
 	return;
 }
 
-void Element::get_layer_thk_z(vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, DiffDoub0& z_offset, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_thk_z_dfd0(vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, DiffDoub0& z_offset, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	//z_offset = 1: upper z surface is reference plane
 	//z_offset = -1: lower z surface is reference plane
 	int layi = 0;
@@ -56,7 +50,7 @@ void Element::get_layer_thk_z(vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay
 		for (auto& dv : design_vars) {
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "thickness" && this_dv.layer == layi) {
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				coef.set_val(dv.doub_dat);
 				dv_val.mult(coef);
 				lay_thk[layi].add(dv_val);
@@ -70,7 +64,7 @@ void Element::get_layer_thk_z(vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay
 	for (auto& dv : design_vars) {
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		if (this_dv.category == "zOffset") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			coef.set_val(dv.doub_dat);
 			dv_val.mult(coef);
 			z_offset.add(dv_val);
@@ -85,21 +79,21 @@ void Element::get_layer_thk_z(vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay
 
 	layi = 0;
 	for (auto& lay : this_sec.layers) {
-		z_next.set_val(z_crd);
+		z_next.set_val_dfd0(z_crd);
 		z_next.add(lay_thk[layi]);
-		tmp.set_val(z_crd);
+		tmp.set_val_dfd0(z_crd);
 		tmp.add(z_next);
 		z_mid.set_val(0.5);
 		z_mid.mult(tmp);
-		lay_z[layi].set_val(z_mid);
+		lay_z[layi].set_val_dfd0(z_mid);
 		layi++;
-		z_crd.set_val(z_next);
+		z_crd.set_val_dfd0(z_next);
 	}
 
 	return;
 }
 
-void Element::get_layer_q(vector<DiffDoub0>& lay_q, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_q_dfd0(vector<DiffDoub0>& lay_q, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -134,21 +128,21 @@ void Element::get_layer_q(vector<DiffDoub0>& lay_q, vector<Section>& sec_ar, vec
 				if (dv_cat == "modulus") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd0(dv_val);
 					dv_val.mult(coef);
 					modulus_dv[dv_comp - 1].add(dv_val);
 				}
 				else if (dv_cat == "poissonRatio") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd0(dv_val);
 					dv_val.mult(coef);
 					poisson_dv[dv_comp - 1].add(dv_val);
 				}
 				else if (dv_cat == "shearModulus") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd0(dv_val);
 					dv_val.mult(coef);
 					shear_mod_dv[dv_comp - 1].add(dv_val);
 				}
@@ -160,18 +154,18 @@ void Element::get_layer_q(vector<DiffDoub0>& lay_q, vector<Section>& sec_ar, vec
 		}
 		smat[0].set_val(1.0);
 		smat[0].dvd(modulus_dv[0]);
-		smat[1].set_val(poisson_dv[0]);
+		smat[1].set_val_dfd0(poisson_dv[0]);
 		smat[1].neg();
 		smat[1].dvd(modulus_dv[0]);
-		smat[3].set_val(smat[1]);
+		smat[3].set_val_dfd0(smat[1]);
 		smat[4].set_val(1.0);
 		smat[4].dvd(modulus_dv[1]);
 		smat[8].set_val(1.0);
 		smat[8].dvd(shear_mod_dv[0]);
-		get_det_inv(coef, qmat, smat, 3, 0, x_vec, b_vec);
+		get_det_inv_ar_dfd0(coef, qmat, smat, 3, 0, x_vec, b_vec);
 
 		for (i1 = 0; i1 < 9; i1++) {
-			lay_q[i2].set_val(qmat[i1]);
+			lay_q[i2].set_val_dfd0(qmat[i1]);
 			i2++;
 		}
 
@@ -181,7 +175,7 @@ void Element::get_layer_q(vector<DiffDoub0>& lay_q, vector<Section>& sec_ar, vec
 	return;
 }
 
-void Element::get_layer_d(vector<DiffDoub0>& lay_d, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_d_dfd0(vector<DiffDoub0>& lay_d, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -212,7 +206,7 @@ void Element::get_layer_d(vector<DiffDoub0>& lay_d, vector<Section>& sec_ar, vec
 				if (dv_cat == "dampingMat") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd0(dv_val);
 					dv_val.mult(coef);
 					damp_mat_dv[dv_comp].add(dv_val);
 				}
@@ -223,21 +217,21 @@ void Element::get_layer_d(vector<DiffDoub0>& lay_d, vector<Section>& sec_ar, vec
 			i5 = 6 * i3; // lower tri term
 			i6 = i3; // upper tri term
 			for (i4 = 0; i4 < i3; i4++) {
-				damp_mat_dv[i5].set_val(damp_mat_dv[i6]);
+				damp_mat_dv[i5].set_val_dfd0(damp_mat_dv[i6]);
 				i5++;
 				i6 += 6;
 			}
 		}
 
-		lay_d[i2].set_val(damp_mat_dv[0]);
-		lay_d[i2 + 1].set_val(damp_mat_dv[1]);
-		lay_d[i2 + 2].set_val(damp_mat_dv[3]);
-		lay_d[i2 + 3].set_val(damp_mat_dv[6]);
-		lay_d[i2 + 4].set_val(damp_mat_dv[7]);
-		lay_d[i2 + 5].set_val(damp_mat_dv[9]);
-		lay_d[i2 + 6].set_val(damp_mat_dv[18]);
-		lay_d[i2 + 7].set_val(damp_mat_dv[19]);
-		lay_d[i2 + 8].set_val(damp_mat_dv[21]);
+		lay_d[i2].set_val_dfd0(damp_mat_dv[0]);
+		lay_d[i2 + 1].set_val_dfd0(damp_mat_dv[1]);
+		lay_d[i2 + 2].set_val_dfd0(damp_mat_dv[3]);
+		lay_d[i2 + 3].set_val_dfd0(damp_mat_dv[6]);
+		lay_d[i2 + 4].set_val_dfd0(damp_mat_dv[7]);
+		lay_d[i2 + 5].set_val_dfd0(damp_mat_dv[9]);
+		lay_d[i2 + 6].set_val_dfd0(damp_mat_dv[18]);
+		lay_d[i2 + 7].set_val_dfd0(damp_mat_dv[19]);
+		lay_d[i2 + 8].set_val_dfd0(damp_mat_dv[21]);
 
 		layi++;
 		i2 += 9;
@@ -245,7 +239,7 @@ void Element::get_layer_d(vector<DiffDoub0>& lay_d, vector<Section>& sec_ar, vec
 	return;
 }
 
-void Element::get_layer_angle(vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_angle_dfd0(vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i2;
 	int layi;
 	int dv_ind;
@@ -266,13 +260,13 @@ void Element::get_layer_angle(vector<DiffDoub0>& lay_ang, vector<Section>& sec_a
 				dv_cat = this_dv.category;
 				if (dv_cat == "angle") {
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd0(dv_val);
 					dv_val.mult(coef);
 					angle.add(dv_val);
 				}
 			}
 		}
-		lay_ang[layi].set_val(angle);
+		lay_ang[layi].set_val_dfd0(angle);
 
 		layi++;
 	}
@@ -280,7 +274,7 @@ void Element::get_layer_angle(vector<DiffDoub0>& lay_ang, vector<Section>& sec_a
 	return;
 }
 
-void Element::get_layer_th_exp(vector<DiffDoub0>& lay_th_exp, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_th_exp_dfd0(vector<DiffDoub0>& lay_th_exp, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -302,23 +296,23 @@ void Element::get_layer_th_exp(vector<DiffDoub0>& lay_th_exp, vector<Section>& s
 			if (this_dv.category == "thermalExp" && this_dv.layer == layi) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				t_exp_dv[dv_comp].add(dv_val);
 			}
 		}
-		lay_th_exp[i2].set_val(t_exp_dv[0]);
+		lay_th_exp[i2].set_val_dfd0(t_exp_dv[0]);
 		i2++;
-		lay_th_exp[i2].set_val(t_exp_dv[1]);
+		lay_th_exp[i2].set_val_dfd0(t_exp_dv[1]);
 		i2++;
-		lay_th_exp[i2].set_val(t_exp_dv[3]);
+		lay_th_exp[i2].set_val_dfd0(t_exp_dv[3]);
 		i2++;
 		layi++;
 	}
 	return;
 }
 
-void Element::get_layer_einit(vector<DiffDoub0>& lay_einit, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_einit_dfd0(vector<DiffDoub0>& lay_einit, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -339,23 +333,23 @@ void Element::get_layer_einit(vector<DiffDoub0>& lay_einit, vector<Section>& sec
 			if (this_dv.category == "initialStrain" && this_dv.layer == layi) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				e0_dv[dv_comp].add(dv_val);
 			}
 		}
-		lay_einit[i2].set_val(e0_dv[0]);
+		lay_einit[i2].set_val_dfd0(e0_dv[0]);
 		i2++;
-		lay_einit[i2].set_val(e0_dv[1]);
+		lay_einit[i2].set_val_dfd0(e0_dv[1]);
 		i2++;
-		lay_einit[i2].set_val(e0_dv[3]);
+		lay_einit[i2].set_val_dfd0(e0_dv[3]);
 		i2++;
 		layi++;
 	}
 	return;
 }
 
-void Element::get_layer_den(vector<DiffDoub0>& layer_den, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_den_dfd0(vector<DiffDoub0>& layer_den, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int layi;
 	double mat_den;
 	DiffDoub0 den_dv;
@@ -371,19 +365,19 @@ void Element::get_layer_den(vector<DiffDoub0>& layer_den, vector<Section>& sec_a
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "density" && this_dv.layer == layi) {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				den_dv.add(dv_val);
 			}
 		}
-		layer_den[layi].set_val(den_dv);
+		layer_den[layi].set_val_dfd0(den_dv);
 		layi++;
 	}
 
 	return;
 }
 
-void Element::get_layer_cond(vector<DiffDoub0>& lay_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_cond_dfd0(vector<DiffDoub0>& lay_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -405,20 +399,20 @@ void Element::get_layer_cond(vector<DiffDoub0>& lay_cond, vector<Section>& sec_a
 			if (this_dv.category == "thermalCond" && this_dv.layer == layi) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				cond_dv[dv_comp].add(dv_val);
 			}
 		}
-		lay_cond[i1].set_val(cond_dv[0]);
-		lay_cond[i1 + 1].set_val(cond_dv[3]);
-		lay_cond[i1 + 2].set_val(cond_dv[4]);
-		lay_cond[i1 + 3].set_val(cond_dv[3]);
-		lay_cond[i1 + 4].set_val(cond_dv[1]);
-		lay_cond[i1 + 5].set_val(cond_dv[5]);
-		lay_cond[i1 + 6].set_val(cond_dv[4]);
-		lay_cond[i1 + 7].set_val(cond_dv[5]);
-		lay_cond[i1 + 8].set_val(cond_dv[2]);
+		lay_cond[i1].set_val_dfd0(cond_dv[0]);
+		lay_cond[i1 + 1].set_val_dfd0(cond_dv[3]);
+		lay_cond[i1 + 2].set_val_dfd0(cond_dv[4]);
+		lay_cond[i1 + 3].set_val_dfd0(cond_dv[3]);
+		lay_cond[i1 + 4].set_val_dfd0(cond_dv[1]);
+		lay_cond[i1 + 5].set_val_dfd0(cond_dv[5]);
+		lay_cond[i1 + 6].set_val_dfd0(cond_dv[4]);
+		lay_cond[i1 + 7].set_val_dfd0(cond_dv[5]);
+		lay_cond[i1 + 8].set_val_dfd0(cond_dv[2]);
 		i1 += 9;
 		layi++;
 	}
@@ -426,7 +420,7 @@ void Element::get_layer_cond(vector<DiffDoub0>& lay_cond, vector<Section>& sec_a
 	return;
 }
 
-void Element::get_layer_spec_heat(vector<DiffDoub0>& lay_sh, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_spec_heat_dfd0(vector<DiffDoub0>& lay_sh, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int layi;
 	double mat_sh;
 	DiffDoub0 sh_dv;
@@ -442,19 +436,19 @@ void Element::get_layer_spec_heat(vector<DiffDoub0>& lay_sh, vector<Section>& se
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "specHeat" && this_dv.layer == layi) {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				sh_dv.add(dv_val);
 			}
 		}
-		lay_sh[layi].set_val(sh_dv);
+		lay_sh[layi].set_val_dfd0(sh_dv);
 		layi++;
 	}
 
 	return;
 }
 
-void Element::transform_strain(DiffDoub0 stn_new[], DiffDoub0 stn_orig[], DiffDoub0& angle) {
+void Element::transform_strain_dfd0(DiffDoub0 stn_new[], DiffDoub0 stn_orig[], DiffDoub0& angle) {
 	DiffDoub0 angle_rad;
 	DiffDoub0 a11;
 	DiffDoub0 a12;
@@ -466,25 +460,25 @@ void Element::transform_strain(DiffDoub0 stn_new[], DiffDoub0 stn_orig[], DiffDo
 
 	angle_rad.set_val(r_pio180);
 	angle_rad.mult(angle);
-	a11.set_val(angle_rad);
+	a11.set_val_dfd0(angle_rad);
 	a11.cs();
-	a21.set_val(angle_rad);
+	a21.set_val_dfd0(angle_rad);
 	a21.sn();
-	a12.set_val(a21);
+	a12.set_val_dfd0(a21);
 	a12.neg();
-	a22.set_val(a11);
+	a22.set_val_dfd0(a11);
 
-	te[0].set_val(a11);
+	te[0].set_val_dfd0(a11);
 	te[0].sqr();
-	te[1].set_val(a12);
+	te[1].set_val_dfd0(a12);
 	te[1].sqr();
-	te[2].set_val(a11);
+	te[2].set_val_dfd0(a11);
 	te[2].mult(a12);
-	te[3].set_val(a21);
+	te[3].set_val_dfd0(a21);
 	te[3].sqr();
-	te[4].set_val(a22);
+	te[4].set_val_dfd0(a22);
 	te[4].sqr();
-	te[5].set_val(a22);
+	te[5].set_val_dfd0(a22);
 	te[5].mult(a21);
 	te[6].set_val(2.0);
 	te[6].mult(a11);
@@ -492,18 +486,18 @@ void Element::transform_strain(DiffDoub0 stn_new[], DiffDoub0 stn_orig[], DiffDo
 	te[7].set_val(2.0);
 	te[7].mult(a12);
 	te[7].mult(a22);
-	te[8].set_val(a11);
+	te[8].set_val_dfd0(a11);
 	te[8].mult(a22);
-	tmp.set_val(a12);
+	tmp.set_val_dfd0(a12);
 	tmp.mult(a21);
 	te[8].add(tmp);
 
-	mat_mul(stn_new, te, stn_orig, 3, 3, 1);
+	mat_mul_ar_dfd0(stn_new, te, stn_orig, 3, 3, 1);
 
 	return;
 }
 
-void Element::transform_q(DiffDoub0 q_new[], DiffDoub0 q_orig[], DiffDoub0& angle) {
+void Element::transform_q_dfd0(DiffDoub0 q_new[], DiffDoub0 q_orig[], DiffDoub0& angle) {
 	int i1;
 	DiffDoub0 angle_rad;
 	DiffDoub0 a11;
@@ -521,40 +515,40 @@ void Element::transform_q(DiffDoub0 q_new[], DiffDoub0 q_orig[], DiffDoub0& angl
 
 	angle_rad.set_val(r_pio180);
 	angle_rad.mult(angle);
-	a11.set_val(angle_rad);
+	a11.set_val_dfd0(angle_rad);
 	a11.cs();
-	a21.set_val(angle_rad);
+	a21.set_val_dfd0(angle_rad);
 	a21.sn();
-	a12.set_val(a21);
+	a12.set_val_dfd0(a21);
 	a12.neg();
-	a22.set_val(a11);
+	a22.set_val_dfd0(a11);
 
-	ts[0].set_val(a11);
+	ts[0].set_val_dfd0(a11);
 	ts[0].sqr();
-	ts[1].set_val(a12);
+	ts[1].set_val_dfd0(a12);
 	ts[1].sqr();
 	ts[2].set_val(2.0);
 	ts[2].mult(a11);
 	ts[2].mult(a12);
-	ts[3].set_val(a21);
+	ts[3].set_val_dfd0(a21);
 	ts[3].sqr();
-	ts[4].set_val(a22);
+	ts[4].set_val_dfd0(a22);
 	ts[4].sqr();
 	ts[5].set_val(2.0);
 	ts[5].mult(a22);
 	ts[5].mult(a21);
-	ts[6].set_val(a11);
+	ts[6].set_val_dfd0(a11);
 	ts[6].mult(a21);
-	ts[7].set_val(a12);
+	ts[7].set_val_dfd0(a12);
 	ts[7].mult(a22);
-	ts[8].set_val(a11);
+	ts[8].set_val_dfd0(a11);
 	ts[8].mult(a22);
-	tmp.set_val(a12);
+	tmp.set_val_dfd0(a12);
 	tmp.mult(a21);
 	ts[8].add(tmp);
 
 	for (i1 = 0; i1 < 9; i1++) {
-		te[i1].set_val(ts[i1]);
+		te[i1].set_val_dfd0(ts[i1]);
 	}
 	tmp.set_val(0.5);
 	te[2].mult(tmp);
@@ -563,15 +557,15 @@ void Element::transform_q(DiffDoub0 q_new[], DiffDoub0 q_orig[], DiffDoub0& angl
 	te[6].mult(tmp);
 	te[7].mult(tmp);
 
-	get_det_inv(coef, te_inv, te, 3, 0, x_vec, b_vec);
+	get_det_inv_ar_dfd0(coef, te_inv, te, 3, 0, x_vec, b_vec);
 
-	mat_mul(te, q_orig, te_inv, 3, 3, 3);
-	mat_mul(q_new, ts, te, 3, 3, 3);
+	mat_mul_ar_dfd0(te, q_orig, te_inv, 3, 3, 3);
+	mat_mul_ar_dfd0(q_new, ts, te, 3, 3, 3);
 
 	return;
 }
 
-void Element::get_solid_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_solid_stiff_dfd0(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i4;
@@ -602,7 +596,7 @@ void Element::get_solid_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, 
 			if (this_dv.category == "stiffnessMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				cmat[dv_comp].add(dv_val);
 			}
@@ -611,7 +605,7 @@ void Element::get_solid_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, 
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				cmat[i4].set_val(cmat[i5]);
+				cmat[i4].set_val_dfd0(cmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -630,21 +624,21 @@ void Element::get_solid_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, 
 			if (dv_cat == "modulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				modulus_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (dv_cat == "poissonRatio") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				poisson_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (dv_cat == "shearModulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				shear_mod_dv[dv_comp - 1].add(dv_val);
 			}
@@ -655,20 +649,20 @@ void Element::get_solid_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, 
 
 		smat[0].set_val(1.0);
 		smat[0].dvd(modulus_dv[0]);
-		smat[1].set_val(poisson_dv[0]);
+		smat[1].set_val_dfd0(poisson_dv[0]);
 		smat[1].neg();
 		smat[1].dvd(modulus_dv[0]);
-		smat[2].set_val(poisson_dv[1]);
+		smat[2].set_val_dfd0(poisson_dv[1]);
 		smat[2].neg();
 		smat[2].dvd(modulus_dv[0]);
-		smat[6].set_val(smat[1]);
+		smat[6].set_val_dfd0(smat[1]);
 		smat[7].set_val(1.0);
 		smat[7].dvd(modulus_dv[1]);
-		smat[8].set_val(poisson_dv[2]);
+		smat[8].set_val_dfd0(poisson_dv[2]);
 		smat[8].neg();
 		smat[8].dvd(modulus_dv[1]);
-		smat[12].set_val(smat[2]);
-		smat[13].set_val(smat[8]);
+		smat[12].set_val_dfd0(smat[2]);
+		smat[13].set_val_dfd0(smat[8]);
 		smat[14].set_val(1.0);
 		smat[14].dvd(modulus_dv[2]);
 		smat[21].set_val(1.0);
@@ -678,14 +672,14 @@ void Element::get_solid_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, 
 		smat[35].set_val(1.0);
 		smat[35].dvd(shear_mod_dv[2]);
 
-		get_det_inv(coef, ctmp, smat, 6, 0, x_vec, b_vec);
-		ar_to_vec(ctmp, cmat, 0, 36);
+		get_det_inv_ar_dfd0(coef, ctmp, smat, 6, 0, x_vec, b_vec);
+		ar_to_vec_dfd0(ctmp, cmat, 0, 36);
 	}
 
 	return;
 }
 
-void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_q, vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar) {
+void Element::get_abd_dfd0(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_q, vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -709,20 +703,20 @@ void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vecto
 	for (i1 = 0; i1 < num_lay; i1++) {
 		thk.set_val(0.5);
 		thk.mult(lay_thk[i1]);
-		z_min.set_val(lay_z[i1]);
+		z_min.set_val_dfd0(lay_z[i1]);
 		z_min.sub(thk);
-		z_max.set_val(lay_z[i1]);
+		z_max.set_val_dfd0(lay_z[i1]);
 		z_max.add(thk);
-		transform_q(qmat, &lay_q[i2], lay_ang[i1]);
+		transform_q_dfd0(qmat, &lay_q[i2], lay_ang[i1]);
 		
 		// a matrix portion
-		tmp.set_val(z_max);
+		tmp.set_val_dfd0(z_max);
 		tmp.sub(z_min);
 		for (i3 = 0; i3 < 3; i3++) {
 			i5 = 9 * i3;
 			i6 = 3 * i3;
 			for (i4 = 0; i4 < 3; i4++) {
-				tmp2.set_val(tmp);
+				tmp2.set_val_dfd0(tmp);
 				tmp2.mult(qmat[i6]);
 				cmat[i5].add(tmp2);
 				i5++;
@@ -731,9 +725,9 @@ void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vecto
 		}
 
 		// b matrix portion
-		tmp.set_val(z_max);
+		tmp.set_val_dfd0(z_max);
 		tmp.sqr();
-		tmp2.set_val(z_min);
+		tmp2.set_val_dfd0(z_min);
 		tmp2.sqr();
 		tmp.sub(tmp2);
 		tmp2.set_val(0.5);
@@ -744,7 +738,7 @@ void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vecto
 			for (i4 = 0; i4 < 3; i4++) {
 				//i6 = i3*3 + i4;
 				//i5 = i3*9 + (i4 + 3)
-				tmp2.set_val(tmp);
+				tmp2.set_val_dfd0(tmp);
 				tmp2.mult(qmat[i6]);
 				cmat[i5].add(tmp2);
 				i5++;
@@ -753,10 +747,10 @@ void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vecto
 		}
 
 		// d matrix portion				
-		tmp.set_val(z_max);
+		tmp.set_val_dfd0(z_max);
 		tmp.sqr();
 		tmp.mult(z_max);
-		tmp2.set_val(z_min);
+		tmp2.set_val_dfd0(z_min);
 		tmp2.sqr();
 		tmp2.mult(z_min);
 		tmp.sub(tmp2);
@@ -766,7 +760,7 @@ void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vecto
 			i5 = 9 * (i3 + 3) + 3;
 			i6 = 3 * i3;
 			for (i4 = 0; i4 < 3; i4++) {
-				tmp2.set_val(tmp);
+				tmp2.set_val_dfd0(tmp);
 				tmp2.mult(qmat[i6]);
 				cmat[i5].add(tmp2);
 				i5++;
@@ -782,7 +776,7 @@ void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vecto
 		for (i2 = 0; i2 < i1; i2++) {
 			//i3 = i1*9 + i2
 			//i4 = i2*9 + i1
-			cmat[i3].set_val(cmat[i4]);
+			cmat[i3].set_val_dfd0(cmat[i4]);
 			i3++;
 			i4 += 9;
 		}
@@ -790,14 +784,14 @@ void Element::get_abd(vector<DiffDoub0>& cmat, vector<DiffDoub0>& lay_thk, vecto
 
 	tmp.set_val(1.0);
 	tmp.mult(cmat[20]);
-	cmat[60].set_val(tmp);
-	cmat[70].set_val(tmp);
-	cmat[80].set_val(tmp);
+	cmat[60].set_val_dfd0(tmp);
+	cmat[70].set_val_dfd0(tmp);
+	cmat[80].set_val_dfd0(tmp);
 
 	return;
 }
 
-void Element::get_beam_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_stiff_dfd0(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -828,7 +822,7 @@ void Element::get_beam_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, v
 			if (this_dv.category == "stiffnessMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				cmat[dv_comp].add(dv_val);
 			}
@@ -837,7 +831,7 @@ void Element::get_beam_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, v
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				cmat[i4].set_val(cmat[i5]);
+				cmat[i4].set_val_dfd0(cmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -859,35 +853,35 @@ void Element::get_beam_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, v
 			if (this_dv.category == "modulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				modulus_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "shearModulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				shear_mod_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "area") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				area_dv.add(dv_val);
 			}
 			else if (this_dv.category == "areaMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				idv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "polarMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				jdv.add(dv_val);
 			}
@@ -901,37 +895,37 @@ void Element::get_beam_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, v
 			}
 		}
 
-		cmat[0].set_val(modulus_dv[0]);
+		cmat[0].set_val_dfd0(modulus_dv[0]);
 		cmat[0].mult(area_dv);
-		cmat[4].set_val(modulus_dv[0]);
+		cmat[4].set_val_dfd0(modulus_dv[0]);
 		cmat[4].mult(idv[0]);
-		cmat[5].set_val(modulus_dv[0]);
+		cmat[5].set_val_dfd0(modulus_dv[0]);
 		cmat[5].neg();
 		cmat[5].mult(idv[1]);
-		cmat[7].set_val(shear_mod_dv[0]);
+		cmat[7].set_val_dfd0(shear_mod_dv[0]);
 		cmat[7].mult(area_dv);
-		cmat[9].set_val(shear_mod_dv[0]);
+		cmat[9].set_val_dfd0(shear_mod_dv[0]);
 		cmat[9].neg();
 		cmat[9].mult(idv[0]);
-		cmat[14].set_val(shear_mod_dv[1]);
+		cmat[14].set_val_dfd0(shear_mod_dv[1]);
 		cmat[14].mult(area_dv);
-		cmat[15].set_val(shear_mod_dv[2]);
+		cmat[15].set_val_dfd0(shear_mod_dv[2]);
 		cmat[15].mult(idv[1]);
-		cmat[21].set_val(shear_mod_dv[0]);
+		cmat[21].set_val_dfd0(shear_mod_dv[0]);
 		cmat[21].mult(jdv);
-		cmat[28].set_val(modulus_dv[0]);
+		cmat[28].set_val_dfd0(modulus_dv[0]);
 		cmat[28].mult(idv[2]);
-		cmat[29].set_val(modulus_dv[0]);
+		cmat[29].set_val_dfd0(modulus_dv[0]);
 		cmat[29].neg();
 		cmat[29].mult(idv[4]);
-		cmat[35].set_val(modulus_dv[0]);
+		cmat[35].set_val_dfd0(modulus_dv[0]);
 		cmat[35].mult(idv[3]);
 
 		for (i1 = 1; i1 < 6; i1++) {
 			i3 = 6 * i1;
 			i4 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				cmat[i3].set_val(cmat[i4]);
+				cmat[i3].set_val_dfd0(cmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -941,7 +935,7 @@ void Element::get_beam_stiff(vector<DiffDoub0>& cmat, vector<Section>& sec_ar, v
 	return;
 }
 
-void Element::get_thermal_exp(vector<DiffDoub0>& th_exp, vector<DiffDoub0>& einit, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_thermal_exp_dfd0(vector<DiffDoub0>& th_exp, vector<DiffDoub0>& einit, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DesignVariable* this_dv;
 	int dv_comp;
@@ -960,14 +954,14 @@ void Element::get_thermal_exp(vector<DiffDoub0>& th_exp, vector<DiffDoub0>& eini
 		if (this_dv.category == "thermalExp") {
 			dv_comp = this_dv.component - 1;
 			tmp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			dv_val.mult(tmp);
 			th_exp[dv_comp].add(dv_val);
 		}
 		else if (this_dv.category == "initialStrain") {
 			dv_comp = this_dv.component - 1;
 			tmp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			dv_val.mult(tmp);
 			einit[dv_comp].add(dv_val);
 		}
@@ -976,7 +970,7 @@ void Element::get_thermal_exp(vector<DiffDoub0>& th_exp, vector<DiffDoub0>& eini
 	return;
 }
 
-void Element::get_shell_exp_load(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e0_ld, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_q, vector<DiffDoub0>& lay_th_exp, vector<DiffDoub0>& lay_einit, vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar) {
+void Element::get_shell_exp_load_dfd0(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e0_ld, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_q, vector<DiffDoub0>& lay_th_exp, vector<DiffDoub0>& lay_einit, vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar) {
 	int i1;
 	int num_lay;
 	int layi;
@@ -1004,41 +998,41 @@ void Element::get_shell_exp_load(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e
 	qi = 0;
 	exi = 0;
 	for (layi = 0; layi < num_lay; layi++) {
-		vec_to_ar(this_q, lay_q, qi, qi + 9);
-		transform_q(sect_q, this_q, lay_ang[layi]);
-		vec_to_ar(this_te, lay_th_exp, exi, exi + 3);
-		transform_strain(sect_te, this_te, lay_ang[layi]);
-		vec_to_ar(this_e0, lay_einit, exi, exi + 3);
-		transform_strain(sect_e0, this_e0, lay_ang[layi]);
-		mat_mul(qte_prod, sect_q, sect_te, 3, 3, 1);
-		mat_mul(qe0_prod, sect_q, sect_e0, 3, 3, 1);
+		vec_to_ar_dfd0(this_q, lay_q, qi, qi + 9);
+		transform_q_dfd0(sect_q, this_q, lay_ang[layi]);
+		vec_to_ar_dfd0(this_te, lay_th_exp, exi, exi + 3);
+		transform_strain_dfd0(sect_te, this_te, lay_ang[layi]);
+		vec_to_ar_dfd0(this_e0, lay_einit, exi, exi + 3);
+		transform_strain_dfd0(sect_e0, this_e0, lay_ang[layi]);
+		mat_mul_ar_dfd0(qte_prod, sect_q, sect_te, 3, 3, 1);
+		mat_mul_ar_dfd0(qe0_prod, sect_q, sect_e0, 3, 3, 1);
 		
 		for (i1 = 0; i1 < 3; i1++) {
-			tmp.set_val(qte_prod[i1]);
+			tmp.set_val_dfd0(qte_prod[i1]);
 			tmp.mult(lay_thk[layi]);
 			exp_ld[i1].add(tmp);
-			tmp.set_val(qe0_prod[i1]);
+			tmp.set_val_dfd0(qe0_prod[i1]);
 			tmp.mult(lay_thk[layi]);
 			e0_ld[i1].add(tmp);
 		}
 
 		tmp.set_val(0.5);
 		tmp.mult(lay_thk[layi]);
-		z_min.set_val(lay_z[layi]);
+		z_min.set_val_dfd0(lay_z[layi]);
 		z_min.sub(tmp);
 		z_min.sqr();
-		z_max.set_val(lay_z[layi]);
+		z_max.set_val_dfd0(lay_z[layi]);
 		z_max.add(tmp);
 		z_max.sqr();
 		tmp.set_val(0.5);
-		tmp2.set_val(z_max);
+		tmp2.set_val_dfd0(z_max);
 		tmp2.sub(z_min);
 		tmp.mult(tmp2); // tmp = 0.5*(z_max^2 - z_min^2)
 		for (i1 = 0; i1 < 3; i1++) {
-			tmp2.set_val(qte_prod[i1]);
+			tmp2.set_val_dfd0(qte_prod[i1]);
 			tmp2.mult(tmp);
 			exp_ld[i1 + 3].add(tmp2);
-			tmp2.set_val(qe0_prod[i1]);
+			tmp2.set_val_dfd0(qe0_prod[i1]);
 			tmp2.mult(tmp);
 			e0_ld[i1 + 3].add(tmp2);
 		}
@@ -1049,7 +1043,7 @@ void Element::get_shell_exp_load(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e
 	return;
 }
 
-void Element::get_beam_exp_load(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e0_ld, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_exp_load_dfd0(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e0_ld, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	DiffDoub0 dv_val;
@@ -1082,14 +1076,14 @@ void Element::get_beam_exp_load(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e0
 			if (cat == "thermalExp") {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				exp_ld[dv_comp].add(dv_val);
 			}
 			else if (cat == "initialStrain") {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				e0_ld[dv_comp].add(dv_val);
 			}
@@ -1116,7 +1110,7 @@ void Element::get_beam_exp_load(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e0
 			if (i2 > -1) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				if (cat == "modulus") {
 					mod_dv[dv_comp].add(dv_val);
@@ -1141,38 +1135,38 @@ void Element::get_beam_exp_load(vector<DiffDoub0>& exp_ld, vector<DiffDoub0>& e0
 		for (i1 = 1; i1 < 8; i1++) {
 			qmat[i1].set_val(0.0);
 		}
-		qmat[0].set_val(mod_dv[0]);
-		qmat[4].set_val(shr_mod_dv[0]);
-		qmat[8].set_val(shr_mod_dv[1]);
-		te_coef_dv[1].set_val(te_coef_dv[3]);
-		te_coef_dv[2].set_val(te_coef_dv[4]);
-		mat_mul(qte, qmat, te_coef_dv, 3, 3, 1);
-		e0_dv[1].set_val(e0_dv[3]);
-		e0_dv[2].set_val(e0_dv[4]);
-		mat_mul(qe0, qmat, e0_dv, 3, 3, 1);
+		qmat[0].set_val_dfd0(mod_dv[0]);
+		qmat[4].set_val_dfd0(shr_mod_dv[0]);
+		qmat[8].set_val_dfd0(shr_mod_dv[1]);
+		te_coef_dv[1].set_val_dfd0(te_coef_dv[3]);
+		te_coef_dv[2].set_val_dfd0(te_coef_dv[4]);
+		mat_mul_ar_dfd0(qte, qmat, te_coef_dv, 3, 3, 1);
+		e0_dv[1].set_val_dfd0(e0_dv[3]);
+		e0_dv[2].set_val_dfd0(e0_dv[4]);
+		mat_mul_ar_dfd0(qe0, qmat, e0_dv, 3, 3, 1);
 		for (i1 = 0; i1 < 18; i1++) {
 			dedgu[i1].set_val(0.0);
 		}
-		dedgu[0].set_val(area_dv);
-		dedgu[4].set_val(area_dv);
-		dedgu[8].set_val(area_dv);
-		dedgu[10].set_val(idv[0]);
+		dedgu[0].set_val_dfd0(area_dv);
+		dedgu[4].set_val_dfd0(area_dv);
+		dedgu[8].set_val_dfd0(area_dv);
+		dedgu[10].set_val_dfd0(idv[0]);
 		dedgu[10].neg();
-		dedgu[11].set_val(idv[1]);
-		dedgu[12].set_val(idv[0]);
-		dedgu[15].set_val(idv[1]);
+		dedgu[11].set_val_dfd0(idv[1]);
+		dedgu[12].set_val_dfd0(idv[0]);
+		dedgu[15].set_val_dfd0(idv[1]);
 		dedgu[15].neg();
 
-		mat_mul(tmp_exp, dedgu, qte, 6, 3, 1);
-		ar_to_vec(tmp_exp, exp_ld, 0, 6);
-		mat_mul(tmp_exp, dedgu, qe0, 6, 3, 1);
-		ar_to_vec(tmp_exp, e0_ld, 0, 6);
+		mat_mul_ar_dfd0(tmp_exp, dedgu, qte, 6, 3, 1);
+		ar_to_vec_dfd0(tmp_exp, exp_ld, 0, 6);
+		mat_mul_ar_dfd0(tmp_exp, dedgu, qe0, 6, 3, 1);
+		ar_to_vec_dfd0(tmp_exp, e0_ld, 0, 6);
 	}
 
 	return;
 }
 
-void Element::get_density(DiffDoub0& den, int layer, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_density_dfd0(DiffDoub0& den, int layer, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int layi;
 	string cat;
 	int dv_lay;
@@ -1189,7 +1183,7 @@ void Element::get_density(DiffDoub0& den, int layer, vector<Section>& sec_ar, ve
 			dv_lay = this_dv.layer;
 			if (cat == "density" && dv_lay == layer) {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				den.add(dv_val);
 			}
@@ -1202,7 +1196,7 @@ void Element::get_density(DiffDoub0& den, int layer, vector<Section>& sec_ar, ve
 			cat = this_dv.category;
 			if (cat == "density") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				den.add(dv_val);
 			}
@@ -1212,7 +1206,7 @@ void Element::get_density(DiffDoub0& den, int layer, vector<Section>& sec_ar, ve
 	return;
 }
 
-void Element::get_shell_mass(vector<DiffDoub0>& mmat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_den, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_shell_mass_dfd0(vector<DiffDoub0>& mmat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_den, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int layi;
 	DiffDoub0 tmp;
@@ -1228,7 +1222,7 @@ void Element::get_shell_mass(vector<DiffDoub0>& mmat, vector<DiffDoub0>& lay_thk
 
 	i1 = sec_ar[sect_ptr].layers.size();
 	for (layi = 0; layi < i1; layi++) {
-		tmp.set_val(lay_den[layi]);
+		tmp.set_val_dfd0(lay_den[layi]);
 		tmp.mult(lay_thk[layi]);
 		mmat[0].add(tmp);
 		mmat[7].add(tmp);
@@ -1236,15 +1230,15 @@ void Element::get_shell_mass(vector<DiffDoub0>& mmat, vector<DiffDoub0>& lay_thk
 
 		tmp.set_val(0.5);
 		tmp.mult(lay_thk[layi]);
-		z_min.set_val(lay_z[layi]);
+		z_min.set_val_dfd0(lay_z[layi]);
 		z_min.sub(tmp);
-		z_min2.set_val(z_min);
+		z_min2.set_val_dfd0(z_min);
 		z_min2.sqr();
-		z_max.set_val(lay_z[layi]);
+		z_max.set_val_dfd0(lay_z[layi]);
 		z_max.add(tmp);
-		z_max2.set_val(z_max);
+		z_max2.set_val_dfd0(z_max);
 		z_max2.sqr();
-		tmp.set_val(z_max2);
+		tmp.set_val_dfd0(z_max2);
 		tmp.sub(z_min2);  // tmp == z_max^2 - z_min^2
 		tmp2.set_val(0.5);
 		tmp2.mult(lay_den[layi]);
@@ -1256,7 +1250,7 @@ void Element::get_shell_mass(vector<DiffDoub0>& mmat, vector<DiffDoub0>& lay_thk
 
 		z_max2.mult(z_max);
 		z_min2.mult(z_min);
-		tmp.set_val(z_max2);
+		tmp.set_val_dfd0(z_max2);
 		tmp.sub(z_min2); // tmp == z_max^3 - z_min^3
 		tmp2.set_val(r_1o3);
 		tmp2.mult(lay_den[layi]);
@@ -1269,7 +1263,7 @@ void Element::get_shell_mass(vector<DiffDoub0>& mmat, vector<DiffDoub0>& lay_thk
 	return;
 }
 
-void Element::get_beam_mass(vector<DiffDoub0>& mmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_mass_dfd0(vector<DiffDoub0>& mmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -1300,7 +1294,7 @@ void Element::get_beam_mass(vector<DiffDoub0>& mmat, vector<Section>& sec_ar, ve
 			if (this_dv.category == "massMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				mmat[dv_comp].add(dv_val);
 			}
@@ -1309,7 +1303,7 @@ void Element::get_beam_mass(vector<DiffDoub0>& mmat, vector<Section>& sec_ar, ve
 			i3 = 6 * i1; // lower tri term
 			i4 = i1; // upper tri term
 			for (i2 = 0; i2 < i1; i2++) {
-				mmat[i3].set_val(mmat[i4]);
+				mmat[i3].set_val_dfd0(mmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -1330,63 +1324,63 @@ void Element::get_beam_mass(vector<DiffDoub0>& mmat, vector<Section>& sec_ar, ve
 			d_cat = this_dv.category;
 			if (d_cat == "density") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				den_dv.add(dv_val);
 			}
 			else if (d_cat == "area") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				area_dv.add(dv_val);
 			}
 			else if (d_cat == "areaMoment") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				dv_comp = this_dv.component;
 				idv[dv_comp - 1].add(dv_val);
 			}
 			else if (d_cat == "polarMoment") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				jdv.add(dv_val);
 			}
 		}
-		tmp.set_val(den_dv);
+		tmp.set_val_dfd0(den_dv);
 		tmp.mult(area_dv);
-		mmat[0].set_val(tmp);
-		mmat[7].set_val(tmp);
-		mmat[14].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[0].set_val_dfd0(tmp);
+		mmat[7].set_val_dfd0(tmp);
+		mmat[14].set_val_dfd0(tmp);
+		tmp.set_val_dfd0(den_dv);
 		tmp.mult(idv[0]);
-		mmat[4].set_val(tmp);
-		mmat[9].set_val(tmp);
+		mmat[4].set_val_dfd0(tmp);
+		mmat[9].set_val_dfd0(tmp);
 		mmat[9].neg();
-		tmp.set_val(den_dv);
+		tmp.set_val_dfd0(den_dv);
 		tmp.mult(idv[1]);
-		mmat[5].set_val(tmp);
+		mmat[5].set_val_dfd0(tmp);
 		mmat[5].neg();
-		mmat[15].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[15].set_val_dfd0(tmp);
+		tmp.set_val_dfd0(den_dv);
 		tmp.mult(jdv);
-		mmat[21].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[21].set_val_dfd0(tmp);
+		tmp.set_val_dfd0(den_dv);
 		tmp.mult(idv[2]);
-		mmat[28].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[28].set_val_dfd0(tmp);
+		tmp.set_val_dfd0(den_dv);
 		tmp.mult(idv[4]);
-		mmat[29].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[29].set_val_dfd0(tmp);
+		tmp.set_val_dfd0(den_dv);
 		tmp.mult(idv[3]);
-		mmat[35].set_val(tmp);
+		mmat[35].set_val_dfd0(tmp);
 
 		for (i1 = 3; i1 < 6; i1++) {
 			i3 = 6 * i1; // lower tri term
 			i4 = i1; // upper tri term
 			for (i2 = 0; i2 < i1; i2++) {
-				mmat[i3].set_val(mmat[i4]);
+				mmat[i3].set_val_dfd0(mmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -1396,7 +1390,7 @@ void Element::get_beam_mass(vector<DiffDoub0>& mmat, vector<Section>& sec_ar, ve
 	return;
 }
 
-void Element::get_solid_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_solid_damp_dfd0(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -1415,7 +1409,7 @@ void Element::get_solid_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, v
 	for (auto& dv : design_vars) {
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		if (this_dv.category == "dampingMat") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			dv_comp = this_dv.component;
 			temp.set_val(dv.doub_dat);
 			dv_val.mult(temp);
@@ -1427,7 +1421,7 @@ void Element::get_solid_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, v
 		i3 = 6 * i1; // lower tri term
 		i4 = i1; // upper tri term
 		for (i2 = 0; i2 < i1; i2++) {
-			dmat[i3].set_val(dmat[i4]);
+			dmat[i3].set_val_dfd0(dmat[i4]);
 			i3++;
 			i4 += 6;
 		}
@@ -1436,15 +1430,15 @@ void Element::get_solid_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, v
 	return;
 }
 
-void Element::get_shell_damp(vector<DiffDoub0>& dmat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_d, vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar) {
-	get_abd(dmat, lay_thk, lay_z, lay_d, lay_ang, sec_ar);
+void Element::get_shell_damp_dfd0(vector<DiffDoub0>& dmat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_z, vector<DiffDoub0>& lay_d, vector<DiffDoub0>& lay_ang, vector<Section>& sec_ar) {
+	get_abd_dfd0(dmat, lay_thk, lay_z, lay_d, lay_ang, sec_ar);
 	dmat[60].set_val(0.0);
 	dmat[70].set_val(0.0);
 	dmat[80].set_val(0.0);
 	return;
 }
 
-void Element::get_beam_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_damp_dfd0(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -1473,7 +1467,7 @@ void Element::get_beam_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, ve
 			if (this_dv.category == "dampingMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				dmat[dv_comp].add(dv_val);
 			}
@@ -1482,7 +1476,7 @@ void Element::get_beam_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, ve
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				dmat[i4].set_val(dmat[i5]);
+				dmat[i4].set_val_dfd0(dmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -1502,28 +1496,28 @@ void Element::get_beam_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, ve
 			if (this_dv.category == "dampingMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				dmat_dv[dv_comp].add(dv_val);
 			}
 			else if (this_dv.category == "area") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				area_dv.add(dv_val);
 			}
 			else if (this_dv.category == "areaMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				idv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "polarMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(coef);
 				jdv.add(dv_val);
 			}
@@ -1537,37 +1531,37 @@ void Element::get_beam_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, ve
 			}
 		}
 
-		dmat[0].set_val(dmat_dv[0]);
+		dmat[0].set_val_dfd0(dmat_dv[0]);
 		dmat[0].mult(area_dv);
-		dmat[4].set_val(dmat_dv[0]);
+		dmat[4].set_val_dfd0(dmat_dv[0]);
 		dmat[4].mult(idv[0]);
-		dmat[5].set_val(dmat_dv[0]);
+		dmat[5].set_val_dfd0(dmat_dv[0]);
 		dmat[5].neg();
 		dmat[5].mult(idv[1]);
-		dmat[7].set_val(dmat_dv[21]);
+		dmat[7].set_val_dfd0(dmat_dv[21]);
 		dmat[7].mult(area_dv);
-		dmat[9].set_val(dmat_dv[21]);
+		dmat[9].set_val_dfd0(dmat_dv[21]);
 		dmat[9].neg();
 		dmat[9].mult(idv[0]);
-		dmat[14].set_val(dmat_dv[28]); // 28
+		dmat[14].set_val_dfd0(dmat_dv[28]); // 28
 		dmat[14].mult(area_dv);
-		dmat[15].set_val(dmat_dv[35]); // 35
+		dmat[15].set_val_dfd0(dmat_dv[35]); // 35
 		dmat[15].mult(idv[1]);
-		dmat[21].set_val(dmat_dv[21]); // 21
+		dmat[21].set_val_dfd0(dmat_dv[21]); // 21
 		dmat[21].mult(jdv);
-		dmat[28].set_val(dmat_dv[0]);
+		dmat[28].set_val_dfd0(dmat_dv[0]);
 		dmat[28].mult(idv[2]);
-		dmat[29].set_val(dmat_dv[0]);
+		dmat[29].set_val_dfd0(dmat_dv[0]);
 		dmat[29].neg();
 		dmat[29].mult(idv[4]);
-		dmat[35].set_val(dmat_dv[0]);
+		dmat[35].set_val_dfd0(dmat_dv[0]);
 		dmat[35].mult(idv[3]);
 
 		for (i1 = 1; i1 < 6; i1++) {
 			i3 = 6 * i1;
 			i4 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				dmat[i3].set_val(dmat[i4]);
+				dmat[i3].set_val_dfd0(dmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -1578,7 +1572,7 @@ void Element::get_beam_damp(vector<DiffDoub0>& dmat, vector<Section>& sec_ar, ve
 	return;
 }
 
-void Element::get_conductivity(vector<DiffDoub0>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_conductivity_dfd0(vector<DiffDoub0>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DiffDoub0 cond_dv[6];
 	DesignVariable* this_dv;
@@ -1597,7 +1591,7 @@ void Element::get_conductivity(vector<DiffDoub0>& t_cond, vector<Section>& sec_a
 		if (this_dv.category == "thermalCond") {
 			dv_comp = this_dv.component - 1;
 			temp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			dv_val.mult(temp);
 			cond_dv[dv_comp].add(dv_val);
 		}
@@ -1616,7 +1610,7 @@ void Element::get_conductivity(vector<DiffDoub0>& t_cond, vector<Section>& sec_a
 	return;
 }
 
-void Element::get_shell_cond(vector<DiffDoub0>& t_cond, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_ang, vector<DiffDoub0>& lay_cond, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_shell_cond_dfd0(vector<DiffDoub0>& t_cond, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_ang, vector<DiffDoub0>& lay_cond, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int num_lay = sec_ar[sect_ptr].layers.size();
@@ -1637,17 +1631,17 @@ void Element::get_shell_cond(vector<DiffDoub0>& t_cond, vector<DiffDoub0>& lay_t
 		al_mat[0].set_val(r_pio180);
 		al_mat[0].mult(lay_ang[i1]);
 		al_mat[0].cs();
-		al_mat[4].set_val(al_mat[0]);
+		al_mat[4].set_val_dfd0(al_mat[0]);
 		al_mat[3].set_val(r_pio180);
 		al_mat[3].mult(lay_ang[i1]);
 		al_mat[3].sn();
-		al_mat[1].set_val(al_mat[3]);
+		al_mat[1].set_val_dfd0(al_mat[3]);
 		al_mat[1].neg();
-		transpose(al_t, al_mat, 3, 3);
+		transpose_ar_dfd0(al_t, al_mat, 3, 3);
 		i2 = 9 * i1;
-		vec_to_ar(this_cond, lay_cond, i2, i2 + 9);
-		mat_mul(tmp, this_cond, al_t, 3, 3, 3);
-		mat_mul(layer_mat, al_mat, tmp, 3, 3, 3);
+		vec_to_ar_dfd0(this_cond, lay_cond, i2, i2 + 9);
+		mat_mul_ar_dfd0(tmp, this_cond, al_t, 3, 3, 3);
+		mat_mul_ar_dfd0(layer_mat, al_mat, tmp, 3, 3, 3);
 		for (i2 = 0; i2 < 9; i2++) {
 			layer_mat[i2].mult(lay_thk[i1]);
 			t_cond[i2].add(layer_mat[i2]);
@@ -1657,7 +1651,7 @@ void Element::get_shell_cond(vector<DiffDoub0>& t_cond, vector<DiffDoub0>& lay_t
 	return;
 }
 
-void Element::get_beam_cond(vector<DiffDoub0>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_cond_dfd0(vector<DiffDoub0>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DesignVariable* this_dv;
 	string cat;
@@ -1674,7 +1668,7 @@ void Element::get_beam_cond(vector<DiffDoub0>& t_cond, vector<Section>& sec_ar, 
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "thermCond") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				cond_dv.add(dv_val);
 			}
@@ -1688,13 +1682,13 @@ void Element::get_beam_cond(vector<DiffDoub0>& t_cond, vector<Section>& sec_ar, 
 			cat = this_dv.category;
 			if (cat == "thermCond") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				cond_dv.add(dv_val);
 			}
 			else if (cat == "area") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				area_dv.add(dv_val);
 			}
@@ -1706,14 +1700,14 @@ void Element::get_beam_cond(vector<DiffDoub0>& t_cond, vector<Section>& sec_ar, 
 		t_cond[i1].set_val(0.0);
 	}
 
-	t_cond[0].set_val(cond_dv);
-	t_cond[4].set_val(cond_dv);
-	t_cond[8].set_val(cond_dv);
+	t_cond[0].set_val_dfd0(cond_dv);
+	t_cond[4].set_val_dfd0(cond_dv);
+	t_cond[8].set_val_dfd0(cond_dv);
 
 	return;
 }
 
-void Element::get_specific_heat(DiffDoub0& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_specific_heat_dfd0(DiffDoub0& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DiffDoub0 spec_heat_dv;
 	DiffDoub0 temp;
@@ -1728,7 +1722,7 @@ void Element::get_specific_heat(DiffDoub0& spec_heat, vector<Section>& sec_ar, v
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		if (this_dv.category == "specHeat") {
 			temp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			dv_val.mult(temp);
 			spec_heat.add(dv_val);
 		}
@@ -1737,7 +1731,7 @@ void Element::get_specific_heat(DiffDoub0& spec_heat, vector<Section>& sec_ar, v
 	return;
 }
 
-void Element::get_shell_spec_heat(DiffDoub0& spec_heat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_sh, vector<DiffDoub0>& lay_den, vector<Section>& sec_ar) {
+void Element::get_shell_spec_heat_dfd0(DiffDoub0& spec_heat, vector<DiffDoub0>& lay_thk, vector<DiffDoub0>& lay_sh, vector<DiffDoub0>& lay_den, vector<Section>& sec_ar) {
 	int i1;
 	int num_lay;
 	DiffDoub0 tmp;
@@ -1745,7 +1739,7 @@ void Element::get_shell_spec_heat(DiffDoub0& spec_heat, vector<DiffDoub0>& lay_t
 	spec_heat.set_val(0.0);
 	num_lay = sec_ar[sect_ptr].layers.size();
 	for (i1 = 0; i1 < num_lay; i1++) {
-		tmp.set_val(lay_den[i1]);
+		tmp.set_val_dfd0(lay_den[i1]);
 		tmp.mult(lay_sh[i1]);
 		tmp.mult(lay_thk[i1]);
 		spec_heat.add(tmp);
@@ -1754,7 +1748,7 @@ void Element::get_shell_spec_heat(DiffDoub0& spec_heat, vector<DiffDoub0>& lay_t
 	return;
 }
 
-void Element::get_beam_spec_heat(DiffDoub0& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_spec_heat_dfd0(DiffDoub0& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	string cat;
 	DiffDoub0 density_dv;
@@ -1774,7 +1768,7 @@ void Element::get_beam_spec_heat(DiffDoub0& spec_heat, vector<Section>& sec_ar, 
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "specHeat") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				spec_heat.add(dv_val);
 			}
@@ -1789,19 +1783,19 @@ void Element::get_beam_spec_heat(DiffDoub0& spec_heat, vector<Section>& sec_ar, 
 			cat = this_dv.category;
 			if (cat == "specHeatDV") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				spec_heat.add(dv_val);
 			}
 			else if (cat == "density") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				density_dv.add(dv_val);
 			}
 			else if (cat == "area") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd0(dv_val);
 				dv_val.mult(tmp);
 				area_dv.add(dv_val);
 			}
@@ -1813,22 +1807,22 @@ void Element::get_beam_spec_heat(DiffDoub0& spec_heat, vector<Section>& sec_ar, 
 	return;
 }
 
-void Element::get_nd_crds(vector<DiffDoub0>& x_glob, vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_nd_crds_dfd0(vector<DiffDoub0>& x_glob, vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DiffDoub0 nd_crd[3];
 	
 	for (i1 = 0; i1 < num_nds; i1++) {
 		Node& this_nd = nd_ar[nodes[i1]];
-		this_nd.get_crd(nd_crd,dv_ar);
-		x_glob[i1].set_val(nd_crd[0]);
-		x_glob[i1+num_nds].set_val(nd_crd[1]);
-		x_glob[i1+2*num_nds].set_val(nd_crd[2]);
+		this_nd.get_crd_dfd0(nd_crd,dv_ar);
+		x_glob[i1].set_val_dfd0(nd_crd[0]);
+		x_glob[i1+num_nds].set_val_dfd0(nd_crd[1]);
+		x_glob[i1+2*num_nds].set_val_dfd0(nd_crd[2]);
 	}
 	
 	return;
 }
 
-void Element::get_loc_ori(vector<DiffDoub0>& loc_ori, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_loc_ori_dfd0(vector<DiffDoub0>& loc_ori, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int dv_ind;
 	DesignVariable *this_dvpt;
@@ -1853,19 +1847,19 @@ void Element::get_loc_ori(vector<DiffDoub0>& loc_ori, vector<Section>& sec_ar, v
 		if(dv_cat == "orientation") {
 			i1 = this_dv.component - 1;
 			coef.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			dv_val.mult(coef);
 			rot[i1].add(dv_val);
 		}
 	}
 	
-	rotate_orient(tmp_ori, ori_copy, rot);
-	ar_to_vec(tmp_ori, loc_ori, 0, 9);
+	rotate_orient_dfd0(tmp_ori, ori_copy, rot);
+	ar_to_vec_dfd0(tmp_ori, loc_ori, 0, 9);
 	
 	return;
 }
 
-void Element::correct_orient(vector<DiffDoub0>& loc_ori, vector<DiffDoub0>& x_glob) {
+void Element::correct_orient_dfd0(vector<DiffDoub0>& loc_ori, vector<DiffDoub0>& x_glob) {
 	int i1;
 	DiffDoub0 v1[3];
 	DiffDoub0 v2[3];
@@ -1881,47 +1875,47 @@ void Element::correct_orient(vector<DiffDoub0>& loc_ori, vector<DiffDoub0>& x_gl
 	DiffDoub0 tmp;
 	
 	for (i1 = 0; i1 < 9; i1++) {
-		ori_copy[i1].set_val(loc_ori[i1]);
+		ori_copy[i1].set_val_dfd0(loc_ori[i1]);
 	}
 	
 	if(type == 3 || type == 41) {
 		if(type == 3) {
-			v1[0].set_val(x_glob[1]);
+			v1[0].set_val_dfd0(x_glob[1]);
 			v1[0].sub(x_glob[0]);
-			v1[1].set_val(x_glob[4]);
+			v1[1].set_val_dfd0(x_glob[4]);
 			v1[1].sub(x_glob[3]);
-			v1[2].set_val(x_glob[7]);
+			v1[2].set_val_dfd0(x_glob[7]);
 			v1[2].sub(x_glob[6]);
 			
-			v2[0].set_val(x_glob[2]);
+			v2[0].set_val_dfd0(x_glob[2]);
 			v2[0].sub(x_glob[0]);
-			v2[1].set_val(x_glob[5]);
+			v2[1].set_val_dfd0(x_glob[5]);
 			v2[1].sub(x_glob[3]);
-			v2[2].set_val(x_glob[8]);
+			v2[2].set_val_dfd0(x_glob[8]);
 			v2[2].sub(x_glob[6]);		
 		} else {
-			v1[0].set_val(x_glob[2]);
+			v1[0].set_val_dfd0(x_glob[2]);
 			v1[0].sub(x_glob[0]);
-			v1[1].set_val(x_glob[6]);
+			v1[1].set_val_dfd0(x_glob[6]);
 			v1[1].sub(x_glob[4]);
-			v1[2].set_val(x_glob[10]);
+			v1[2].set_val_dfd0(x_glob[10]);
 			v1[2].sub(x_glob[8]);
 			
-			v2[0].set_val(x_glob[3]);
+			v2[0].set_val_dfd0(x_glob[3]);
 			v2[0].sub(x_glob[1]);
-			v2[1].set_val(x_glob[7]);
+			v2[1].set_val_dfd0(x_glob[7]);
 			v2[1].sub(x_glob[5]);
-			v2[2].set_val(x_glob[11]);
+			v2[2].set_val_dfd0(x_glob[11]);
 			v2[2].sub(x_glob[9]);	
 		}
-		cross_prod(v3, v1, v2);
+		cross_prod_dfd0(v3, v1, v2);
 		
-		dp.set_val(v3[0]);
+		dp.set_val_dfd0(v3[0]);
 		dp.mult(loc_ori[6]);
-		tmp.set_val(v3[1]);
+		tmp.set_val_dfd0(v3[1]);
 		tmp.mult(loc_ori[7]);
 		dp.add(tmp);
-		tmp.set_val(v3[2]);
+		tmp.set_val_dfd0(v3[2]);
 		tmp.mult(loc_ori[8]);
 		dp.add(tmp);
 		
@@ -1931,23 +1925,23 @@ void Element::correct_orient(vector<DiffDoub0>& loc_ori, vector<DiffDoub0>& x_gl
 			v3[2].neg();
 		}
 		
-		magv3.set_val(v3[0]);
+		magv3.set_val_dfd0(v3[0]);
 		magv3.sqr();
-		tmp.set_val(v3[1]);
+		tmp.set_val_dfd0(v3[1]);
 		tmp.sqr();
 		magv3.add(tmp);
-		tmp.set_val(v3[2]);
+		tmp.set_val_dfd0(v3[2]);
 		tmp.sqr();
 		magv3.add(tmp);
 		magv3.sqt();
 		
-		cross_prod(rot,&loc_ori[6],v3);
-		mag_cp.set_val(rot[0]);
+		cross_prod_dfd0(rot,&loc_ori[6],v3);
+		mag_cp.set_val_dfd0(rot[0]);
 		mag_cp.sqr();
-		tmp.set_val(rot[1]);
+		tmp.set_val_dfd0(rot[1]);
 		tmp.sqr();
 		mag_cp.add(tmp);
-		tmp.set_val(rot[2]);
+		tmp.set_val_dfd0(rot[2]);
 		tmp.sqr();
 		mag_cp.add(tmp);
 		mag_cp.sqt();
@@ -1955,25 +1949,25 @@ void Element::correct_orient(vector<DiffDoub0>& loc_ori, vector<DiffDoub0>& x_gl
 			return;
 		}
 		
-		theta.set_val(mag_cp);
+		theta.set_val_dfd0(mag_cp);
 		theta.dvd(magv3);
 		theta.asn();
 		
-		tmp.set_val(theta);
+		tmp.set_val_dfd0(theta);
 		tmp.dvd(mag_cp);
 		
 		rot[0].mult(tmp);
 		rot[1].mult(tmp);
 		rot[2].mult(tmp);
 		
-		rotate_orient(tmp_ori, ori_copy, rot);
-		ar_to_vec(tmp_ori, loc_ori, 0, 9);
+		rotate_orient_dfd0(tmp_ori, ori_copy, rot);
+		ar_to_vec_dfd0(tmp_ori, loc_ori, 0, 9);
 	}
 	
 	return;
 }
 
-void Element::get_frc_fld_const(vector<DiffDoub0>& coef, vector<DiffDoub0>& exp, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_frc_fld_const_dfd0(vector<DiffDoub0>& coef, vector<DiffDoub0>& exp, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub0 dv_val;
 	DiffDoub0 tmp;
 	string cat;
@@ -1988,13 +1982,13 @@ void Element::get_frc_fld_const(vector<DiffDoub0>& coef, vector<DiffDoub0>& exp,
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		cat = this_dv.category;
 		if (cat == "potFldCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[0].add(dv_val);
 		}
 		else if (cat == "dampFldCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[1].add(dv_val);
@@ -2004,7 +1998,7 @@ void Element::get_frc_fld_const(vector<DiffDoub0>& coef, vector<DiffDoub0>& exp,
 	return;
 }
 
-void Element::get_thrm_fld_const(vector<DiffDoub0>& coef, DiffDoub0& ref_t, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_thrm_fld_const_dfd0(vector<DiffDoub0>& coef, DiffDoub0& ref_t, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub0 dv_val;
 	DiffDoub0 tmp;
 	string cat;
@@ -2018,13 +2012,13 @@ void Element::get_thrm_fld_const(vector<DiffDoub0>& coef, DiffDoub0& ref_t, vect
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		cat = this_dv.category;
 		if (cat == "condCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[0].add(dv_val);
 		}
 		else if (cat == "radCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[1].add(dv_val);
@@ -2034,7 +2028,7 @@ void Element::get_thrm_fld_const(vector<DiffDoub0>& coef, DiffDoub0& ref_t, vect
 	return;
 }
 
-void Element::get_mass_per_el(DiffDoub0& mass_per_el, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_mass_per_el_dfd0(DiffDoub0& mass_per_el, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub0 dv_val;
 	DiffDoub0 tmp;
 	string cat;
@@ -2046,7 +2040,7 @@ void Element::get_mass_per_el(DiffDoub0& mass_per_el, vector<Section>& sec_ar, v
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		cat = this_dv.category;
 		if (cat == "massPerEl") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd0(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			mass_per_el.add(dv_val);
@@ -2060,10 +2054,10 @@ void Element::get_mass_per_el(DiffDoub0& mass_per_el, vector<Section>& sec_ar, v
  
 //skip 
  
-//diff_doub1 versions: 
+//DiffDoub1 versions: 
 //dup1
 
-void Element::get_gen_prop(DiffDoub1& prop, string prop_key, vector<DesignVariable>& dv_ar) {
+void Element::get_gen_prop_dfd1(DiffDoub1& prop, string prop_key, vector<DesignVariable>& dv_ar) {
 	int d_vind;
 	DiffDoub1 dv_val;
 	DiffDoub1 tmp;
@@ -2072,7 +2066,7 @@ void Element::get_gen_prop(DiffDoub1& prop, string prop_key, vector<DesignVariab
 		d_vind = dv.int_dat;
 		DesignVariable& this_dv = dv_ar[d_vind];
 		if (this_dv.category == prop_key) {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			prop.add(dv_val);
@@ -2082,7 +2076,7 @@ void Element::get_gen_prop(DiffDoub1& prop, string prop_key, vector<DesignVariab
 	return;
 }
 
-void Element::get_layer_thk_z(vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, DiffDoub1& z_offset, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_thk_z_dfd1(vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, DiffDoub1& z_offset, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	//z_offset = 1: upper z surface is reference plane
 	//z_offset = -1: lower z surface is reference plane
 	int layi = 0;
@@ -2101,7 +2095,7 @@ void Element::get_layer_thk_z(vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay
 		for (auto& dv : design_vars) {
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "thickness" && this_dv.layer == layi) {
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				coef.set_val(dv.doub_dat);
 				dv_val.mult(coef);
 				lay_thk[layi].add(dv_val);
@@ -2115,7 +2109,7 @@ void Element::get_layer_thk_z(vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay
 	for (auto& dv : design_vars) {
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		if (this_dv.category == "zOffset") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			coef.set_val(dv.doub_dat);
 			dv_val.mult(coef);
 			z_offset.add(dv_val);
@@ -2130,21 +2124,21 @@ void Element::get_layer_thk_z(vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay
 
 	layi = 0;
 	for (auto& lay : this_sec.layers) {
-		z_next.set_val(z_crd);
+		z_next.set_val_dfd1(z_crd);
 		z_next.add(lay_thk[layi]);
-		tmp.set_val(z_crd);
+		tmp.set_val_dfd1(z_crd);
 		tmp.add(z_next);
 		z_mid.set_val(0.5);
 		z_mid.mult(tmp);
-		lay_z[layi].set_val(z_mid);
+		lay_z[layi].set_val_dfd1(z_mid);
 		layi++;
-		z_crd.set_val(z_next);
+		z_crd.set_val_dfd1(z_next);
 	}
 
 	return;
 }
 
-void Element::get_layer_q(vector<DiffDoub1>& lay_q, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_q_dfd1(vector<DiffDoub1>& lay_q, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -2179,21 +2173,21 @@ void Element::get_layer_q(vector<DiffDoub1>& lay_q, vector<Section>& sec_ar, vec
 				if (dv_cat == "modulus") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd1(dv_val);
 					dv_val.mult(coef);
 					modulus_dv[dv_comp - 1].add(dv_val);
 				}
 				else if (dv_cat == "poissonRatio") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd1(dv_val);
 					dv_val.mult(coef);
 					poisson_dv[dv_comp - 1].add(dv_val);
 				}
 				else if (dv_cat == "shearModulus") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd1(dv_val);
 					dv_val.mult(coef);
 					shear_mod_dv[dv_comp - 1].add(dv_val);
 				}
@@ -2205,18 +2199,18 @@ void Element::get_layer_q(vector<DiffDoub1>& lay_q, vector<Section>& sec_ar, vec
 		}
 		smat[0].set_val(1.0);
 		smat[0].dvd(modulus_dv[0]);
-		smat[1].set_val(poisson_dv[0]);
+		smat[1].set_val_dfd1(poisson_dv[0]);
 		smat[1].neg();
 		smat[1].dvd(modulus_dv[0]);
-		smat[3].set_val(smat[1]);
+		smat[3].set_val_dfd1(smat[1]);
 		smat[4].set_val(1.0);
 		smat[4].dvd(modulus_dv[1]);
 		smat[8].set_val(1.0);
 		smat[8].dvd(shear_mod_dv[0]);
-		get_det_inv(coef, qmat, smat, 3, 0, x_vec, b_vec);
+		get_det_inv_ar_dfd1(coef, qmat, smat, 3, 0, x_vec, b_vec);
 
 		for (i1 = 0; i1 < 9; i1++) {
-			lay_q[i2].set_val(qmat[i1]);
+			lay_q[i2].set_val_dfd1(qmat[i1]);
 			i2++;
 		}
 
@@ -2226,7 +2220,7 @@ void Element::get_layer_q(vector<DiffDoub1>& lay_q, vector<Section>& sec_ar, vec
 	return;
 }
 
-void Element::get_layer_d(vector<DiffDoub1>& lay_d, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_d_dfd1(vector<DiffDoub1>& lay_d, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -2257,7 +2251,7 @@ void Element::get_layer_d(vector<DiffDoub1>& lay_d, vector<Section>& sec_ar, vec
 				if (dv_cat == "dampingMat") {
 					dv_comp = this_dv.component;
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd1(dv_val);
 					dv_val.mult(coef);
 					damp_mat_dv[dv_comp].add(dv_val);
 				}
@@ -2268,21 +2262,21 @@ void Element::get_layer_d(vector<DiffDoub1>& lay_d, vector<Section>& sec_ar, vec
 			i5 = 6 * i3; // lower tri term
 			i6 = i3; // upper tri term
 			for (i4 = 0; i4 < i3; i4++) {
-				damp_mat_dv[i5].set_val(damp_mat_dv[i6]);
+				damp_mat_dv[i5].set_val_dfd1(damp_mat_dv[i6]);
 				i5++;
 				i6 += 6;
 			}
 		}
 
-		lay_d[i2].set_val(damp_mat_dv[0]);
-		lay_d[i2 + 1].set_val(damp_mat_dv[1]);
-		lay_d[i2 + 2].set_val(damp_mat_dv[3]);
-		lay_d[i2 + 3].set_val(damp_mat_dv[6]);
-		lay_d[i2 + 4].set_val(damp_mat_dv[7]);
-		lay_d[i2 + 5].set_val(damp_mat_dv[9]);
-		lay_d[i2 + 6].set_val(damp_mat_dv[18]);
-		lay_d[i2 + 7].set_val(damp_mat_dv[19]);
-		lay_d[i2 + 8].set_val(damp_mat_dv[21]);
+		lay_d[i2].set_val_dfd1(damp_mat_dv[0]);
+		lay_d[i2 + 1].set_val_dfd1(damp_mat_dv[1]);
+		lay_d[i2 + 2].set_val_dfd1(damp_mat_dv[3]);
+		lay_d[i2 + 3].set_val_dfd1(damp_mat_dv[6]);
+		lay_d[i2 + 4].set_val_dfd1(damp_mat_dv[7]);
+		lay_d[i2 + 5].set_val_dfd1(damp_mat_dv[9]);
+		lay_d[i2 + 6].set_val_dfd1(damp_mat_dv[18]);
+		lay_d[i2 + 7].set_val_dfd1(damp_mat_dv[19]);
+		lay_d[i2 + 8].set_val_dfd1(damp_mat_dv[21]);
 
 		layi++;
 		i2 += 9;
@@ -2290,7 +2284,7 @@ void Element::get_layer_d(vector<DiffDoub1>& lay_d, vector<Section>& sec_ar, vec
 	return;
 }
 
-void Element::get_layer_angle(vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_angle_dfd1(vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i2;
 	int layi;
 	int dv_ind;
@@ -2311,13 +2305,13 @@ void Element::get_layer_angle(vector<DiffDoub1>& lay_ang, vector<Section>& sec_a
 				dv_cat = this_dv.category;
 				if (dv_cat == "angle") {
 					coef.set_val(dv.doub_dat);
-					this_dv.get_value(dv_val);
+					this_dv.get_value_dfd1(dv_val);
 					dv_val.mult(coef);
 					angle.add(dv_val);
 				}
 			}
 		}
-		lay_ang[layi].set_val(angle);
+		lay_ang[layi].set_val_dfd1(angle);
 
 		layi++;
 	}
@@ -2325,7 +2319,7 @@ void Element::get_layer_angle(vector<DiffDoub1>& lay_ang, vector<Section>& sec_a
 	return;
 }
 
-void Element::get_layer_th_exp(vector<DiffDoub1>& lay_th_exp, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_th_exp_dfd1(vector<DiffDoub1>& lay_th_exp, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -2347,23 +2341,23 @@ void Element::get_layer_th_exp(vector<DiffDoub1>& lay_th_exp, vector<Section>& s
 			if (this_dv.category == "thermalExp" && this_dv.layer == layi) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				t_exp_dv[dv_comp].add(dv_val);
 			}
 		}
-		lay_th_exp[i2].set_val(t_exp_dv[0]);
+		lay_th_exp[i2].set_val_dfd1(t_exp_dv[0]);
 		i2++;
-		lay_th_exp[i2].set_val(t_exp_dv[1]);
+		lay_th_exp[i2].set_val_dfd1(t_exp_dv[1]);
 		i2++;
-		lay_th_exp[i2].set_val(t_exp_dv[3]);
+		lay_th_exp[i2].set_val_dfd1(t_exp_dv[3]);
 		i2++;
 		layi++;
 	}
 	return;
 }
 
-void Element::get_layer_einit(vector<DiffDoub1>& lay_einit, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_einit_dfd1(vector<DiffDoub1>& lay_einit, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -2384,23 +2378,23 @@ void Element::get_layer_einit(vector<DiffDoub1>& lay_einit, vector<Section>& sec
 			if (this_dv.category == "initialStrain" && this_dv.layer == layi) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				e0_dv[dv_comp].add(dv_val);
 			}
 		}
-		lay_einit[i2].set_val(e0_dv[0]);
+		lay_einit[i2].set_val_dfd1(e0_dv[0]);
 		i2++;
-		lay_einit[i2].set_val(e0_dv[1]);
+		lay_einit[i2].set_val_dfd1(e0_dv[1]);
 		i2++;
-		lay_einit[i2].set_val(e0_dv[3]);
+		lay_einit[i2].set_val_dfd1(e0_dv[3]);
 		i2++;
 		layi++;
 	}
 	return;
 }
 
-void Element::get_layer_den(vector<DiffDoub1>& layer_den, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_den_dfd1(vector<DiffDoub1>& layer_den, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int layi;
 	double mat_den;
 	DiffDoub1 den_dv;
@@ -2416,19 +2410,19 @@ void Element::get_layer_den(vector<DiffDoub1>& layer_den, vector<Section>& sec_a
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "density" && this_dv.layer == layi) {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				den_dv.add(dv_val);
 			}
 		}
-		layer_den[layi].set_val(den_dv);
+		layer_den[layi].set_val_dfd1(den_dv);
 		layi++;
 	}
 
 	return;
 }
 
-void Element::get_layer_cond(vector<DiffDoub1>& lay_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_cond_dfd1(vector<DiffDoub1>& lay_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int layi;
@@ -2450,20 +2444,20 @@ void Element::get_layer_cond(vector<DiffDoub1>& lay_cond, vector<Section>& sec_a
 			if (this_dv.category == "thermalCond" && this_dv.layer == layi) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				cond_dv[dv_comp].add(dv_val);
 			}
 		}
-		lay_cond[i1].set_val(cond_dv[0]);
-		lay_cond[i1 + 1].set_val(cond_dv[3]);
-		lay_cond[i1 + 2].set_val(cond_dv[4]);
-		lay_cond[i1 + 3].set_val(cond_dv[3]);
-		lay_cond[i1 + 4].set_val(cond_dv[1]);
-		lay_cond[i1 + 5].set_val(cond_dv[5]);
-		lay_cond[i1 + 6].set_val(cond_dv[4]);
-		lay_cond[i1 + 7].set_val(cond_dv[5]);
-		lay_cond[i1 + 8].set_val(cond_dv[2]);
+		lay_cond[i1].set_val_dfd1(cond_dv[0]);
+		lay_cond[i1 + 1].set_val_dfd1(cond_dv[3]);
+		lay_cond[i1 + 2].set_val_dfd1(cond_dv[4]);
+		lay_cond[i1 + 3].set_val_dfd1(cond_dv[3]);
+		lay_cond[i1 + 4].set_val_dfd1(cond_dv[1]);
+		lay_cond[i1 + 5].set_val_dfd1(cond_dv[5]);
+		lay_cond[i1 + 6].set_val_dfd1(cond_dv[4]);
+		lay_cond[i1 + 7].set_val_dfd1(cond_dv[5]);
+		lay_cond[i1 + 8].set_val_dfd1(cond_dv[2]);
 		i1 += 9;
 		layi++;
 	}
@@ -2471,7 +2465,7 @@ void Element::get_layer_cond(vector<DiffDoub1>& lay_cond, vector<Section>& sec_a
 	return;
 }
 
-void Element::get_layer_spec_heat(vector<DiffDoub1>& lay_sh, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_layer_spec_heat_dfd1(vector<DiffDoub1>& lay_sh, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int layi;
 	double mat_sh;
 	DiffDoub1 sh_dv;
@@ -2487,19 +2481,19 @@ void Element::get_layer_spec_heat(vector<DiffDoub1>& lay_sh, vector<Section>& se
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "specHeat" && this_dv.layer == layi) {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				sh_dv.add(dv_val);
 			}
 		}
-		lay_sh[layi].set_val(sh_dv);
+		lay_sh[layi].set_val_dfd1(sh_dv);
 		layi++;
 	}
 
 	return;
 }
 
-void Element::transform_strain(DiffDoub1 stn_new[], DiffDoub1 stn_orig[], DiffDoub1& angle) {
+void Element::transform_strain_dfd1(DiffDoub1 stn_new[], DiffDoub1 stn_orig[], DiffDoub1& angle) {
 	DiffDoub1 angle_rad;
 	DiffDoub1 a11;
 	DiffDoub1 a12;
@@ -2511,25 +2505,25 @@ void Element::transform_strain(DiffDoub1 stn_new[], DiffDoub1 stn_orig[], DiffDo
 
 	angle_rad.set_val(r_pio180);
 	angle_rad.mult(angle);
-	a11.set_val(angle_rad);
+	a11.set_val_dfd1(angle_rad);
 	a11.cs();
-	a21.set_val(angle_rad);
+	a21.set_val_dfd1(angle_rad);
 	a21.sn();
-	a12.set_val(a21);
+	a12.set_val_dfd1(a21);
 	a12.neg();
-	a22.set_val(a11);
+	a22.set_val_dfd1(a11);
 
-	te[0].set_val(a11);
+	te[0].set_val_dfd1(a11);
 	te[0].sqr();
-	te[1].set_val(a12);
+	te[1].set_val_dfd1(a12);
 	te[1].sqr();
-	te[2].set_val(a11);
+	te[2].set_val_dfd1(a11);
 	te[2].mult(a12);
-	te[3].set_val(a21);
+	te[3].set_val_dfd1(a21);
 	te[3].sqr();
-	te[4].set_val(a22);
+	te[4].set_val_dfd1(a22);
 	te[4].sqr();
-	te[5].set_val(a22);
+	te[5].set_val_dfd1(a22);
 	te[5].mult(a21);
 	te[6].set_val(2.0);
 	te[6].mult(a11);
@@ -2537,18 +2531,18 @@ void Element::transform_strain(DiffDoub1 stn_new[], DiffDoub1 stn_orig[], DiffDo
 	te[7].set_val(2.0);
 	te[7].mult(a12);
 	te[7].mult(a22);
-	te[8].set_val(a11);
+	te[8].set_val_dfd1(a11);
 	te[8].mult(a22);
-	tmp.set_val(a12);
+	tmp.set_val_dfd1(a12);
 	tmp.mult(a21);
 	te[8].add(tmp);
 
-	mat_mul(stn_new, te, stn_orig, 3, 3, 1);
+	mat_mul_ar_dfd1(stn_new, te, stn_orig, 3, 3, 1);
 
 	return;
 }
 
-void Element::transform_q(DiffDoub1 q_new[], DiffDoub1 q_orig[], DiffDoub1& angle) {
+void Element::transform_q_dfd1(DiffDoub1 q_new[], DiffDoub1 q_orig[], DiffDoub1& angle) {
 	int i1;
 	DiffDoub1 angle_rad;
 	DiffDoub1 a11;
@@ -2566,40 +2560,40 @@ void Element::transform_q(DiffDoub1 q_new[], DiffDoub1 q_orig[], DiffDoub1& angl
 
 	angle_rad.set_val(r_pio180);
 	angle_rad.mult(angle);
-	a11.set_val(angle_rad);
+	a11.set_val_dfd1(angle_rad);
 	a11.cs();
-	a21.set_val(angle_rad);
+	a21.set_val_dfd1(angle_rad);
 	a21.sn();
-	a12.set_val(a21);
+	a12.set_val_dfd1(a21);
 	a12.neg();
-	a22.set_val(a11);
+	a22.set_val_dfd1(a11);
 
-	ts[0].set_val(a11);
+	ts[0].set_val_dfd1(a11);
 	ts[0].sqr();
-	ts[1].set_val(a12);
+	ts[1].set_val_dfd1(a12);
 	ts[1].sqr();
 	ts[2].set_val(2.0);
 	ts[2].mult(a11);
 	ts[2].mult(a12);
-	ts[3].set_val(a21);
+	ts[3].set_val_dfd1(a21);
 	ts[3].sqr();
-	ts[4].set_val(a22);
+	ts[4].set_val_dfd1(a22);
 	ts[4].sqr();
 	ts[5].set_val(2.0);
 	ts[5].mult(a22);
 	ts[5].mult(a21);
-	ts[6].set_val(a11);
+	ts[6].set_val_dfd1(a11);
 	ts[6].mult(a21);
-	ts[7].set_val(a12);
+	ts[7].set_val_dfd1(a12);
 	ts[7].mult(a22);
-	ts[8].set_val(a11);
+	ts[8].set_val_dfd1(a11);
 	ts[8].mult(a22);
-	tmp.set_val(a12);
+	tmp.set_val_dfd1(a12);
 	tmp.mult(a21);
 	ts[8].add(tmp);
 
 	for (i1 = 0; i1 < 9; i1++) {
-		te[i1].set_val(ts[i1]);
+		te[i1].set_val_dfd1(ts[i1]);
 	}
 	tmp.set_val(0.5);
 	te[2].mult(tmp);
@@ -2608,15 +2602,15 @@ void Element::transform_q(DiffDoub1 q_new[], DiffDoub1 q_orig[], DiffDoub1& angl
 	te[6].mult(tmp);
 	te[7].mult(tmp);
 
-	get_det_inv(coef, te_inv, te, 3, 0, x_vec, b_vec);
+	get_det_inv_ar_dfd1(coef, te_inv, te, 3, 0, x_vec, b_vec);
 
-	mat_mul(te, q_orig, te_inv, 3, 3, 3);
-	mat_mul(q_new, ts, te, 3, 3, 3);
+	mat_mul_ar_dfd1(te, q_orig, te_inv, 3, 3, 3);
+	mat_mul_ar_dfd1(q_new, ts, te, 3, 3, 3);
 
 	return;
 }
 
-void Element::get_solid_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_solid_stiff_dfd1(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i4;
@@ -2647,7 +2641,7 @@ void Element::get_solid_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, 
 			if (this_dv.category == "stiffnessMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				cmat[dv_comp].add(dv_val);
 			}
@@ -2656,7 +2650,7 @@ void Element::get_solid_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, 
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				cmat[i4].set_val(cmat[i5]);
+				cmat[i4].set_val_dfd1(cmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -2675,21 +2669,21 @@ void Element::get_solid_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, 
 			if (dv_cat == "modulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				modulus_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (dv_cat == "poissonRatio") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				poisson_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (dv_cat == "shearModulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				shear_mod_dv[dv_comp - 1].add(dv_val);
 			}
@@ -2700,20 +2694,20 @@ void Element::get_solid_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, 
 
 		smat[0].set_val(1.0);
 		smat[0].dvd(modulus_dv[0]);
-		smat[1].set_val(poisson_dv[0]);
+		smat[1].set_val_dfd1(poisson_dv[0]);
 		smat[1].neg();
 		smat[1].dvd(modulus_dv[0]);
-		smat[2].set_val(poisson_dv[1]);
+		smat[2].set_val_dfd1(poisson_dv[1]);
 		smat[2].neg();
 		smat[2].dvd(modulus_dv[0]);
-		smat[6].set_val(smat[1]);
+		smat[6].set_val_dfd1(smat[1]);
 		smat[7].set_val(1.0);
 		smat[7].dvd(modulus_dv[1]);
-		smat[8].set_val(poisson_dv[2]);
+		smat[8].set_val_dfd1(poisson_dv[2]);
 		smat[8].neg();
 		smat[8].dvd(modulus_dv[1]);
-		smat[12].set_val(smat[2]);
-		smat[13].set_val(smat[8]);
+		smat[12].set_val_dfd1(smat[2]);
+		smat[13].set_val_dfd1(smat[8]);
 		smat[14].set_val(1.0);
 		smat[14].dvd(modulus_dv[2]);
 		smat[21].set_val(1.0);
@@ -2723,14 +2717,14 @@ void Element::get_solid_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, 
 		smat[35].set_val(1.0);
 		smat[35].dvd(shear_mod_dv[2]);
 
-		get_det_inv(coef, ctmp, smat, 6, 0, x_vec, b_vec);
-		ar_to_vec(ctmp, cmat, 0, 36);
+		get_det_inv_ar_dfd1(coef, ctmp, smat, 6, 0, x_vec, b_vec);
+		ar_to_vec_dfd1(ctmp, cmat, 0, 36);
 	}
 
 	return;
 }
 
-void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_q, vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar) {
+void Element::get_abd_dfd1(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_q, vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -2754,20 +2748,20 @@ void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vecto
 	for (i1 = 0; i1 < num_lay; i1++) {
 		thk.set_val(0.5);
 		thk.mult(lay_thk[i1]);
-		z_min.set_val(lay_z[i1]);
+		z_min.set_val_dfd1(lay_z[i1]);
 		z_min.sub(thk);
-		z_max.set_val(lay_z[i1]);
+		z_max.set_val_dfd1(lay_z[i1]);
 		z_max.add(thk);
-		transform_q(qmat, &lay_q[i2], lay_ang[i1]);
+		transform_q_dfd1(qmat, &lay_q[i2], lay_ang[i1]);
 		
 		// a matrix portion
-		tmp.set_val(z_max);
+		tmp.set_val_dfd1(z_max);
 		tmp.sub(z_min);
 		for (i3 = 0; i3 < 3; i3++) {
 			i5 = 9 * i3;
 			i6 = 3 * i3;
 			for (i4 = 0; i4 < 3; i4++) {
-				tmp2.set_val(tmp);
+				tmp2.set_val_dfd1(tmp);
 				tmp2.mult(qmat[i6]);
 				cmat[i5].add(tmp2);
 				i5++;
@@ -2776,9 +2770,9 @@ void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vecto
 		}
 
 		// b matrix portion
-		tmp.set_val(z_max);
+		tmp.set_val_dfd1(z_max);
 		tmp.sqr();
-		tmp2.set_val(z_min);
+		tmp2.set_val_dfd1(z_min);
 		tmp2.sqr();
 		tmp.sub(tmp2);
 		tmp2.set_val(0.5);
@@ -2789,7 +2783,7 @@ void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vecto
 			for (i4 = 0; i4 < 3; i4++) {
 				//i6 = i3*3 + i4;
 				//i5 = i3*9 + (i4 + 3)
-				tmp2.set_val(tmp);
+				tmp2.set_val_dfd1(tmp);
 				tmp2.mult(qmat[i6]);
 				cmat[i5].add(tmp2);
 				i5++;
@@ -2798,10 +2792,10 @@ void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vecto
 		}
 
 		// d matrix portion				
-		tmp.set_val(z_max);
+		tmp.set_val_dfd1(z_max);
 		tmp.sqr();
 		tmp.mult(z_max);
-		tmp2.set_val(z_min);
+		tmp2.set_val_dfd1(z_min);
 		tmp2.sqr();
 		tmp2.mult(z_min);
 		tmp.sub(tmp2);
@@ -2811,7 +2805,7 @@ void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vecto
 			i5 = 9 * (i3 + 3) + 3;
 			i6 = 3 * i3;
 			for (i4 = 0; i4 < 3; i4++) {
-				tmp2.set_val(tmp);
+				tmp2.set_val_dfd1(tmp);
 				tmp2.mult(qmat[i6]);
 				cmat[i5].add(tmp2);
 				i5++;
@@ -2827,7 +2821,7 @@ void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vecto
 		for (i2 = 0; i2 < i1; i2++) {
 			//i3 = i1*9 + i2
 			//i4 = i2*9 + i1
-			cmat[i3].set_val(cmat[i4]);
+			cmat[i3].set_val_dfd1(cmat[i4]);
 			i3++;
 			i4 += 9;
 		}
@@ -2835,14 +2829,14 @@ void Element::get_abd(vector<DiffDoub1>& cmat, vector<DiffDoub1>& lay_thk, vecto
 
 	tmp.set_val(1.0);
 	tmp.mult(cmat[20]);
-	cmat[60].set_val(tmp);
-	cmat[70].set_val(tmp);
-	cmat[80].set_val(tmp);
+	cmat[60].set_val_dfd1(tmp);
+	cmat[70].set_val_dfd1(tmp);
+	cmat[80].set_val_dfd1(tmp);
 
 	return;
 }
 
-void Element::get_beam_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_stiff_dfd1(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -2873,7 +2867,7 @@ void Element::get_beam_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, v
 			if (this_dv.category == "stiffnessMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				cmat[dv_comp].add(dv_val);
 			}
@@ -2882,7 +2876,7 @@ void Element::get_beam_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, v
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				cmat[i4].set_val(cmat[i5]);
+				cmat[i4].set_val_dfd1(cmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -2904,35 +2898,35 @@ void Element::get_beam_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, v
 			if (this_dv.category == "modulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				modulus_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "shearModulus") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				shear_mod_dv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "area") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				area_dv.add(dv_val);
 			}
 			else if (this_dv.category == "areaMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				idv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "polarMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				jdv.add(dv_val);
 			}
@@ -2946,37 +2940,37 @@ void Element::get_beam_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, v
 			}
 		}
 
-		cmat[0].set_val(modulus_dv[0]);
+		cmat[0].set_val_dfd1(modulus_dv[0]);
 		cmat[0].mult(area_dv);
-		cmat[4].set_val(modulus_dv[0]);
+		cmat[4].set_val_dfd1(modulus_dv[0]);
 		cmat[4].mult(idv[0]);
-		cmat[5].set_val(modulus_dv[0]);
+		cmat[5].set_val_dfd1(modulus_dv[0]);
 		cmat[5].neg();
 		cmat[5].mult(idv[1]);
-		cmat[7].set_val(shear_mod_dv[0]);
+		cmat[7].set_val_dfd1(shear_mod_dv[0]);
 		cmat[7].mult(area_dv);
-		cmat[9].set_val(shear_mod_dv[0]);
+		cmat[9].set_val_dfd1(shear_mod_dv[0]);
 		cmat[9].neg();
 		cmat[9].mult(idv[0]);
-		cmat[14].set_val(shear_mod_dv[1]);
+		cmat[14].set_val_dfd1(shear_mod_dv[1]);
 		cmat[14].mult(area_dv);
-		cmat[15].set_val(shear_mod_dv[2]);
+		cmat[15].set_val_dfd1(shear_mod_dv[2]);
 		cmat[15].mult(idv[1]);
-		cmat[21].set_val(shear_mod_dv[0]);
+		cmat[21].set_val_dfd1(shear_mod_dv[0]);
 		cmat[21].mult(jdv);
-		cmat[28].set_val(modulus_dv[0]);
+		cmat[28].set_val_dfd1(modulus_dv[0]);
 		cmat[28].mult(idv[2]);
-		cmat[29].set_val(modulus_dv[0]);
+		cmat[29].set_val_dfd1(modulus_dv[0]);
 		cmat[29].neg();
 		cmat[29].mult(idv[4]);
-		cmat[35].set_val(modulus_dv[0]);
+		cmat[35].set_val_dfd1(modulus_dv[0]);
 		cmat[35].mult(idv[3]);
 
 		for (i1 = 1; i1 < 6; i1++) {
 			i3 = 6 * i1;
 			i4 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				cmat[i3].set_val(cmat[i4]);
+				cmat[i3].set_val_dfd1(cmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -2986,7 +2980,7 @@ void Element::get_beam_stiff(vector<DiffDoub1>& cmat, vector<Section>& sec_ar, v
 	return;
 }
 
-void Element::get_thermal_exp(vector<DiffDoub1>& th_exp, vector<DiffDoub1>& einit, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_thermal_exp_dfd1(vector<DiffDoub1>& th_exp, vector<DiffDoub1>& einit, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DesignVariable* this_dv;
 	int dv_comp;
@@ -3005,14 +2999,14 @@ void Element::get_thermal_exp(vector<DiffDoub1>& th_exp, vector<DiffDoub1>& eini
 		if (this_dv.category == "thermalExp") {
 			dv_comp = this_dv.component - 1;
 			tmp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			dv_val.mult(tmp);
 			th_exp[dv_comp].add(dv_val);
 		}
 		else if (this_dv.category == "initialStrain") {
 			dv_comp = this_dv.component - 1;
 			tmp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			dv_val.mult(tmp);
 			einit[dv_comp].add(dv_val);
 		}
@@ -3021,7 +3015,7 @@ void Element::get_thermal_exp(vector<DiffDoub1>& th_exp, vector<DiffDoub1>& eini
 	return;
 }
 
-void Element::get_shell_exp_load(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e0_ld, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_q, vector<DiffDoub1>& lay_th_exp, vector<DiffDoub1>& lay_einit, vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar) {
+void Element::get_shell_exp_load_dfd1(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e0_ld, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_q, vector<DiffDoub1>& lay_th_exp, vector<DiffDoub1>& lay_einit, vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar) {
 	int i1;
 	int num_lay;
 	int layi;
@@ -3049,41 +3043,41 @@ void Element::get_shell_exp_load(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e
 	qi = 0;
 	exi = 0;
 	for (layi = 0; layi < num_lay; layi++) {
-		vec_to_ar(this_q, lay_q, qi, qi + 9);
-		transform_q(sect_q, this_q, lay_ang[layi]);
-		vec_to_ar(this_te, lay_th_exp, exi, exi + 3);
-		transform_strain(sect_te, this_te, lay_ang[layi]);
-		vec_to_ar(this_e0, lay_einit, exi, exi + 3);
-		transform_strain(sect_e0, this_e0, lay_ang[layi]);
-		mat_mul(qte_prod, sect_q, sect_te, 3, 3, 1);
-		mat_mul(qe0_prod, sect_q, sect_e0, 3, 3, 1);
+		vec_to_ar_dfd1(this_q, lay_q, qi, qi + 9);
+		transform_q_dfd1(sect_q, this_q, lay_ang[layi]);
+		vec_to_ar_dfd1(this_te, lay_th_exp, exi, exi + 3);
+		transform_strain_dfd1(sect_te, this_te, lay_ang[layi]);
+		vec_to_ar_dfd1(this_e0, lay_einit, exi, exi + 3);
+		transform_strain_dfd1(sect_e0, this_e0, lay_ang[layi]);
+		mat_mul_ar_dfd1(qte_prod, sect_q, sect_te, 3, 3, 1);
+		mat_mul_ar_dfd1(qe0_prod, sect_q, sect_e0, 3, 3, 1);
 		
 		for (i1 = 0; i1 < 3; i1++) {
-			tmp.set_val(qte_prod[i1]);
+			tmp.set_val_dfd1(qte_prod[i1]);
 			tmp.mult(lay_thk[layi]);
 			exp_ld[i1].add(tmp);
-			tmp.set_val(qe0_prod[i1]);
+			tmp.set_val_dfd1(qe0_prod[i1]);
 			tmp.mult(lay_thk[layi]);
 			e0_ld[i1].add(tmp);
 		}
 
 		tmp.set_val(0.5);
 		tmp.mult(lay_thk[layi]);
-		z_min.set_val(lay_z[layi]);
+		z_min.set_val_dfd1(lay_z[layi]);
 		z_min.sub(tmp);
 		z_min.sqr();
-		z_max.set_val(lay_z[layi]);
+		z_max.set_val_dfd1(lay_z[layi]);
 		z_max.add(tmp);
 		z_max.sqr();
 		tmp.set_val(0.5);
-		tmp2.set_val(z_max);
+		tmp2.set_val_dfd1(z_max);
 		tmp2.sub(z_min);
 		tmp.mult(tmp2); // tmp = 0.5*(z_max^2 - z_min^2)
 		for (i1 = 0; i1 < 3; i1++) {
-			tmp2.set_val(qte_prod[i1]);
+			tmp2.set_val_dfd1(qte_prod[i1]);
 			tmp2.mult(tmp);
 			exp_ld[i1 + 3].add(tmp2);
-			tmp2.set_val(qe0_prod[i1]);
+			tmp2.set_val_dfd1(qe0_prod[i1]);
 			tmp2.mult(tmp);
 			e0_ld[i1 + 3].add(tmp2);
 		}
@@ -3094,7 +3088,7 @@ void Element::get_shell_exp_load(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e
 	return;
 }
 
-void Element::get_beam_exp_load(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e0_ld, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_exp_load_dfd1(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e0_ld, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	DiffDoub1 dv_val;
@@ -3127,14 +3121,14 @@ void Element::get_beam_exp_load(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e0
 			if (cat == "thermalExp") {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				exp_ld[dv_comp].add(dv_val);
 			}
 			else if (cat == "initialStrain") {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				e0_ld[dv_comp].add(dv_val);
 			}
@@ -3161,7 +3155,7 @@ void Element::get_beam_exp_load(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e0
 			if (i2 > -1) {
 				dv_comp = this_dv.component - 1;
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				if (cat == "modulus") {
 					mod_dv[dv_comp].add(dv_val);
@@ -3186,38 +3180,38 @@ void Element::get_beam_exp_load(vector<DiffDoub1>& exp_ld, vector<DiffDoub1>& e0
 		for (i1 = 1; i1 < 8; i1++) {
 			qmat[i1].set_val(0.0);
 		}
-		qmat[0].set_val(mod_dv[0]);
-		qmat[4].set_val(shr_mod_dv[0]);
-		qmat[8].set_val(shr_mod_dv[1]);
-		te_coef_dv[1].set_val(te_coef_dv[3]);
-		te_coef_dv[2].set_val(te_coef_dv[4]);
-		mat_mul(qte, qmat, te_coef_dv, 3, 3, 1);
-		e0_dv[1].set_val(e0_dv[3]);
-		e0_dv[2].set_val(e0_dv[4]);
-		mat_mul(qe0, qmat, e0_dv, 3, 3, 1);
+		qmat[0].set_val_dfd1(mod_dv[0]);
+		qmat[4].set_val_dfd1(shr_mod_dv[0]);
+		qmat[8].set_val_dfd1(shr_mod_dv[1]);
+		te_coef_dv[1].set_val_dfd1(te_coef_dv[3]);
+		te_coef_dv[2].set_val_dfd1(te_coef_dv[4]);
+		mat_mul_ar_dfd1(qte, qmat, te_coef_dv, 3, 3, 1);
+		e0_dv[1].set_val_dfd1(e0_dv[3]);
+		e0_dv[2].set_val_dfd1(e0_dv[4]);
+		mat_mul_ar_dfd1(qe0, qmat, e0_dv, 3, 3, 1);
 		for (i1 = 0; i1 < 18; i1++) {
 			dedgu[i1].set_val(0.0);
 		}
-		dedgu[0].set_val(area_dv);
-		dedgu[4].set_val(area_dv);
-		dedgu[8].set_val(area_dv);
-		dedgu[10].set_val(idv[0]);
+		dedgu[0].set_val_dfd1(area_dv);
+		dedgu[4].set_val_dfd1(area_dv);
+		dedgu[8].set_val_dfd1(area_dv);
+		dedgu[10].set_val_dfd1(idv[0]);
 		dedgu[10].neg();
-		dedgu[11].set_val(idv[1]);
-		dedgu[12].set_val(idv[0]);
-		dedgu[15].set_val(idv[1]);
+		dedgu[11].set_val_dfd1(idv[1]);
+		dedgu[12].set_val_dfd1(idv[0]);
+		dedgu[15].set_val_dfd1(idv[1]);
 		dedgu[15].neg();
 
-		mat_mul(tmp_exp, dedgu, qte, 6, 3, 1);
-		ar_to_vec(tmp_exp, exp_ld, 0, 6);
-		mat_mul(tmp_exp, dedgu, qe0, 6, 3, 1);
-		ar_to_vec(tmp_exp, e0_ld, 0, 6);
+		mat_mul_ar_dfd1(tmp_exp, dedgu, qte, 6, 3, 1);
+		ar_to_vec_dfd1(tmp_exp, exp_ld, 0, 6);
+		mat_mul_ar_dfd1(tmp_exp, dedgu, qe0, 6, 3, 1);
+		ar_to_vec_dfd1(tmp_exp, e0_ld, 0, 6);
 	}
 
 	return;
 }
 
-void Element::get_density(DiffDoub1& den, int layer, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_density_dfd1(DiffDoub1& den, int layer, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int layi;
 	string cat;
 	int dv_lay;
@@ -3234,7 +3228,7 @@ void Element::get_density(DiffDoub1& den, int layer, vector<Section>& sec_ar, ve
 			dv_lay = this_dv.layer;
 			if (cat == "density" && dv_lay == layer) {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				den.add(dv_val);
 			}
@@ -3247,7 +3241,7 @@ void Element::get_density(DiffDoub1& den, int layer, vector<Section>& sec_ar, ve
 			cat = this_dv.category;
 			if (cat == "density") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				den.add(dv_val);
 			}
@@ -3257,7 +3251,7 @@ void Element::get_density(DiffDoub1& den, int layer, vector<Section>& sec_ar, ve
 	return;
 }
 
-void Element::get_shell_mass(vector<DiffDoub1>& mmat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_den, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_shell_mass_dfd1(vector<DiffDoub1>& mmat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_den, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int layi;
 	DiffDoub1 tmp;
@@ -3273,7 +3267,7 @@ void Element::get_shell_mass(vector<DiffDoub1>& mmat, vector<DiffDoub1>& lay_thk
 
 	i1 = sec_ar[sect_ptr].layers.size();
 	for (layi = 0; layi < i1; layi++) {
-		tmp.set_val(lay_den[layi]);
+		tmp.set_val_dfd1(lay_den[layi]);
 		tmp.mult(lay_thk[layi]);
 		mmat[0].add(tmp);
 		mmat[7].add(tmp);
@@ -3281,15 +3275,15 @@ void Element::get_shell_mass(vector<DiffDoub1>& mmat, vector<DiffDoub1>& lay_thk
 
 		tmp.set_val(0.5);
 		tmp.mult(lay_thk[layi]);
-		z_min.set_val(lay_z[layi]);
+		z_min.set_val_dfd1(lay_z[layi]);
 		z_min.sub(tmp);
-		z_min2.set_val(z_min);
+		z_min2.set_val_dfd1(z_min);
 		z_min2.sqr();
-		z_max.set_val(lay_z[layi]);
+		z_max.set_val_dfd1(lay_z[layi]);
 		z_max.add(tmp);
-		z_max2.set_val(z_max);
+		z_max2.set_val_dfd1(z_max);
 		z_max2.sqr();
-		tmp.set_val(z_max2);
+		tmp.set_val_dfd1(z_max2);
 		tmp.sub(z_min2);  // tmp == z_max^2 - z_min^2
 		tmp2.set_val(0.5);
 		tmp2.mult(lay_den[layi]);
@@ -3301,7 +3295,7 @@ void Element::get_shell_mass(vector<DiffDoub1>& mmat, vector<DiffDoub1>& lay_thk
 
 		z_max2.mult(z_max);
 		z_min2.mult(z_min);
-		tmp.set_val(z_max2);
+		tmp.set_val_dfd1(z_max2);
 		tmp.sub(z_min2); // tmp == z_max^3 - z_min^3
 		tmp2.set_val(r_1o3);
 		tmp2.mult(lay_den[layi]);
@@ -3314,7 +3308,7 @@ void Element::get_shell_mass(vector<DiffDoub1>& mmat, vector<DiffDoub1>& lay_thk
 	return;
 }
 
-void Element::get_beam_mass(vector<DiffDoub1>& mmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_mass_dfd1(vector<DiffDoub1>& mmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -3345,7 +3339,7 @@ void Element::get_beam_mass(vector<DiffDoub1>& mmat, vector<Section>& sec_ar, ve
 			if (this_dv.category == "massMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				mmat[dv_comp].add(dv_val);
 			}
@@ -3354,7 +3348,7 @@ void Element::get_beam_mass(vector<DiffDoub1>& mmat, vector<Section>& sec_ar, ve
 			i3 = 6 * i1; // lower tri term
 			i4 = i1; // upper tri term
 			for (i2 = 0; i2 < i1; i2++) {
-				mmat[i3].set_val(mmat[i4]);
+				mmat[i3].set_val_dfd1(mmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -3375,63 +3369,63 @@ void Element::get_beam_mass(vector<DiffDoub1>& mmat, vector<Section>& sec_ar, ve
 			d_cat = this_dv.category;
 			if (d_cat == "density") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				den_dv.add(dv_val);
 			}
 			else if (d_cat == "area") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				area_dv.add(dv_val);
 			}
 			else if (d_cat == "areaMoment") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				dv_comp = this_dv.component;
 				idv[dv_comp - 1].add(dv_val);
 			}
 			else if (d_cat == "polarMoment") {
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				jdv.add(dv_val);
 			}
 		}
-		tmp.set_val(den_dv);
+		tmp.set_val_dfd1(den_dv);
 		tmp.mult(area_dv);
-		mmat[0].set_val(tmp);
-		mmat[7].set_val(tmp);
-		mmat[14].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[0].set_val_dfd1(tmp);
+		mmat[7].set_val_dfd1(tmp);
+		mmat[14].set_val_dfd1(tmp);
+		tmp.set_val_dfd1(den_dv);
 		tmp.mult(idv[0]);
-		mmat[4].set_val(tmp);
-		mmat[9].set_val(tmp);
+		mmat[4].set_val_dfd1(tmp);
+		mmat[9].set_val_dfd1(tmp);
 		mmat[9].neg();
-		tmp.set_val(den_dv);
+		tmp.set_val_dfd1(den_dv);
 		tmp.mult(idv[1]);
-		mmat[5].set_val(tmp);
+		mmat[5].set_val_dfd1(tmp);
 		mmat[5].neg();
-		mmat[15].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[15].set_val_dfd1(tmp);
+		tmp.set_val_dfd1(den_dv);
 		tmp.mult(jdv);
-		mmat[21].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[21].set_val_dfd1(tmp);
+		tmp.set_val_dfd1(den_dv);
 		tmp.mult(idv[2]);
-		mmat[28].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[28].set_val_dfd1(tmp);
+		tmp.set_val_dfd1(den_dv);
 		tmp.mult(idv[4]);
-		mmat[29].set_val(tmp);
-		tmp.set_val(den_dv);
+		mmat[29].set_val_dfd1(tmp);
+		tmp.set_val_dfd1(den_dv);
 		tmp.mult(idv[3]);
-		mmat[35].set_val(tmp);
+		mmat[35].set_val_dfd1(tmp);
 
 		for (i1 = 3; i1 < 6; i1++) {
 			i3 = 6 * i1; // lower tri term
 			i4 = i1; // upper tri term
 			for (i2 = 0; i2 < i1; i2++) {
-				mmat[i3].set_val(mmat[i4]);
+				mmat[i3].set_val_dfd1(mmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -3441,7 +3435,7 @@ void Element::get_beam_mass(vector<DiffDoub1>& mmat, vector<Section>& sec_ar, ve
 	return;
 }
 
-void Element::get_solid_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_solid_damp_dfd1(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -3460,7 +3454,7 @@ void Element::get_solid_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, v
 	for (auto& dv : design_vars) {
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		if (this_dv.category == "dampingMat") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			dv_comp = this_dv.component;
 			temp.set_val(dv.doub_dat);
 			dv_val.mult(temp);
@@ -3472,7 +3466,7 @@ void Element::get_solid_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, v
 		i3 = 6 * i1; // lower tri term
 		i4 = i1; // upper tri term
 		for (i2 = 0; i2 < i1; i2++) {
-			dmat[i3].set_val(dmat[i4]);
+			dmat[i3].set_val_dfd1(dmat[i4]);
 			i3++;
 			i4 += 6;
 		}
@@ -3481,15 +3475,15 @@ void Element::get_solid_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, v
 	return;
 }
 
-void Element::get_shell_damp(vector<DiffDoub1>& dmat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_d, vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar) {
-	get_abd(dmat, lay_thk, lay_z, lay_d, lay_ang, sec_ar);
+void Element::get_shell_damp_dfd1(vector<DiffDoub1>& dmat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_z, vector<DiffDoub1>& lay_d, vector<DiffDoub1>& lay_ang, vector<Section>& sec_ar) {
+	get_abd_dfd1(dmat, lay_thk, lay_z, lay_d, lay_ang, sec_ar);
 	dmat[60].set_val(0.0);
 	dmat[70].set_val(0.0);
 	dmat[80].set_val(0.0);
 	return;
 }
 
-void Element::get_beam_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_damp_dfd1(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int i3;
@@ -3518,7 +3512,7 @@ void Element::get_beam_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, ve
 			if (this_dv.category == "dampingMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				dmat[dv_comp].add(dv_val);
 			}
@@ -3527,7 +3521,7 @@ void Element::get_beam_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, ve
 			i4 = 6 * i1;
 			i5 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				dmat[i4].set_val(dmat[i5]);
+				dmat[i4].set_val_dfd1(dmat[i5]);
 				i4++;
 				i5 += 6;
 			}
@@ -3547,28 +3541,28 @@ void Element::get_beam_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, ve
 			if (this_dv.category == "dampingMat") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				dmat_dv[dv_comp].add(dv_val);
 			}
 			else if (this_dv.category == "area") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				area_dv.add(dv_val);
 			}
 			else if (this_dv.category == "areaMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				idv[dv_comp - 1].add(dv_val);
 			}
 			else if (this_dv.category == "polarMoment") {
 				dv_comp = this_dv.component;
 				coef.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(coef);
 				jdv.add(dv_val);
 			}
@@ -3582,37 +3576,37 @@ void Element::get_beam_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, ve
 			}
 		}
 
-		dmat[0].set_val(dmat_dv[0]);
+		dmat[0].set_val_dfd1(dmat_dv[0]);
 		dmat[0].mult(area_dv);
-		dmat[4].set_val(dmat_dv[0]);
+		dmat[4].set_val_dfd1(dmat_dv[0]);
 		dmat[4].mult(idv[0]);
-		dmat[5].set_val(dmat_dv[0]);
+		dmat[5].set_val_dfd1(dmat_dv[0]);
 		dmat[5].neg();
 		dmat[5].mult(idv[1]);
-		dmat[7].set_val(dmat_dv[21]);
+		dmat[7].set_val_dfd1(dmat_dv[21]);
 		dmat[7].mult(area_dv);
-		dmat[9].set_val(dmat_dv[21]);
+		dmat[9].set_val_dfd1(dmat_dv[21]);
 		dmat[9].neg();
 		dmat[9].mult(idv[0]);
-		dmat[14].set_val(dmat_dv[28]); // 28
+		dmat[14].set_val_dfd1(dmat_dv[28]); // 28
 		dmat[14].mult(area_dv);
-		dmat[15].set_val(dmat_dv[35]); // 35
+		dmat[15].set_val_dfd1(dmat_dv[35]); // 35
 		dmat[15].mult(idv[1]);
-		dmat[21].set_val(dmat_dv[21]); // 21
+		dmat[21].set_val_dfd1(dmat_dv[21]); // 21
 		dmat[21].mult(jdv);
-		dmat[28].set_val(dmat_dv[0]);
+		dmat[28].set_val_dfd1(dmat_dv[0]);
 		dmat[28].mult(idv[2]);
-		dmat[29].set_val(dmat_dv[0]);
+		dmat[29].set_val_dfd1(dmat_dv[0]);
 		dmat[29].neg();
 		dmat[29].mult(idv[4]);
-		dmat[35].set_val(dmat_dv[0]);
+		dmat[35].set_val_dfd1(dmat_dv[0]);
 		dmat[35].mult(idv[3]);
 
 		for (i1 = 1; i1 < 6; i1++) {
 			i3 = 6 * i1;
 			i4 = i1;
 			for (i2 = 0; i2 < i1; i2++) {
-				dmat[i3].set_val(dmat[i4]);
+				dmat[i3].set_val_dfd1(dmat[i4]);
 				i3++;
 				i4 += 6;
 			}
@@ -3623,7 +3617,7 @@ void Element::get_beam_damp(vector<DiffDoub1>& dmat, vector<Section>& sec_ar, ve
 	return;
 }
 
-void Element::get_conductivity(vector<DiffDoub1>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_conductivity_dfd1(vector<DiffDoub1>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DiffDoub1 cond_dv[6];
 	DesignVariable* this_dv;
@@ -3642,7 +3636,7 @@ void Element::get_conductivity(vector<DiffDoub1>& t_cond, vector<Section>& sec_a
 		if (this_dv.category == "thermalCond") {
 			dv_comp = this_dv.component - 1;
 			temp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			dv_val.mult(temp);
 			cond_dv[dv_comp].add(dv_val);
 		}
@@ -3661,7 +3655,7 @@ void Element::get_conductivity(vector<DiffDoub1>& t_cond, vector<Section>& sec_a
 	return;
 }
 
-void Element::get_shell_cond(vector<DiffDoub1>& t_cond, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_ang, vector<DiffDoub1>& lay_cond, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_shell_cond_dfd1(vector<DiffDoub1>& t_cond, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_ang, vector<DiffDoub1>& lay_cond, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int i2;
 	int num_lay = sec_ar[sect_ptr].layers.size();
@@ -3682,17 +3676,17 @@ void Element::get_shell_cond(vector<DiffDoub1>& t_cond, vector<DiffDoub1>& lay_t
 		al_mat[0].set_val(r_pio180);
 		al_mat[0].mult(lay_ang[i1]);
 		al_mat[0].cs();
-		al_mat[4].set_val(al_mat[0]);
+		al_mat[4].set_val_dfd1(al_mat[0]);
 		al_mat[3].set_val(r_pio180);
 		al_mat[3].mult(lay_ang[i1]);
 		al_mat[3].sn();
-		al_mat[1].set_val(al_mat[3]);
+		al_mat[1].set_val_dfd1(al_mat[3]);
 		al_mat[1].neg();
-		transpose(al_t, al_mat, 3, 3);
+		transpose_ar_dfd1(al_t, al_mat, 3, 3);
 		i2 = 9 * i1;
-		vec_to_ar(this_cond, lay_cond, i2, i2 + 9);
-		mat_mul(tmp, this_cond, al_t, 3, 3, 3);
-		mat_mul(layer_mat, al_mat, tmp, 3, 3, 3);
+		vec_to_ar_dfd1(this_cond, lay_cond, i2, i2 + 9);
+		mat_mul_ar_dfd1(tmp, this_cond, al_t, 3, 3, 3);
+		mat_mul_ar_dfd1(layer_mat, al_mat, tmp, 3, 3, 3);
 		for (i2 = 0; i2 < 9; i2++) {
 			layer_mat[i2].mult(lay_thk[i1]);
 			t_cond[i2].add(layer_mat[i2]);
@@ -3702,7 +3696,7 @@ void Element::get_shell_cond(vector<DiffDoub1>& t_cond, vector<DiffDoub1>& lay_t
 	return;
 }
 
-void Element::get_beam_cond(vector<DiffDoub1>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_cond_dfd1(vector<DiffDoub1>& t_cond, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DesignVariable* this_dv;
 	string cat;
@@ -3719,7 +3713,7 @@ void Element::get_beam_cond(vector<DiffDoub1>& t_cond, vector<Section>& sec_ar, 
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "thermCond") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				cond_dv.add(dv_val);
 			}
@@ -3733,13 +3727,13 @@ void Element::get_beam_cond(vector<DiffDoub1>& t_cond, vector<Section>& sec_ar, 
 			cat = this_dv.category;
 			if (cat == "thermCond") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				cond_dv.add(dv_val);
 			}
 			else if (cat == "area") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				area_dv.add(dv_val);
 			}
@@ -3751,14 +3745,14 @@ void Element::get_beam_cond(vector<DiffDoub1>& t_cond, vector<Section>& sec_ar, 
 		t_cond[i1].set_val(0.0);
 	}
 
-	t_cond[0].set_val(cond_dv);
-	t_cond[4].set_val(cond_dv);
-	t_cond[8].set_val(cond_dv);
+	t_cond[0].set_val_dfd1(cond_dv);
+	t_cond[4].set_val_dfd1(cond_dv);
+	t_cond[8].set_val_dfd1(cond_dv);
 
 	return;
 }
 
-void Element::get_specific_heat(DiffDoub1& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_specific_heat_dfd1(DiffDoub1& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DiffDoub1 spec_heat_dv;
 	DiffDoub1 temp;
@@ -3773,7 +3767,7 @@ void Element::get_specific_heat(DiffDoub1& spec_heat, vector<Section>& sec_ar, v
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		if (this_dv.category == "specHeat") {
 			temp.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			dv_val.mult(temp);
 			spec_heat.add(dv_val);
 		}
@@ -3782,7 +3776,7 @@ void Element::get_specific_heat(DiffDoub1& spec_heat, vector<Section>& sec_ar, v
 	return;
 }
 
-void Element::get_shell_spec_heat(DiffDoub1& spec_heat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_sh, vector<DiffDoub1>& lay_den, vector<Section>& sec_ar) {
+void Element::get_shell_spec_heat_dfd1(DiffDoub1& spec_heat, vector<DiffDoub1>& lay_thk, vector<DiffDoub1>& lay_sh, vector<DiffDoub1>& lay_den, vector<Section>& sec_ar) {
 	int i1;
 	int num_lay;
 	DiffDoub1 tmp;
@@ -3790,7 +3784,7 @@ void Element::get_shell_spec_heat(DiffDoub1& spec_heat, vector<DiffDoub1>& lay_t
 	spec_heat.set_val(0.0);
 	num_lay = sec_ar[sect_ptr].layers.size();
 	for (i1 = 0; i1 < num_lay; i1++) {
-		tmp.set_val(lay_den[i1]);
+		tmp.set_val_dfd1(lay_den[i1]);
 		tmp.mult(lay_sh[i1]);
 		tmp.mult(lay_thk[i1]);
 		spec_heat.add(tmp);
@@ -3799,7 +3793,7 @@ void Element::get_shell_spec_heat(DiffDoub1& spec_heat, vector<DiffDoub1>& lay_t
 	return;
 }
 
-void Element::get_beam_spec_heat(DiffDoub1& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_beam_spec_heat_dfd1(DiffDoub1& spec_heat, vector<Section>& sec_ar, vector<Material>& mat_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	string cat;
 	DiffDoub1 density_dv;
@@ -3819,7 +3813,7 @@ void Element::get_beam_spec_heat(DiffDoub1& spec_heat, vector<Section>& sec_ar, 
 			DesignVariable& this_dv = dv_ar[dv.int_dat];
 			if (this_dv.category == "specHeat") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				spec_heat.add(dv_val);
 			}
@@ -3834,19 +3828,19 @@ void Element::get_beam_spec_heat(DiffDoub1& spec_heat, vector<Section>& sec_ar, 
 			cat = this_dv.category;
 			if (cat == "specHeatDV") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				spec_heat.add(dv_val);
 			}
 			else if (cat == "density") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				density_dv.add(dv_val);
 			}
 			else if (cat == "area") {
 				tmp.set_val(dv.doub_dat);
-				this_dv.get_value(dv_val);
+				this_dv.get_value_dfd1(dv_val);
 				dv_val.mult(tmp);
 				area_dv.add(dv_val);
 			}
@@ -3858,22 +3852,22 @@ void Element::get_beam_spec_heat(DiffDoub1& spec_heat, vector<Section>& sec_ar, 
 	return;
 }
 
-void Element::get_nd_crds(vector<DiffDoub1>& x_glob, vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_nd_crds_dfd1(vector<DiffDoub1>& x_glob, vector<Node>& nd_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	DiffDoub1 nd_crd[3];
 	
 	for (i1 = 0; i1 < num_nds; i1++) {
 		Node& this_nd = nd_ar[nodes[i1]];
-		this_nd.get_crd(nd_crd,dv_ar);
-		x_glob[i1].set_val(nd_crd[0]);
-		x_glob[i1+num_nds].set_val(nd_crd[1]);
-		x_glob[i1+2*num_nds].set_val(nd_crd[2]);
+		this_nd.get_crd_dfd1(nd_crd,dv_ar);
+		x_glob[i1].set_val_dfd1(nd_crd[0]);
+		x_glob[i1+num_nds].set_val_dfd1(nd_crd[1]);
+		x_glob[i1+2*num_nds].set_val_dfd1(nd_crd[2]);
 	}
 	
 	return;
 }
 
-void Element::get_loc_ori(vector<DiffDoub1>& loc_ori, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_loc_ori_dfd1(vector<DiffDoub1>& loc_ori, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	int i1;
 	int dv_ind;
 	DesignVariable *this_dvpt;
@@ -3898,19 +3892,19 @@ void Element::get_loc_ori(vector<DiffDoub1>& loc_ori, vector<Section>& sec_ar, v
 		if(dv_cat == "orientation") {
 			i1 = this_dv.component - 1;
 			coef.set_val(dv.doub_dat);
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			dv_val.mult(coef);
 			rot[i1].add(dv_val);
 		}
 	}
 	
-	rotate_orient(tmp_ori, ori_copy, rot);
-	ar_to_vec(tmp_ori, loc_ori, 0, 9);
+	rotate_orient_dfd1(tmp_ori, ori_copy, rot);
+	ar_to_vec_dfd1(tmp_ori, loc_ori, 0, 9);
 	
 	return;
 }
 
-void Element::correct_orient(vector<DiffDoub1>& loc_ori, vector<DiffDoub1>& x_glob) {
+void Element::correct_orient_dfd1(vector<DiffDoub1>& loc_ori, vector<DiffDoub1>& x_glob) {
 	int i1;
 	DiffDoub1 v1[3];
 	DiffDoub1 v2[3];
@@ -3926,47 +3920,47 @@ void Element::correct_orient(vector<DiffDoub1>& loc_ori, vector<DiffDoub1>& x_gl
 	DiffDoub1 tmp;
 	
 	for (i1 = 0; i1 < 9; i1++) {
-		ori_copy[i1].set_val(loc_ori[i1]);
+		ori_copy[i1].set_val_dfd1(loc_ori[i1]);
 	}
 	
 	if(type == 3 || type == 41) {
 		if(type == 3) {
-			v1[0].set_val(x_glob[1]);
+			v1[0].set_val_dfd1(x_glob[1]);
 			v1[0].sub(x_glob[0]);
-			v1[1].set_val(x_glob[4]);
+			v1[1].set_val_dfd1(x_glob[4]);
 			v1[1].sub(x_glob[3]);
-			v1[2].set_val(x_glob[7]);
+			v1[2].set_val_dfd1(x_glob[7]);
 			v1[2].sub(x_glob[6]);
 			
-			v2[0].set_val(x_glob[2]);
+			v2[0].set_val_dfd1(x_glob[2]);
 			v2[0].sub(x_glob[0]);
-			v2[1].set_val(x_glob[5]);
+			v2[1].set_val_dfd1(x_glob[5]);
 			v2[1].sub(x_glob[3]);
-			v2[2].set_val(x_glob[8]);
+			v2[2].set_val_dfd1(x_glob[8]);
 			v2[2].sub(x_glob[6]);		
 		} else {
-			v1[0].set_val(x_glob[2]);
+			v1[0].set_val_dfd1(x_glob[2]);
 			v1[0].sub(x_glob[0]);
-			v1[1].set_val(x_glob[6]);
+			v1[1].set_val_dfd1(x_glob[6]);
 			v1[1].sub(x_glob[4]);
-			v1[2].set_val(x_glob[10]);
+			v1[2].set_val_dfd1(x_glob[10]);
 			v1[2].sub(x_glob[8]);
 			
-			v2[0].set_val(x_glob[3]);
+			v2[0].set_val_dfd1(x_glob[3]);
 			v2[0].sub(x_glob[1]);
-			v2[1].set_val(x_glob[7]);
+			v2[1].set_val_dfd1(x_glob[7]);
 			v2[1].sub(x_glob[5]);
-			v2[2].set_val(x_glob[11]);
+			v2[2].set_val_dfd1(x_glob[11]);
 			v2[2].sub(x_glob[9]);	
 		}
-		cross_prod(v3, v1, v2);
+		cross_prod_dfd1(v3, v1, v2);
 		
-		dp.set_val(v3[0]);
+		dp.set_val_dfd1(v3[0]);
 		dp.mult(loc_ori[6]);
-		tmp.set_val(v3[1]);
+		tmp.set_val_dfd1(v3[1]);
 		tmp.mult(loc_ori[7]);
 		dp.add(tmp);
-		tmp.set_val(v3[2]);
+		tmp.set_val_dfd1(v3[2]);
 		tmp.mult(loc_ori[8]);
 		dp.add(tmp);
 		
@@ -3976,23 +3970,23 @@ void Element::correct_orient(vector<DiffDoub1>& loc_ori, vector<DiffDoub1>& x_gl
 			v3[2].neg();
 		}
 		
-		magv3.set_val(v3[0]);
+		magv3.set_val_dfd1(v3[0]);
 		magv3.sqr();
-		tmp.set_val(v3[1]);
+		tmp.set_val_dfd1(v3[1]);
 		tmp.sqr();
 		magv3.add(tmp);
-		tmp.set_val(v3[2]);
+		tmp.set_val_dfd1(v3[2]);
 		tmp.sqr();
 		magv3.add(tmp);
 		magv3.sqt();
 		
-		cross_prod(rot,&loc_ori[6],v3);
-		mag_cp.set_val(rot[0]);
+		cross_prod_dfd1(rot,&loc_ori[6],v3);
+		mag_cp.set_val_dfd1(rot[0]);
 		mag_cp.sqr();
-		tmp.set_val(rot[1]);
+		tmp.set_val_dfd1(rot[1]);
 		tmp.sqr();
 		mag_cp.add(tmp);
-		tmp.set_val(rot[2]);
+		tmp.set_val_dfd1(rot[2]);
 		tmp.sqr();
 		mag_cp.add(tmp);
 		mag_cp.sqt();
@@ -4000,25 +3994,25 @@ void Element::correct_orient(vector<DiffDoub1>& loc_ori, vector<DiffDoub1>& x_gl
 			return;
 		}
 		
-		theta.set_val(mag_cp);
+		theta.set_val_dfd1(mag_cp);
 		theta.dvd(magv3);
 		theta.asn();
 		
-		tmp.set_val(theta);
+		tmp.set_val_dfd1(theta);
 		tmp.dvd(mag_cp);
 		
 		rot[0].mult(tmp);
 		rot[1].mult(tmp);
 		rot[2].mult(tmp);
 		
-		rotate_orient(tmp_ori, ori_copy, rot);
-		ar_to_vec(tmp_ori, loc_ori, 0, 9);
+		rotate_orient_dfd1(tmp_ori, ori_copy, rot);
+		ar_to_vec_dfd1(tmp_ori, loc_ori, 0, 9);
 	}
 	
 	return;
 }
 
-void Element::get_frc_fld_const(vector<DiffDoub1>& coef, vector<DiffDoub1>& exp, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_frc_fld_const_dfd1(vector<DiffDoub1>& coef, vector<DiffDoub1>& exp, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub1 dv_val;
 	DiffDoub1 tmp;
 	string cat;
@@ -4033,13 +4027,13 @@ void Element::get_frc_fld_const(vector<DiffDoub1>& coef, vector<DiffDoub1>& exp,
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		cat = this_dv.category;
 		if (cat == "potFldCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[0].add(dv_val);
 		}
 		else if (cat == "dampFldCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[1].add(dv_val);
@@ -4049,7 +4043,7 @@ void Element::get_frc_fld_const(vector<DiffDoub1>& coef, vector<DiffDoub1>& exp,
 	return;
 }
 
-void Element::get_thrm_fld_const(vector<DiffDoub1>& coef, DiffDoub1& ref_t, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_thrm_fld_const_dfd1(vector<DiffDoub1>& coef, DiffDoub1& ref_t, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub1 dv_val;
 	DiffDoub1 tmp;
 	string cat;
@@ -4063,13 +4057,13 @@ void Element::get_thrm_fld_const(vector<DiffDoub1>& coef, DiffDoub1& ref_t, vect
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		cat = this_dv.category;
 		if (cat == "condCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[0].add(dv_val);
 		}
 		else if (cat == "radCoef") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			coef[1].add(dv_val);
@@ -4079,7 +4073,7 @@ void Element::get_thrm_fld_const(vector<DiffDoub1>& coef, DiffDoub1& ref_t, vect
 	return;
 }
 
-void Element::get_mass_per_el(DiffDoub1& mass_per_el, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
+void Element::get_mass_per_el_dfd1(DiffDoub1& mass_per_el, vector<Section>& sec_ar, vector<DesignVariable>& dv_ar) {
 	DiffDoub1 dv_val;
 	DiffDoub1 tmp;
 	string cat;
@@ -4091,7 +4085,7 @@ void Element::get_mass_per_el(DiffDoub1& mass_per_el, vector<Section>& sec_ar, v
 		DesignVariable& this_dv = dv_ar[dv.int_dat];
 		cat = this_dv.category;
 		if (cat == "massPerEl") {
-			this_dv.get_value(dv_val);
+			this_dv.get_value_dfd1(dv_val);
 			tmp.set_val(dv.doub_dat);
 			dv_val.mult(tmp);
 			mass_per_el.add(dv_val);
@@ -4104,5 +4098,6 @@ void Element::get_mass_per_el(DiffDoub1& mass_per_el, vector<Section>& sec_ar, v
 //end dup
  
 //end skip 
+ 
  
  

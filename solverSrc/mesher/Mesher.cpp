@@ -1,22 +1,24 @@
 #include "Mesher.h"
+#include "constants.h"
 #include "utilities.h"
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
 Mesher::Mesher() {
-	gridOut1 = nullptr;
-	gridOut2 = nullptr;
+	nd_ct = 0;
+	fc_ct = 0;
+	el_ct = 0;
+	gridOut1.clear();
+	gridOut2.clear();
 	globProjWt = 0.75;
-	maxNumEls = 0;
-	newEl = nullptr;
-	newElFcs[0] = nullptr;
-	newElFcs[1] = nullptr;
-	newElFcs[2] = nullptr;
-	newElFcs[3] = nullptr;
-	newNd = nullptr;
+	maxNumEls = max_int;
+	newEl = max_int;
+	newElFcs = vector<MeshFace>(4);
+	newNd = max_int;
 	return;
 }
 
@@ -27,30 +29,24 @@ void Mesher::readInput(string fileName) {
 	int hdLdSpace[4];
 	string data[3];
 	int dataLen;
-	MeshNode* newNd;
+	int newNd;
 	double ndCrd[3];
-	MeshFace* newFc;
+	int newFc;
 	int fcNd[3];
+
+	nd_ct = 0;
+	fc_ct = 0;
 
 	inFile.open(fileName);
 	if (inFile) {
 		while (!inFile.eof()) {
-			readInputLine(inFile, fileLine, headings, hdLdSpace, data, dataLen);
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
 			if (headings[0] == "nodes" && dataLen == 3) {
-				ndCrd[0] = stod(data[0]);
-				ndCrd[1] = stod(data[1]);
-				ndCrd[2] = stod(data[2]);
-				newNd = new MeshNode;
-				newNd->setCrd(ndCrd);
-				nodes.addEnt(newNd);
+				nd_ct++;
 			}
 			else if (headings[0] == "faces" && dataLen == 3) {
-				fcNd[0] = stoi(data[0]);
-				fcNd[1] = stoi(data[1]);
-				fcNd[2] = stoi(data[2]);
-				newFc = new MeshFace();
-				newFc->setNodeLabs(fcNd);
-				faces.addEnt(newFc);
+				fc_ct++;
 			}
 			else if (headings[0] == "globProjWt" && dataLen == 1) {
 				globProjWt = stod(data[0]);
@@ -65,6 +61,50 @@ void Mesher::readInput(string fileName) {
 		string erSt = "Error: Could not open input file " + fileName + " for unstructured 3D mesh generation.";
 		throw invalid_argument(erSt);
 	}
+
+	int rad = 1;
+	while (12*rad*rad < nd_ct) {
+		rad++;
+	}
+
+	nd_cap = 15 * rad * rad * rad;
+	el_cap = 6 * nd_cap;
+	if (maxNumEls == max_int) {
+		maxNumEls = el_cap;
+	}
+	else if (el_cap > maxNumEls) {
+		el_cap = maxNumEls;
+	}
+	fc_cap = 2 * el_cap;
+
+	nodes = vector<MeshNode>(nd_cap);
+	elements = vector<MeshElement>(el_cap);
+	faces = vector<MeshFace>(fc_cap);
+
+	nd_ct = 0;
+	fc_ct = 0;
+
+	inFile.open(fileName);
+	if (inFile) {
+		while (!inFile.eof()) {
+			getline(inFile, fileLine);
+			readInputLine(fileLine, headings, hdLdSpace, data, dataLen);
+			if (headings[0] == "nodes" && dataLen == 3) {
+				nodes[nd_ct].coord[0] = stod(data[0]);
+				nodes[nd_ct].coord[1] = stod(data[1]);
+				nodes[nd_ct].coord[2] = stod(data[2]);
+				nd_ct++;
+			}
+			else if (headings[0] == "faces" && dataLen == 3) {
+				faces[fc_ct].nodes[0] = stoi(data[0]);
+				faces[fc_ct].nodes[1] = stoi(data[1]);
+				faces[fc_ct].nodes[2] = stoi(data[2]);
+				fc_ct++;
+			}
+		}
+		inFile.close();
+	}
+	
 	return;
 }
 
@@ -83,11 +123,12 @@ void Mesher::initBoundaryNormals() {
 	double dp;
 	bool intersects;
 	int intCt;
-	MeshFace* thisFc = faces.getFirst();
-	MeshFace* thisFc2 = nullptr;
-	while (thisFc) {
-		thisFc->getCentroid(cent);
-		normDir = thisFc->getNormDir();
+	int fci;
+	int fci2;
+	for (fci = 0; fci < fc_ct; fci++) {
+		MeshFace& thisFc = faces[fci];
+		thisFc.getCentroid(cent,nodes);
+		normDir = &thisFc.normDir[0];
 		srchDir = 0;
 		if (abs(normDir[1]) > abs(normDir[0])) {
 			srchDir = 1;
@@ -131,9 +172,10 @@ void Mesher::initBoundaryNormals() {
 		lstLen = faceGrid.getInXYZRange(gridOut1, gOLen, xRange, yRange, zRange);
 		intCt = 1;
 		for (i1 = 0; i1 < lstLen; i1++) {
-			thisFc2 = gridOut1[i1]->getPt(thisFc2);
-			if (thisFc2 != thisFc) {
-				intersects = thisFc2->getIntersection(intOut, cent, vec);
+			fci2 = gridOut1[i1];
+			MeshFace& thisFc2 = faces[fci2];
+			if (fci != fci2) {
+				intersects = thisFc2.getIntersection(intOut, cent, vec, nodes);
 				if (intersects && intOut[0] > 0.0) {
 					intCt *= -1;
 				}
@@ -151,59 +193,34 @@ void Mesher::initBoundaryNormals() {
 			dp = dp;
 		}
 		//
-		thisFc = thisFc->getNext();
 	}
 	return;
 }
 
 void Mesher::prep() {
+	int i1;
+	int i2;
+	numBoundNds = nd_ct;
 
-	//Set Boundary face node pointers
-	numBoundNds = nodes.getLength();
-	MeshNode** ndAr = new MeshNode * [numBoundNds];
-	MeshNode* thisNd = nodes.getFirst();
-	int i1 = 0;
-	while (thisNd) {
-		ndAr[i1] = thisNd;
-		thisNd = thisNd->getNext();
-		i1++;
-	}
-
-	MeshFace* thisFc = faces.getFirst();
-	while (thisFc) {
-		thisFc->setPtFromLabs(ndAr);
-		thisFc->initNormDir();
-		thisFc = thisFc->getNext();
-	}
-	
 	//Allocate the grid output list
-	int numFaces = faces.getLength();
+	int numFaces = fc_ct;
 	if (numFaces > numBoundNds) {
-		gOLen = 2.0 * numFaces;
+		gOLen = 2 * numFaces;
 	}
 	else {
-		gOLen = 2.0 * numBoundNds;
+		gOLen = 2 * numBoundNds;
 	}
-	gridOut1 = new MeshEnt * [gOLen];
-	gridOut2 = new MeshEnt * [gOLen];
-
-	// Set the max number of elements
-
-	if (maxNumEls == 0) {
-		i1 = numFaces * numFaces * numFaces;
-		while (maxNumEls*maxNumEls < i1) {
-			maxNumEls++;
-		}
-	}
+	gridOut1 = vector<int>(gOLen);
+	gridOut2 = vector<int>(gOLen);
 
 	//Initialize grids
 	double xRange[2] = { 1.0e+100,-1.0e+100 };
 	double yRange[2] = { 1.0e+100,-1.0e+100 };
 	double zRange[2] = { 1.0e+100,-1.0e+100 };
 	double* crd;
-	thisNd = nodes.getFirst();
-	while (thisNd) {
-		crd = thisNd->getCrd();
+	for (i1 = 0; i1 < nd_ct; i1++) {
+		MeshNode& thisNd = nodes[i1];
+		crd = &thisNd.coord[0];
 		if (crd[0] < xRange[0]) {
 			xRange[0] = crd[0];
 		}
@@ -222,25 +239,23 @@ void Mesher::prep() {
 		if (crd[2] > zRange[1]) {
 			zRange[1] = crd[2];
 		}
-		thisNd = thisNd->getNext();
 	}
 
-	double spacing = 0;
-	thisFc = faces.getFirst();
+	double spacing = 0.0;
 	avgProj = 0.0;
 	maxProj = 0.0;
 	maxEdgeLen = 0.0;
-	while (thisFc) {
-		spacing = thisFc->getProjDist();
+	for (i1 = 0; i1 < fc_ct; i1++) {
+		MeshFace& thisFc = faces[i1];
+		spacing = thisFc.projDist;
 		avgProj += spacing;
 		if (spacing > maxProj) {
 			maxProj = spacing;
 		}
-		spacing = thisFc->getLongestEdgeLen();
+		spacing = thisFc.getLongestEdgeLen(nodes);
 		if (spacing > maxEdgeLen) {
 			maxEdgeLen = spacing;
 		}
-		thisFc = thisFc->getNext();
 	}
 	avgProj /= numFaces;
 	spacing = avgProj;
@@ -250,38 +265,34 @@ void Mesher::prep() {
 
 	//Add boundary nodes and faces to their grids
 	double cent[3];
-	thisNd = nodes.getFirst();
-	while (thisNd) {
-		nodeGrid.addEnt(thisNd, thisNd->getCrd());
-		thisNd = thisNd->getNext();
+	for (i1 = 0; i1 < nd_ct; i1++) {
+		MeshNode& thisNd = nodes[i1];
+		nodeGrid.addEnt(i1, thisNd.coord);
 	}
 
-	thisFc = faces.getFirst();
-	while (thisFc) {
-		thisFc->getCentroid(cent);
-		faceGrid.addEnt(thisFc, cent);
-		thisFc = thisFc->getNext();
+	for (i1 = 0; i1 < fc_ct; i1++) {
+		MeshFace& thisFc = faces[i1];
+		thisFc.getCentroid(cent,nodes);
+		faceGrid.addEnt(i1, cent);
 	}
 
 	// Check boundary completeness
 
 	int lstLen;
-	MeshFace* lstFc = nullptr;
-	MeshNode* lstNd[3];
-	MeshNode** fcNds;
+	int lstNd[3];
 	bool shared[3];
 	int numShared;
 	int neighbCt;
-	thisFc = faces.getFirst();
-	while (thisFc) {
-		thisFc->getCentroid(cent);
+	for (i2 = 0; i2 < fc_ct; i2++) {
+		MeshFace& thisFc = faces[i2];
+		thisFc.getCentroid(cent,nodes);
 		lstLen = faceGrid.getInRadius(gridOut1, gOLen, cent, 1.01*maxEdgeLen);
 		neighbCt = 0;
 		for (i1 = 0; i1 < lstLen; i1++) {
-			lstFc = gridOut1[i1]->getPt(lstFc);
+			MeshFace& lstFc = faces[gridOut1[i1]];
 			//fcNds = lstFc->getNdPt();
 			//cout << fcNds[0]->getLabel() << ", " << fcNds[1]->getLabel() << ", " << fcNds[2]->getLabel() << endl;
-			numShared = lstFc->getSharedNodes(lstNd, shared, thisFc);
+			numShared = lstFc.getSharedNodes(lstNd, shared, i2, nodes, faces);
 			if (numShared == 2) {
 				neighbCt++;
 			}
@@ -294,18 +305,16 @@ void Mesher::prep() {
 			erSt = erSt + "Boundary must be a completely closed surface of triangular faces.";
 			throw invalid_argument(erSt);
 		}
-		thisFc = thisFc->getNext();
 	}
 
 	// Check face normal directions
 
 	initBoundaryNormals();
 
-	delete[] ndAr;
 	return;
 }
 
-bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
+bool Mesher::checkNewEl(MeshElement& newEl, std::vector<MeshFace>& newFaces) {
 	int i1;
 	int i2;
 	int i3;
@@ -321,47 +330,42 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 	double vec[3];
 	double outP[3];
 	bool intersects;
-	MeshNode** elNds = newEl->getNodes();
-	MeshNode** fcNds = nullptr;
-	MeshFace* thisFc = nullptr;
-	MeshElement** fcEls;
-	MeshElement* thisEl = nullptr;
-	MeshNode* thisNd = nullptr;
-	MeshNode* fcNdOut[3];
+	int* elNds = &newEl.nodes[0];
+	int* fcNds = nullptr;
+	int* fcEls = nullptr;
+	int fcNdOut[3];
 	bool shared[3];
 
-	newEl->getCentroid(cent);
+	newEl.getCentroid(cent,nodes);
 	lstLen = faceGrid.getInRadius(gridOut2, gOLen, cent, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
-		thisFc = gridOut2[i1]->getPt(thisFc);
+		MeshFace& thisFc = faces[gridOut2[i1]];
 
 		for (i2 = 0; i2 < 4; i2++) {
 			// Any face of new element already exists and is closed
-			i3 = thisFc->getSharedNodes(fcNdOut, shared, newFaces[i2]);
-			fcEls = thisFc->getElPt();
+			i3 = thisFc.getSharedNodes(fcNdOut, shared, i2, nodes, newFaces);
+			fcEls = &thisFc.elements[0];
 			if (i3 == 3 && fcEls[1]) {
 				return false;
 			}
 			// Any edge of new element intersects existing edge
-			intersects = thisFc->edgesIntersect(newFaces[i2], 1.0e-6 * avgProj);
+			intersects = thisFc.edgesIntersect(i2, 1.0e-6 * avgProj, nodes, newFaces);
 			if (intersects) {
 				return false;
 			}
 		}
-
-
 
 		// Any edge of new element intersects existing face
 		i3 = 0;
 		for (i2 = 0; i2 < 6; i2++) {
 			n1 = elEdges[i3];
 			n2 = elEdges[i3 + 1];
-			pt = elNds[n1]->getCrd();
-			pt2 = elNds[n2]->getCrd();
+			pt = &nodes[elNds[n1]].coord[0];
+			pt2 = &nodes[elNds[n2]].coord[0];
 			vec[0] = pt2[0] - pt[0];
 			vec[1] = pt2[1] - pt[1];
 			vec[2] = pt2[2] - pt[2];
-			intersects = thisFc->getIntersection(outP, pt, vec);
+			intersects = thisFc.getIntersection(outP, pt, vec, nodes);
 			if (intersects && outP[0] < 0.9999999999 && outP[0] > 0.0000000001) {
 				return false;
 			}
@@ -370,18 +374,18 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 
 		// Any edge of existing face intersects face of new element
 
-		fcNds = thisFc->getNdPt();
+		fcNds = &thisFc.nodes[0];
 		i3 = 0;
 		for (i2 = 0; i2 < 3; i2++) {
 			n1 = faceEdges[i3];
 			n2 = faceEdges[i3 + 1];
-			pt = fcNds[n1]->getCrd();
-			pt2 = fcNds[n2]->getCrd();
+			pt = &nodes[fcNds[n1]].coord[0];
+			pt2 = &nodes[fcNds[n2]].coord[0];
 			vec[0] = pt2[0] - pt[0];
 			vec[1] = pt2[1] - pt[1];
 			vec[2] = pt2[2] - pt[2];
 			for (i4 = 0; i4 < 4; i4++) {
-				intersects = newFaces[i4]->getIntersection(outP, pt, vec);
+				intersects = newFaces[i4].getIntersection(outP, pt, vec, nodes);
 				if (intersects && outP[0] < 0.9999999999 && outP[0] > 0.0000000001) {
 					return false;
 				}
@@ -394,10 +398,10 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 
 	lstLen = elementGrid.getInRadius(gridOut2, gOLen, cent, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
-		thisEl = gridOut2[i1]->getPt(thisEl);
+		MeshElement& thisEl = elements[gridOut2[i1]];
 		for (i2 = 0; i2 < 4; i2++) {
-			pt = elNds[i2]->getCrd();
-			intersects = thisEl->pointIn(pt);
+			pt = &nodes[elNds[i2]].coord[0];
+			intersects = thisEl.pointIn(pt,nodes);
 			if (intersects) {
 				return false;
 			}
@@ -408,9 +412,9 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 
 	lstLen = nodeGrid.getInRadius(gridOut2, gOLen, cent, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
-		thisNd = gridOut2[i1]->getPt(thisNd);
-		pt = thisNd->getCrd();
-		intersects = newEl->pointIn(pt);
+		MeshNode& thisNd = nodes[gridOut2[i1]];
+		pt = &thisNd.coord[0];
+		intersects = newEl.pointIn(pt, nodes);
 		if (intersects) {
 			return false;
 		}
@@ -419,75 +423,70 @@ bool Mesher::checkNewEl(MeshElement* newEl, MeshFace* newFaces[]) {
 	return true;
 }
 
-bool Mesher::addFaceIfAbsent(MeshFace* newFace, MeshElement* newEl) {
+bool Mesher::addFaceIfAbsent(int newEl) {
 	int i1;
 	double cent[3];
-	newFace->getCentroid(cent);
+	MeshFace& newFace = faces[fc_ct];
+	newFace.getCentroid(cent, nodes);
 	MeshFace* thisFc = nullptr;
-	MeshNode* thisNds[3];
-	MeshElement** fcEls;
-	MeshElement* newFcEls[2];
+	int thisNds[3];
+	int* fcEls;
+	int newFcEls[2];
 	bool shared[3];
 	int numShared;
 
 	int lstLen = faceGrid.getInRadius(gridOut2, gOLen, cent, 0.1*avgProj);
 	for (i1 = 0; i1 < lstLen; i1++) {
-		thisFc = gridOut2[i1]->getPt(thisFc);
-		numShared = thisFc->getSharedNodes(thisNds, shared, newFace);
+		MeshFace& thisFc = faces[gridOut2[i1]];
+		numShared = thisFc.getSharedNodes(thisNds, shared, fc_ct, nodes, faces);
 		if (numShared == 3) {
-			fcEls = thisFc->getElPt();
-			newFcEls[0] = fcEls[0];
-			newFcEls[1] = newEl;
-			thisFc->setElPt(newFcEls);
+			thisFc.elements[1] = newEl;
 			return false;
 		}
 	}
 
-	faces.addEnt(newFace);
-	faceGrid.addEnt(newFace, cent);
+	faceGrid.addEnt(fc_ct, cent);
+	fc_ct++;
 
 	return true;
 }
 
-bool Mesher::adoptConnectedNd(MeshFace* thisFc, double tgtPt[], double srchRad) {
+bool Mesher::adoptConnectedNd(int fc_i, double tgtPt[], double srchRad) {
 	int i1;
 	int i2;
-	MeshFace* listFc = nullptr;
-	MeshNode* faceNds[3];
+	MeshFace& thisFc = faces[fc_i];
+	int faceNds[3];
 	bool shared[3];
 	int numShared;
-	MeshNode* unShared;
+	int unShared;
 	double* crd;
 	double dVec[3];
 	double dist;
 	double dp;
 	double cent[3];
-	MeshNode* newElNds[4];
-	MeshNode* newFcNds[3];
-	MeshElement* newFcEls[2];
+	int* newElNds = &elements[el_ct].nodes[0];
 	bool elCheck;
 	bool fcAdded;
+	MeshFace* newFc = nullptr;
 
-	newElFcs[0] = thisFc;
-	newFcEls[0] = newEl;
-	newFcEls[1] = nullptr;
+	newElFcs[0].copy_data(thisFc);
 	
-	double* normDir = thisFc->getNormDir();
-	MeshNode** thisFcNds = thisFc->getNdPt();
-	MeshElement** thisFcEls = thisFc->getElPt();
-	thisFc->getCentroid(cent);
+	double* normDir = &thisFc.normDir[0];
+	int* thisFcNds = &thisFc.nodes[0];
+	int* thisFcEls = &thisFc.elements[0];
+	thisFc.getCentroid(cent, nodes);
 	int lstLen = faceGrid.getInRadius(gridOut1, gOLen, tgtPt, 1.01 * maxEdgeLen);
 	for (i1 = 0; i1 < lstLen; i1++) {
-		listFc = gridOut1[i1]->getPt(listFc);
-		numShared = listFc->getSharedNodes(faceNds, shared, thisFc);
+		MeshFace& listFc = faces[gridOut1[i1]];
+		numShared = listFc.getSharedNodes(faceNds, shared, fc_i, nodes, faces);
 		if (numShared == 2) {
-			unShared = nullptr;
+			unShared = max_int;
 			for (i2 = 0; i2 < 3; i2++) {
 				if (!shared[i2]) {
 					unShared = faceNds[i2];
 				}
 			}
-			crd = unShared->getCrd();
+			crd = &nodes[unShared].coord[0];
 			dVec[0] = crd[0] - tgtPt[0];
 			dVec[1] = crd[1] - tgtPt[1];
 			dVec[2] = crd[2] - tgtPt[2];
@@ -502,59 +501,51 @@ bool Mesher::adoptConnectedNd(MeshFace* thisFc, double tgtPt[], double srchRad) 
 					newElNds[1] = thisFcNds[1];
 					newElNds[2] = thisFcNds[2];
 					newElNds[3] = unShared;
-					newEl->setNdPt(newElNds);
 
-					newFcNds[0] = thisFcNds[0];
-					newFcNds[1] = thisFcNds[1];
-					newFcNds[2] = unShared;
-					newElFcs[1]->setNodePt(newFcNds);
-					newElFcs[1]->setElPt(newFcEls);
-					newElFcs[1]->initNormDir();
+					newFc = &newElFcs[1];
+					newFc->nodes[0] = thisFcNds[0];
+					newFc->nodes[1] = thisFcNds[1];
+					newFc->nodes[2] = unShared;
+					newFc->elements[0] = el_ct;
+					newFc->elements[1] = max_int;
+					newFc->initNormDir(nodes);
 
-					newFcNds[0] = thisFcNds[1];
-					newFcNds[1] = thisFcNds[2];
-					newFcNds[2] = unShared;
-					newElFcs[2]->setNodePt(newFcNds);
-					newElFcs[2]->setElPt(newFcEls);
-					newElFcs[2]->initNormDir();
+					newFc = &newElFcs[2];
+					newFc->nodes[0] = thisFcNds[1];
+					newFc->nodes[1] = thisFcNds[2];
+					newFc->nodes[2] = unShared;
+					newFc->elements[0] = el_ct;
+					newFc->elements[1] = max_int;
+					newFc->initNormDir(nodes);
 
-					newFcNds[0] = thisFcNds[2];
-					newFcNds[1] = thisFcNds[0];
-					newFcNds[2] = unShared;
-					newElFcs[3]->setNodePt(newFcNds);
-					newElFcs[3]->setElPt(newFcEls);
-					newElFcs[3]->initNormDir();
+					newFc = &newElFcs[3];
+					newFc->nodes[0] = thisFcNds[2];
+					newFc->nodes[1] = thisFcNds[0];
+					newFc->nodes[2] = unShared;
+					newFc->elements[0] = el_ct;
+					newFc->elements[1] = max_int;
+					newFc->initNormDir(nodes);
 
-					elCheck = checkNewEl(newEl, newElFcs);
+					elCheck = checkNewEl(elements[el_ct], newElFcs);
 					if (elCheck) {
-						elements.addEnt(newEl);
-						newEl->getCentroid(cent);
-						elementGrid.addEnt(newEl, cent);
+						elements[el_ct].getCentroid(cent, nodes);
+						elementGrid.addEnt(el_ct, cent);
 
-						newFcEls[0] = thisFcEls[0];
-						newFcEls[1] = newEl;
-						thisFc->setElPt(newFcEls);
+						thisFc.elements[1] = el_ct;
 
-						newElFcs[1]->normDirFromElCent(cent);
-						fcAdded = addFaceIfAbsent(newElFcs[1], newEl);
-						if (fcAdded) {
-							newElFcs[1] = new MeshFace;
-						}
+						newElFcs[1].normDirFromElCent(cent, nodes);
+						faces[fc_ct].copy_data(newElFcs[1]);
+						fcAdded = addFaceIfAbsent(el_ct);
 
-						newElFcs[2]->normDirFromElCent(cent);
-						fcAdded = addFaceIfAbsent(newElFcs[2], newEl);
-						if (fcAdded) {
-							newElFcs[2] = new MeshFace;
-						}
+						newElFcs[2].normDirFromElCent(cent, nodes);
+						faces[fc_ct].copy_data(newElFcs[2]);
+						fcAdded = addFaceIfAbsent(el_ct);
 
-						newElFcs[3]->normDirFromElCent(cent);
-						fcAdded = addFaceIfAbsent(newElFcs[3], newEl);
-						if (fcAdded) {
-							newElFcs[3] = new MeshFace;
-						}
+						newElFcs[3].normDirFromElCent(cent, nodes);
+						faces[fc_ct].copy_data(newElFcs[3]);
+						fcAdded = addFaceIfAbsent(el_ct);
 
-						newEl = new MeshElement;
-
+						el_ct++;
 						return true;
 					}
 				}
@@ -565,35 +556,36 @@ bool Mesher::adoptConnectedNd(MeshFace* thisFc, double tgtPt[], double srchRad) 
 	return false;
 }
 
-bool Mesher::adoptAnyNd(MeshFace* thisFc, double tgtPt[], double srchRad) {
+bool Mesher::adoptAnyNd(int fc_i, double tgtPt[], double srchRad) {
 	int i1;
 	int i2;
+	MeshFace& thisFc = faces[fc_i];
+	MeshFace* newFc = nullptr;
 	MeshNode* listNd = nullptr;
+	int ndi;
 	MeshNode* faceNds[3];
 	double* crd;
 	double dVec[3];
 	double dist;
 	double dp;
 	double cent[3];
-	MeshNode* newElNds[4];
-	MeshNode* newFcNds[3];
-	MeshElement* newFcEls[2];
+	int* newElNds = &elements[el_ct].nodes[0];
 	bool elCheck;
 	bool fcAdded;
 
 	newElFcs[0] = thisFc;
-	newFcEls[0] = newEl;
-	newFcEls[1] = nullptr;
 
-	double* normDir = thisFc->getNormDir();
-	MeshNode** thisFcNds = thisFc->getNdPt();
-	MeshElement** thisFcEls = thisFc->getElPt();
-	thisFc->getCentroid(cent);
+	double* normDir = &thisFc.normDir[0];
+	int* thisFcNds = &thisFc.nodes[0];
+	int* thisFcEls = &thisFc.elements[0];
+	thisFc.getCentroid(cent, nodes);
 	int lstLen = nodeGrid.getInRadius(gridOut1,gOLen,tgtPt,srchRad);
 	for (i1 = 0; i1 < lstLen; i1++) {
-		listNd = gridOut1[i1]->getPt(listNd);
-		if (listNd != thisFcNds[0] && listNd != thisFcNds[1] && listNd != thisFcNds[2]) {
-			crd = listNd->getCrd();
+		//listNd = gridOut1[i1]->getPt(listNd);
+		ndi = gridOut1[i1];
+		MeshNode& listNd = nodes[ndi];
+		if (ndi != thisFcNds[0] && ndi != thisFcNds[1] && ndi != thisFcNds[2]) {
+			crd = &listNd.coord[0];
 			dVec[0] = crd[0] - tgtPt[0];
 			dVec[1] = crd[1] - tgtPt[1];
 			dVec[2] = crd[2] - tgtPt[2];
@@ -607,59 +599,53 @@ bool Mesher::adoptAnyNd(MeshFace* thisFc, double tgtPt[], double srchRad) {
 					newElNds[0] = thisFcNds[0];
 					newElNds[1] = thisFcNds[1];
 					newElNds[2] = thisFcNds[2];
-					newElNds[3] = listNd;
-					newEl->setNdPt(newElNds);
+					newElNds[3] = ndi;
 
-					newFcNds[0] = thisFcNds[0];
-					newFcNds[1] = thisFcNds[1];
-					newFcNds[2] = listNd;
-					newElFcs[1]->setNodePt(newFcNds);
-					newElFcs[1]->setElPt(newFcEls);
-					newElFcs[1]->initNormDir();
+					newFc = &newElFcs[1];
+					newFc->nodes[0] = thisFcNds[0];
+					newFc->nodes[1] = thisFcNds[1];
+					newFc->nodes[2] = ndi;
+					newFc->elements[0] = el_ct;
+					newFc->elements[1] = max_int;
+					newFc->initNormDir(nodes);
 
-					newFcNds[0] = thisFcNds[1];
-					newFcNds[1] = thisFcNds[2];
-					newFcNds[2] = listNd;
-					newElFcs[2]->setNodePt(newFcNds);
-					newElFcs[2]->setElPt(newFcEls);
-					newElFcs[2]->initNormDir();
+					newFc = &newElFcs[2];
+					newFc->nodes[0] = thisFcNds[1];
+					newFc->nodes[1] = thisFcNds[2];
+					newFc->nodes[2] = ndi;
+					newFc->elements[0] = el_ct;
+					newFc->elements[1] = max_int;
+					newFc->initNormDir(nodes);
 
-					newFcNds[0] = thisFcNds[2];
-					newFcNds[1] = thisFcNds[0];
-					newFcNds[2] = listNd;
-					newElFcs[3]->setNodePt(newFcNds);
-					newElFcs[3]->setElPt(newFcEls);
-					newElFcs[3]->initNormDir();
+					newFc = &newElFcs[3];
+					newFc->nodes[0] = thisFcNds[2];
+					newFc->nodes[1] = thisFcNds[0];
+					newFc->nodes[2] = ndi;
+					newFc->elements[0] = el_ct;
+					newFc->elements[1] = max_int;
+					newFc->initNormDir(nodes);
 
-					elCheck = checkNewEl(newEl, newElFcs);
+					elCheck = checkNewEl(elements[el_ct], newElFcs);
 					if (elCheck) {
-						elements.addEnt(newEl);
-						newEl->getCentroid(cent);
-						elementGrid.addEnt(newEl, cent);
+						//elements.addEnt(newEl);
+						elements[el_ct].getCentroid(cent, nodes);
+						elementGrid.addEnt(el_ct, cent);
 
-						newFcEls[0] = thisFcEls[0];
-						newFcEls[1] = newEl;
-						thisFc->setElPt(newFcEls);
+						thisFc.elements[1] = el_ct;
 
-						newElFcs[1]->normDirFromElCent(cent);
-						fcAdded = addFaceIfAbsent(newElFcs[1], newEl);
-						if (fcAdded) {
-							newElFcs[1] = new MeshFace;
-						}
+						newElFcs[1].normDirFromElCent(cent, nodes);
+						faces[fc_ct].copy_data(newElFcs[1]);
+						fcAdded = addFaceIfAbsent(el_ct);
 
-						newElFcs[2]->normDirFromElCent(cent);
-						fcAdded = addFaceIfAbsent(newElFcs[2], newEl);
-						if (fcAdded) {
-							newElFcs[2] = new MeshFace;
-						}
+						newElFcs[2].normDirFromElCent(cent, nodes);
+						faces[fc_ct].copy_data(newElFcs[2]);
+						fcAdded = addFaceIfAbsent(el_ct);
 
-						newElFcs[3]->normDirFromElCent(cent);
-						fcAdded = addFaceIfAbsent(newElFcs[3], newEl);
-						if (fcAdded) {
-							newElFcs[3] = new MeshFace;
-						}
+						newElFcs[3].normDirFromElCent(cent, nodes);
+						faces[fc_ct].copy_data(newElFcs[3]);
+						fcAdded = addFaceIfAbsent(el_ct);
 
-						newEl = new MeshElement;
+						el_ct++;
 
 						return true;
 					}
@@ -671,83 +657,72 @@ bool Mesher::adoptAnyNd(MeshFace* thisFc, double tgtPt[], double srchRad) {
 	return false;
 }
 
-bool Mesher::createNewNd(MeshFace* thisFc, double tgtPt[]) {
-	newNd->setCrd(tgtPt);
-	MeshNode* newElNds[4];
-	MeshNode* newFcNds[3];
-	MeshElement* newFcEls[2];
+bool Mesher::createNewNd(int fc_i, double tgtPt[]) {
+	nodes[nd_ct].coord[0] = tgtPt[0];
+	nodes[nd_ct].coord[1] = tgtPt[1];
+	nodes[nd_ct].coord[2] = tgtPt[2];
+	MeshFace& thisFc = faces[fc_i];
 	bool elCheck;
 	bool fcAdded;
 	double cent[3];
 
-	MeshNode** thisFcNds = thisFc->getNdPt();
-	MeshElement** thisFcEls = thisFc->getElPt();
+	int* thisFcNds = &thisFc.nodes[0];
+	int* thisFcEls = &thisFc.elements[0];
+	int* newElNds = &elements[el_ct].nodes[0];
 	newElNds[0] = thisFcNds[0];
 	newElNds[1] = thisFcNds[1];
 	newElNds[2] = thisFcNds[2];
-	newElNds[3] = newNd;
-	newEl->setNdPt(newElNds);
-	newEl->getCentroid(cent);
+	newElNds[3] = nd_ct;
+	elements[el_ct].getCentroid(cent, nodes);
 
 	newElFcs[0] = thisFc;
 
-	newFcEls[0] = newEl;
-	newFcEls[1] = nullptr;
+	MeshFace* newFc = &newElFcs[1];
+	newFc->nodes[0] = thisFcNds[0];
+	newFc->nodes[1] = thisFcNds[1];
+	newFc->nodes[2] = nd_ct;
+	newFc->elements[0] = el_ct;
+	newFc->elements[1] = max_int;
+	newFc->initNormDir(nodes);
+	newFc->normDirFromElCent(cent, nodes);
 
-	newFcNds[0] = thisFcNds[0];
-	newFcNds[1] = thisFcNds[1];
-	newFcNds[2] = newNd;
-	newElFcs[1]->setNodePt(newFcNds);
-	newElFcs[1]->setElPt(newFcEls);
-	newElFcs[1]->initNormDir();
-	newElFcs[1]->normDirFromElCent(cent);
+	newFc = &newElFcs[2];
+	newFc->nodes[0] = thisFcNds[1];
+	newFc->nodes[1] = thisFcNds[2];
+	newFc->nodes[2] = nd_ct;
+	newFc->elements[0] = el_ct;
+	newFc->elements[1] = max_int;
+	newFc->initNormDir(nodes);
+	newFc->normDirFromElCent(cent, nodes);
 
-	newFcNds[0] = thisFcNds[1];
-	newFcNds[1] = thisFcNds[2];
-	newFcNds[2] = newNd;
-	newElFcs[2]->setNodePt(newFcNds);
-	newElFcs[2]->setElPt(newFcEls);
-	newElFcs[2]->initNormDir();
-	newElFcs[2]->normDirFromElCent(cent);
+	newFc = &newElFcs[3];
+	newFc->nodes[0] = thisFcNds[2];
+	newFc->nodes[1] = thisFcNds[0];
+	newFc->nodes[2] = nd_ct;
+	newFc->elements[0] = el_ct;
+	newFc->elements[1] = max_int;
+	newFc->initNormDir(nodes);
+	newFc->normDirFromElCent(cent, nodes);
 
-	newFcNds[0] = thisFcNds[2];
-	newFcNds[1] = thisFcNds[0];
-	newFcNds[2] = newNd;
-	newElFcs[3]->setNodePt(newFcNds);
-	newElFcs[3]->setElPt(newFcEls);
-	newElFcs[3]->initNormDir();
-	newElFcs[3]->normDirFromElCent(cent);
-
-	elCheck = checkNewEl(newEl, newElFcs);
+	elCheck = checkNewEl(elements[el_ct], newElFcs);
 	if (elCheck) {
-		nodes.addEnt(newNd);
-		nodeGrid.addEnt(newNd, newNd->getCrd());
-		newNd = new MeshNode;
+		nodeGrid.addEnt(nd_ct, tgtPt);
 
-		elements.addEnt(newEl);
-		newEl->getCentroid(cent);
-		elementGrid.addEnt(newEl, cent);
+		elementGrid.addEnt(el_ct, cent);
 
-		newFcEls[0] = thisFcEls[0];
-		newFcEls[1] = newEl;
-		thisFc->setElPt(newFcEls);
+		thisFc.elements[1] = el_ct;
 
-		fcAdded = addFaceIfAbsent(newElFcs[1], newEl);
-		if (fcAdded) {
-			newElFcs[1] = new MeshFace;
-		}
+		faces[fc_ct].copy_data(newElFcs[1]);
+		fcAdded = addFaceIfAbsent(el_ct);
 
-		fcAdded = addFaceIfAbsent(newElFcs[2], newEl);
-		if (fcAdded) {
-			newElFcs[2] = new MeshFace;
-		}
+		faces[fc_ct].copy_data(newElFcs[2]);
+		fcAdded = addFaceIfAbsent(el_ct);
 
-		fcAdded = addFaceIfAbsent(newElFcs[3], newEl);
-		if (fcAdded) {
-			newElFcs[3] = new MeshFace;
-		}
+		faces[fc_ct].copy_data(newElFcs[3]);
+		fcAdded = addFaceIfAbsent(el_ct);
 
-		newEl = new MeshElement;
+		nd_ct++;
+		el_ct++;
 
 		return true;
 	}
@@ -756,8 +731,8 @@ bool Mesher::createNewNd(MeshFace* thisFc, double tgtPt[]) {
 }
 
 bool Mesher::generateMesh() {
-	MeshFace* thisFc;
-	MeshElement** fcEls;
+	int fc_i;
+	int* fcEls;
 	double fcCent[3];
 	double fcProj;
 	double* fcNorm;
@@ -765,59 +740,48 @@ bool Mesher::generateMesh() {
 	double tgtPt[3];
 	double srchRad;
 	bool edgeClosed;
-
-	newEl = new MeshElement;
-	newElFcs[1] = new MeshFace;
-	newElFcs[2] = new MeshFace;
-	newElFcs[3] = new MeshFace;
-	newNd = new MeshNode;
 	
 	bool elAdded = true;
 	while (elAdded) {
 		elAdded = false;
-		thisFc = faces.getFirst();
-		while (thisFc && elements.getLength() < maxNumEls) {
-			fcEls = thisFc->getElPt();
-			if (!fcEls[1]) {
-				thisFc->getCentroid(fcCent);
-				fcProj = thisFc->getProjDist();
+		fc_i = 0;
+		while (fc_i < fc_ct && el_ct < maxNumEls) {
+			MeshFace& thisFc = faces[fc_i];
+			fcEls = &thisFc.elements[0];
+			if (fcEls[1] == max_int) {
+				thisFc.getCentroid(fcCent, nodes);
+				fcProj = thisFc.projDist;
 				proj = globProjWt * avgProj + (1.0 - globProjWt) * fcProj;
-				fcNorm = thisFc->getNormDir();
+				fcNorm = &thisFc.normDir[0];
 				tgtPt[0] = fcCent[0] + 0.5 * proj * fcNorm[0];
 				tgtPt[1] = fcCent[1] + 0.5 * proj * fcNorm[1];
 				tgtPt[2] = fcCent[2] + 0.5 * proj * fcNorm[2];
 				srchRad = 0.75 * proj;
-				edgeClosed = adoptConnectedNd(thisFc, tgtPt, srchRad);
+				edgeClosed = adoptConnectedNd(fc_i, tgtPt, srchRad);
 				if (!edgeClosed) {
-					edgeClosed = adoptAnyNd(thisFc, tgtPt, srchRad);
+					edgeClosed = adoptAnyNd(fc_i, tgtPt, srchRad);
 				}
 				if (!edgeClosed) {
 					tgtPt[0] = fcCent[0] + proj * fcNorm[0];
 					tgtPt[1] = fcCent[1] + proj * fcNorm[1];
 					tgtPt[2] = fcCent[2] + proj * fcNorm[2];
-					edgeClosed = createNewNd(thisFc, tgtPt);
+					edgeClosed = createNewNd(fc_i, tgtPt);
 				}
 				if (!edgeClosed) {
 					tgtPt[0] = fcCent[0] + 0.5 * proj * fcNorm[0];
 					tgtPt[1] = fcCent[1] + 0.5 * proj * fcNorm[1];
 					tgtPt[2] = fcCent[2] + 0.5 * proj * fcNorm[2];
-					edgeClosed = createNewNd(thisFc, tgtPt);
+					edgeClosed = createNewNd(fc_i, tgtPt);
 				}
 				if (edgeClosed) {
 					elAdded = true;
 				}
 			}
-			thisFc = thisFc->getNext();
+			fc_i++;
 		}
 	}
-
-	delete newNd;
-	delete newElFcs[3];
-	delete newElFcs[2];
-	delete newElFcs[1];
-	delete newEl;
 	
-	if (elements.getLength() >= maxNumEls) {
+	if (el_ct >= maxNumEls) {
 		return false;
 	}
 
@@ -834,10 +798,8 @@ void Mesher::distributeNodes() {
 	int i7;
 	int i8;
 	int i9;
-	int dim = nodes.getLength() * 3;
-	MeshNode* thisNd;
-	MeshElement* thisEl;
-	MeshNode** elNds;
+	int dim = nd_ct * 3;
+	int* elNds;
 	double eVol;
 	double avgWt;
 	double* crd;
@@ -847,18 +809,18 @@ void Mesher::distributeNodes() {
 	double rNext;
 	double dp;
 
-	double* elMat = new double[144];
-	double* xVec = new double[dim];
-	double* hVec = new double[dim];
-	double* zVec = new double[dim];
-	double* gVec = new double[dim];
-	double* wVec = new double[dim];
-	double* dMat = new double[dim];
-	double* pMat = new double[dim];
-	double* pInv = new double[dim];
+	vector<double> elMat(144);
+	vector<double> xVec(dim);
+	vector<double> hVec(dim);
+	vector<double> zVec(dim);
+	vector<double> gVec(dim);
+	vector<double> wVec(dim);
+	vector<double> dMat(dim);
+	vector<double> pMat(dim);
+	vector<double> pInv(dim);
 	
-	i1 = elements.getLength();
-	double* elWt = new double[i1];
+	i1 = el_ct;
+	vector<double> elWt(i1);
 
 	// Make static element matrix
 	for (i1 = 0; i1 < 144; i1++) {
@@ -867,7 +829,12 @@ void Mesher::distributeNodes() {
 
 	i3 = 0;
 	for (i1 = 0; i1 < 12; i1++) {
-		i4 = i3 - 9;
+		if (i3 < 9) {
+			i4 = 0;
+		}
+		else {
+			i4 = i3 - 9;
+		}
 		i5 = i1 * 12;
 		i6 = (i1 + 1) * 12;
 		while (i4 <= (i3 + 9)) {
@@ -883,12 +850,11 @@ void Mesher::distributeNodes() {
 	// Determine element weights
 	i1 = 0;
 	avgWt = 0.0;
-	thisEl = elements.getFirst();
-	while (thisEl) {
-		eVol = thisEl->getVolume();
+	for (i2 = 0; i2 < el_ct; i2++) {
+		MeshElement& thisEl = elements[i2];
+		eVol = thisEl.getVolume(nodes);
 		elWt[i1] = eVol;
 		avgWt += eVol;
-		thisEl = thisEl->getNext();
 		i1++;
 	}
 	avgWt /= i1;
@@ -903,19 +869,17 @@ void Mesher::distributeNodes() {
 		gVec[i1] = 0.0;
 	}
 
-	thisNd = nodes.getFirst();
+	//thisNd = nodes.getFirst();
 	i1 = 0;
-	while (thisNd && i1 < numBoundNds) {
-		i2 = thisNd->getLabel();
-		crd = thisNd->getCrd();
+	for (i1 = 0; i1 < numBoundNds; i1++) {
+		MeshNode& thisNd = nodes[i1];
+		crd = &thisNd.coord[0];
 		for (i3 = 0; i3 < 3; i3++) {
-			i4 = i2 * 3 + i3;
+			i4 = i1 * 3 + i3;
 			dMat[i4] = 100000.0;
 			pMat[i4] += 100000.0;
 			gVec[i4] = -100000.0 * crd[i3];
 		}
-		thisNd = thisNd->getNext();
-		i1++;
 	}
 
 	for (i1 = 0; i1 < dim; i1++) {
@@ -937,25 +901,23 @@ void Mesher::distributeNodes() {
 		for (i2 = 0; i2 < dim; i2++) {
 			zVec[i2] = 0.0;
 		}
-		thisEl = elements.getFirst();
 		i2 = 0;
-		while (thisEl) {
-			elNds = thisEl->getNodes();
+		for (i2 = 0; i2 < el_ct; i2++) {
+			MeshElement& thisEl = elements[i2];
+			elNds = &thisEl.nodes[0];
 			i7 = 0; //Index in elMat
 			for (i3 = 0; i3 < 4; i3++) {
 				for (i4 = 0; i4 < 3; i4++) {
-					i8 = 3*elNds[i3]->getLabel() + i4; // global row
+					i8 = 3*elNds[i3] + i4; // global row
 					for (i5 = 0; i5 < 4; i5++) {
 						for (i6 = 0; i6 < 3; i6++) {
-							i9 = 3 * elNds[i5]->getLabel() + i6; //global col
+							i9 = 3 * elNds[i5] + i6; //global col
 							zVec[i8] += (elWt[i2] * elMat[i7] * hVec[i9]);
 							i7++;
 						}
 					}
 				}
 			}
-			thisEl = thisEl->getNext();
-			i2++;
 		}
 		for (i2 = 0; i2 < dim; i2++) {
 			zVec[i2] += (dMat[i2] * hVec[i2]);
@@ -981,30 +943,14 @@ void Mesher::distributeNodes() {
 	}
 
 	i1 = 0;
-	thisNd = nodes.getFirst();
-	while (thisNd) {
-		if (i1 >= numBoundNds) {
-			crd = thisNd->getCrd();
-			i2 = thisNd->getLabel();
-			for (i3 = 0; i3 < 3; i3++) {
-				i4 = 3 * i2 + i3;
-				crd[i3] = xVec[i4];
-			}
+	for (i1 = numBoundNds; i1 < nd_ct; i1++) {
+		MeshNode& thisNd = nodes[i1];
+		crd = &thisNd.coord[0];
+		for (i3 = 0; i3 < 3; i3++) {
+			i4 = 3 * i1 + i3;
+			crd[i3] = xVec[i4];
 		}
-		thisNd = thisNd->getNext();
-		i1++;
 	}
-
-	delete[] elMat;
-	delete[] xVec;
-	delete[] hVec;
-	delete[] zVec;
-	delete[] gVec;
-	delete[] wVec;
-	delete[] dMat;
-	delete[] pMat;
-	delete[] pInv;
-	delete[] elWt;
 
 	return;
 }
@@ -1012,31 +958,27 @@ void Mesher::distributeNodes() {
 void Mesher::writeOutput(string fileName) {
 	int i1;
 	ofstream outFile;
-	MeshNode* thisNd;
-	MeshElement* thisEl;
-	MeshNode** elNds;
+	int* elNds;
 	double* crd;
 
 	outFile.open(fileName);
 	
 	outFile << "nodes:\n";
-	thisNd = nodes.getFirst();
-	while (thisNd) {
-		crd = thisNd->getCrd();
-		outFile << "- [" << crd[0] << ", " << crd[1] << ", " << crd[2] << "]\n";
-		thisNd = thisNd->getNext();
+	for (i1 = 0; i1 < nd_ct; i1++) {
+		MeshNode& thisNd = nodes[i1];
+		crd = &thisNd.coord[0];
+		outFile << "  - [" << crd[0] << ", " << crd[1] << ", " << crd[2] << "]\n";
 	}
 
 	outFile << "elements:\n";
-	thisEl = elements.getFirst();
-	while (thisEl) {
-		elNds = thisEl->getNodes();
-		outFile << "- [" << elNds[0]->getLabel();
+	for (i1 = 0; i1 < el_ct; i1++) {
+		MeshElement& thisEl = elements[i1];
+		elNds = &thisEl.nodes[0];
+		outFile << "  - [" << elNds[0];
 		for (i1 = 1; i1 < 4; i1++) {
-			outFile << ", " << elNds[i1]->getLabel();
+			outFile << ", " << elNds[i1];
 		}
 		outFile << "]\n";
-		thisEl = thisEl->getNext();
 	}
 
 	outFile.close();
@@ -1044,52 +986,44 @@ void Mesher::writeOutput(string fileName) {
 }
 
 void Mesher::printCurrentMesh() {
-	MeshNode* thisNd;
-	MeshElement* thisEl;
-	MeshFace* thisFc;
+	int i1;
 	double* crd;
-	MeshNode** elNds;
-	MeshElement** fcEls;
+	int* elNds;
+	int* fcEls;
+	
 	cout << "Current Mesh:" << endl;
 	cout << "Nodes:" << endl;
-	thisNd = nodes.getFirst();
-	while (thisNd) {
-		crd = thisNd->getCrd();
+	
+	//thisNd = nodes.getFirst();
+	for (i1 = 0; i1 < nd_ct; i1++) {
+		MeshNode& thisNd = nodes[i1];
+		crd = &thisNd.coord[0];
 		cout << crd[0] << ", " << crd[1] << ", " << crd[2] << endl;
-		thisNd = thisNd->getNext();
 	}
 	cout << "Elements:" << endl;
-	thisEl = elements.getFirst();
-	while (thisEl) {
-		elNds = thisEl->getNodes();
-		cout << elNds[0]->getLabel() << ", ";
-		cout << elNds[1]->getLabel() << ", ";
-		cout << elNds[2]->getLabel() << ", ";
-		cout << elNds[3]->getLabel() << endl;
-		thisEl = thisEl->getNext();
+	//thisEl = elements.getFirst();
+	for (i1 = 0; i1 < el_ct; i1++) {
+		MeshElement& thisEl = elements[i1];
+		elNds = &thisEl.nodes[0];
+		cout << elNds[0] << ", ";
+		cout << elNds[1] << ", ";
+		cout << elNds[2] << ", ";
+		cout << elNds[3] << endl;
 	}
 
 	cout << "Faces:" << endl;
-	thisFc = faces.getFirst();
-	while (thisFc) {
+	//thisFc = faces.getFirst();
+	for (i1 = 0; i1 < fc_ct; i1++) {
+		MeshFace& thisFc = faces[i1];
 		cout << "  nodes: ";
-		elNds = thisFc->getNdPt();
-		cout << elNds[0]->getLabel() << ", ";
-		cout << elNds[1]->getLabel() << ", ";
-		cout << elNds[2]->getLabel() << ", ";
-		fcEls = thisFc->getElPt();
+		elNds = &thisFc.nodes[0];
+		cout << elNds[0] << ", ";
+		cout << elNds[1] << ", ";
+		cout << elNds[2] << ", ";
+		fcEls = &thisFc.elements[0];
 		cout << "element pt: ";
 		cout << fcEls[0] << ", " << fcEls[1] << endl;
-		thisFc = thisFc->getNext();
 	}
 
-	return;
-}
-
-Mesher::~Mesher() {
-	if (gridOut1) {
-		delete[] gridOut1;
-		delete[] gridOut2;
-	}
 	return;
 }

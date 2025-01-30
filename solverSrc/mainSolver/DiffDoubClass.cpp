@@ -17,13 +17,13 @@ void DiffDoub0::set_val(double inp) {
 	return;
 }
 
-void DiffDoub0::set_val(double inp, double dinp) {
+void DiffDoub0::set_val_2(double inp, double dinp) {
 	val = inp;
 	dval = dinp;
 	return;
 }
 
-void DiffDoub0::set_val(DiffDoub0& inp) {
+void DiffDoub0::set_val_dfd0(DiffDoub0& inp) {
 	val = inp.val;
 	return;
 }
@@ -83,8 +83,6 @@ void DiffDoub0::neg() {
 	return;
 }
 
-
-
  DiffDoub1::DiffDoub1() {
 	val = 0.0;
 	dval = 0.0;
@@ -103,19 +101,19 @@ void DiffDoub1::set_val(double inp) {
 	return;
 }
 
-void DiffDoub1::set_val(double inp, double dinp) {
+void DiffDoub1::set_val_2(double inp, double dinp) {
 	val = inp;
 	dval = dinp;
 	return;
 }
 
-void DiffDoub1::set_val(DiffDoub0& inp) {
+void DiffDoub1::set_val_dfd0(DiffDoub0& inp) {
 	val = inp.val;
 	dval = 0.0;
 	return;
 }
 
-void DiffDoub1::set_val(DiffDoub1& inp) {
+void DiffDoub1::set_val_dfd1(DiffDoub1& inp) {
 	val = inp.val;
 	dval = inp.dval;
 	return;
@@ -221,7 +219,7 @@ void DiffDoub2::set_val(double inp) {
 	return;
 }
 
-void DiffDoub2::set_val(double inp, double dinp) {
+void DiffDoub2::set_val_2(double inp, double dinp) {
 	val = inp;
 	dv1 = dinp;
 	dv2 = 0.0;
@@ -229,7 +227,7 @@ void DiffDoub2::set_val(double inp, double dinp) {
 	return;
 }
 
-void DiffDoub2::set_val(double inp, double dinp1, double dinp2) {
+void DiffDoub2::set_val_3(double inp, double dinp1, double dinp2) {
 	val = inp;
 	dv1 = dinp1;
 	dv2 = dinp2;
@@ -237,7 +235,7 @@ void DiffDoub2::set_val(double inp, double dinp1, double dinp2) {
 	return;
 }
 
-void DiffDoub2::set_val(DiffDoub2& inp) {
+void DiffDoub2::set_val_dfd2(DiffDoub2& inp) {
 	val = inp.val;
 	dv1 = inp.dv1;
 	dv2 = inp.dv2;

@@ -1,5 +1,6 @@
 #include <cmath>
 #include "ObjectiveClass.h"
+#include "constants.h"
 #include "ListEntClass.h"
 #include "NodeClass.h"
 #include "ElementClass.h"
@@ -7,7 +8,6 @@
 
 using namespace std;
 
-const int max_int = 2000000000;
 
 ObjectiveTerm::ObjectiveTerm() {
 	category = "";
@@ -368,8 +368,8 @@ void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, 
 		q_ind = 0;
 		for (auto& eli : el_sets[el_set_ptr].labels) {
 			Element& this_el = el_ar[eli];
-			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-			this_el.get_stress_strain(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
+			this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_stress_strain_dfd0(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
 			if (category == "stress") {
 				q_vec[q_ind] = stress[component - 1].val;
 			} else if (category == "strain") {
@@ -383,7 +383,7 @@ void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, 
 				q_vec[q_ind] = se_den;
 			}
 			if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+				this_el.get_volume_dfd0(e_vol, st_pre, layer, sec_ar, dv_ar);
 				el_vol_vec[q_ind] = e_vol.val;
 			}
 			q_ind++;
@@ -438,9 +438,9 @@ void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, 
 		q_ind = 0;
 		for (auto& eli : el_sets[el_set_ptr].labels) {
 			Element& this_el = el_ar[eli];
-			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-			//this_el->get_stress_strain(stress, strain, spt, layer, n_lgeom, st_pre);
-			this_el.get_def_frc_mom(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
+			this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			//this_el->get_stress_strain_dfd0(stress, strain, spt, layer, n_lgeom, st_pre);
+			this_el.get_def_frc_mom_dfd0(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
 			if (category == "sectionDef") {
 				q_vec[q_ind] = def[component - 1].val;
 			}
@@ -452,12 +452,12 @@ void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, 
 				if (num_lay > 1) {
 					e_vol.set_val(0.0);
 					for (i1 = 0; i1 < num_lay; i1++) {
-						this_el.get_volume(tmp, st_pre, i1, sec_ar, dv_ar);
+						this_el.get_volume_dfd0(tmp, st_pre, i1, sec_ar, dv_ar);
 						e_vol.add(tmp);
 					}
 				}
 				else {
-					this_el.get_volume(e_vol, st_pre, 0, sec_ar, dv_ar);
+					this_el.get_volume_dfd0(e_vol, st_pre, 0, sec_ar, dv_ar);
 				}
 				el_vol_vec[q_ind] = e_vol.val;
 			}
@@ -515,8 +515,8 @@ void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, 
 		q_ind = 0;
 		for (auto& eli : el_sets[el_set_ptr].labels) {
 			Element& this_el = el_ar[eli];
-			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-			this_el.get_flux_tgrad(flux, t_grad, this_el.s_cent, layer, st_pre);
+			this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_flux_tgrad_dfd0(flux, t_grad, this_el.s_cent, layer, st_pre);
 			if (category == "flux") {
 				q_vec[q_ind] = flux[component - 1].val;
 			}
@@ -524,7 +524,7 @@ void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, 
 				q_vec[q_ind] = t_grad[component - 1].val;
 			}
 			if (optr == "volumeIntegral" || optr == "volumeAverage") {
-				this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+				this_el.get_volume_dfd0(e_vol, st_pre, layer, sec_ar, dv_ar);
 				el_vol_vec[q_ind] = e_vol.val;
 			}
 			q_ind++;
@@ -581,13 +581,13 @@ void ObjectiveTerm::get_obj_val(double time, bool n_lgeom, vector<Node>& nd_ar, 
 		q_ind = 0;
 		for (auto& eli : el_sets[el_set_ptr].labels) {
 			Element& this_el = el_ar[eli];
-			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-			this_el.get_volume(e_vol,st_pre,layer,sec_ar,dv_ar);
+			this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_volume_dfd0(e_vol,st_pre,layer,sec_ar,dv_ar);
 			el_vol_vec[q_ind] = e_vol.val;
 			if (category == "volume") {
 				q_vec[q_ind] = 1.0;
 			} else {
-				this_el.get_density(e_den, layer, sec_ar, mat_ar, dv_ar);
+				this_el.get_density_dfd0(e_den, layer, sec_ar, mat_ar, dv_ar);
 				q_vec[q_ind] = e_den.val;
 			}
 			q_ind++;
@@ -696,9 +696,9 @@ void ObjectiveTerm::getd_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, ve
 		q_ind = 0;
 		for (auto& eli : el_sets[el_set_ptr].labels) {
 			Element& this_el = el_ar[eli];
-			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-			this_el.get_stress_strain(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
-			this_el.d_stress_straind_u(dsd_u, ded_u, dsd_t, this_el.s_cent, layer, n_lgeom, st_pre);
+			this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_stress_strain_dfd0(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
+			this_el.d_stress_straind_u_dfd0(dsd_u, ded_u, dsd_t, this_el.s_cent, layer, n_lgeom, st_pre);
 			el_num_nds = this_el.num_nds;
 			el_dof_per_nd = this_el.dof_per_nd;
 			el_num_int_dof = this_el.num_int_dof;
@@ -706,14 +706,14 @@ void ObjectiveTerm::getd_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, ve
 			i1 = el_tot_dof * (component - 1);
 			i2 = el_num_nds * (component - 1);
 			if (category == "stress") {
-				sub_vec(st_pre.scr_vec1, dsd_u, i1, i1 + el_tot_dof);
-				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
-				sub_vec(st_pre.scr_vec1, dsd_t, i2, i2 + el_num_nds);
-				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, dsd_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, dsd_t, i2, i2 + el_num_nds);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			else if (category == "strain") {
-				sub_vec(st_pre.scr_vec1, ded_u, i1, i1 + el_tot_dof);
-				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, ded_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
 			}
 			else {
 				for (i2 = 0; i2 < el_tot_dof; i2++) {
@@ -734,10 +734,10 @@ void ObjectiveTerm::getd_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, ve
 					}
 					dse_dend_t[i2].val *= 0.5;
 				}
-				ar_to_vec(dse_dend_u, st_pre.scr_vec1, 0, 33);
-				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
-				ar_to_vec(dse_dend_t, st_pre.scr_vec1, 0, 10);
-				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
+				ar_to_vec_dfd0(dse_dend_u, st_pre.scr_vec1, 0, 33);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				ar_to_vec_dfd0(dse_dend_t, st_pre.scr_vec1, 0, 10);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			q_ind++;
 		}
@@ -771,11 +771,11 @@ void ObjectiveTerm::getd_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, ve
 		q_ind = 0;
 		for (auto& eli : el_sets[el_set_ptr].labels) {
 			Element& this_el = el_ar[eli];
-			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-			//this_el->get_stress_strain(stress, strain, spt, layer, n_lgeom, st_pre);
-			//this_el->d_stress_straind_u(dsd_u, ded_u, dsd_t, spt, layer, n_lgeom, st_pre);
-			this_el.get_def_frc_mom(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
-			this_el.d_def_frc_momd_u(ded_u, dsd_u, dsd_t, this_el.s_cent, n_lgeom, st_pre);
+			this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			//this_el->get_stress_strain_dfd0(stress, strain, spt, layer, n_lgeom, st_pre);
+			//this_el->d_stress_straind_u_dfd0(dsd_u, ded_u, dsd_t, spt, layer, n_lgeom, st_pre);
+			this_el.get_def_frc_mom_dfd0(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
+			this_el.d_def_frc_momd_u_dfd0(ded_u, dsd_u, dsd_t, this_el.s_cent, n_lgeom, st_pre);
 			el_num_nds = this_el.num_nds;
 			el_dof_per_nd = this_el.dof_per_nd;
 			el_num_int_dof = this_el.num_int_dof;
@@ -783,14 +783,14 @@ void ObjectiveTerm::getd_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, ve
 			i1 = el_tot_dof * (component - 1);
 			i2 = el_num_nds * (component - 1);
 			if (category == "sectionFrcMom") {
-				sub_vec(st_pre.scr_vec1, dsd_u, i1, i1 + el_tot_dof);
-				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
-				sub_vec(st_pre.scr_vec1, dsd_t, i2, i2 + el_num_nds);
-				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, dsd_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, dsd_t, i2, i2 + el_num_nds);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			else if (category == "sectionDef") {
-				sub_vec(st_pre.scr_vec1, ded_u, i1, i1 + el_tot_dof);
-				this_el.put_vec_to_glob_mat(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, ded_u, i1, i1 + el_tot_dof);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_u, st_pre.scr_vec1, false, q_ind, nd_ar);
 			}
 			q_ind++;
 		}
@@ -824,18 +824,18 @@ void ObjectiveTerm::getd_ld_u(vector<double>& d_ld_u, vector<double>& d_ld_v, ve
 		q_ind = 0;
 		for (auto& eli : el_sets[el_set_ptr].labels) {
 			Element& this_el = el_ar[eli];
-			this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-			this_el.get_flux_tgrad(flux, t_grad, this_el.s_cent, layer, st_pre);
-			this_el.d_flux_tgradd_t(d_fd_t, d_tgd_t, this_el.s_cent, layer, st_pre);
+			this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+			this_el.get_flux_tgrad_dfd0(flux, t_grad, this_el.s_cent, layer, st_pre);
+			this_el.d_flux_tgradd_t_dfd0(d_fd_t, d_tgd_t, this_el.s_cent, layer, st_pre);
 			el_num_nds = this_el.num_nds;
 			i1 = el_num_nds * (component - 1);
 			if (category == "flux") {
-				sub_vec(st_pre.scr_vec1, d_fd_t, i1, i1 + el_num_nds);
-				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, d_fd_t, i1, i1 + el_num_nds);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			else if (category == "tempGradient") {
-				sub_vec(st_pre.scr_vec1, d_tgd_t, i1, i1 + el_num_nds);
-				this_el.put_vec_to_glob_mat(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
+				sub_vec_dfd0(st_pre.scr_vec1, d_tgd_t, i1, i1 + el_num_nds);
+				this_el.put_vec_to_glob_mat_dfd0(d_qd_t, st_pre.scr_vec1, true, q_ind, nd_ar);
 			}
 			q_ind++;
 		}
@@ -895,10 +895,10 @@ void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom,
 			Element& this_el = el_ar[eli];
 			for (auto& dvi : this_el.comp_dvars) {
 				DesignVariable& this_dv = dv_ar[dvi];
-				this_dv.get_value(dv_val);
-				this_dv.diff_val.set_val(dv_val.val, 1.0);
-				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-				this_el.get_stress_strain(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
+				this_dv.get_value_dfd0(dv_val);
+				this_dv.diff_val.set_val_2(dv_val.val, 1.0);
+				this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				this_el.get_stress_strain_dfd1(stress, strain, this_el.s_cent, layer, n_lgeom, st_pre);
 				if (category == "stress") {
 					d_qd_d.add_entry(q_ind, dvi, stress[component - 1].dval);
 				}
@@ -914,10 +914,10 @@ void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom,
 					d_qd_d.add_entry(q_ind, dvi, se_den);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
-					this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+					this_el.get_volume_dfd1(e_vol, st_pre, layer, sec_ar, dv_ar);
 					d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				}
-				this_dv.diff_val.set_val(dv_val.val, 0.0);
+				this_dv.diff_val.set_val_2(dv_val.val, 0.0);
 			}
 			q_ind++;
 		}
@@ -953,11 +953,11 @@ void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom,
 			Element& this_el = el_ar[eli];
 			for (auto& dvi : this_el.comp_dvars) {
 				DesignVariable& this_dv = dv_ar[dvi];
-				this_dv.get_value(dv_val);
-				this_dv.diff_val.set_val(dv_val.val, 1.0);
-				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-				//this_el->get_stress_strain(stress, strain, spt, layer, n_lgeom, st_pre);
-				this_el.get_def_frc_mom(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
+				this_dv.get_value_dfd0(dv_val);
+				this_dv.diff_val.set_val_2(dv_val.val, 1.0);
+				this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				//this_el->get_stress_strain_dfd0(stress, strain, spt, layer, n_lgeom, st_pre);
+				this_el.get_def_frc_mom_dfd1(def, frc_mom, this_el.s_cent, n_lgeom, st_pre);
 				if (category == "sectionFrcMom") {
 					d_qd_d.add_entry(q_ind, dvi, frc_mom[component - 1].dval);
 				}
@@ -969,16 +969,16 @@ void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom,
 					if (num_lay > 1) {
 						e_vol.set_val(0.0);
 						for (i1 = 0; i1 < num_lay; i1++) {
-							this_el.get_volume(tmp, st_pre, i1, sec_ar, dv_ar);
+							this_el.get_volume_dfd1(tmp, st_pre, i1, sec_ar, dv_ar);
 							e_vol.add(tmp);
 						}
 					}
 					else {
-						this_el.get_volume(e_vol, st_pre, 0, sec_ar, dv_ar);
+						this_el.get_volume_dfd1(e_vol, st_pre, 0, sec_ar, dv_ar);
 					}
 					d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				}
-				this_dv.diff_val.set_val(dv_val.val, 0.0);
+				this_dv.diff_val.set_val_2(dv_val.val, 0.0);
 			}
 			q_ind++;
 		}
@@ -1014,10 +1014,10 @@ void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom,
 			Element& this_el = el_ar[eli];
 			for (auto& dvi : this_el.comp_dvars) {
 				DesignVariable& this_dv = dv_ar[dvi];
-				this_dv.get_value(dv_val);
-				this_dv.diff_val.set_val(dv_val.val, 1.0);
-				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-				this_el.get_flux_tgrad(flux, t_grad, this_el.s_cent, layer, st_pre);
+				this_dv.get_value_dfd0(dv_val);
+				this_dv.diff_val.set_val_2(dv_val.val, 1.0);
+				this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				this_el.get_flux_tgrad_dfd1(flux, t_grad, this_el.s_cent, layer, st_pre);
 				if (category == "flux") {
 					d_qd_d.add_entry(q_ind, dvi, flux[component - 1].dval);
 				}
@@ -1025,10 +1025,10 @@ void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom,
 					d_qd_d.add_entry(q_ind, dvi, t_grad[component - 1].dval);
 				}
 				if (optr == "volumeIntegral" || optr == "volumeAverage") {
-					this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+					this_el.get_volume_dfd1(e_vol, st_pre, layer, sec_ar, dv_ar);
 					d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				}
-				this_dv.diff_val.set_val(dv_val.val, 0.0);
+				this_dv.diff_val.set_val_2(dv_val.val, 0.0);
 			}
 			q_ind++;
 		}
@@ -1064,16 +1064,16 @@ void ObjectiveTerm::getd_ld_d(vector<double>& d_ld_d, double time, bool n_lgeom,
 			Element& this_el = el_ar[eli];
 			for (auto& dvi : this_el.comp_dvars) {
 				DesignVariable& this_dv = dv_ar[dvi];
-				this_dv.get_value(dv_val);
-				this_dv.diff_val.set_val(dv_val.val, 1.0);
-				this_el.get_stress_prereq(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-				this_el.get_volume(e_vol, st_pre, layer, sec_ar, dv_ar);
+				this_dv.get_value_dfd0(dv_val);
+				this_dv.diff_val.set_val_2(dv_val.val, 1.0);
+				this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+				this_el.get_volume_dfd1(e_vol, st_pre, layer, sec_ar, dv_ar);
 				d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
 				if(category == "mass") {
-					this_el.get_density(e_den, layer, sec_ar, mat_ar, dv_ar);
+					this_el.get_density_dfd1(e_den, layer, sec_ar, mat_ar, dv_ar);
 					d_qd_d.add_entry(q_ind, dvi, e_den.dval);
 				}
-				this_dv.diff_val.set_val(dv_val.val, 0.0);
+				this_dv.diff_val.set_val_2(dv_val.val, 0.0);
 			}
 			q_ind++;
 		}

@@ -141,12 +141,12 @@ void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stR
 	return;
 }
 
-void readInputLine(ifstream& inFile, string& fileLine, string headings[], int hdLdSpace[], string data[], int& dataLen) {
+void readInputLine(string& fileLine, string headings[], int hdLdSpace[], string data[], int& dataLen) {
 	int i1;
 	int i2;
 	int lnLen;
 	int wrdLen;
-	getline(inFile, fileLine);
+	//getline(inFile, fileLine);
 	i1 = fileLine.find("#");
 	if (i1 > -1) {
 		fileLine = fileLine.substr(0, i1);
