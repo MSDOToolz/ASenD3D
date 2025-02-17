@@ -254,7 +254,7 @@ void conj_grad_sparse(vector<double>& soln, SparseMat& mat, ConstraintList& cnst
 	}
 
 	cout << "Total CG iterations: " << i1 << endl;
-	cout << "Final residual norm: " << res << endl; cout << "Final residual norm: " << res << endl;
+	cout << "Final residual norm: " << res << endl;
 
 	return;
 }
