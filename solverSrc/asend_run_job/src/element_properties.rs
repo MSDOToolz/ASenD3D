@@ -477,7 +477,7 @@ impl Element {
         let mut te = [DiffDoub0::new(); 9];
         
         
-        angle_rad.set_val(r_pio180);
+        angle_rad.set_val(R_PI_0180);
         angle_rad.mult(angle);
         a11.set_val_dfd0(& angle_rad);
         a11.cs();
@@ -532,7 +532,7 @@ impl Element {
         let mut b_vec = [DiffDoub0::new(); 3];
         
         
-        angle_rad.set_val(r_pio180);
+        angle_rad.set_val(R_PI_0180);
         angle_rad.mult(angle);
         a11.set_val_dfd0(& angle_rad);
         a11.cs();
@@ -779,7 +779,7 @@ impl Element {
             tmp2.sqr();
             tmp2.mult(& z_min);
             tmp.sub(& tmp2);
-            tmp2.set_val(r_1o3);
+            tmp2.set_val(R_1O3);
             tmp.mult(& tmp2);
             for i3 in 0..3 {
                 i5 = 9 * (i3 + 3) + 3;
@@ -1140,7 +1140,7 @@ impl Element {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
                 i2 = cat_list.find(&cat.s.as_str());
-                if (i2 < max_int) {
+                if (i2 < MAX_INT) {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -1291,7 +1291,7 @@ impl Element {
             z_min2.mult(& z_min);
             tmp.set_val_dfd0(& z_max2);
             tmp.sub(& z_min2);// tmp == z_max^3 - z_min^3
-            tmp2.set_val(r_1o3);
+            tmp2.set_val(R_1O3);
             tmp2.mult(& lay_den[layi]);
             tmp2.mult(& tmp);
             mmat[21].add(& tmp2);
@@ -1677,12 +1677,12 @@ impl Element {
         al_mat[8].set_val(1.0);
         
         for i1 in 0..num_lay {
-            al_mat[0].set_val(r_pio180);
+            al_mat[0].set_val(R_PI_0180);
             al_mat[0].mult(& lay_ang[i1]);
             al_mat[0].cs();
             tmp2.set_val_dfd0(& al_mat[0]);
             al_mat[4].set_val_dfd0(& tmp2);
-            al_mat[3].set_val(r_pio180);
+            al_mat[3].set_val(R_PI_0180);
             al_mat[3].mult(& lay_ang[i1]);
             al_mat[3].sn();
             tmp2.set_val_dfd0(& al_mat[3]);
@@ -2578,7 +2578,7 @@ impl Element {
         let mut te = [DiffDoub1::new(); 9];
         
         
-        angle_rad.set_val(r_pio180);
+        angle_rad.set_val(R_PI_0180);
         angle_rad.mult(angle);
         a11.set_val_dfd1(& angle_rad);
         a11.cs();
@@ -2633,7 +2633,7 @@ impl Element {
         let mut b_vec = [DiffDoub1::new(); 3];
         
         
-        angle_rad.set_val(r_pio180);
+        angle_rad.set_val(R_PI_0180);
         angle_rad.mult(angle);
         a11.set_val_dfd1(& angle_rad);
         a11.cs();
@@ -2880,7 +2880,7 @@ impl Element {
             tmp2.sqr();
             tmp2.mult(& z_min);
             tmp.sub(& tmp2);
-            tmp2.set_val(r_1o3);
+            tmp2.set_val(R_1O3);
             tmp.mult(& tmp2);
             for i3 in 0..3 {
                 i5 = 9 * (i3 + 3) + 3;
@@ -3241,7 +3241,7 @@ impl Element {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
                 i2 = cat_list.find(&cat.s.as_str());
-                if (i2 < max_int) {
+                if (i2 < MAX_INT) {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -3392,7 +3392,7 @@ impl Element {
             z_min2.mult(& z_min);
             tmp.set_val_dfd1(& z_max2);
             tmp.sub(& z_min2);// tmp == z_max^3 - z_min^3
-            tmp2.set_val(r_1o3);
+            tmp2.set_val(R_1O3);
             tmp2.mult(& lay_den[layi]);
             tmp2.mult(& tmp);
             mmat[21].add(& tmp2);
@@ -3778,12 +3778,12 @@ impl Element {
         al_mat[8].set_val(1.0);
         
         for i1 in 0..num_lay {
-            al_mat[0].set_val(r_pio180);
+            al_mat[0].set_val(R_PI_0180);
             al_mat[0].mult(& lay_ang[i1]);
             al_mat[0].cs();
             tmp2.set_val_dfd1(& al_mat[0]);
             al_mat[4].set_val_dfd1(& tmp2);
-            al_mat[3].set_val(r_pio180);
+            al_mat[3].set_val(R_PI_0180);
             al_mat[3].mult(& lay_ang[i1]);
             al_mat[3].sn();
             tmp2.set_val_dfd1(& al_mat[3]);

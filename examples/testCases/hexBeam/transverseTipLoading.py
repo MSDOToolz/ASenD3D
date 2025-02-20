@@ -48,4 +48,4 @@ myJob.writeObjective('transverseTipLoading/results/objectiveResults.yaml')
 
 myJob.writeJobInput('transverseTipLoading/job.yaml')
 
-myJob.executeJob()
+#myJob.executeJob()

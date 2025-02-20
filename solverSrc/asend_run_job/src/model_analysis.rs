@@ -113,7 +113,7 @@ impl Model {
         
         // put self.nodes into an integer list in level order.
         //let mut ordered_nds : LinkedList<usize> = LinkedList::new();
-        let mut ordered_nds : Vec<usize> = vec![max_int; num_nodes];
+        let mut ordered_nds : Vec<usize> = vec![MAX_INT; num_nodes];
         
         ordered_nds[0] = min_nd;
         let mut on_len = 1usize;
@@ -145,43 +145,47 @@ impl Model {
                     since_restart += 1usize;
                 }
             }
-            if (since_restart >= block_dim || on_i == (on_len - 1)) {
-                // nd1 = match ordered_nds.back() {
-                //     None => panic!("Error: failure to access the back element of ordered_nds."),
-                //     Some(x) => *x,
-                // };
-                nd1 = ordered_nds[(on_len - 1)];
-                min_dist = 1.0e+100;
-                for i1 in 0..num_nodes {
-                    if (node_inserted[i1] == 0) {
-                        dist = get_dist(& self.nodes[nd1].coord, & self.nodes[i1].coord);
-                        if (dist < min_dist) {
-                            min_dist = dist;
-                            min_nd = i1;
+            on_i += 1usize;
+            nd1 = ordered_nds[on_i];
+            if (on_len < num_nodes) {
+                if (since_restart >= block_dim || on_i == (on_len - 1)) {
+                    // nd1 = match ordered_nds.back() {
+                    //     None => panic!("Error: failure to access the back element of ordered_nds."),
+                    //     Some(x) => *x,
+                    // };
+                    nd1 = ordered_nds[(on_len - 1)];
+                    min_dist = 1.0e+100;
+                    for i1 in 0..num_nodes {
+                        if (node_inserted[i1] == 0) {
+                            dist = get_dist(& self.nodes[nd1].coord, & self.nodes[i1].coord);
+                            if (dist < min_dist) {
+                                min_dist = dist;
+                                min_nd = i1;
+                            }
                         }
                     }
-                }
-                ordered_nds[on_len] = min_nd;
-                on_len += 1usize;
-                nd1 = min_nd;
-                node_inserted[min_nd] = 1;
-                since_restart += 1usize;
-                on_i = on_len - 1;
-                if (since_restart >= block_dim) {
-                    since_restart = 0;
-                    // nd2 = 0usize;
-                    // // Move the iterator up until it's on nd1
-                    // while (nd2 != nd1) {
-                    //     nd2 = match this_nd.next() {
-                    //         None => panic!("Error: failure to reset ordered nodes iterator after reaching end of matrix block"),
-                    //         Some(x) => *x,
-                    //     };
+                    ordered_nds[on_len] = min_nd;
+                    on_len += 1usize;
+                    nd1 = min_nd;
+                    node_inserted[min_nd] = 1;
+                    since_restart += 1usize;
+                    on_i = on_len - 1;
+                    if (since_restart >= block_dim) {
+                        since_restart = 0;
+                        // nd2 = 0usize;
+                        // // Move the iterator up until it's on nd1
+                        // while (nd2 != nd1) {
+                        //     nd2 = match this_nd.next() {
+                        //         None => panic!("Error: failure to reset ordered nodes iterator after reaching end of matrix block"),
+                        //         Some(x) => *x,
+                        //     };
+                        // }
+                    }
+                    // if (end_this_nd) {
+                    //     this_nd = ordered_nds.iter_mut();
+                    //     end_this_nd = false;
                     // }
                 }
-                // if (end_this_nd) {
-                //     this_nd = ordered_nds.iter_mut();
-                //     end_this_nd = false;
-                // }
             }
         }
         
@@ -382,7 +386,7 @@ impl Model {
         let mut dvi : usize = 0;
         for this_dv in self.design_vars.iter_mut() {
             coef_len = this_dv.coefs.len();
-            if (this_dv.el_set_ptr < max_int) {
+            if (this_dv.el_set_ptr < MAX_INT) {
                 if (coef_len < 2) {
                     if (coef_len == 0) {
                         const_coef = 1.0;
@@ -410,7 +414,7 @@ impl Model {
                 }
             }
             
-            if (this_dv.nd_set_ptr < max_int) {
+            if (this_dv.nd_set_ptr < MAX_INT) {
                 if (coef_len < 2) {
                     if (coef_len == 0) {
                         const_coef = 1.0;
@@ -557,7 +561,7 @@ impl Model {
         let mut time : f64;
         let mut t_inc : f64;
         
-        if (self.solve_cmd < max_int) {
+        if (self.solve_cmd < MAX_INT) {
             let mut scmd = &mut self.job[self.solve_cmd];
             if (scmd.solver_method.s == "direct") {
                 scmd.solver_block_dim = 2000000000;
@@ -723,7 +727,7 @@ impl Model {
         for i1 in 0..self.el_mat_dim {
             self.temp_d1[i1].set_val(0.0);
         }
-        if(build_mat) {
+        if (build_mat) {
             self.elastic_mat.zero_all();
         }
         if (full_ref) {
@@ -808,7 +812,7 @@ impl Model {
                 self.temp_v2[glob_ind] = this_nd.displacement[i1];
             }
         }
-        self.elastic_const.get_total_load(&mut self.elastic_ld_vec, &mut  self.temp_v2, &mut  self.temp_v3,  self.el_mat_dim);
+        self.elastic_const.get_total_load(&mut self.elastic_ld_vec, &mut  self.temp_v2, &mut  self.temp_v3);
         return;
     }
 
@@ -823,7 +827,7 @@ impl Model {
             self.temp_v2[glob_ind] = nd_temp;
         }
         num_nodes = self.nodes.len();
-        self.thermal_const.get_total_load(&mut self.therm_ld_vec, &mut  self.temp_v2, &mut  self.temp_v3,  num_nodes);
+        self.thermal_const.get_total_load(&mut self.therm_ld_vec, &mut  self.temp_v2, &mut  self.temp_v3);
         return;
     }
 
@@ -870,7 +874,7 @@ impl Model {
             }
         }
         
-        if(self.job[sci].elastic) {
+        if (self.job[sci].elastic) {
             if(self.job[sci].nonlinear_geom) {
                 max_nlit = 50;
             } else {
@@ -1231,7 +1235,7 @@ impl Model {
         }
         
         if (self.job[ci].this_type.s == "buckling") {
-            self.write_time_step_soln(max_int);
+            self.write_time_step_soln(MAX_INT);
             for this_nd in self.nodes.iter_mut() {
                 this_nd.advance_disp();
                 this_nd.set_displacement(&mut zeros);
@@ -1266,7 +1270,7 @@ impl Model {
             for this_el in self.elements.iter_mut() {
                 this_el.backstep_int_disp();
             }
-            self.read_time_step_soln(max_int);
+            self.read_time_step_soln(MAX_INT);
         }
         else {
             for i1 in 0..self.job[ci].num_modes {
@@ -1310,7 +1314,7 @@ impl Model {
         scale_fact = max_val / scale_fact;
         
         i1 = disp_fields.find(&field.s.as_str());
-        if (i1 < max_int) {
+        if (i1 < MAX_INT) {
             for this_nd in self.nodes.iter_mut() {
                 n_dof = this_nd.num_dof;
                 for i2 in 0..n_dof {
@@ -1589,7 +1593,7 @@ impl Model {
         
         
         // design variable dependent contribution
-        if (self.design_vars[d_var_num].nd_set_ptr < max_int) {
+        if (self.design_vars[d_var_num].nd_set_ptr < MAX_INT) {
             let mut nd_ld = DiffDoub1::new();
             let mut this_nd : &mut Node;
             for ndi in self.node_sets[self.design_vars[d_var_num].nd_set_ptr].labels.iter_mut() {
@@ -1658,7 +1662,7 @@ impl Model {
         
         // design variable dependent contribution
         
-        if (self.design_vars[d_var_num].nd_set_ptr < max_int) {
+        if (self.design_vars[d_var_num].nd_set_ptr < MAX_INT) {
             let mut nd_ld = [DiffDoub1::new(); 6];
             let mut this_nd : &mut  Node;
             for ndi in self.node_sets[self.design_vars[d_var_num].nd_set_ptr].labels.iter_mut() {

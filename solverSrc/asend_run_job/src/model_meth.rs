@@ -103,8 +103,8 @@ impl Model {
                 let mut ts_cln = self.job[ci].time_steps.clone();
                 if (num_tsteps > 0) {
                     i2 = self.job[ci].file_name.find(".");
-                    if (i2 < max_int) {
-                        exten = self.job[ci].file_name.substr(i2, max_int);
+                    if (i2 < MAX_INT) {
+                        exten = self.job[ci].file_name.substr(i2, MAX_INT);
                         file_name = self.job[ci].file_name.substr(0, i2);
                     }
                     else {
@@ -124,10 +124,10 @@ impl Model {
                 else {
                     file_name = self.job[ci].file_name.clone();
                     if (cmd_str.s == "writeNodeResults") {
-                        self.write_node_results(&mut file_name, &mut ns_cln, &mut fld_cln,  max_int);
+                        self.write_node_results(&mut file_name, &mut ns_cln, &mut fld_cln,  MAX_INT);
                     }
                     else {
-                        self.write_element_results(&mut file_name, &mut es_cln, &mut fld_cln, &mut pos_cln,  max_int);
+                        self.write_element_results(&mut file_name, &mut es_cln, &mut fld_cln, &mut pos_cln,  MAX_INT);
                     }
                 }
             }
@@ -148,6 +148,77 @@ impl Model {
         }
         
         return;
+    }
+
+    pub fn print_contents(&self) {
+        let mut ct = 0usize;
+        println!("nodes:");
+        for nd in self.nodes.iter() {
+            println!("{}, {}, {}, {}", ct, nd.coord[0], nd.coord[1], nd.coord[2]);
+            ct += 1;
+        }
+        println!("elements:");
+        ct = 0;
+        for el in self.elements.iter() {
+            print!("{}",ct);
+            for i in 0..el.num_nds {
+                print!(", {}",el.nodes[i]);
+            }
+            println!("");
+            ct += 1;
+        }
+        println!("node sets:");
+        for ns in self.node_sets.iter() {
+            println!("name: {}", ns.name.s);
+            for nd in ns.labels.iter() {
+                println!("{},",*nd);
+            }
+        }
+        println!("element sets:");
+        for es in self.element_sets.iter() {
+            println!("name: {}", es.name.s);
+            for el in es.labels.iter() {
+                println!("{},",*el);
+            }
+        }
+        println!("sections:");
+        for sec in self.sections.iter() {
+            println!("element set: {}", sec.el_set_name.s);
+            println!("material: {}", sec.mat_name.s);
+        }
+        println!("materials:");
+        for mat in self.materials.iter() {
+            println!("name: {}", mat.name.s);
+            println!("modulus: {}, {}, {}", mat.modulus[0], mat.modulus[1], mat.modulus[2]);
+            println!("poisson: {}, {}, {}", mat.poisson_ratio[0], mat.poisson_ratio[1], mat.poisson_ratio[2]);
+            println!("shear modulus: {}, {}, {}", mat.shear_mod[0], mat.shear_mod[1], mat.shear_mod[2]);
+        }
+        println!("constraints:");
+        for cn in self.elastic_const.const_vec.iter() {
+            println!("terms:");
+            for tm in cn.terms.iter() {
+                println!("node_set: {}", tm.node_set.s);
+                println!("dof: {}", tm.dof);
+                println!("coef: {}", tm.coef);
+            }
+        }
+        println!("loads:");
+        for ld in self.elastic_loads.iter() {
+            println!("type: {}", ld.this_type.s);
+            println!("node_set: {}", ld.node_set.s);
+            print!("load: ");
+            for i in 0..6 {
+                print!("{}, ", ld.load[i]);
+            }
+            println!("");
+        }
+    }
+
+    pub fn print_vec(in_vec : &Vec<f64>) {
+        println!("Vector contents:");
+        for f in in_vec.iter() {
+            println!("{},",*f);
+        }
     }
 
 }

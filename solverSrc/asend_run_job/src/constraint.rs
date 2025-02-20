@@ -1,8 +1,5 @@
 use crate::list_ent::*;
-use crate::nd_el_set::*;
-use crate::node::*;
 use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 use crate::constants::*;
 
 use std::collections::LinkedList;
@@ -18,8 +15,8 @@ pub struct ConstraintTerm {
 impl ConstraintTerm {
     pub fn new() -> ConstraintTerm {
         ConstraintTerm {
-            node_set : CppStr::new(),
-            ns_ptr : max_int,
+            node_set : CppStr::from("none"),
+            ns_ptr : MAX_INT,
             dof : 0usize,
             coef : 0f64,
         }
@@ -38,7 +35,7 @@ pub struct Constraint {
 impl Constraint {
     pub fn new() -> Constraint {
         Constraint {
-            this_type : CppStr::new(),
+            this_type : CppStr::from("none"),
             terms : LinkedList::new(),
             rhs : 0f64,
             mat : SparseMat::new(),

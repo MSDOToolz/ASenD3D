@@ -66,4 +66,4 @@ myJob.writeNodeResults('dynamicElastic/results/nodeResults.yaml',['displacement'
 
 myJob.writeJobInput('dynamicElastic/dynamicElasticJob.yaml')
 
-myJob.executeJob()
+#myJob.executeJob()

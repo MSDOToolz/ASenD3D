@@ -83,8 +83,8 @@ pub fn q_rfactor(mat : &mut Vec<f64>, col_dim : usize, st_row : usize, end_row :
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*col_dim + i1;
             k12 = i2*col_dim + i1;
-            if(fabs(mat[k11]) < tol) {
-                mat[k11] = tol;
+            if(fabs(mat[k11]) < TOL) {
+                mat[k11] = TOL;
             }
             theta = atan(mat[k12]/mat[k11]);
             sth = sin(theta);
@@ -413,8 +413,8 @@ pub fn sym_factor(mat : &mut Vec<f64>, q_mat : &mut Vec<f64>, mat_dim : usize) {
     for i1 in 0..mat_dim {
         for i2 in i1+2..mat_dim {
             i3 = (i1+1)*mat_dim + i1;
-            if(fabs(mat[i3]) < tol) {
-                theta = pi_2;
+            if(fabs(mat[i3]) < TOL) {
+                theta = PI_2;
             } else {
                 i4 = i2*mat_dim + i1;
                 theta = atan(mat[i4]/mat[i3]);
@@ -483,8 +483,8 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*mat_dim + i1;
             k12 = i2*mat_dim + i1;
-            if(fabs(mat[k11].val) < tol) {
-                mat[k11].val = tol;
+            if(fabs(mat[k11].val) < TOL) {
+                mat[k11].val = TOL;
             }
             theta.set_val_dfd1(&mut mat[k12]);
             tmp.set_val_dfd1(&mut mat[k11]);
@@ -528,13 +528,13 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
     i2 = mat_dim + 1;
     for i1 in 1..mat_dim {
         c_fun.mult(& mat[i2]);
-        while(fabs(c_fun.val) > max_mag) {
-            c_fun.val *=  min_mag;
-            c_fun.dval *=  min_mag;
+        while(fabs(c_fun.val) > MAX_MAG) {
+            c_fun.val *=  MIN_MAG;
+            c_fun.dval *=  MIN_MAG;
         }
-        while(fabs(c_fun.val) < min_mag) {
-            c_fun.val *=  max_mag;
-            c_fun.dval *=  max_mag;
+        while(fabs(c_fun.val) < MIN_MAG) {
+            c_fun.val *=  MAX_MAG;
+            c_fun.dval *=  MAX_MAG;
         }
         i2 +=  (mat_dim + 1);
     }
@@ -544,13 +544,13 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
         term = *ev - lam;
         tmp.set_val_2(term,   -1.0);
         c_fun.dvd(& tmp);
-        while(fabs(c_fun.val) > max_mag) {
-            c_fun.val *=  min_mag;
-            c_fun.dval *=  min_mag;
+        while(fabs(c_fun.val) > MAX_MAG) {
+            c_fun.val *=  MIN_MAG;
+            c_fun.dval *=  MIN_MAG;
         }
-        while(fabs(c_fun.val) < min_mag) {
-            c_fun.val *=  max_mag;
-            c_fun.dval *=  max_mag;
+        while(fabs(c_fun.val) < MIN_MAG) {
+            c_fun.val *=  MAX_MAG;
+            c_fun.dval *=  MAX_MAG;
         }
     }
     
@@ -897,9 +897,11 @@ pub fn sym_eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mu
             for i2 in 0..mat_dim {
                 temp_v2[i2] = 0.0;
                 if (tri_diag == 1) {
-                    i3_min = i2 - 1;
-                    if (i3_min < 0) {
+                    if (i2 == 0) {
                         i3_min = 0;
+                    }
+                    else {
+                        i3_min = i2 - 1;
                     }
                     i3_max = i2 + 2;
                     if (i3_max > mat_dim) {
@@ -1318,8 +1320,8 @@ pub fn q_rfactor_dfd0(mat : &mut Vec<DiffDoub0>, col_dim : usize, st_row : usize
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*col_dim + i1;
             k12 = i2*col_dim + i1;
-            if(fabs(mat[k11].val) < tol) {
-                mat[k11].val = tol;
+            if(fabs(mat[k11].val) < TOL) {
+                mat[k11].val = TOL;
             }
             theta.set_val_dfd0(& mat[k12]);
             tmp.set_val_dfd0(& mat[k11]);
@@ -1394,8 +1396,8 @@ pub fn q_rfactor_ar_dfd0(mat : &mut [DiffDoub0], col_dim : usize, st_row : usize
         for i2 in i2_min..=i2_max {
             k11 = (i2_min - 1) * col_dim + i1;
             k12 = i2 * col_dim + i1;
-            if (fabs(mat[k11].val) < tol) {
-                mat[k11].val = tol;
+            if (fabs(mat[k11].val) < TOL) {
+                mat[k11].val = TOL;
             }
             theta.set_val_dfd0(& mat[k12]);
             tmp.set_val_dfd0(& mat[k11]);
@@ -1691,8 +1693,8 @@ pub fn q_rfactor_dfd1(mat : &mut Vec<DiffDoub1>, col_dim : usize, st_row : usize
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*col_dim + i1;
             k12 = i2*col_dim + i1;
-            if(fabs(mat[k11].val) < tol) {
-                mat[k11].val = tol;
+            if(fabs(mat[k11].val) < TOL) {
+                mat[k11].val = TOL;
             }
             theta.set_val_dfd1(& mat[k12]);
             tmp.set_val_dfd1(& mat[k11]);
@@ -1767,8 +1769,8 @@ pub fn q_rfactor_ar_dfd1(mat : &mut [DiffDoub1], col_dim : usize, st_row : usize
         for i2 in i2_min..=i2_max {
             k11 = (i2_min - 1) * col_dim + i1;
             k12 = i2 * col_dim + i1;
-            if (fabs(mat[k11].val) < tol) {
-                mat[k11].val = tol;
+            if (fabs(mat[k11].val) < TOL) {
+                mat[k11].val = TOL;
             }
             theta.set_val_dfd1(& mat[k12]);
             tmp.set_val_dfd1(& mat[k11]);
@@ -2216,7 +2218,7 @@ pub fn rotate_orient_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0
     mag.add(& tmp);
     mag.add(& tmp2);
     mag.sqt();
-    if(mag.val < magtol) {
+    if(mag.val < MAG_TOL) {
         let mut loc_rot = [DiffDoub0::new(); 3];
         i3 = 0;
         for i1 in 0..3 {
@@ -2574,7 +2576,7 @@ pub fn rotate_orient_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1
     mag.add(& tmp);
     mag.add(& tmp2);
     mag.sqt();
-    if(mag.val < magtol) {
+    if(mag.val < MAG_TOL) {
         let mut loc_rot = [DiffDoub1::new(); 3];
         i3 = 0;
         for i1 in 0..3 {
@@ -2930,7 +2932,7 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
     mag.add(& tmp);
     mag.add(& tmp2);
     mag.sqt();
-    if(mag.val < magtol) {
+    if(mag.val < MAG_TOL) {
         let mut loc_rot = [DiffDoub2::new(); 3];
         i3 = 0;
         for i1 in 0..3 {

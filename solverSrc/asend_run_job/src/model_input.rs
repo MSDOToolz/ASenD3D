@@ -31,14 +31,14 @@ impl Model {
         let mut ln_len : usize;
         let mut wrd_len : usize;
         i1 = file_line.find("#");
-        if(i1 < max_int) {
+        if(i1 < MAX_INT) {
             *file_line = file_line.substr(0,i1);
         }
         file_line.s = file_line.s.clone() + " ";
         ln_len = file_line.len();
         i1 = file_line.find(":");
         *data_len = 0;
-        if(i1 < max_int) {
+        if(i1 < MAX_INT) {
             i2 = file_line.find_first_not_of(" -\n\t");
             wrd_len = i1 - i2;
             if(headings[0].s == "" || hd_ld_space[0] == i2) {
@@ -68,13 +68,13 @@ impl Model {
             }
             i1 += 1usize;
             while(i1 < ln_len) {
-                *file_line = file_line.substr(i1, max_int);
+                *file_line = file_line.substr(i1, MAX_INT);
                 i1 = file_line.find_first_not_of(" ,[]\t\n");
-                if(i1 < max_int) {
-                    *file_line = file_line.substr(i1, max_int);
+                if(i1 < MAX_INT) {
+                    *file_line = file_line.substr(i1, MAX_INT);
                     ln_len = file_line.len();
                     i1 = file_line.find_first_of(" ,[]\t\n");
-                    if(i1 < max_int) {
+                    if(i1 < MAX_INT) {
                         data[*data_len] = file_line.substr(0,i1);
                         *data_len += 1usize;
                     } else {
@@ -86,16 +86,16 @@ impl Model {
             }
         } else {
             i1 = file_line.find("- ");
-            if(i1 < max_int) {
+            if(i1 < MAX_INT) {
                 i1 += 1usize;
                 while(i1 < ln_len) {
-                    *file_line = file_line.substr(i1, max_int);
+                    *file_line = file_line.substr(i1, MAX_INT);
                     i1 = file_line.find_first_not_of(" ,[]\t\n");
-                    if(i1 < max_int) {
-                        *file_line = file_line.substr(i1, max_int);
+                    if(i1 < MAX_INT) {
+                        *file_line = file_line.substr(i1, MAX_INT);
                         ln_len = file_line.len();
                         i1 = file_line.find_first_of(" ,[]\t\n");
-                        if(i1 < max_int) {
+                        if(i1 < MAX_INT) {
                             data[*data_len] = file_line.substr(0,i1);
                             *data_len += 1usize;
                         } else {
@@ -138,12 +138,12 @@ impl Model {
         self.job = vec![JobCommand::new(); cmd_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
-            cmd_ct = max_int;
+            cmd_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if(headings[1].s == "command" && data_len == 1) {
-                    if (cmd_ct == max_int) {
+                    if (cmd_ct == MAX_INT) {
                         cmd_ct = 0;
                     }
                     else {
@@ -379,13 +379,13 @@ impl Model {
         self.fluids = vec![Fluid::new(); fl_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
-            nd_ct = max_int;
-            el_ct = max_int;
-            ns_ct = max_int;
-            es_ct = max_int;
-            sec_ct = max_int;
-            mat_ct = max_int;
-            fl_ct = max_int;
+            nd_ct = MAX_INT;
+            el_ct = MAX_INT;
+            ns_ct = MAX_INT;
+            es_ct = MAX_INT;
+            sec_ct = MAX_INT;
+            mat_ct = MAX_INT;
+            fl_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
@@ -451,7 +451,7 @@ impl Model {
                 } else if(headings[0].s == "sets") {
                     if(headings[1].s == "node") {
                         if(headings[2].s == "name" && data_len == 1) {
-                            if (ns_ct == max_int) {
+                            if (ns_ct == MAX_INT) {
                                 ns_ct = 0;
                             }
                             else {
@@ -479,7 +479,7 @@ impl Model {
                         }
                     } else if(headings[1].s == "element") {
                         if(headings[2].s == "name" && data_len == 1) {
-                            if (es_ct == max_int) {
+                            if (es_ct == MAX_INT) {
                                 es_ct = 0;
                             }
                             else {
@@ -508,7 +508,7 @@ impl Model {
                     }
                 } else if(headings[0].s == "sections") {
                     if(headings[1].s == "type" && data_len == 1) {
-                        if (sec_ct == max_int) {
+                        if (sec_ct == MAX_INT) {
                             sec_ct = 0;
                         }
                         else {
@@ -665,7 +665,7 @@ impl Model {
                     }
                 } else if(headings[0].s == "materials") {
                     if(headings[1].s == "name" && data_len == 1) {
-                        if (mat_ct == max_int) {
+                        if (mat_ct == MAX_INT) {
                             mat_ct = 0;
                         }
                         else {
@@ -806,7 +806,7 @@ impl Model {
                 }
                 else if (headings[0].s == "fluids") {
                     if (headings[1].s == "name" && data_len == 1) {
-                        if (fl_ct == max_int) {
+                        if (fl_ct == MAX_INT) {
                             fl_ct = 0;
                         }
                         else {
@@ -838,7 +838,12 @@ impl Model {
         
         i1 = self.nodes.len();
         for i2 in 0..i1 {
-            ns_ct += 1usize;
+            if (ns_ct == MAX_INT) {
+                ns_ct = 0usize;
+            }
+            else {
+                ns_ct += 1usize;
+            }
             self.node_sets[ns_ct].name.s = i2.to_string();
             self.node_sets[ns_ct].labels.push_back(i2);
         }
@@ -852,7 +857,12 @@ impl Model {
         
         i1 = self.elements.len();
         for i2 in 0..i1 {
-            es_ct += 1usize;
+            if (es_ct == MAX_INT) {
+                es_ct = 0usize;
+            }
+            else {
+                es_ct += 1usize;
+            }
             self.element_sets[es_ct].name.s = i2.to_string();
             self.element_sets[es_ct].labels.push_back(i2);
         }
@@ -918,14 +928,18 @@ impl Model {
                 }
             }
         }
+
+        if (ec_ct == 0 && tc_ct == 0) {
+            return;
+        }
         
         self.elastic_const.const_vec = vec![Constraint::new(); ec_ct];
         self.thermal_const.const_vec = vec![Constraint::new(); tc_ct];
         
         let mut tm_pt : &mut ConstraintTerm;
         if let Ok(lines) = read_lines(file_name.s.clone()) {
-            ec_ct = max_int;
-            tc_ct = max_int;
+            ec_ct = MAX_INT;
+            tc_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
@@ -938,7 +952,7 @@ impl Model {
                             self.thermal_const.const_vec[tc_ct] = new_con.clone();
                         }
                         if (data[0].s == "displacement") {
-                            if (ec_ct == max_int) {
+                            if (ec_ct == MAX_INT) {
                                 ec_ct = 0;
                             }
                             else {
@@ -948,7 +962,7 @@ impl Model {
                             new_con.this_type = CppStr::from("displacement");
                         }
                         else if (data[0].s == "temperature") {
-                            if (tc_ct == max_int) {
+                            if (tc_ct == MAX_INT) {
                                 tc_ct = 0;
                             }
                             else {
@@ -1021,40 +1035,44 @@ impl Model {
                 if (headings[0].s == "loads") {
                     if (headings[1].s == "type" && data_len == 1) {
                         i1 = elastic_list.find(data[0].s.as_str());
-                        if (i1 < max_int) {
+                        if (i1 < MAX_INT) {
                             e_ld_ct += 1usize;
                         }
                         i1 = thermal_list.find(data[0].s.as_str());
-                        if (i1 < max_int) {
+                        if (i1 < MAX_INT) {
                             t_ld_ct += 1usize;
                         }
                     }
                 }
             }
         }
+
+        if (e_ld_ct == 0 && t_ld_ct == 0) {
+            return;
+        }
         
         self.elastic_loads = vec![Load::new(); e_ld_ct];
         self.thermal_loads = vec![Load::new(); t_ld_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
-            e_ld_ct = max_int;
-            t_ld_ct = max_int;
+            e_ld_ct = MAX_INT;
+            t_ld_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if (headings[0].s == "loads") {
                     if (headings[1].s == "type" && data_len == 1) {
                         i1 = elastic_list.find(new_ld.this_type.s.as_str());
-                        if (i1 < max_int) {
+                        if (i1 < MAX_INT) {
                             self.elastic_loads[e_ld_ct] = new_ld.clone();
                         }
                         i1 = thermal_list.find(new_ld.this_type.s.as_str());
-                        if (i1 < max_int) {
+                        if (i1 < MAX_INT) {
                             self.thermal_loads[t_ld_ct] = new_ld.clone();
                         }
                         i1 = elastic_list.find(data[0].s.as_str());
-                        if (i1 < max_int) {
-                            if (e_ld_ct == max_int) {
+                        if (i1 < MAX_INT) {
+                            if (e_ld_ct == MAX_INT) {
                                 e_ld_ct = 0;
                             }
                             else {
@@ -1066,8 +1084,8 @@ impl Model {
                             new_ld.this_type = data[0].clone();
                         }
                         i1 = thermal_list.find(data[0].s.as_str());
-                        if (i1 < max_int) {
-                            if (t_ld_ct == max_int) {
+                        if (i1 < MAX_INT) {
+                            if (t_ld_ct == MAX_INT) {
                                 t_ld_ct = 0;
                             }
                             else {
@@ -1126,11 +1144,11 @@ impl Model {
         }
 
         i1 = elastic_list.find(new_ld.this_type.s.as_str());
-        if (i1 < max_int) {
+        if (i1 < MAX_INT) {
             self.elastic_loads[e_ld_ct] = new_ld.clone();
         }
         i1 = thermal_list.find(new_ld.this_type.s.as_str());
-        if (i1 < max_int) {
+        if (i1 < MAX_INT) {
             self.thermal_loads[t_ld_ct] = new_ld.clone();
         }
         
@@ -1158,7 +1176,7 @@ impl Model {
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if(headings[0].s == "initialState") {
                     i3 = disp_hdings.find(headings[1].s.as_str());
-                    if(i3 < max_int && data_len > 3) {
+                    if(i3 < MAX_INT && data_len > 3) {
                         seti = self.ns_map.at(&data[0].to_string());
                         for ndi in self.node_sets[seti].labels.iter_mut() {
                             this_nd = &mut self.nodes[*ndi];
@@ -1230,13 +1248,13 @@ impl Model {
         self.design_vars = vec![DesignVariable::new(); dv_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
-            dv_ct = max_int;
+            dv_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if(headings[0].s == "designVariables") {
                     if(headings[1].s == "category" && data_len == 1) {
-                        if (dv_ct == max_int) {
+                        if (dv_ct == MAX_INT) {
                             dv_ct = 0;
                         }
                         else {
@@ -1308,13 +1326,13 @@ impl Model {
         self.obj.terms = vec![ObjectiveTerm::new(); ob_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
-            ob_ct = max_int;
+            ob_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if(headings[0].s == "objectiveTerms") {
                     if(headings[1].s == "category" && data_len == 1) {
-                        if (ob_ct == max_int) {
+                        if (ob_ct == MAX_INT) {
                             ob_ct = 0;
                         }
                         else {
@@ -1409,7 +1427,7 @@ impl Model {
                     nd = CppStr::stoi(&mut data[0]);
                     let mut this_nd = &mut self.nodes[nd];
                     i2 = disp_fields.find(headings[1].s.as_str());
-                    if (i2 < max_int) {
+                    if (i2 < MAX_INT) {
                         for i1 in 0..this_nd.num_dof {
                             nd_dat[i1] = CppStr::stod(&mut data[i1 + 1]);
                         }
@@ -1424,7 +1442,7 @@ impl Model {
                         }
                     }
                     i2 = thrm_fields.find(headings[1].s.as_str());
-                    if (i2 < max_int) {
+                    if (i2 < MAX_INT) {
                         nd_dat[0] = CppStr::stod(&mut data[1]);
                         if (headings[1].s == "temperature") {
                             this_nd.temperature = nd_dat[0];

@@ -1,4 +1,4 @@
-use crate::constants::max_int;
+use crate::constants::MAX_INT;
 use crate::list_ent::*;
 use crate::cpp_str::CppStr;
 use crate::cpp_map::CppMap;
@@ -65,8 +65,8 @@ impl JobCommand {
             sim_period : 1f64,
             lump_mass : false,
             full_reform : 1usize,
-            solver_bandwidth : max_int,
-            solver_block_dim : max_int,
+            solver_bandwidth : MAX_INT,
+            solver_block_dim : MAX_INT,
             solver_method : CppStr::new(),
             max_it : 0usize,
             conv_tol : 1.0e-12f64,

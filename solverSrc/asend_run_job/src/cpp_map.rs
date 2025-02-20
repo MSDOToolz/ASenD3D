@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::constants::max_int;
+use crate::constants::MAX_INT;
 
 #[derive(Clone)]
 pub struct CppMap {
@@ -20,13 +20,13 @@ impl CppMap {
     pub fn key_in_map(&mut self, key : & String) -> bool {
         match self.m.get(key) {
             None => false,
-            Some(x) => true,
+            Some(_x) => true,
         }
     }
 
     pub fn at(&mut self, key : & String) -> usize {
         match self.m.get(key) {
-            None => max_int,
+            None => MAX_INT,
             Some(x) => *x,
         }
     }

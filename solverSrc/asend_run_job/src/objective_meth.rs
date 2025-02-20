@@ -25,10 +25,10 @@ impl ObjectiveTerm {
     pub fn allocate_obj(&mut self, nd_sets : &mut Vec<Set>, el_sets : &mut Vec<Set>) {
         let mut i1 : usize;
         if (self.q_len == 0) {
-            if (self.el_set_ptr < max_int) {
+            if (self.el_set_ptr < MAX_INT) {
                 self.q_len = el_sets[self.el_set_ptr].labels.len();
             }
-            else if (self.nd_set_ptr < max_int) {
+            else if (self.nd_set_ptr < MAX_INT) {
                 self.q_len = nd_sets[self.nd_set_ptr].labels.len();
             }
             if (self.q_len > 0) {
@@ -291,8 +291,8 @@ impl ObjectiveTerm {
         
         let mut cat_list = CppStr::from("displacement velocity acceleration temperature tdot");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.nd_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.nd_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Node Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Node Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -359,8 +359,8 @@ impl ObjectiveTerm {
         }
         cat_list = CppStr::from("stress strain strainEnergyDen");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.",err_str);
                 panic!("{}", err_str);
@@ -440,8 +440,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("sectionDef sectionFrcMom");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -528,8 +528,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("flux tempGradient");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -605,8 +605,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("mass volume");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -683,8 +683,8 @@ impl ObjectiveTerm {
         
         let mut cat_list = CppStr::from("displacement velocity acceleration temperature tdot");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.nd_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.nd_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Node Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Node Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -731,8 +731,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("stress strain strainEnergyDen");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -811,8 +811,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("sectionDef sectionFrcMom");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -869,8 +869,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("flux tempGradient");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -943,8 +943,8 @@ impl ObjectiveTerm {
         
         let mut cat_list = CppStr::from("stress strain strainEnergyDen");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -1017,8 +1017,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("sectionDef sectionFrcMom");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -1094,8 +1094,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("flux tempGradient");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);
@@ -1160,8 +1160,8 @@ impl ObjectiveTerm {
         
         cat_list = CppStr::from("mass volume");
         fi = cat_list.find(&self.category.s.as_str());
-        if (fi < max_int) {
-            if (self.el_set_ptr == max_int) {
+        if (fi < MAX_INT) {
+            if (self.el_set_ptr == MAX_INT) {
                 let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
                 err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
                 panic!("{}", err_str);

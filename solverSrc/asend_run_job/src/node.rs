@@ -58,11 +58,11 @@ pub struct Node {
 impl Node {
     pub fn new() -> Node {
         Node {
-            label : max_int,
+            label : MAX_INT,
             fluid : false,
             num_dof : 3usize,
-            dof_index : [max_int; 6],
-            sorted_rank : max_int,
+            dof_index : [MAX_INT; 6],
+            sorted_rank : MAX_INT,
             coord : [0f64; 3],
             displacement : [0f64; 6],
             velocity : [0f64; 6],

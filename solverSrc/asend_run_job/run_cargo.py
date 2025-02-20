@@ -7,7 +7,7 @@ Created on Wed Jan 29 21:07:23 2025
 
 import subprocess
 
-res = subprocess.run(['cargo','check'],capture_output=True,text=True)
+res = subprocess.run(['cargo','build'],capture_output=True,text=True)
 
 outLst = res.stderr.split('\n')
 

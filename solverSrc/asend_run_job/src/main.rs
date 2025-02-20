@@ -47,6 +47,8 @@ use std::env;
 
 fn main() {
     let args : Vec<String> = env::args().collect();
+    //let args = vec!["".to_string(),"C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/shellBeam/buckling/job.yaml".to_string()];
+    
     let job_file = match args.get(1) {
         None => panic!("Error: job input file not specified in call to analysis solver."),
         Some(x) => x,

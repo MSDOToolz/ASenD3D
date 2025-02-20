@@ -28,7 +28,7 @@ impl CppStr {
 
 	pub fn find(&mut self, substr :& str) -> usize {
 		match self.s.find(substr) {
-			None => max_int,
+			None => MAX_INT,
 			Some(x) => x as usize,
 		}
 	}
@@ -38,15 +38,15 @@ impl CppStr {
 		let mut res_i : usize;
 		for c_str in self.s.chars() {
 			res_i = match substr.find(c_str) {
-				None => max_int,
+				None => MAX_INT,
 				Some(x) => x as usize,
 			};
-			if (res_i < max_int) {
+			if res_i < MAX_INT {
 				return ind;
 			}
 			ind += 1usize;
 		}
-		max_int
+		MAX_INT
 	}
 	
 	pub fn find_first_not_of(&mut self, substr :& str) -> usize {
@@ -54,19 +54,19 @@ impl CppStr {
 		let mut res_i : usize;
 		for c_str in self.s.chars() {
 			res_i = match substr.find(c_str) {
-				None => max_int,
+				None => MAX_INT,
 				Some(x) => x as usize,
 			};
-			if (res_i == max_int) {
+			if res_i == MAX_INT {
 				return ind;
 			}
 			ind += 1usize;
 		}
-		max_int
+		MAX_INT
 	}
 
 	pub fn substr(&mut self, st_c : usize, st_len : usize) -> CppStr {
-		if ((st_c + st_len) > self.s.len()) {
+		if (st_c + st_len) > self.s.len() {
 			let sub = match self.s.get(st_c..) {
 				None => "".to_string(),
 				Some(x) => x.to_string(),

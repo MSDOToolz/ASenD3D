@@ -7,7 +7,6 @@ use crate::node::*;
 use crate::section::*;
 use crate::matrix_functions::*;
 use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 
 impl Element {
@@ -15,7 +14,6 @@ impl Element {
     //dup1
 
     pub fn get_nd_disp_dfd0(&self, glob_disp : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
@@ -47,8 +45,6 @@ impl Element {
     }
 
     pub fn get_nd_vel_dfd0(& self, glob_vel : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut this_nd : &Node;
         
@@ -65,8 +61,6 @@ impl Element {
     }
 
     pub fn get_nd_acc_dfd0(& self, glob_acc : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut this_nd : &Node;
         
@@ -83,8 +77,6 @@ impl Element {
     }
 
     pub fn get_nd_fl_vel_dfd0(& self, fl_vel : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut this_nd : &Node;
         
@@ -101,8 +93,6 @@ impl Element {
     }
 
     pub fn get_nd_fl_vdot_dfd0(& self, fl_vdot : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut this_nd : &Node;
         
@@ -119,7 +109,6 @@ impl Element {
     }
 
     pub fn get_nd_temp_dfd0(& self, glob_temp : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
         let mut this_nd : &Node;
         
         for i1 in 0..self.num_nds {
@@ -130,7 +119,6 @@ impl Element {
     }
 
     pub fn get_nd_tdot_dfd0(& self, glob_tdot : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
         let mut this_nd : &Node;
         
         for i1 in 0..self.num_nds {
@@ -141,7 +129,6 @@ impl Element {
     }
 
     pub fn get_nd_fl_den_dfd0(& self, fl_den : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
         let mut this_nd : &Node;
         
         for i1 in 0..self.num_nds {
@@ -153,7 +140,6 @@ impl Element {
     }
 
     pub fn get_nd_fl_den_dot_dfd0(& self, fl_den_dot : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
         let mut this_nd : &Node;
         
         for i1 in 0..self.num_nds {
@@ -165,7 +151,6 @@ impl Element {
     }
 
     pub fn get_nd_turb_e_dfd0(& self, turb_e : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
         let mut this_nd : &Node;
         
         for i1 in 0..self.num_nds {
@@ -177,7 +162,6 @@ impl Element {
     }
 
     pub fn get_nd_turb_edot_dfd0(& self, turb_edot : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
         let mut this_nd : &Node;
         
         for i1 in 0..self.num_nds {
@@ -722,7 +706,7 @@ impl Element {
         }
         
         if (!n_lgeom) {
-            if (dv1 == max_int && dv2 == max_int) {
+            if (dv1 == MAX_INT && dv2 == MAX_INT) {
                 i7 = 3 * self.n_dim;
                 for i1 in 0..3 {
                     i4 = i1 * self.n_dim;
@@ -754,9 +738,9 @@ impl Element {
                     i2  +=  2;
                 }
             }
-            else if ((dv1 + dv2) >= max_int) {
-                let dnz = dv1 + dv2 - max_int;
-                //dv1 = dv1 + dv2 - max_int;
+            else if ((dv1 + dv2) >= MAX_INT) {
+                let dnz = dv1 + dv2 - MAX_INT;
+                //dv1 = dv1 + dv2 - MAX_INT;
                 nd = self.dof_table[2 * dnz];
                 dof = self.dof_table[2 * dnz + 1];
                 if (dof < 3) {
@@ -790,7 +774,7 @@ impl Element {
             }
         }
         else {
-            if (dv1 == max_int && dv2 == max_int) {
+            if (dv1 == MAX_INT && dv2 == MAX_INT) {
                 for i1 in 0..3 {
                     for i2 in 0..self.num_nds {
                         i4 = i1 * self.n_dim + i2;
@@ -845,9 +829,9 @@ impl Element {
                     }
                 }
             }
-            else if ((dv1 + dv2) >= max_int) {
-                let dnz = dv1 + dv2 - max_int;
-                //dv1 = dv1 + dv2 - max_int;
+            else if ((dv1 + dv2) >= MAX_INT) {
+                let dnz = dv1 + dv2 - MAX_INT;
+                //dv1 = dv1 + dv2 - MAX_INT;
                 nd = self.dof_table[2 * dnz];
                 dof = self.dof_table[2 * dnz + 1];
                 if (dof < 3) {
@@ -1308,14 +1292,14 @@ impl Element {
         
         self.get_inst_disp_dfd0(&mut inst_disp, glob_disp, inst_ori_mat, loc_ori, x_glob,  n_lgeom,  dv1,  dv2);
         
-        if(dv1 == max_int && dv2 == max_int) {
+        if(dv1 == MAX_INT && dv2 == MAX_INT) {
             mat_mul_ar_dfd0(&mut ux, &mut inst_disp, d_ndx, 3, self.n_dim, 3);
             i1 = 3*self.n_dim;
             mat_mul_ar_dfd0(&mut rx, &mut inst_disp[i1..], d_ndx, 3, self.n_dim, 3);
             mat_mul_ar_dfd0(&mut rot, &mut inst_disp[i1..], n_vec, 3, self.n_dim, 1);
-        } else if((dv1 + dv2) >= max_int) {
-            let dnz = dv1 + dv2 - max_int;
-            //dv1 = dv1 + dv2 - max_int;
+        } else if((dv1 + dv2) >= MAX_INT) {
+            let dnz = dv1 + dv2 - MAX_INT;
+            //dv1 = dv1 + dv2 - MAX_INT;
             nd = self.dof_table[2*dnz];
             dof = self.dof_table[2*dnz+1];
             if(dof < 3) {
@@ -1487,7 +1471,7 @@ impl Element {
         for i1 in 0..9 {
             strn_mat[i1].set_val(0.0);
         }
-        if(dv1 == max_int && dv2 == max_int) {
+        if(dv1 == MAX_INT && dv2 == MAX_INT) {
             vec_to_ar_dfd0(&mut tmp_ori, loc_ori,  0,  9);
             mat_mul_ar_dfd0(&mut ux_l, &mut tmp_ori, ux, 3, 3, 3);
             for i1 in 0..3 {
@@ -1511,8 +1495,8 @@ impl Element {
                     i5 +=  3;
                 }
             }
-        } else if((dv1 + dv2) >= max_int) {
-            if(dv1 < max_int) {
+        } else if((dv1 + dv2) >= MAX_INT) {
+            if(dv1 < MAX_INT) {
                 nd = self.dof_table[2*dv1];
                 dof = self.dof_table[2*dv1+1];
             } else {
@@ -1616,7 +1600,7 @@ impl Element {
                 self.get_inst_ori_dfd0(&mut pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_disp,  2);
             }
             
-            self.get_section_def_dfd0(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  max_int,  max_int);
+            self.get_section_def_dfd0(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  MAX_INT,  MAX_INT);
             
             sect_strn[0].set_val_dfd0(& sec_def[0]);
             tmp.set_val_dfd0(& pre.layer_z[layer]);
@@ -1662,7 +1646,7 @@ impl Element {
         } else if(self.this_type != 2) {
             vec_to_ar_dfd0(&mut tmp_ar, &mut  pre.glob_disp,  0,  60);
             mat_mul_ar_dfd0(&mut ux, &mut  tmp_ar, &mut  d_ndx,  3,  self.n_dim,  3);
-            self.get_solid_strain_dfd0(strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  max_int,  max_int,  n_lgeom);
+            self.get_solid_strain_dfd0(strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  MAX_INT,  MAX_INT,  n_lgeom);
             for i1 in 0..6 {
                 tmp.set_val_dfd0(& pre.therm_exp[i1]);
                 tmp.mult(& ip_temp);
@@ -1712,7 +1696,7 @@ impl Element {
             
             self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
             for i1 in 0..tot_dof {
-                self.get_section_def_dfd0(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  max_int);
+                self.get_section_def_dfd0(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  MAX_INT);
                 
                 sect_strn[0].set_val_dfd0(& sec_def[0]);
                 tmp.set_val_dfd0(& pre.layer_z[layer]);
@@ -1759,7 +1743,7 @@ impl Element {
             mat_mul_ar_dfd0(&mut ux, &mut  tmp_ar, &mut  d_ndx,  3,  self.n_dim,  3);
             vec_to_ar_dfd0(&mut tmp_ar, &mut  pre.cmat,  0,  36);
             for i1 in 0..tot_dof {
-                self.get_solid_strain_dfd0(&mut d_strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  i1,  max_int,  n_lgeom);
+                self.get_solid_strain_dfd0(&mut d_strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  i1,  MAX_INT,  n_lgeom);
                 mat_mul_ar_dfd0(&mut d_stress, &mut  tmp_ar, &mut  d_strain,  6,  6,  1);
                 i3 = i1;
                 for i2 in 0..6 {
@@ -1801,7 +1785,7 @@ impl Element {
         }
         
         self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
-        self.get_section_def_dfd0(def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  max_int,  max_int);
+        self.get_section_def_dfd0(def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  MAX_INT,  MAX_INT);
         
         pt_temp.set_val(0.0);
         for i1 in 0..self.num_nds {
@@ -1845,7 +1829,7 @@ impl Element {
         self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
         tot_dof = self.num_nds * self.dof_per_nd + self.num_int_dof;
         for i1 in 0..tot_dof {
-            self.get_section_def_dfd0(&mut def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  max_int);
+            self.get_section_def_dfd0(&mut def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  MAX_INT);
             i2 = i1;
             for i3 in 0..self.def_dim {
                 d_defd_u[i2].set_val_dfd0(& def[i3]);
@@ -2667,7 +2651,7 @@ impl Element {
         }
         
         if (!n_lgeom) {
-            if (dv1 == max_int && dv2 == max_int) {
+            if (dv1 == MAX_INT && dv2 == MAX_INT) {
                 i7 = 3 * self.n_dim;
                 for i1 in 0..3 {
                     i4 = i1 * self.n_dim;
@@ -2699,9 +2683,9 @@ impl Element {
                     i2  +=  2;
                 }
             }
-            else if ((dv1 + dv2) >= max_int) {
-                let dnz = dv1 + dv2 - max_int;
-                //dv1 = dv1 + dv2 - max_int;
+            else if ((dv1 + dv2) >= MAX_INT) {
+                let dnz = dv1 + dv2 - MAX_INT;
+                //dv1 = dv1 + dv2 - MAX_INT;
                 nd = self.dof_table[2 * dnz];
                 dof = self.dof_table[2 * dnz + 1];
                 if (dof < 3) {
@@ -2735,7 +2719,7 @@ impl Element {
             }
         }
         else {
-            if (dv1 == max_int && dv2 == max_int) {
+            if (dv1 == MAX_INT && dv2 == MAX_INT) {
                 for i1 in 0..3 {
                     for i2 in 0..self.num_nds {
                         i4 = i1 * self.n_dim + i2;
@@ -2790,9 +2774,9 @@ impl Element {
                     }
                 }
             }
-            else if ((dv1 + dv2) >= max_int) {
-                let dnz = dv1 + dv2 - max_int;
-                //dv1 = dv1 + dv2 - max_int;
+            else if ((dv1 + dv2) >= MAX_INT) {
+                let dnz = dv1 + dv2 - MAX_INT;
+                //dv1 = dv1 + dv2 - MAX_INT;
                 nd = self.dof_table[2 * dnz];
                 dof = self.dof_table[2 * dnz + 1];
                 if (dof < 3) {
@@ -3253,14 +3237,14 @@ impl Element {
         
         self.get_inst_disp_dfd1(&mut inst_disp, glob_disp, inst_ori_mat, loc_ori, x_glob,  n_lgeom,  dv1,  dv2);
         
-        if(dv1 == max_int && dv2 == max_int) {
+        if(dv1 == MAX_INT && dv2 == MAX_INT) {
             mat_mul_ar_dfd1(&mut ux, &mut inst_disp, d_ndx, 3, self.n_dim, 3);
             i1 = 3*self.n_dim;
             mat_mul_ar_dfd1(&mut rx, &mut inst_disp[i1..], d_ndx, 3, self.n_dim, 3);
             mat_mul_ar_dfd1(&mut rot, &mut inst_disp[i1..], n_vec, 3, self.n_dim, 1);
-        } else if((dv1 + dv2) >= max_int) {
-            let dnz = dv1 + dv2 - max_int;
-            //dv1 = dv1 + dv2 - max_int;
+        } else if((dv1 + dv2) >= MAX_INT) {
+            let dnz = dv1 + dv2 - MAX_INT;
+            //dv1 = dv1 + dv2 - MAX_INT;
             nd = self.dof_table[2*dnz];
             dof = self.dof_table[2*dnz+1];
             if(dof < 3) {
@@ -3432,7 +3416,7 @@ impl Element {
         for i1 in 0..9 {
             strn_mat[i1].set_val(0.0);
         }
-        if(dv1 == max_int && dv2 == max_int) {
+        if(dv1 == MAX_INT && dv2 == MAX_INT) {
             vec_to_ar_dfd1(&mut tmp_ori, loc_ori,  0,  9);
             mat_mul_ar_dfd1(&mut ux_l, &mut tmp_ori, ux, 3, 3, 3);
             for i1 in 0..3 {
@@ -3456,8 +3440,8 @@ impl Element {
                     i5 +=  3;
                 }
             }
-        } else if((dv1 + dv2) >= max_int) {
-            if(dv1 < max_int) {
+        } else if((dv1 + dv2) >= MAX_INT) {
+            if(dv1 < MAX_INT) {
                 nd = self.dof_table[2*dv1];
                 dof = self.dof_table[2*dv1+1];
             } else {
@@ -3561,7 +3545,7 @@ impl Element {
                 self.get_inst_ori_dfd1(&mut pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_disp,  2);
             }
             
-            self.get_section_def_dfd1(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  max_int,  max_int);
+            self.get_section_def_dfd1(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  MAX_INT,  MAX_INT);
             
             sect_strn[0].set_val_dfd1(& sec_def[0]);
             tmp.set_val_dfd1(& pre.layer_z[layer]);
@@ -3607,7 +3591,7 @@ impl Element {
         } else if(self.this_type != 2) {
             vec_to_ar_dfd1(&mut tmp_ar, &mut  pre.glob_disp,  0,  60);
             mat_mul_ar_dfd1(&mut ux, &mut  tmp_ar, &mut  d_ndx,  3,  self.n_dim,  3);
-            self.get_solid_strain_dfd1(strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  max_int,  max_int,  n_lgeom);
+            self.get_solid_strain_dfd1(strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  MAX_INT,  MAX_INT,  n_lgeom);
             for i1 in 0..6 {
                 tmp.set_val_dfd1(& pre.therm_exp[i1]);
                 tmp.mult(& ip_temp);
@@ -3657,7 +3641,7 @@ impl Element {
             
             self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
             for i1 in 0..tot_dof {
-                self.get_section_def_dfd1(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  max_int);
+                self.get_section_def_dfd1(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  MAX_INT);
                 
                 sect_strn[0].set_val_dfd1(& sec_def[0]);
                 tmp.set_val_dfd1(& pre.layer_z[layer]);
@@ -3704,7 +3688,7 @@ impl Element {
             mat_mul_ar_dfd1(&mut ux, &mut  tmp_ar, &mut  d_ndx,  3,  self.n_dim,  3);
             vec_to_ar_dfd1(&mut tmp_ar, &mut  pre.cmat,  0,  36);
             for i1 in 0..tot_dof {
-                self.get_solid_strain_dfd1(&mut d_strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  i1,  max_int,  n_lgeom);
+                self.get_solid_strain_dfd1(&mut d_strain, &mut  ux, &mut  d_ndx, &mut  pre.loc_ori,  i1,  MAX_INT,  n_lgeom);
                 mat_mul_ar_dfd1(&mut d_stress, &mut  tmp_ar, &mut  d_strain,  6,  6,  1);
                 i3 = i1;
                 for i2 in 0..6 {
@@ -3746,7 +3730,7 @@ impl Element {
         }
         
         self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
-        self.get_section_def_dfd1(def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  max_int,  max_int);
+        self.get_section_def_dfd1(def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  MAX_INT,  MAX_INT);
         
         pt_temp.set_val(0.0);
         for i1 in 0..self.num_nds {
@@ -3790,7 +3774,7 @@ impl Element {
         self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
         tot_dof = self.num_nds * self.dof_per_nd + self.num_int_dof;
         for i1 in 0..tot_dof {
-            self.get_section_def_dfd1(&mut def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  max_int);
+            self.get_section_def_dfd1(&mut def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  MAX_INT);
             i2 = i1;
             for i3 in 0..self.def_dim {
                 d_defd_u[i2].set_val_dfd1(& def[i3]);

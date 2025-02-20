@@ -73,4 +73,4 @@ myJob.writeObjective('staticElastic/results/objectiveResults.yaml')
 
 myJob.writeJobInput('staticElastic/staticElasticJob.yaml')
 
-myJob.executeJob()
+#myJob.executeJob()

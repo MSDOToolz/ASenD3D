@@ -1,6 +1,4 @@
 use crate::diff_doub::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 use crate::fmath::*;
 
 impl DiffDoub0 {

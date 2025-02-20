@@ -84,7 +84,7 @@ impl Layer {
     pub fn new() -> Layer {
         Layer {
             mat_name : CppStr::new(),
-            mat_ptr : max_int,
+            mat_ptr : MAX_INT,
             thickness : 0f64,
             angle : 0f64,
         }
@@ -140,9 +140,9 @@ impl Section {
             el_set_name : CppStr::new(),
             mat_name : CppStr::new(),
             fl_name : CppStr::new(),
-            mat_ptr : max_int,
-            fl_ptr : max_int,
-            orientation : [0f64; 9],
+            mat_ptr : MAX_INT,
+            fl_ptr : MAX_INT,
+            orientation : [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
             z_offset : 0f64,
             layers : LinkedList::new(),
             area : 0f64,

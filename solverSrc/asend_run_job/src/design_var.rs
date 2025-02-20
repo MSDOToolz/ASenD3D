@@ -1,9 +1,6 @@
-use crate::constants::max_int;
-use crate::list_ent::*;
+use crate::constants::MAX_INT;
 use crate::diff_doub::*;
-use crate::nd_el_set::*;
 use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 use std::collections::LinkedList;
 
@@ -31,9 +28,9 @@ impl DesignVariable {
             layer : 0usize,
             active_time : [0f64, 1.0e+100f64],
             el_set_name : CppStr::new(),
-            el_set_ptr : max_int,
+            el_set_ptr : MAX_INT,
             nd_set_name : CppStr::new(),
-            nd_set_ptr : max_int,
+            nd_set_ptr : MAX_INT,
             coefs : LinkedList::new(),
             value : DiffDoub0::new(),
             diff_val : DiffDoub1::new(),

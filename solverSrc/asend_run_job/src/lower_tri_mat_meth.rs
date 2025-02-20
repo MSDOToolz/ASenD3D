@@ -72,7 +72,7 @@ impl LowerTriMat {
         self.max_bandwidth = 0;
         for i1 in 0..self.dim {
             self.size +=  self.range[i1];
-            self.min_col[i1] = i1 - self.range[i1] + 1;
+            self.min_col[i1] = i1 - (self.range[i1] - 1);
             if(self.range[i1] > self.max_bandwidth) {
                 self.max_bandwidth = self.range[i1];
             }
@@ -219,8 +219,8 @@ impl LowerTriMat {
                 stop_row = self.dim;
             }
             for i2 in (i1+1)..stop_row {
-                i3 = self.range[i2] + (i1 - self.min_col[i2]);
-                if(i3 >= self.range[i2] && i3 < self.range[i2+1]) {
+                if (i1 >= self.min_col[i2]) {
+                    i3 = self.range[i2] + (i1 - self.min_col[i2]);
                     sum += self.mat[i3]*soln_vec[i2];
                 }
             }

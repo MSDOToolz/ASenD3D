@@ -1,10 +1,4 @@
-use crate::constants::max_int;
-use crate::diff_doub::*;
-use crate::list_ent::*;
-use crate::node::*;
-use crate::design_var::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
+use crate::constants::MAX_INT;
 
 use std::collections::LinkedList;
 
@@ -20,8 +14,8 @@ impl Face {
     pub fn new() -> Face {
         Face {
             num_nds : 0usize,
-            loc_nodes : [max_int; 6],
-            glob_nodes : [max_int; 6],
+            loc_nodes : [MAX_INT; 6],
+            glob_nodes : [MAX_INT; 6],
             on_surf : true,
         }
     }

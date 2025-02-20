@@ -1,4 +1,4 @@
-use crate::constants::max_int;
+use crate::constants::MAX_INT;
 use crate::nd_el_set::*;
 use crate::cpp_str::CppStr;
 use crate::cpp_map::CppMap;
@@ -23,12 +23,12 @@ pub struct Load {
 impl Load {
     pub fn new() -> Load {
         Load {
-            this_type : CppStr::new(),
+            this_type : CppStr::from("none"),
             active_time : [0f64, 1.0e+100f64],
-            node_set : CppStr::new(),
-            nd_set_ptr : max_int,
-            element_set : CppStr::new(),
-            el_set_ptr : max_int,
+            node_set : CppStr::from("none"),
+            nd_set_ptr : MAX_INT,
+            element_set : CppStr::from("none"),
+            el_set_ptr : MAX_INT,
             load : [0f64; 6],
             normal_dir : [0f64; 3],
             norm_tol : 0f64,

@@ -1,10 +1,5 @@
 use crate::design_var::*;
-use crate::constants::*;
-use crate::list_ent::*;
 use crate::diff_doub::*;
-use crate::nd_el_set::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 
 impl DesignVariable {
@@ -25,7 +20,7 @@ impl DesignVariable {
 
     pub fn add_comp_el(&mut self, eli : usize) {
         for el in self.comp_el_list.iter_mut() {
-            if (*el == eli) {
+            if *el == eli {
                 return;
             }
         }

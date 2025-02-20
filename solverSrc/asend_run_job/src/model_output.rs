@@ -75,7 +75,7 @@ impl Model {
         //let mut scmd = &self.job[self.solve_cmd];
         let mut sci = self.solve_cmd;
         
-        if(time_step < max_int) {
+        if(time_step < MAX_INT) {
             // read the results from the time step file and store them in self.nodes
             self.read_time_step_soln(time_step);
             for nd_pt in self.nodes.iter_mut() {
@@ -146,7 +146,7 @@ impl Model {
                     ndof = nd_pt.num_dof;
                     for i1 in 0..ndof {
                         glob_ind = nd_pt.dof_index[i1];
-                        out_file.write(format!("{}{}", ", " , -self.elastic_ld_vec[glob_ind]).as_bytes());
+                        out_file.write(format!("{0}{1:.12e}", ", " , -self.elastic_ld_vec[glob_ind]).as_bytes());
                     }
                     out_file.write(format!("{}", "]\n").as_bytes());
                 }
@@ -161,7 +161,7 @@ impl Model {
                     nd_pt = &self.nodes[*nd_label];
                     out_file.write(format!("{}{}", "        - [" , *nd_label).as_bytes());
                     glob_ind = nd_pt.sorted_rank;
-                    out_file.write(format!("{}{}{}", ", " , -self.therm_ld_vec[glob_ind] , "\n").as_bytes());
+                    out_file.write(format!("{0}{1:.12e}{2}", ", " , -self.therm_ld_vec[glob_ind] , "\n").as_bytes());
                 }
             }
             else {
@@ -172,31 +172,31 @@ impl Model {
                     if (this_field.s == "displacement") {
                         ndof = nd_pt.num_dof;
                         for i1 in 0..ndof {
-                            out_file.write(format!("{}{}", ", " , nd_pt.displacement[i1]).as_bytes());
+                            out_file.write(format!("{0}{1:.12e}", ", " , nd_pt.displacement[i1]).as_bytes());
                         }
                         out_file.write(format!("{}", "]\n").as_bytes());
                     }
                     else if (this_field.s == "velocity") {
                         ndof = nd_pt.num_dof;
                         for i1 in 0..ndof {
-                            out_file.write(format!("{}{}", ", " , nd_pt.velocity[i1]).as_bytes());
+                            out_file.write(format!("{0}{1:.12e}", ", " , nd_pt.velocity[i1]).as_bytes());
                         }
                         out_file.write(format!("{}", "]\n").as_bytes());
                     }
                     else if (this_field.s == "acceleration") {
                         ndof = nd_pt.num_dof;
                         for i1 in 0..ndof {
-                            out_file.write(format!("{}{}", ", " , nd_pt.acceleration[i1]).as_bytes());
+                            out_file.write(format!("{0}{1:.12e}", ", " , nd_pt.acceleration[i1]).as_bytes());
                         }
                         out_file.write(format!("{}", "]\n").as_bytes());
                     }
                     else if (this_field.s == "temperature") {
                         nd_dat[0] = nd_pt.temperature;
-                        out_file.write(format!("{}{}{}", ", " , nd_dat[0] , "]\n").as_bytes());
+                        out_file.write(format!("{0}{1:.12e}{2}", ", " , nd_dat[0] , "]\n").as_bytes());
                     }
                     else if (this_field.s == "tdot") {
                         nd_dat[0] = nd_pt.temp_change_rate;
-                        out_file.write(format!("{}{}{}", ", " , nd_dat[0] , "]\n").as_bytes());
+                        out_file.write(format!("{0}{1:.12e}{2}", ", " , nd_dat[0] , "]\n").as_bytes());
                     }
                 }
             }
@@ -229,7 +229,7 @@ impl Model {
         //let mut scmd = &self.job[self.solve_cmd];
         let sci = self.solve_cmd;
         
-        if (time_step < max_int) {
+        if (time_step < MAX_INT) {
             // read the results from the time step file and store them in self.nodes
             self.read_time_step_soln(time_step);
             for nd_pt in self.nodes.iter_mut() {
@@ -293,17 +293,17 @@ impl Model {
             out_file.write(format!("{}{}{}", "    " , this_field.s , ":\n").as_bytes());
             field_list = CppStr::from("stress strain");
             i2 = field_list.find(this_field.s.as_str());
-            if (i2 < max_int) {
+            if (i2 < MAX_INT) {
                 out_file.write(format!("{}", "    ##  - [element label, integration pt, layer, S11, S22, S33, S12, S13, S23]\n").as_bytes());
             }
             field_list = CppStr::from("strainEnergyDen");
             i2 = field_list.find(this_field.s.as_str());
-            if (i2 < max_int) {
+            if (i2 < MAX_INT) {
                 out_file.write(format!("{}", "    ##  - [element label, integration pt, layer, strain energy]\n").as_bytes());
             }
             field_list = CppStr::from("sectionDef sectionFrcMom");
             i2 = field_list.find(this_field.s.as_str());
-            if (i2 < max_int) {
+            if (i2 < MAX_INT) {
                 out_file.write(format!("{}", "    ## for shells:  - [element label, integration pt, S11, S22, S12, K11, K22, K12]\n").as_bytes());
                 out_file.write(format!("{}", "    ## for beams:  - [element label, integration pt, S11, S12, S13, K11, K12, K13]\n").as_bytes());
             }
@@ -321,7 +321,7 @@ impl Model {
                 
                 field_list = CppStr::from("stress strain strainEnergyDen");
                 i2 = field_list.find(&this_field.s.as_str());
-                if (i2 < max_int) {
+                if (i2 < MAX_INT) {
                     el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                     if (position.s == "intPts") {
                         num_ip = el_pt.num_ip;
@@ -343,15 +343,15 @@ impl Model {
                             el_pt.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut int_pts[(3*i1)..],  i2,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
                             out_file.write(format!("{}{}{}", "        - [" , el_label , ", ").as_bytes());
                             if (this_field.s == "strain") {
-                                out_file.write(format!("{}{}{}{}{}", i1 , ", " , i2 , ", " , strain[0].val).as_bytes());
+                                out_file.write(format!("{0}{1}{2}{3}{4:.12e}", i1 , ", " , i2 , ", " , strain[0].val).as_bytes());
                                 for i3 in 1..6 {
-                                    out_file.write(format!("{}{}", ", " , strain[i3].val).as_bytes());
+                                    out_file.write(format!("{0}{1:.12e}", ", " , strain[i3].val).as_bytes());
                                 }
                                 out_file.write(format!("{}", "]\n").as_bytes());
                             } else if(this_field.s == "stress") {
-                                out_file.write(format!("{}{}{}{}{}", i1 , ", " , i2 , ", " , stress[0].val).as_bytes());
+                                out_file.write(format!("{0}{1}{2}{3}{4:.12e}", i1 , ", " , i2 , ", " , stress[0].val).as_bytes());
                                 for i3 in 1..6 {
-                                    out_file.write(format!("{}{}", ", " , stress[i3].val).as_bytes());
+                                    out_file.write(format!("{0}{1:.12e}", ", " , stress[i3].val).as_bytes());
                                 }
                                 out_file.write(format!("{}", "]\n").as_bytes());
                             } else {
@@ -360,7 +360,7 @@ impl Model {
                                     seden  +=  stress[i3].val * strain[i3].val;
                                 }
                                 seden  *=  0.5;
-                                out_file.write(format!("{}{}{}{}{}{}", i1 , ", " , i2 , ", " , seden , "]\n").as_bytes());
+                                out_file.write(format!("{0}{1}{2}{3}{4:.12e}{5}", i1 , ", " , i2 , ", " , seden , "]\n").as_bytes());
                             }
                         }
                     }
@@ -368,7 +368,7 @@ impl Model {
                 
                 field_list = CppStr::from("sectionDef sectionFrcMom");
                 i2 = field_list.find(&this_field.s.as_str());
-                if (i2 < max_int && el_pt.dof_per_nd == 6) {
+                if (i2 < MAX_INT && el_pt.dof_per_nd == 6) {
                     el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                     if (position.s == "intPts") {
                         num_ip = el_pt.num_ip;
@@ -385,16 +385,16 @@ impl Model {
                         el_pt.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut int_pts[(3*i1)..],  self.job[sci].nonlinear_geom, &mut self.d0_pre);
                         out_file.write(format!("{}{}{}", "        - [" , el_label , ", ").as_bytes());
                         if (this_field.s == "sectionDef") {
-                            out_file.write(format!("{}{}{}", i1 , ", " , def[0].val).as_bytes());
+                            out_file.write(format!("{0}{1}{2:.12e}", i1 , ", " , def[0].val).as_bytes());
                             for i3 in 1..6 {
-                                out_file.write(format!("{}{}", ", " , def[i3].val).as_bytes());
+                                out_file.write(format!("{0}{1:.12e}", ", " , def[i3].val).as_bytes());
                             }
-                            out_file.write(format!("{}", "]\n").as_bytes());
+                            out_file.write(format!("{0}", "]\n").as_bytes());
                         }
                         else if (this_field.s == "sectionFrcMom") {
-                            out_file.write(format!("{}{}{}", i1 , ", " , frc_mom[0].val).as_bytes());
+                            out_file.write(format!("{0}{1}{2:.12e}", i1 , ", " , frc_mom[0].val).as_bytes());
                             for i3 in 1..6 {
-                                out_file.write(format!("{}{}", ", " , frc_mom[i3].val).as_bytes());
+                                out_file.write(format!("{0}{1:.12e}", ", " , frc_mom[i3].val).as_bytes());
                             }
                             out_file.write(format!("{}", "]\n").as_bytes());
                         }
@@ -403,7 +403,7 @@ impl Model {
                 
                 field_list = CppStr::from("tempGradient heatFlux");
                 i2 = field_list.find(&this_field.s.as_str());
-                if (i2 < max_int) {
+                if (i2 < MAX_INT) {
                     el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                     if (position.s == "intPts") {
                         num_ip = el_pt.num_ip;
@@ -427,10 +427,10 @@ impl Model {
                             el_pt.get_flux_tgrad_dfd0(&mut flux, &mut t_grad, &mut int_pts[(3*i1)..],  i2, &mut self.d0_pre);
                             out_file.write(format!("{}{}{}{}{}{}{}", "        - [" , el_label , ", " , i1 , ", " , i2 , ", ").as_bytes());
                             if (this_field.s == "tempGradient") {
-                                out_file.write(format!("{}{}{}{}{}{}", t_grad[0].val , ", " , t_grad[1].val , ", " , t_grad[2].val , "]\n").as_bytes());
+                                out_file.write(format!("{0:.12e}{1}{2:.12e}{3}{4:.12e}{5}", t_grad[0].val , ", " , t_grad[1].val , ", " , t_grad[2].val , "]\n").as_bytes());
                             }
                             else if (this_field.s == "heatFlux") {
-                                out_file.write(format!("{}{}{}{}{}{}", flux[0].val , ", " , flux[1].val , ", " , flux[2].val , "]\n").as_bytes());
+                                out_file.write(format!("{0:.12e}{1}{2:.12e}{3}{4:.12e}{5}", flux[0].val , ", " , flux[1].val , ", " , flux[2].val , "]\n").as_bytes());
                             }
                         }
                     }
@@ -460,7 +460,7 @@ impl Model {
         out_file.write(format!("{}", "modalResults:\n").as_bytes());
         out_file.write(format!("{}", "    eigenValues:\n").as_bytes());
         for i1 in 0..n_mds {
-            out_file.write(format!("{}{}{}", "      - " , self.eig_vals[i1] , "\n").as_bytes());
+            out_file.write(format!("{0}{1:.12e}{2}", "      - " , self.eig_vals[i1] , "\n").as_bytes());
         }
         if (mcmd.this_type.s == "buckling") {
             out_file.write(format!("{}", "    loadFactors:\n").as_bytes());
@@ -469,7 +469,7 @@ impl Model {
             out_file.write(format!("{}", "    frequencies:\n").as_bytes());
         }
         for i1 in 0..n_mds {
-            out_file.write(format!("{}{}{}", "      - " , self.load_fact[i1] , "\n").as_bytes());
+            out_file.write(format!("{0}{1:.12e}{2}", "      - " , self.load_fact[i1] , "\n").as_bytes());
         }
         
         if (mcmd.write_modes) {
@@ -484,7 +484,7 @@ impl Model {
                     for i2 in 0..dof_per_nd {
                         glob_ind = this_nd.dof_index[i2];
                         i3 = i1 * self.el_mat_dim + glob_ind;
-                        out_file.write(format!("{}{}", ", " , self.eig_vecs[i3]).as_bytes());
+                        out_file.write(format!("{0}{1:.12e}", ", " , self.eig_vecs[i3]).as_bytes());
                     }
                     out_file.write(format!("{}", "]\n").as_bytes());
                 }
@@ -511,7 +511,7 @@ impl Model {
         tot_obj = 0.0;
         for this_term in self.obj.terms.iter_mut() {
             this_val = this_term.value;
-            out_file.write(format!("{}{}{}", "        - value: " , this_val , "\n").as_bytes());
+            out_file.write(format!("{0}{1:.12e}{2}", "        - value: " , this_val , "\n").as_bytes());
             for fld_str in include_fields.iter_mut() {
                 if (fld_str.s == "category") {
                     out_file.write(format!("{}{}{}", "          category: " , this_term.category.s , "\n").as_bytes());
@@ -526,10 +526,10 @@ impl Model {
                     out_file.write(format!("{}{}{}", "          Layer: " , this_term.layer , "\n").as_bytes());
                 }
                 else if (fld_str.s == "coefficient") {
-                    out_file.write(format!("{}{}{}", "          coefficient: " , this_term.coef , "\n").as_bytes());
+                    out_file.write(format!("{0}{1:.12e}{2}", "          coefficient: " , this_term.coef , "\n").as_bytes());
                 }
                 else if (fld_str.s == "exponent") {
-                    out_file.write(format!("{}{}{}", "          exponent: " , this_term.expnt , "\n").as_bytes());
+                    out_file.write(format!("{0}{1:.12e}{2}", "          exponent: " , this_term.expnt , "\n").as_bytes());
                 }
                 else if (fld_str.s == "elementSet") {
                     out_file.write(format!("{}{}{}", "          elementSet: " , this_term.el_set_name.s , "\n").as_bytes());
@@ -538,17 +538,17 @@ impl Model {
                     out_file.write(format!("{}{}{}", "          nodeSet: " , this_term.nd_set_name.s , "\n").as_bytes());
                 }
                 else if (fld_str.s == "activeTime") {
-                    out_file.write(format!("{}{}{}{}{}", "          activeTime: [" , this_term.active_time[0] , ", " , this_term.active_time[1] , "]\n").as_bytes());
+                    out_file.write(format!("{0}{1:.12e}{2}{3:.12e}{4}", "          activeTime: [" , this_term.active_time[0] , ", " , this_term.active_time[1] , "]\n").as_bytes());
                 }
             }
             tot_obj  +=  this_val;
         }
-        out_file.write(format!("{}{}{}", "    totalValue: " , tot_obj , "\n").as_bytes());
+        out_file.write(format!("{0}{1:.12e}{2}", "    totalValue: " , tot_obj , "\n").as_bytes());
         if (write_grad) {
             out_file.write(format!("{}", "objectiveGradient:\n").as_bytes());
             num_dv = self.design_vars.len();
             for i1 in 0..num_dv {
-                out_file.write(format!("{}{}{}{}{}", "    - [" , i1 , ", " , self.d_ld_d[i1] , "]\n").as_bytes());
+                out_file.write(format!("{0}{1}{2}{3:.12e}{4}", "    - [" , i1 , ", " , self.d_ld_d[i1] , "]\n").as_bytes());
             }
         }
         

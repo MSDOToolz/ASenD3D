@@ -1,10 +1,6 @@
 use crate::constraint::*;
-use crate::constants::*;
-use crate::list_ent::*;
 use crate::nd_el_set::*;
 use crate::node::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 use std::collections::LinkedList;
 
@@ -17,15 +13,13 @@ impl Constraint {
         let mut col : usize;
         let mut dof : usize;
         let mut coef : f64;
-        let mut set_nm = CppStr::new();
-        let mut set_found : bool;
         let mut this_set : usize;
         let mut set_labs : &LinkedList<usize>;
         
         for tm in self.terms.iter_mut() {
             this_set = tm.ns_ptr;
             seti_len = set_ar[this_set].labels.len();
-            if (seti_len > set_len) {
+            if seti_len > set_len {
                 set_len = seti_len;
             }
         }
@@ -36,12 +30,12 @@ impl Constraint {
             dof = tm.dof;
             this_set = tm.ns_ptr;
             set_labs = &set_ar[this_set].labels;
-            if (set_labs.len() == 1) {
+            if set_labs.len() == 1 {
                 nd_index = match set_labs.front() {
                     None => 0usize,
                     Some(x) => *x,
                 };
-                if (self.this_type.s == "displacement") {
+                if self.this_type.s == "displacement" {
                     col = nd_ar[nd_index].dof_index[dof - 1];
                 }
                 else {
@@ -54,7 +48,7 @@ impl Constraint {
             else {
                 row = 0;
                 for nd in set_labs.iter() {
-                    if (self.this_type.s == "displacement") {
+                    if self.this_type.s == "displacement" {
                         col = nd_ar[*nd].dof_index[dof - 1];
                     }
                     else {
@@ -70,7 +64,6 @@ impl Constraint {
 
     pub fn full_vec_multiply(&mut self, prod : &mut Vec<f64>, vec : &mut Vec<f64>, tmp_v : &mut Vec<f64>) {
         // compute self.scale_fact*[self.mat]^t*([self.mat]*vec + q_vec)
-        let mut i1 : usize;
         for tv in tmp_v.iter_mut() {
             *tv = 0.0;
         }
@@ -82,9 +75,8 @@ impl Constraint {
         return;
     }
 
-    pub fn get_load(&mut self, c_ld : &mut Vec<f64>, u_vec : &mut Vec<f64>, q_vec : &mut Vec<f64>, res_dim : usize) {
-        let mut i1 : usize;
-        let mut dim : usize =  self.mat.dim;
+    pub fn get_load(&mut self, c_ld : &mut Vec<f64>, u_vec : &mut Vec<f64>, q_vec : &mut Vec<f64>) {
+        let dim : usize = self.mat.dim;
         for i1 in 0..dim {
             q_vec[i1] = -self.rhs;
         }
@@ -123,9 +115,9 @@ impl ConstraintList {
         return;
     }
 
-    pub fn get_total_load(&mut self, c_ld : &mut Vec<f64>, u_vec : &mut Vec<f64>, q_vec : &mut Vec<f64>, res_dim : usize) {
+    pub fn get_total_load(&mut self, c_ld : &mut Vec<f64>, u_vec : &mut Vec<f64>, q_vec : &mut Vec<f64>) {
         for cnst in self.const_vec.iter_mut() {
-            cnst.get_load(c_ld, u_vec, q_vec, res_dim);
+            cnst.get_load(c_ld, u_vec, q_vec);
         }
         return;
     }
