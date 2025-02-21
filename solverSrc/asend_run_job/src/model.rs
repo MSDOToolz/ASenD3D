@@ -13,7 +13,6 @@ use crate::design_var::*;
 use crate::objective::*;
 use crate::diff_doub::*;
 use crate::scratch::*;
-use crate::cpp_str::CppStr;
 use crate::cpp_map::CppMap;
 
 use std::collections::LinkedList;
@@ -154,11 +153,11 @@ impl Model {
             el_in_d : Vec::new(),
             d_ld_d : Vec::new(),
         };
-        for i in 0..10 {
+        for _i in 0..10 {
             new_mod.d0_scratch.push_back(DiffDoub0Scr::new());
             new_mod.d1_scratch.push_back(DiffDoub1Scr::new());
         }
-        for i in 0..5 {
+        for _i in 0..5 {
             new_mod.scratch.push_back(FltScr::new());
         }
         new_mod

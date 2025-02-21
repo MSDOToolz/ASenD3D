@@ -1,13 +1,11 @@
 use crate::element::*;
 use crate::constants::*;
 use crate::diff_doub::*;
-use crate::list_ent::*;
 use crate::design_var::*;
 use crate::node::*;
 use crate::section::*;
 use crate::matrix_functions::*;
 use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 
 impl Element {
@@ -22,7 +20,7 @@ impl Element {
         for dv in self.design_vars.iter() {
             d_vind = dv.int_dat;
             this_dv = & dv_ar[d_vind];
-            if (this_dv.category.s == prop_key.s) {
+            if this_dv.category.s == prop_key.s {
                 this_dv.get_value_dfd0(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -47,12 +45,12 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         tot_thk.set_val(0.0);
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             lay_thk[layi].set_val(lay.thickness);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thickness" && this_dv.layer == layi) {
+                if this_dv.category.s == "thickness" && this_dv.layer == layi {
                     this_dv.get_value_dfd0(&mut dv_val);
                     coef.set_val(dv.doub_dat);
                     dv_val.mult(& coef);
@@ -66,7 +64,7 @@ impl Element {
         z_offset.set_val(this_sec.z_offset);
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "zOffset") {
+            if this_dv.category.s == "zOffset" {
                 this_dv.get_value_dfd0(&mut dv_val);
                 coef.set_val(dv.doub_dat);
                 dv_val.mult(& coef);
@@ -81,7 +79,7 @@ impl Element {
         z_crd.mult(& tmp);
         
         layi = 0;
-        for lay in this_sec.layers.iter() {
+        for _lay in this_sec.layers.iter() {
             z_next.set_val_dfd0(& z_crd);
             z_next.add(& lay_thk[layi]);
             tmp.set_val_dfd0(& z_crd);
@@ -97,7 +95,6 @@ impl Element {
     }
 
     pub fn get_layer_q_dfd0(&self, lay_q : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut layi : usize;
         let mut dv_ind : usize;
@@ -111,14 +108,14 @@ impl Element {
         let mut coef = DiffDoub0::new();
         let mut x_vec = [DiffDoub0::new(); 3];
         let mut b_vec = [DiffDoub0::new(); 3];
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         let mut this_mat : &Material;
         let mut tmp = DiffDoub0::new();
         
         i2 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..3 {
@@ -129,23 +126,23 @@ impl Element {
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.layer == layi) {
+                if this_dv.layer == layi {
                     dv_cat = this_dv.category.clone();
-                    if (dv_cat.s == "modulus") {
+                    if dv_cat.s == "modulus" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd0(&mut dv_val);
                         dv_val.mult(& coef);
                         modulus_dv[dv_comp - 1].add(& dv_val);
                     }
-                    else if (dv_cat.s == "poissonRatio") {
+                    else if dv_cat.s == "poissonRatio" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd0(&mut dv_val);
                         dv_val.mult(& coef);
                         poisson_dv[dv_comp - 1].add(& dv_val);
                     }
-                    else if (dv_cat.s == "shearModulus") {
+                    else if dv_cat.s == "shearModulus" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd0(&mut dv_val);
@@ -183,10 +180,7 @@ impl Element {
     }
 
     pub fn get_layer_d_dfd0(&self, lay_d : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
-        let mut i3 : usize;
-        let mut i4 : usize;
         let mut i5 : usize;
         let mut i6 : usize;
         let mut layi : usize;
@@ -195,14 +189,14 @@ impl Element {
         let mut damp_mat_dv = [DiffDoub0::new(); 36];
         let mut dv_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         let mut this_mat : &Material;
         let mut tmp = DiffDoub0::new();
         
         i2 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..36 {
@@ -211,9 +205,9 @@ impl Element {
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.layer == layi) {
+                if this_dv.layer == layi {
                     dv_cat = this_dv.category.clone();
-                    if (dv_cat.s == "dampingMat") {
+                    if dv_cat.s == "dampingMat" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd0(&mut dv_val);
@@ -226,7 +220,7 @@ impl Element {
             for i3 in 1..6 {
                 i5 = 6 * i3;// lower tri term
                 i6 = i3;// upper tri term
-                for i4 in 0..i3 {
+                for _i4 in 0..i3 {
                     tmp.set_val_dfd0(& damp_mat_dv[i6]);
                     damp_mat_dv[i5].set_val_dfd0(& tmp);
                     i5 += 1usize;
@@ -251,26 +245,24 @@ impl Element {
     }
 
     pub fn get_layer_angle_dfd0(&self, lay_ang : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i2 : usize;
         let mut layi : usize;
         let mut dv_ind : usize;
         let mut angle = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        i2 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             angle.set_val(lay.angle);
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.layer == layi) {
+                if this_dv.layer == layi {
                     dv_cat = this_dv.category.clone();
-                    if (dv_cat.s == "angle") {
+                    if dv_cat.s == "angle" {
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd0(&mut dv_val);
                         dv_val.mult(& coef);
@@ -287,7 +279,6 @@ impl Element {
     }
 
     pub fn get_layer_th_exp_dfd0(&self, lay_th_exp : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut layi : usize;
         let mut t_exp_dv = [DiffDoub0::new(); 6];
@@ -299,7 +290,7 @@ impl Element {
         
         layi = 0;
         i2 = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..6 {
@@ -307,7 +298,7 @@ impl Element {
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thermalExp" && this_dv.layer == layi) {
+                if this_dv.category.s == "thermalExp" && this_dv.layer == layi {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -327,7 +318,6 @@ impl Element {
     }
 
     pub fn get_layer_einit_dfd0(&self, lay_einit : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut layi : usize;
         let mut e0_dv = [DiffDoub0::new(); 6];
@@ -338,14 +328,14 @@ impl Element {
         
         layi = 0;
         i2 = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        for lay in this_sec.layers.iter() {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        for _lay in this_sec.layers.iter() {
             for i1 in 0..6 {
                 e0_dv[i1].set_val(0.0);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "initialStrain" && this_dv.layer == layi) {
+                if this_dv.category.s == "initialStrain" && this_dv.layer == layi {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -373,13 +363,13 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             mat_den = mat_ar[lay.mat_ptr].density;
             den_dv.set_val(mat_den);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "density" && this_dv.layer == layi) {
+                if this_dv.category.s == "density" && this_dv.layer == layi {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -395,7 +385,6 @@ impl Element {
 
     pub fn get_layer_cond_dfd0(&self, lay_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut i1 : usize;
-        let mut i2 : usize;
         let mut layi : usize;
         let mut cond_dv = [DiffDoub0::new(); 6];
         let mut tmp = DiffDoub0::new();
@@ -406,7 +395,7 @@ impl Element {
         
         i1 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i2 in 0..6 {
@@ -414,7 +403,7 @@ impl Element {
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thermalCond" && this_dv.layer == layi) {
+                if this_dv.category.s == "thermalCond" && this_dv.layer == layi {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -447,13 +436,13 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             mat_sh = mat_ar[lay.mat_ptr].spec_heat;
             sh_dv.set_val(mat_sh);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "specHeat" && this_dv.layer == layi) {
+                if this_dv.category.s == "specHeat" && this_dv.layer == layi {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -517,7 +506,6 @@ impl Element {
     }
 
     pub fn transform_q_dfd0(&self, q_new : &mut [DiffDoub0], q_orig : &mut [DiffDoub0], angle : &mut DiffDoub0) {
-        let mut i1 : usize;
         let mut angle_rad = DiffDoub0::new();
         let mut a11 = DiffDoub0::new();
         let mut a12 = DiffDoub0::new();
@@ -585,8 +573,6 @@ impl Element {
     }
 
     pub fn get_solid_stiff_dfd0(&self, cmat : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
         let mut dv_ind : usize;
@@ -600,21 +586,21 @@ impl Element {
         let mut coef = DiffDoub0::new();
         let mut x_vec = [DiffDoub0::new(); 6];
         let mut b_vec = [DiffDoub0::new(); 6];
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub0::new();
         
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_mat.stiffness[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_mat.stiffness[0] > 0.0 {
             for i1 in 0..36 {
                 cmat[i1].set_val(this_mat.stiffness[i1]);
             }
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.category.s == "stiffnessMat") {
+                if this_dv.category.s == "stiffnessMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -625,7 +611,7 @@ impl Element {
             for i1 in 1..6 {
                 i4 = 6 * i1;
                 i5 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd0(& cmat[i5]);
                     cmat[i4].set_val_dfd0(& tmp);
                     i4 += 1usize;
@@ -643,21 +629,21 @@ impl Element {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
                 dv_cat = this_dv.category.clone();
-                if (dv_cat.s == "modulus") {
+                if dv_cat.s == "modulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     modulus_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (dv_cat.s == "poissonRatio") {
+                else if dv_cat.s == "poissonRatio" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     poisson_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (dv_cat.s == "shearModulus") {
+                else if dv_cat.s == "shearModulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -705,13 +691,12 @@ impl Element {
     }
 
     pub fn get_abd_dfd0(&self, cmat : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_z : &mut Vec<DiffDoub0>, lay_q : &mut Vec<DiffDoub0>, lay_ang : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
         let mut i6 : usize;
-        let mut num_lay : usize;
+        let num_lay : usize;
         let mut z_max = DiffDoub0::new();
         let mut z_min = DiffDoub0::new();
         let mut thk = DiffDoub0::new();
@@ -740,7 +725,7 @@ impl Element {
             for i3 in 0..3 {
                 i5 = 9 * i3;
                 i6 = 3 * i3;
-                for i4 in 0..3 {
+                for _i4 in 0..3 {
                     tmp2.set_val_dfd0(& tmp);
                     tmp2.mult(& qmat[i6]);
                     cmat[i5].add(& tmp2);
@@ -760,7 +745,7 @@ impl Element {
             for i3 in 0..3 {
                 i5 = 9 * i3 + 3;
                 i6 = 3 * i3;
-                for i4 in 0..3 {
+                for _i4 in 0..3 {
                     //i6 = i3*3 + i4;
                     //i5 = i3*9 + (i4 + 3)
                     tmp2.set_val_dfd0(& tmp);
@@ -784,7 +769,7 @@ impl Element {
             for i3 in 0..3 {
                 i5 = 9 * (i3 + 3) + 3;
                 i6 = 3 * i3;
-                for i4 in 0..3 {
+                for _i4 in 0..3 {
                     tmp2.set_val_dfd0(& tmp);
                     tmp2.mult(& qmat[i6]);
                     cmat[i5].add(& tmp2);
@@ -798,7 +783,7 @@ impl Element {
         for i1 in 1..6 {
             i3 = 9 * i1;
             i4 = i1;
-            for i2 in 0..i1 {
+            for _i2 in 0..i1 {
                 //i3 = i1*9 + i2
                 //i4 = i2*9 + i1
                 tmp.set_val_dfd0(& cmat[i4]);
@@ -818,8 +803,6 @@ impl Element {
     }
 
     pub fn get_beam_stiff_dfd0(&self, cmat : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
@@ -832,22 +815,19 @@ impl Element {
         let mut jdv = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
-        let mut x_vec = [DiffDoub0::new(); 6];
-        let mut b_vec = [DiffDoub0::new(); 6];
-        let mut dv_cat = CppStr::new();
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub0::new();
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.stiffness[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.stiffness[0] > 0.0 {
             for i1 in 0..36 {
                 cmat[i1].set_val(this_sec.stiffness[i1]);
             }
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.category.s == "stiffnessMat") {
+                if this_dv.category.s == "stiffnessMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -858,7 +838,7 @@ impl Element {
             for i1 in 1..6 {
                 i4 = 6 * i1;
                 i5 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd0(& cmat[i5]);
                     cmat[i4].set_val_dfd0(& tmp);
                     i4 += 1usize;
@@ -879,36 +859,34 @@ impl Element {
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.category.s == "modulus") {
+                if this_dv.category.s == "modulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     modulus_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "shearModulus") {
+                else if this_dv.category.s == "shearModulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     shear_mod_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "area") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "area" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     area_dv.add(& dv_val);
                 }
-                else if (this_dv.category.s == "areaMoment") {
+                else if this_dv.category.s == "areaMoment" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     idv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "polarMoment") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "polarMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
@@ -918,7 +896,7 @@ impl Element {
             
             for i1 in 0..6 {
                 i3 = 7 * i1;
-                for i2 in i1..6 {
+                for _i2 in i1..6 {
                     cmat[i3].set_val(0.0);
                     i3 += 1usize;
                 }
@@ -953,7 +931,7 @@ impl Element {
             for i1 in 1..6 {
                 i3 = 6 * i1;
                 i4 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd0(& cmat[i4]);
                     cmat[i3].set_val_dfd0(& tmp);
                     i3 += 1usize;
@@ -966,15 +944,13 @@ impl Element {
     }
 
     pub fn get_thermal_exp_dfd0(&self, th_exp : &mut Vec<DiffDoub0>, einit : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        
         let mut dv_comp : usize;
         let mut dv_val = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec = &sec_ar[self.sect_ptr];
-        let mut this_mat = &mat_ar[this_sec.mat_ptr];
+        let this_sec = &sec_ar[self.sect_ptr];
+        let this_mat = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             th_exp[i1].set_val(this_mat.expansion[i1]);
             einit[i1].set_val(0.0);
@@ -982,14 +958,14 @@ impl Element {
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "thermalExp") {
+            if this_dv.category.s == "thermalExp" {
                 dv_comp = this_dv.component - 1;
                 tmp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd0(&mut dv_val);
                 dv_val.mult(& tmp);
                 th_exp[dv_comp].add(& dv_val);
             }
-            else if (this_dv.category.s == "initialStrain") {
+            else if this_dv.category.s == "initialStrain" {
                 dv_comp = this_dv.component - 1;
                 tmp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd0(&mut dv_val);
@@ -1002,9 +978,7 @@ impl Element {
     }
 
     pub fn get_shell_exp_load_dfd0(&self, exp_ld : &mut Vec<DiffDoub0>, e0_ld : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_z : &mut Vec<DiffDoub0>, lay_q : &mut Vec<DiffDoub0>, lay_th_exp : &mut Vec<DiffDoub0>, lay_einit : &mut Vec<DiffDoub0>, lay_ang : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
-        let mut i1 : usize;
-        let mut num_lay : usize;
-        let mut layi : usize;
+        let num_lay : usize;
         let mut qi : usize;
         let mut exi : usize;
         let mut sect_q = [DiffDoub0::new(); 9];
@@ -1075,12 +1049,10 @@ impl Element {
     }
 
     pub fn get_beam_exp_load_dfd0(&self, exp_ld : &mut Vec<DiffDoub0>, e0_ld : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut dv_val = DiffDoub0::new();
-        let mut cat = CppStr::new();
-        let mut cat_list = CppStr::new();
-        let mut tmp = DiffDoub0::new();
+        let mut cat : CppStr;
+        let mut cat_list : CppStr;
         let mut dv_comp : usize;
         let mut mod_dv = [DiffDoub0::new(); 3];
         let mut shr_mod_dv = [DiffDoub0::new(); 3];
@@ -1096,9 +1068,9 @@ impl Element {
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub0::new();
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.exp_load_coef[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.exp_load_coef[0] > 0.0 {
             for i1 in 0..6 {
                 exp_ld[i1].set_val(this_sec.exp_load_coef[i1]);
                 e0_ld[i1].set_val(0.0);
@@ -1106,14 +1078,14 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "thermalExp") {
+                if cat.s == "thermalExp" {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
                     exp_ld[dv_comp].add(& dv_val);
                 }
-                else if (cat.s == "initialStrain") {
+                else if cat.s == "initialStrain" {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -1140,27 +1112,27 @@ impl Element {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
                 i2 = cat_list.find(&cat.s.as_str());
-                if (i2 < MAX_INT) {
+                if i2 < MAX_INT {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
-                    if (cat.s == "modulus") {
+                    if cat.s == "modulus" {
                         mod_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "shearModulus") {
+                    else if cat.s == "shearModulus" {
                         shr_mod_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "thermalExp") {
+                    else if cat.s == "thermalExp" {
                         te_coef_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "initialStrain") {
+                    else if cat.s == "initialStrain" {
                         e0_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "area") {
+                    else if cat.s == "area" {
                         area_dv.add(& dv_val);
                     }
-                    else if (cat.s == "areaMoment") {
+                    else if cat.s == "areaMoment" {
                         idv[dv_comp].add(& dv_val);
                     }
                 }
@@ -1204,23 +1176,22 @@ impl Element {
     }
 
     pub fn get_density_dfd0(&self, den : &mut DiffDoub0, layer : usize, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut layi : usize;
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut dv_lay : usize;
         let mut coef = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
-        let mut this_mat : &Material;
+        let this_mat : &Material;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        if (self.this_type == 3 || self.this_type == 41) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        if self.this_type == 3 || self.this_type == 41 {
             this_mat = &mat_ar[this_sec.get_layer_mat_ptr(layer)];
             den.set_val(this_mat.density);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
                 dv_lay = this_dv.layer;
-                if (cat.s == "density" && dv_lay == layer) {
+                if cat.s == "density" && dv_lay == layer {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
@@ -1233,7 +1204,7 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "density") {
+                if cat.s == "density" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
@@ -1245,9 +1216,8 @@ impl Element {
         return;
     }
 
-    pub fn get_shell_mass_dfd0(&self, mmat : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_z : &mut Vec<DiffDoub0>, lay_den : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut layi : usize;
+    pub fn get_shell_mass_dfd0(&self, mmat : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_z : &mut Vec<DiffDoub0>, lay_den : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
+        let i1 : usize;
         let mut tmp = DiffDoub0::new();
         let mut tmp2 = DiffDoub0::new();
         let mut z_min = DiffDoub0::new();
@@ -1303,8 +1273,6 @@ impl Element {
     }
 
     pub fn get_beam_mass_dfd0(&self, mmat : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut dv_comp : usize;
@@ -1312,7 +1280,7 @@ impl Element {
         
         let mut dv_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
-        let mut d_cat = CppStr::new();
+        let mut d_cat : CppStr;
         
         
         let mut den_dv = DiffDoub0::new();
@@ -1322,15 +1290,15 @@ impl Element {
         let mut tmp = DiffDoub0::new();
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.mass[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.mass[0] > 0.0 {
             for i1 in 0..36 {
                 mmat[i1].set_val(this_sec.mass[i1]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "massMat") {
+                if this_dv.category.s == "massMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -1341,7 +1309,7 @@ impl Element {
             for i1 in 1..6 {
                 i3 = 6 * i1;// lower tri term
                 i4 = i1;// upper tri term
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd0(& mmat[i4]);
                     mmat[i3].set_val_dfd0(& tmp);
                     i3 += 1usize;
@@ -1362,26 +1330,26 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 d_cat = this_dv.category.clone();
-                if (d_cat.s == "density") {
+                if d_cat.s == "density" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     den_dv.add(& dv_val);
                 }
-                else if (d_cat.s == "area") {
+                else if d_cat.s == "area" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     area_dv.add(& dv_val);
                 }
-                else if (d_cat.s == "areaMoment") {
+                else if d_cat.s == "areaMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     dv_comp = this_dv.component;
                     idv[dv_comp - 1].add(& dv_val);
                 }
-                else if (d_cat.s == "polarMoment") {
+                else if d_cat.s == "polarMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
@@ -1419,7 +1387,7 @@ impl Element {
             for i1 in 3..6 {
                 i3 = 6 * i1;// lower tri term
                 i4 = i1;// upper tri term
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd0(& mmat[i4]);
                     mmat[i3].set_val_dfd0(& tmp);
                     i3 += 1usize;
@@ -1432,8 +1400,6 @@ impl Element {
     }
 
     pub fn get_solid_damp_dfd0(&self, dmat : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         
@@ -1442,15 +1408,15 @@ impl Element {
         let mut dv_comp : usize;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..36 {
             dmat[i1].set_val(this_mat.damping[i1]);
         }
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "dampingMat") {
+            if this_dv.category.s == "dampingMat" {
                 this_dv.get_value_dfd0(&mut dv_val);
                 dv_comp = this_dv.component;
                 temp.set_val(dv.doub_dat);
@@ -1462,7 +1428,7 @@ impl Element {
         for i1 in 1..6 {
             i3 = 6 * i1;// lower tri term
             i4 = i1;// upper tri term
-            for i2 in 0..i1 {
+            for _i2 in 0..i1 {
                 temp.set_val_dfd0(& dmat[i4]);
                 dmat[i3].set_val_dfd0(& temp);
                 i3 += 1usize;
@@ -1482,12 +1448,9 @@ impl Element {
     }
 
     pub fn get_beam_damp_dfd0(&self, dmat : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
-        let mut dv_ind : usize;
         let mut dv_comp : usize;
         let mut dmat_dv = [DiffDoub0::new(); 36];
         let mut area_dv = DiffDoub0::new();
@@ -1495,21 +1458,18 @@ impl Element {
         let mut jdv = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
-        let mut x_vec = [DiffDoub0::new(); 6];
-        let mut b_vec = [DiffDoub0::new(); 6];
-        let mut dv_cat = CppStr::new();
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub0::new();
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.damping[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.damping[0] > 0.0 {
             for i1 in 0..36 {
                 dmat[i1].set_val(this_sec.damping[i1]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "dampingMat") {
+                if this_dv.category.s == "dampingMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -1520,7 +1480,7 @@ impl Element {
             for i1 in 1..6 {
                 i4 = 6 * i1;
                 i5 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd0(& dmat[i5]);
                     dmat[i4].set_val_dfd0(& tmp);
                     i4 += 1usize;
@@ -1539,29 +1499,27 @@ impl Element {
             jdv.set_val(this_sec.polar_moment);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "dampingMat") {
+                if this_dv.category.s == "dampingMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     dmat_dv[dv_comp].add(& dv_val);
                 }
-                else if (this_dv.category.s == "area") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "area" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     area_dv.add(& dv_val);
                 }
-                else if (this_dv.category.s == "areaMoment") {
+                else if this_dv.category.s == "areaMoment" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
                     idv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "polarMoment") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "polarMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& coef);
@@ -1571,7 +1529,7 @@ impl Element {
             
             for i1 in 0..6 {
                 i3 = 7 * i1;
-                for i2 in i1..6 {
+                for _i2 in i1..6 {
                     dmat[i3].set_val(0.0);
                     i3 += 1usize;
                 }
@@ -1606,7 +1564,7 @@ impl Element {
             for i1 in 1..6 {
                 i3 = 6 * i1;
                 i4 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd0(& dmat[i4]);
                     dmat[i3].set_val_dfd0(& tmp);
                     i3 += 1usize;
@@ -1620,7 +1578,6 @@ impl Element {
     }
 
     pub fn get_conductivity_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut cond_dv = [DiffDoub0::new(); 6];
         
         let mut temp = DiffDoub0::new();
@@ -1628,15 +1585,15 @@ impl Element {
         let mut dv_comp : usize;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             cond_dv[i1].set_val(this_mat.conductivity[i1]);
         }
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "thermalCond") {
+            if this_dv.category.s == "thermalCond" {
                 dv_comp = this_dv.component - 1;
                 temp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd0(&mut dv_val);
@@ -1658,11 +1615,9 @@ impl Element {
         return;
     }
 
-    pub fn get_shell_cond_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_ang : &mut Vec<DiffDoub0>, lay_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
+    pub fn get_shell_cond_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_ang : &mut Vec<DiffDoub0>, lay_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
         let mut i2 : usize;
-        let mut num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
-        let mut cond_dv = [DiffDoub0::new(); 6];
+        let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let mut layer_mat = [DiffDoub0::new(); 9];
         let mut al_mat = [DiffDoub0::new(); 9];
         let mut al_t = [DiffDoub0::new(); 9];
@@ -1703,22 +1658,20 @@ impl Element {
     }
 
     pub fn get_beam_cond_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut cond_dv = DiffDoub0::new();
         let mut area_dv = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.conductivity > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.conductivity > 0.0 {
             cond_dv.set_val(this_sec.conductivity);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thermCond") {
+                if this_dv.category.s == "thermCond" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -1732,13 +1685,13 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "thermCond") {
+                if cat.s == "thermCond" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
                     cond_dv.add(& dv_val);
                 }
-                else if (cat.s == "area") {
+                else if cat.s == "area" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -1760,20 +1713,17 @@ impl Element {
     }
 
     pub fn get_specific_heat_dfd0(&self, spec_heat : &mut DiffDoub0, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut spec_heat_dv = DiffDoub0::new();
         let mut temp = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
-        let mut dv_comp : usize;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         spec_heat.set_val(this_mat.spec_heat);
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "specHeat") {
+            if this_dv.category.s == "specHeat" {
                 temp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd0(&mut dv_val);
                 dv_val.mult(& temp);
@@ -1785,8 +1735,7 @@ impl Element {
     }
 
     pub fn get_shell_spec_heat_dfd0(&self, spec_heat : &mut DiffDoub0, lay_thk : &mut Vec<DiffDoub0>, lay_sh : &mut Vec<DiffDoub0>, lay_den : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
-        let mut i1 : usize;
-        let mut num_lay : usize;
+        let num_lay : usize;
         let mut tmp = DiffDoub0::new();
         
         spec_heat.set_val(0.0);
@@ -1802,25 +1751,24 @@ impl Element {
     }
 
     pub fn get_beam_spec_heat_dfd0(&self, spec_heat : &mut DiffDoub0, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut density_dv = DiffDoub0::new();
         let mut area_dv = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
         
         let mut this_dv : &DesignVariable;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        let mut sec_sh : f64 =  this_sec.spec_heat;
-        let mut mat_sh : f64 =  this_mat.spec_heat;
-        let mut mat_den : f64 =  this_mat.density;
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let sec_sh : f64 =  this_sec.spec_heat;
+        let mat_sh : f64 =  this_mat.spec_heat;
+        let mat_den : f64 =  this_mat.density;
         
-        if (sec_sh > 0.0) {
+        if sec_sh > 0.0 {
             spec_heat.set_val(sec_sh);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "specHeat") {
+                if this_dv.category.s == "specHeat" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -1835,19 +1783,19 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "specHeatDV") {
+                if cat.s == "specHeatDV" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
                     spec_heat.add(& dv_val);
                 }
-                else if (cat.s == "density") {
+                else if cat.s == "density" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
                     density_dv.add(& dv_val);
                 }
-                else if (cat.s == "area") {
+                else if cat.s == "area" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -1862,7 +1810,6 @@ impl Element {
     }
 
     pub fn get_nd_crds_dfd0(&self, x_glob : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut nd_crd = [DiffDoub0::new(); 3];
         let mut this_nd : &Node;
         
@@ -1879,8 +1826,7 @@ impl Element {
 
     pub fn get_loc_ori_dfd0(&self, loc_ori : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut i1 : usize;
-        let mut dv_ind : usize;
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut rot = [DiffDoub0::new(); 3];
         let mut dv_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
@@ -1888,7 +1834,7 @@ impl Element {
         let mut tmp_ori = [DiffDoub0::new(); 9];
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for i1 in 0..9 {
             ori_copy[i1].set_val(this_sec.orientation[i1]);
         }
@@ -1899,7 +1845,7 @@ impl Element {
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             dv_cat = this_dv.category.clone();
-            if(dv_cat.s == "orientation") {
+            if dv_cat.s == "orientation" {
                 i1 = this_dv.component - 1;
                 coef.set_val(dv.doub_dat);
                 this_dv.get_value_dfd0(&mut dv_val);
@@ -1915,7 +1861,6 @@ impl Element {
     }
 
     pub fn correct_orient_dfd0(&self, loc_ori : &mut Vec<DiffDoub0>, x_glob : &mut Vec<DiffDoub0>) {
-        let mut i1 : usize;
         let mut v1 = [DiffDoub0::new(); 3];
         let mut v2 = [DiffDoub0::new(); 3];
         let mut v3 = [DiffDoub0::new(); 3];
@@ -1933,8 +1878,8 @@ impl Element {
             ori_copy[i1].set_val_dfd0(& loc_ori[i1]);
         }
         
-        if(self.this_type == 3 || self.this_type == 41) {
-            if(self.this_type == 3) {
+        if self.this_type == 3 || self.this_type == 41 {
+            if self.this_type == 3 {
                 v1[0].set_val_dfd0(& x_glob[1]);
                 v1[0].sub(& x_glob[0]);
                 v1[1].set_val_dfd0(& x_glob[4]);
@@ -1974,7 +1919,7 @@ impl Element {
             tmp.mult(& loc_ori[8]);
             dp.add(& tmp);
             
-            if(dp.val < 0.0) {
+            if dp.val < 0.0 {
                 v3[0].neg();
                 v3[1].neg();
                 v3[2].neg();
@@ -2000,7 +1945,7 @@ impl Element {
             tmp.sqr();
             mag_cp.add(& tmp);
             mag_cp.sqt();
-            if (mag_cp.val < 1e-12) {
+            if mag_cp.val < 1e-12 {
                 return;
             }
             
@@ -2025,10 +1970,10 @@ impl Element {
     pub fn get_frc_fld_const_dfd0(&self, coef : &mut Vec<DiffDoub0>, exp : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         coef[0].set_val(this_sec.pot_coef);
         coef[1].set_val(this_sec.damp_coef);
         exp[0].set_val(this_sec.pot_exp);
@@ -2037,13 +1982,13 @@ impl Element {
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             cat = this_dv.category.clone();
-            if (cat.s == "potFldCoef") {
+            if cat.s == "potFldCoef" {
                 this_dv.get_value_dfd0(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
                 coef[0].add(& dv_val);
             }
-            else if (cat.s == "dampFldCoef") {
+            else if cat.s == "dampFldCoef" {
                 this_dv.get_value_dfd0(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -2057,10 +2002,10 @@ impl Element {
     pub fn get_thrm_fld_const_dfd0(&self, coef : &mut Vec<DiffDoub0>, ref_t : &mut DiffDoub0, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         coef[0].set_val(this_sec.cond_coef);
         coef[1].set_val(this_sec.rad_coef);
         ref_t.set_val(this_sec.ref_temp);
@@ -2068,13 +2013,13 @@ impl Element {
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             cat = this_dv.category.clone();
-            if (cat.s == "condCoef") {
+            if cat.s == "condCoef" {
                 this_dv.get_value_dfd0(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
                 coef[0].add(& dv_val);
             }
-            else if (cat.s == "radCoef") {
+            else if cat.s == "radCoef" {
                 this_dv.get_value_dfd0(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -2088,16 +2033,16 @@ impl Element {
     pub fn get_mass_per_el_dfd0(&self, mass_per_el : &mut DiffDoub0, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec = &sec_ar[self.sect_ptr];
+        let this_sec = &sec_ar[self.sect_ptr];
         mass_per_el.set_val(this_sec.mass_per_el);
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             cat = this_dv.category.clone();
-            if (cat.s == "massPerEl") {
+            if cat.s == "massPerEl" {
                 this_dv.get_value_dfd0(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -2123,7 +2068,7 @@ impl Element {
         for dv in self.design_vars.iter() {
             d_vind = dv.int_dat;
             this_dv = & dv_ar[d_vind];
-            if (this_dv.category.s == prop_key.s) {
+            if this_dv.category.s == prop_key.s {
                 this_dv.get_value_dfd1(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -2148,12 +2093,12 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         tot_thk.set_val(0.0);
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             lay_thk[layi].set_val(lay.thickness);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thickness" && this_dv.layer == layi) {
+                if this_dv.category.s == "thickness" && this_dv.layer == layi {
                     this_dv.get_value_dfd1(&mut dv_val);
                     coef.set_val(dv.doub_dat);
                     dv_val.mult(& coef);
@@ -2167,7 +2112,7 @@ impl Element {
         z_offset.set_val(this_sec.z_offset);
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "zOffset") {
+            if this_dv.category.s == "zOffset" {
                 this_dv.get_value_dfd1(&mut dv_val);
                 coef.set_val(dv.doub_dat);
                 dv_val.mult(& coef);
@@ -2182,7 +2127,7 @@ impl Element {
         z_crd.mult(& tmp);
         
         layi = 0;
-        for lay in this_sec.layers.iter() {
+        for _lay in this_sec.layers.iter() {
             z_next.set_val_dfd1(& z_crd);
             z_next.add(& lay_thk[layi]);
             tmp.set_val_dfd1(& z_crd);
@@ -2198,7 +2143,6 @@ impl Element {
     }
 
     pub fn get_layer_q_dfd1(&self, lay_q : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut layi : usize;
         let mut dv_ind : usize;
@@ -2212,14 +2156,14 @@ impl Element {
         let mut coef = DiffDoub1::new();
         let mut x_vec = [DiffDoub1::new(); 3];
         let mut b_vec = [DiffDoub1::new(); 3];
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         let mut this_mat : &Material;
         let mut tmp = DiffDoub1::new();
         
         i2 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..3 {
@@ -2230,23 +2174,23 @@ impl Element {
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.layer == layi) {
+                if this_dv.layer == layi {
                     dv_cat = this_dv.category.clone();
-                    if (dv_cat.s == "modulus") {
+                    if dv_cat.s == "modulus" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd1(&mut dv_val);
                         dv_val.mult(& coef);
                         modulus_dv[dv_comp - 1].add(& dv_val);
                     }
-                    else if (dv_cat.s == "poissonRatio") {
+                    else if dv_cat.s == "poissonRatio" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd1(&mut dv_val);
                         dv_val.mult(& coef);
                         poisson_dv[dv_comp - 1].add(& dv_val);
                     }
-                    else if (dv_cat.s == "shearModulus") {
+                    else if dv_cat.s == "shearModulus" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd1(&mut dv_val);
@@ -2284,10 +2228,7 @@ impl Element {
     }
 
     pub fn get_layer_d_dfd1(&self, lay_d : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
-        let mut i3 : usize;
-        let mut i4 : usize;
         let mut i5 : usize;
         let mut i6 : usize;
         let mut layi : usize;
@@ -2296,14 +2237,14 @@ impl Element {
         let mut damp_mat_dv = [DiffDoub1::new(); 36];
         let mut dv_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         let mut this_mat : &Material;
         let mut tmp = DiffDoub1::new();
         
         i2 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..36 {
@@ -2312,9 +2253,9 @@ impl Element {
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.layer == layi) {
+                if this_dv.layer == layi {
                     dv_cat = this_dv.category.clone();
-                    if (dv_cat.s == "dampingMat") {
+                    if dv_cat.s == "dampingMat" {
                         dv_comp = this_dv.component;
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd1(&mut dv_val);
@@ -2327,7 +2268,7 @@ impl Element {
             for i3 in 1..6 {
                 i5 = 6 * i3;// lower tri term
                 i6 = i3;// upper tri term
-                for i4 in 0..i3 {
+                for _i4 in 0..i3 {
                     tmp.set_val_dfd1(& damp_mat_dv[i6]);
                     damp_mat_dv[i5].set_val_dfd1(& tmp);
                     i5 += 1usize;
@@ -2352,26 +2293,24 @@ impl Element {
     }
 
     pub fn get_layer_angle_dfd1(&self, lay_ang : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i2 : usize;
         let mut layi : usize;
         let mut dv_ind : usize;
         let mut angle = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        i2 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             angle.set_val(lay.angle);
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.layer == layi) {
+                if this_dv.layer == layi {
                     dv_cat = this_dv.category.clone();
-                    if (dv_cat.s == "angle") {
+                    if dv_cat.s == "angle" {
                         coef.set_val(dv.doub_dat);
                         this_dv.get_value_dfd1(&mut dv_val);
                         dv_val.mult(& coef);
@@ -2388,7 +2327,6 @@ impl Element {
     }
 
     pub fn get_layer_th_exp_dfd1(&self, lay_th_exp : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut layi : usize;
         let mut t_exp_dv = [DiffDoub1::new(); 6];
@@ -2400,7 +2338,7 @@ impl Element {
         
         layi = 0;
         i2 = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..6 {
@@ -2408,7 +2346,7 @@ impl Element {
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thermalExp" && this_dv.layer == layi) {
+                if this_dv.category.s == "thermalExp" && this_dv.layer == layi {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -2428,7 +2366,6 @@ impl Element {
     }
 
     pub fn get_layer_einit_dfd1(&self, lay_einit : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut layi : usize;
         let mut e0_dv = [DiffDoub1::new(); 6];
@@ -2439,14 +2376,14 @@ impl Element {
         
         layi = 0;
         i2 = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        for lay in this_sec.layers.iter() {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        for _lay in this_sec.layers.iter() {
             for i1 in 0..6 {
                 e0_dv[i1].set_val(0.0);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "initialStrain" && this_dv.layer == layi) {
+                if this_dv.category.s == "initialStrain" && this_dv.layer == layi {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -2474,13 +2411,13 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             mat_den = mat_ar[lay.mat_ptr].density;
             den_dv.set_val(mat_den);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "density" && this_dv.layer == layi) {
+                if this_dv.category.s == "density" && this_dv.layer == layi {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -2496,7 +2433,6 @@ impl Element {
 
     pub fn get_layer_cond_dfd1(&self, lay_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut i1 : usize;
-        let mut i2 : usize;
         let mut layi : usize;
         let mut cond_dv = [DiffDoub1::new(); 6];
         let mut tmp = DiffDoub1::new();
@@ -2507,7 +2443,7 @@ impl Element {
         
         i1 = 0;
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             this_mat = &mat_ar[lay.mat_ptr];
             for i2 in 0..6 {
@@ -2515,7 +2451,7 @@ impl Element {
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thermalCond" && this_dv.layer == layi) {
+                if this_dv.category.s == "thermalCond" && this_dv.layer == layi {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -2548,13 +2484,13 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         layi = 0;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for lay in this_sec.layers.iter() {
             mat_sh = mat_ar[lay.mat_ptr].spec_heat;
             sh_dv.set_val(mat_sh);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "specHeat" && this_dv.layer == layi) {
+                if this_dv.category.s == "specHeat" && this_dv.layer == layi {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -2618,7 +2554,6 @@ impl Element {
     }
 
     pub fn transform_q_dfd1(&self, q_new : &mut [DiffDoub1], q_orig : &mut [DiffDoub1], angle : &mut DiffDoub1) {
-        let mut i1 : usize;
         let mut angle_rad = DiffDoub1::new();
         let mut a11 = DiffDoub1::new();
         let mut a12 = DiffDoub1::new();
@@ -2686,8 +2621,6 @@ impl Element {
     }
 
     pub fn get_solid_stiff_dfd1(&self, cmat : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
         let mut dv_ind : usize;
@@ -2701,21 +2634,21 @@ impl Element {
         let mut coef = DiffDoub1::new();
         let mut x_vec = [DiffDoub1::new(); 6];
         let mut b_vec = [DiffDoub1::new(); 6];
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub1::new();
         
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_mat.stiffness[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_mat.stiffness[0] > 0.0 {
             for i1 in 0..36 {
                 cmat[i1].set_val(this_mat.stiffness[i1]);
             }
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.category.s == "stiffnessMat") {
+                if this_dv.category.s == "stiffnessMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -2726,7 +2659,7 @@ impl Element {
             for i1 in 1..6 {
                 i4 = 6 * i1;
                 i5 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd1(& cmat[i5]);
                     cmat[i4].set_val_dfd1(& tmp);
                     i4 += 1usize;
@@ -2744,21 +2677,21 @@ impl Element {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
                 dv_cat = this_dv.category.clone();
-                if (dv_cat.s == "modulus") {
+                if dv_cat.s == "modulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     modulus_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (dv_cat.s == "poissonRatio") {
+                else if dv_cat.s == "poissonRatio" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     poisson_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (dv_cat.s == "shearModulus") {
+                else if dv_cat.s == "shearModulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -2806,13 +2739,12 @@ impl Element {
     }
 
     pub fn get_abd_dfd1(&self, cmat : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_z : &mut Vec<DiffDoub1>, lay_q : &mut Vec<DiffDoub1>, lay_ang : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
         let mut i6 : usize;
-        let mut num_lay : usize;
+        let num_lay : usize;
         let mut z_max = DiffDoub1::new();
         let mut z_min = DiffDoub1::new();
         let mut thk = DiffDoub1::new();
@@ -2841,7 +2773,7 @@ impl Element {
             for i3 in 0..3 {
                 i5 = 9 * i3;
                 i6 = 3 * i3;
-                for i4 in 0..3 {
+                for _i4 in 0..3 {
                     tmp2.set_val_dfd1(& tmp);
                     tmp2.mult(& qmat[i6]);
                     cmat[i5].add(& tmp2);
@@ -2861,7 +2793,7 @@ impl Element {
             for i3 in 0..3 {
                 i5 = 9 * i3 + 3;
                 i6 = 3 * i3;
-                for i4 in 0..3 {
+                for _i4 in 0..3 {
                     //i6 = i3*3 + i4;
                     //i5 = i3*9 + (i4 + 3)
                     tmp2.set_val_dfd1(& tmp);
@@ -2885,7 +2817,7 @@ impl Element {
             for i3 in 0..3 {
                 i5 = 9 * (i3 + 3) + 3;
                 i6 = 3 * i3;
-                for i4 in 0..3 {
+                for _i4 in 0..3 {
                     tmp2.set_val_dfd1(& tmp);
                     tmp2.mult(& qmat[i6]);
                     cmat[i5].add(& tmp2);
@@ -2899,7 +2831,7 @@ impl Element {
         for i1 in 1..6 {
             i3 = 9 * i1;
             i4 = i1;
-            for i2 in 0..i1 {
+            for _i2 in 0..i1 {
                 //i3 = i1*9 + i2
                 //i4 = i2*9 + i1
                 tmp.set_val_dfd1(& cmat[i4]);
@@ -2919,8 +2851,6 @@ impl Element {
     }
 
     pub fn get_beam_stiff_dfd1(&self, cmat : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
@@ -2933,22 +2863,19 @@ impl Element {
         let mut jdv = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
-        let mut x_vec = [DiffDoub1::new(); 6];
-        let mut b_vec = [DiffDoub1::new(); 6];
-        let mut dv_cat = CppStr::new();
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub1::new();
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.stiffness[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.stiffness[0] > 0.0 {
             for i1 in 0..36 {
                 cmat[i1].set_val(this_sec.stiffness[i1]);
             }
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.category.s == "stiffnessMat") {
+                if this_dv.category.s == "stiffnessMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -2959,7 +2886,7 @@ impl Element {
             for i1 in 1..6 {
                 i4 = 6 * i1;
                 i5 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd1(& cmat[i5]);
                     cmat[i4].set_val_dfd1(& tmp);
                     i4 += 1usize;
@@ -2980,36 +2907,34 @@ impl Element {
             for dv in self.design_vars.iter() {
                 dv_ind = dv.int_dat;
                 this_dv = &dv_ar[dv_ind];
-                if (this_dv.category.s == "modulus") {
+                if this_dv.category.s == "modulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     modulus_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "shearModulus") {
+                else if this_dv.category.s == "shearModulus" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     shear_mod_dv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "area") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "area" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     area_dv.add(& dv_val);
                 }
-                else if (this_dv.category.s == "areaMoment") {
+                else if this_dv.category.s == "areaMoment" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     idv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "polarMoment") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "polarMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
@@ -3019,7 +2944,7 @@ impl Element {
             
             for i1 in 0..6 {
                 i3 = 7 * i1;
-                for i2 in i1..6 {
+                for _i2 in i1..6 {
                     cmat[i3].set_val(0.0);
                     i3 += 1usize;
                 }
@@ -3054,7 +2979,7 @@ impl Element {
             for i1 in 1..6 {
                 i3 = 6 * i1;
                 i4 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd1(& cmat[i4]);
                     cmat[i3].set_val_dfd1(& tmp);
                     i3 += 1usize;
@@ -3067,15 +2992,13 @@ impl Element {
     }
 
     pub fn get_thermal_exp_dfd1(&self, th_exp : &mut Vec<DiffDoub1>, einit : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        
         let mut dv_comp : usize;
         let mut dv_val = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec = &sec_ar[self.sect_ptr];
-        let mut this_mat = &mat_ar[this_sec.mat_ptr];
+        let this_sec = &sec_ar[self.sect_ptr];
+        let this_mat = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             th_exp[i1].set_val(this_mat.expansion[i1]);
             einit[i1].set_val(0.0);
@@ -3083,14 +3006,14 @@ impl Element {
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "thermalExp") {
+            if this_dv.category.s == "thermalExp" {
                 dv_comp = this_dv.component - 1;
                 tmp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd1(&mut dv_val);
                 dv_val.mult(& tmp);
                 th_exp[dv_comp].add(& dv_val);
             }
-            else if (this_dv.category.s == "initialStrain") {
+            else if this_dv.category.s == "initialStrain" {
                 dv_comp = this_dv.component - 1;
                 tmp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd1(&mut dv_val);
@@ -3103,9 +3026,7 @@ impl Element {
     }
 
     pub fn get_shell_exp_load_dfd1(&self, exp_ld : &mut Vec<DiffDoub1>, e0_ld : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_z : &mut Vec<DiffDoub1>, lay_q : &mut Vec<DiffDoub1>, lay_th_exp : &mut Vec<DiffDoub1>, lay_einit : &mut Vec<DiffDoub1>, lay_ang : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
-        let mut i1 : usize;
-        let mut num_lay : usize;
-        let mut layi : usize;
+        let num_lay : usize;
         let mut qi : usize;
         let mut exi : usize;
         let mut sect_q = [DiffDoub1::new(); 9];
@@ -3176,12 +3097,10 @@ impl Element {
     }
 
     pub fn get_beam_exp_load_dfd1(&self, exp_ld : &mut Vec<DiffDoub1>, e0_ld : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut dv_val = DiffDoub1::new();
-        let mut cat = CppStr::new();
-        let mut cat_list = CppStr::new();
-        let mut tmp = DiffDoub1::new();
+        let mut cat : CppStr;
+        let mut cat_list : CppStr;
         let mut dv_comp : usize;
         let mut mod_dv = [DiffDoub1::new(); 3];
         let mut shr_mod_dv = [DiffDoub1::new(); 3];
@@ -3197,9 +3116,9 @@ impl Element {
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub1::new();
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.exp_load_coef[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.exp_load_coef[0] > 0.0 {
             for i1 in 0..6 {
                 exp_ld[i1].set_val(this_sec.exp_load_coef[i1]);
                 e0_ld[i1].set_val(0.0);
@@ -3207,14 +3126,14 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "thermalExp") {
+                if cat.s == "thermalExp" {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
                     exp_ld[dv_comp].add(& dv_val);
                 }
-                else if (cat.s == "initialStrain") {
+                else if cat.s == "initialStrain" {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -3241,27 +3160,27 @@ impl Element {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
                 i2 = cat_list.find(&cat.s.as_str());
-                if (i2 < MAX_INT) {
+                if i2 < MAX_INT {
                     dv_comp = this_dv.component - 1;
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
-                    if (cat.s == "modulus") {
+                    if cat.s == "modulus" {
                         mod_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "shearModulus") {
+                    else if cat.s == "shearModulus" {
                         shr_mod_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "thermalExp") {
+                    else if cat.s == "thermalExp" {
                         te_coef_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "initialStrain") {
+                    else if cat.s == "initialStrain" {
                         e0_dv[dv_comp].add(& dv_val);
                     }
-                    else if (cat.s == "area") {
+                    else if cat.s == "area" {
                         area_dv.add(& dv_val);
                     }
-                    else if (cat.s == "areaMoment") {
+                    else if cat.s == "areaMoment" {
                         idv[dv_comp].add(& dv_val);
                     }
                 }
@@ -3305,23 +3224,22 @@ impl Element {
     }
 
     pub fn get_density_dfd1(&self, den : &mut DiffDoub1, layer : usize, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut layi : usize;
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut dv_lay : usize;
         let mut coef = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
-        let mut this_mat : &Material;
+        let this_mat : &Material;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        if (self.this_type == 3 || self.this_type == 41) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        if self.this_type == 3 || self.this_type == 41 {
             this_mat = &mat_ar[this_sec.get_layer_mat_ptr(layer)];
             den.set_val(this_mat.density);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
                 dv_lay = this_dv.layer;
-                if (cat.s == "density" && dv_lay == layer) {
+                if cat.s == "density" && dv_lay == layer {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
@@ -3334,7 +3252,7 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "density") {
+                if cat.s == "density" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
@@ -3346,9 +3264,8 @@ impl Element {
         return;
     }
 
-    pub fn get_shell_mass_dfd1(&self, mmat : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_z : &mut Vec<DiffDoub1>, lay_den : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut layi : usize;
+    pub fn get_shell_mass_dfd1(&self, mmat : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_z : &mut Vec<DiffDoub1>, lay_den : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
+        let i1 : usize;
         let mut tmp = DiffDoub1::new();
         let mut tmp2 = DiffDoub1::new();
         let mut z_min = DiffDoub1::new();
@@ -3404,8 +3321,6 @@ impl Element {
     }
 
     pub fn get_beam_mass_dfd1(&self, mmat : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut dv_comp : usize;
@@ -3413,7 +3328,7 @@ impl Element {
         
         let mut dv_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
-        let mut d_cat = CppStr::new();
+        let mut d_cat : CppStr;
         
         
         let mut den_dv = DiffDoub1::new();
@@ -3423,15 +3338,15 @@ impl Element {
         let mut tmp = DiffDoub1::new();
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.mass[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.mass[0] > 0.0 {
             for i1 in 0..36 {
                 mmat[i1].set_val(this_sec.mass[i1]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "massMat") {
+                if this_dv.category.s == "massMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -3442,7 +3357,7 @@ impl Element {
             for i1 in 1..6 {
                 i3 = 6 * i1;// lower tri term
                 i4 = i1;// upper tri term
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd1(& mmat[i4]);
                     mmat[i3].set_val_dfd1(& tmp);
                     i3 += 1usize;
@@ -3463,26 +3378,26 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 d_cat = this_dv.category.clone();
-                if (d_cat.s == "density") {
+                if d_cat.s == "density" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     den_dv.add(& dv_val);
                 }
-                else if (d_cat.s == "area") {
+                else if d_cat.s == "area" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     area_dv.add(& dv_val);
                 }
-                else if (d_cat.s == "areaMoment") {
+                else if d_cat.s == "areaMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     dv_comp = this_dv.component;
                     idv[dv_comp - 1].add(& dv_val);
                 }
-                else if (d_cat.s == "polarMoment") {
+                else if d_cat.s == "polarMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
@@ -3520,7 +3435,7 @@ impl Element {
             for i1 in 3..6 {
                 i3 = 6 * i1;// lower tri term
                 i4 = i1;// upper tri term
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd1(& mmat[i4]);
                     mmat[i3].set_val_dfd1(& tmp);
                     i3 += 1usize;
@@ -3533,8 +3448,6 @@ impl Element {
     }
 
     pub fn get_solid_damp_dfd1(&self, dmat : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         
@@ -3543,15 +3456,15 @@ impl Element {
         let mut dv_comp : usize;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..36 {
             dmat[i1].set_val(this_mat.damping[i1]);
         }
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "dampingMat") {
+            if this_dv.category.s == "dampingMat" {
                 this_dv.get_value_dfd1(&mut dv_val);
                 dv_comp = this_dv.component;
                 temp.set_val(dv.doub_dat);
@@ -3563,7 +3476,7 @@ impl Element {
         for i1 in 1..6 {
             i3 = 6 * i1;// lower tri term
             i4 = i1;// upper tri term
-            for i2 in 0..i1 {
+            for _i2 in 0..i1 {
                 temp.set_val_dfd1(& dmat[i4]);
                 dmat[i3].set_val_dfd1(& temp);
                 i3 += 1usize;
@@ -3583,12 +3496,9 @@ impl Element {
     }
 
     pub fn get_beam_damp_dfd1(&self, dmat : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
-        let mut dv_ind : usize;
         let mut dv_comp : usize;
         let mut dmat_dv = [DiffDoub1::new(); 36];
         let mut area_dv = DiffDoub1::new();
@@ -3596,21 +3506,18 @@ impl Element {
         let mut jdv = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
-        let mut x_vec = [DiffDoub1::new(); 6];
-        let mut b_vec = [DiffDoub1::new(); 6];
-        let mut dv_cat = CppStr::new();
         let mut this_dv : &DesignVariable;
         let mut tmp = DiffDoub1::new();
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.damping[0] > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.damping[0] > 0.0 {
             for i1 in 0..36 {
                 dmat[i1].set_val(this_sec.damping[i1]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "dampingMat") {
+                if this_dv.category.s == "dampingMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -3621,7 +3528,7 @@ impl Element {
             for i1 in 1..6 {
                 i4 = 6 * i1;
                 i5 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd1(& dmat[i5]);
                     dmat[i4].set_val_dfd1(& tmp);
                     i4 += 1usize;
@@ -3640,29 +3547,27 @@ impl Element {
             jdv.set_val(this_sec.polar_moment);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "dampingMat") {
+                if this_dv.category.s == "dampingMat" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     dmat_dv[dv_comp].add(& dv_val);
                 }
-                else if (this_dv.category.s == "area") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "area" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     area_dv.add(& dv_val);
                 }
-                else if (this_dv.category.s == "areaMoment") {
+                else if this_dv.category.s == "areaMoment" {
                     dv_comp = this_dv.component;
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
                     idv[dv_comp - 1].add(& dv_val);
                 }
-                else if (this_dv.category.s == "polarMoment") {
-                    dv_comp = this_dv.component;
+                else if this_dv.category.s == "polarMoment" {
                     coef.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& coef);
@@ -3672,7 +3577,7 @@ impl Element {
             
             for i1 in 0..6 {
                 i3 = 7 * i1;
-                for i2 in i1..6 {
+                for _i2 in i1..6 {
                     dmat[i3].set_val(0.0);
                     i3 += 1usize;
                 }
@@ -3707,7 +3612,7 @@ impl Element {
             for i1 in 1..6 {
                 i3 = 6 * i1;
                 i4 = i1;
-                for i2 in 0..i1 {
+                for _i2 in 0..i1 {
                     tmp.set_val_dfd1(& dmat[i4]);
                     dmat[i3].set_val_dfd1(& tmp);
                     i3 += 1usize;
@@ -3721,7 +3626,6 @@ impl Element {
     }
 
     pub fn get_conductivity_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut cond_dv = [DiffDoub1::new(); 6];
         
         let mut temp = DiffDoub1::new();
@@ -3729,15 +3633,15 @@ impl Element {
         let mut dv_comp : usize;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             cond_dv[i1].set_val(this_mat.conductivity[i1]);
         }
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "thermalCond") {
+            if this_dv.category.s == "thermalCond" {
                 dv_comp = this_dv.component - 1;
                 temp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd1(&mut dv_val);
@@ -3759,11 +3663,9 @@ impl Element {
         return;
     }
 
-    pub fn get_shell_cond_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_ang : &mut Vec<DiffDoub1>, lay_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
+    pub fn get_shell_cond_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_ang : &mut Vec<DiffDoub1>, lay_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
         let mut i2 : usize;
-        let mut num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
-        let mut cond_dv = [DiffDoub1::new(); 6];
+        let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let mut layer_mat = [DiffDoub1::new(); 9];
         let mut al_mat = [DiffDoub1::new(); 9];
         let mut al_t = [DiffDoub1::new(); 9];
@@ -3804,22 +3706,20 @@ impl Element {
     }
 
     pub fn get_beam_cond_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut cond_dv = DiffDoub1::new();
         let mut area_dv = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if (this_sec.conductivity > 0.0) {
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        if this_sec.conductivity > 0.0 {
             cond_dv.set_val(this_sec.conductivity);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "thermCond") {
+                if this_dv.category.s == "thermCond" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -3833,13 +3733,13 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "thermCond") {
+                if cat.s == "thermCond" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
                     cond_dv.add(& dv_val);
                 }
-                else if (cat.s == "area") {
+                else if cat.s == "area" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -3861,20 +3761,17 @@ impl Element {
     }
 
     pub fn get_specific_heat_dfd1(&self, spec_heat : &mut DiffDoub1, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut spec_heat_dv = DiffDoub1::new();
         let mut temp = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
-        let mut dv_comp : usize;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         spec_heat.set_val(this_mat.spec_heat);
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
-            if (this_dv.category.s == "specHeat") {
+            if this_dv.category.s == "specHeat" {
                 temp.set_val(dv.doub_dat);
                 this_dv.get_value_dfd1(&mut dv_val);
                 dv_val.mult(& temp);
@@ -3886,8 +3783,7 @@ impl Element {
     }
 
     pub fn get_shell_spec_heat_dfd1(&self, spec_heat : &mut DiffDoub1, lay_thk : &mut Vec<DiffDoub1>, lay_sh : &mut Vec<DiffDoub1>, lay_den : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
-        let mut i1 : usize;
-        let mut num_lay : usize;
+        let num_lay : usize;
         let mut tmp = DiffDoub1::new();
         
         spec_heat.set_val(0.0);
@@ -3903,25 +3799,24 @@ impl Element {
     }
 
     pub fn get_beam_spec_heat_dfd1(&self, spec_heat : &mut DiffDoub1, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut density_dv = DiffDoub1::new();
         let mut area_dv = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
         
         let mut this_dv : &DesignVariable;
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
-        let mut this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        let mut sec_sh : f64 =  this_sec.spec_heat;
-        let mut mat_sh : f64 =  this_mat.spec_heat;
-        let mut mat_den : f64 =  this_mat.density;
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
+        let sec_sh : f64 =  this_sec.spec_heat;
+        let mat_sh : f64 =  this_mat.spec_heat;
+        let mat_den : f64 =  this_mat.density;
         
-        if (sec_sh > 0.0) {
+        if sec_sh > 0.0 {
             spec_heat.set_val(sec_sh);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
-                if (this_dv.category.s == "specHeat") {
+                if this_dv.category.s == "specHeat" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -3936,19 +3831,19 @@ impl Element {
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
-                if (cat.s == "specHeatDV") {
+                if cat.s == "specHeatDV" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
                     spec_heat.add(& dv_val);
                 }
-                else if (cat.s == "density") {
+                else if cat.s == "density" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
                     density_dv.add(& dv_val);
                 }
-                else if (cat.s == "area") {
+                else if cat.s == "area" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
@@ -3963,7 +3858,6 @@ impl Element {
     }
 
     pub fn get_nd_crds_dfd1(&self, x_glob : &mut Vec<DiffDoub1>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut nd_crd = [DiffDoub1::new(); 3];
         let mut this_nd : &Node;
         
@@ -3980,8 +3874,7 @@ impl Element {
 
     pub fn get_loc_ori_dfd1(&self, loc_ori : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut i1 : usize;
-        let mut dv_ind : usize;
-        let mut dv_cat = CppStr::new();
+        let mut dv_cat : CppStr;
         let mut rot = [DiffDoub1::new(); 3];
         let mut dv_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
@@ -3989,7 +3882,7 @@ impl Element {
         let mut tmp_ori = [DiffDoub1::new(); 9];
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         for i1 in 0..9 {
             ori_copy[i1].set_val(this_sec.orientation[i1]);
         }
@@ -4000,7 +3893,7 @@ impl Element {
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             dv_cat = this_dv.category.clone();
-            if(dv_cat.s == "orientation") {
+            if dv_cat.s == "orientation" {
                 i1 = this_dv.component - 1;
                 coef.set_val(dv.doub_dat);
                 this_dv.get_value_dfd1(&mut dv_val);
@@ -4016,7 +3909,6 @@ impl Element {
     }
 
     pub fn correct_orient_dfd1(&self, loc_ori : &mut Vec<DiffDoub1>, x_glob : &mut Vec<DiffDoub1>) {
-        let mut i1 : usize;
         let mut v1 = [DiffDoub1::new(); 3];
         let mut v2 = [DiffDoub1::new(); 3];
         let mut v3 = [DiffDoub1::new(); 3];
@@ -4034,8 +3926,8 @@ impl Element {
             ori_copy[i1].set_val_dfd1(& loc_ori[i1]);
         }
         
-        if(self.this_type == 3 || self.this_type == 41) {
-            if(self.this_type == 3) {
+        if self.this_type == 3 || self.this_type == 41 {
+            if self.this_type == 3 {
                 v1[0].set_val_dfd1(& x_glob[1]);
                 v1[0].sub(& x_glob[0]);
                 v1[1].set_val_dfd1(& x_glob[4]);
@@ -4075,7 +3967,7 @@ impl Element {
             tmp.mult(& loc_ori[8]);
             dp.add(& tmp);
             
-            if(dp.val < 0.0) {
+            if dp.val < 0.0 {
                 v3[0].neg();
                 v3[1].neg();
                 v3[2].neg();
@@ -4101,7 +3993,7 @@ impl Element {
             tmp.sqr();
             mag_cp.add(& tmp);
             mag_cp.sqt();
-            if (mag_cp.val < 1e-12) {
+            if mag_cp.val < 1e-12 {
                 return;
             }
             
@@ -4126,10 +4018,10 @@ impl Element {
     pub fn get_frc_fld_const_dfd1(&self, coef : &mut Vec<DiffDoub1>, exp : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         coef[0].set_val(this_sec.pot_coef);
         coef[1].set_val(this_sec.damp_coef);
         exp[0].set_val(this_sec.pot_exp);
@@ -4138,13 +4030,13 @@ impl Element {
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             cat = this_dv.category.clone();
-            if (cat.s == "potFldCoef") {
+            if cat.s == "potFldCoef" {
                 this_dv.get_value_dfd1(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
                 coef[0].add(& dv_val);
             }
-            else if (cat.s == "dampFldCoef") {
+            else if cat.s == "dampFldCoef" {
                 this_dv.get_value_dfd1(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -4158,10 +4050,10 @@ impl Element {
     pub fn get_thrm_fld_const_dfd1(&self, coef : &mut Vec<DiffDoub1>, ref_t : &mut DiffDoub1, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec : &Section = &sec_ar[self.sect_ptr];
+        let this_sec : &Section = &sec_ar[self.sect_ptr];
         coef[0].set_val(this_sec.cond_coef);
         coef[1].set_val(this_sec.rad_coef);
         ref_t.set_val(this_sec.ref_temp);
@@ -4169,13 +4061,13 @@ impl Element {
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             cat = this_dv.category.clone();
-            if (cat.s == "condCoef") {
+            if cat.s == "condCoef" {
                 this_dv.get_value_dfd1(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
                 coef[0].add(& dv_val);
             }
-            else if (cat.s == "radCoef") {
+            else if cat.s == "radCoef" {
                 this_dv.get_value_dfd1(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -4189,16 +4081,16 @@ impl Element {
     pub fn get_mass_per_el_dfd1(&self, mass_per_el : &mut DiffDoub1, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
-        let mut this_sec = &sec_ar[self.sect_ptr];
+        let this_sec = &sec_ar[self.sect_ptr];
         mass_per_el.set_val(this_sec.mass_per_el);
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
             cat = this_dv.category.clone();
-            if (cat.s == "massPerEl") {
+            if cat.s == "massPerEl" {
                 this_dv.get_value_dfd1(&mut dv_val);
                 tmp.set_val(dv.doub_dat);
                 dv_val.mult(& tmp);
@@ -4212,8 +4104,6 @@ impl Element {
     //end dup
  
 //end skip 
- 
- 
  
  
 }

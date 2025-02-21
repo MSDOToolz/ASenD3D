@@ -2,19 +2,14 @@ use crate::element::*;
 use crate::constants::*;
 use crate::diff_doub::*;
 use crate::list_ent::*;
-use crate::design_var::*;
-use crate::node::*;
 use crate::section::*;
 use crate::face::*;
-use crate::matrix_functions::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 //dup1
 
 impl DiffDoub0StressPrereq {
     pub fn allocate_layers_dfd0(&mut self, num_layers : usize) {
-        if (num_layers != 0) {
+        if num_layers != 0 {
             self.layer_z = vec![DiffDoub0::new(); num_layers];
             self.layer_thk = vec![DiffDoub0::new(); num_layers];
             self.layer_ang = vec![DiffDoub0::new(); num_layers];
@@ -41,7 +36,7 @@ impl DiffDoub0StressPrereq {
 
 impl DiffDoub1StressPrereq {
     pub fn allocate_layers_dfd1(&mut self, num_layers : usize) {
-        if (num_layers != 0) {
+        if num_layers != 0 {
             self.layer_z = vec![DiffDoub1::new(); num_layers];
             self.layer_thk = vec![DiffDoub1::new(); num_layers];
             self.layer_ang = vec![DiffDoub1::new(); num_layers];
@@ -64,13 +59,10 @@ impl DiffDoub1StressPrereq {
 //end skip 
  
  
- 
- 
 impl Element {
     pub fn initialize_type(&mut self, new_type : usize) {
         self.this_type = new_type;
         let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
@@ -78,7 +70,7 @@ impl Element {
         self.s_cent[0] = 0.0;
         self.s_cent[1] = 0.0;
         self.s_cent[2] = 0.0;
-        if(self.this_type == 4 || self.this_type == 400) {
+        if self.this_type == 4 || self.this_type == 400 {
             self.num_nds = 4;
             self.dof_per_nd = 3;
             self.num_int_dof = 0;
@@ -108,7 +100,7 @@ impl Element {
             self.nd_spts[9] = 0.0;
             self.nd_spts[10] = 0.0;
             self.nd_spts[11] = 1.0;
-        } else if(self.this_type == 6 || self.this_type == 600) {
+        } else if self.this_type == 6 || self.this_type == 600 {
             self.num_nds = 6;
             self.dof_per_nd = 3;
             self.num_int_dof = 0;
@@ -151,10 +143,10 @@ impl Element {
             self.nd_spts[15] = 0.0;
             self.nd_spts[16] = 1.0;
             self.nd_spts[17] = 1.0;
-        } else if(self.this_type == 8 || self.this_type == 81 || self.this_type == 800) {
+        } else if self.this_type == 8 || self.this_type == 81 || self.this_type == 800 {
             self.num_nds = 8;
             self.dof_per_nd = 3;
-            if(self.this_type == 8 || self.this_type == 800) {
+            if self.this_type == 8 || self.this_type == 800 {
                 self.num_int_dof = 0;
                 self.n_dim = 8;
             } else {
@@ -169,7 +161,7 @@ impl Element {
             self.dof_table = vec![0usize; i1 * 2];//int[i1][2];
             self.int_pts = vec![0f64; self.num_ip*3];
             self.ip_wt = vec![0f64; self.num_ip];
-            let mut s_val : [f64; 2] = [-R_1ORT3,R_1ORT3];
+            let s_val : [f64; 2] = [-R_1ORT3,R_1ORT3];
             i4 = 0;
             i5 = 0;
             for i1 in 0..2 {
@@ -186,7 +178,7 @@ impl Element {
                     }
                 }
             }
-            if(self.this_type == 81) {
+            if self.this_type == 81 {
                 i3 = 24;
                 for i1 in 8..11 {
                     for i2 in 0..3 {
@@ -222,7 +214,7 @@ impl Element {
             self.nd_spts[22] = 1.0;
             self.nd_spts[23] = 1.0;
         }
-        else if (self.this_type == 10 || self.this_type == 1000) {
+        else if self.this_type == 10 || self.this_type == 1000 {
             self.num_nds = 10;
             self.dof_per_nd = 3;
             self.num_int_dof = 0;
@@ -286,7 +278,7 @@ impl Element {
             self.nd_spts[28] = 0.5;
             self.nd_spts[29] = 0.5;
         }
-        else if (self.this_type == 3) {
+        else if self.this_type == 3 {
             self.num_nds = 3;
             self.dof_per_nd = 6;
             self.num_int_dof = 3;
@@ -320,7 +312,7 @@ impl Element {
             self.s_cent[0] = R_1O3;
             self.s_cent[1] = R_1O3;
             self.s_cent[2] = R_1O3;
-        } else if(self.this_type == 41) {
+        } else if self.this_type == 41 {
             self.num_nds = 4;
             self.dof_per_nd = 6;
             self.num_int_dof = 8;
@@ -365,7 +357,7 @@ impl Element {
             self.dof_table[61] = 2;
             self.dof_table[62] = 9;
             self.dof_table[63] = 2;
-        } else if(self.this_type == 2) {
+        } else if self.this_type == 2 {
             self.num_nds = 2;
             self.dof_per_nd = 6;
             self.num_int_dof = 2;
@@ -391,7 +383,7 @@ impl Element {
             self.dof_table[26] = 2;
             self.dof_table[27] = 2;
         }
-        else if (self.this_type == 21) {//force field
+        else if self.this_type == 21 {//force field
             self.num_nds = 2;
             self.dof_per_nd = 3;
             self.num_int_dof = 0;
@@ -404,7 +396,7 @@ impl Element {
             self.int_pts = vec![0f64; 1];
             self.ip_wt = vec![0f64; 1];
         }
-        else if (self.this_type == 1) {// mass
+        else if self.this_type == 1 {// mass
             self.num_nds = 1;
             self.dof_per_nd = 3;
             self.num_int_dof = 0;
@@ -427,7 +419,7 @@ impl Element {
             }
         }
         
-        if(self.num_int_dof != 0) {
+        if self.num_int_dof != 0 {
             self.internal_disp = vec![0f64; self.num_int_dof];
             self.int_prev_disp = vec![0f64; self.num_int_dof];
             self.internald_ldu = vec![0f64; self.num_int_dof];
@@ -445,7 +437,6 @@ impl Element {
     }
 
     pub fn set_nodes(&mut self, new_nds : &mut [usize]) {
-        let mut i1 : usize;
         for i1 in 0..self.num_nds {
             self.nodes[i1] = new_nds[i1];
         }
@@ -455,7 +446,7 @@ impl Element {
     pub fn initialize_faces(&mut self, glob_fc_lst : &mut Vec<Face>, fi : &mut usize) {
         //fi = the current number of self.faces that have been written into glob_fc_lst
         let mut new_fc : &mut Face;
-        if(self.this_type == 4 || self.this_type == 400) {
+        if self.this_type == 4 || self.this_type == 400 {
             glob_fc_lst[*fi].num_nds = 3;
             new_fc  = &mut glob_fc_lst[*fi];
             new_fc.set_node(0, 0, self.nodes[0]);
@@ -484,7 +475,7 @@ impl Element {
             new_fc.set_node(2, 2, self.nodes[2]);
             self.faces.push_back(*fi);
             *fi += 1usize;
-        } else if(self.this_type == 6 || self.this_type == 600) {
+        } else if self.this_type == 6 || self.this_type == 600 {
             glob_fc_lst[*fi].num_nds = 3;
             new_fc = &mut glob_fc_lst[*fi];
             new_fc.set_node(0, 0, self.nodes[0]);
@@ -523,7 +514,7 @@ impl Element {
             new_fc.set_node(3, 2, self.nodes[2]);
             self.faces.push_back(*fi);
             *fi += 1usize;
-        } else if(self.this_type == 8 || self.this_type == 81 || self.this_type == 800) {
+        } else if self.this_type == 8 || self.this_type == 81 || self.this_type == 800 {
             glob_fc_lst[*fi].num_nds = 4;
             new_fc = &mut glob_fc_lst[*fi];
             new_fc.set_node(0, 3, self.nodes[3]);
@@ -573,7 +564,7 @@ impl Element {
             self.faces.push_back(*fi);
             *fi += 1usize;
         }
-        else if (self.this_type == 10 || self.this_type == 1000) {
+        else if self.this_type == 10 || self.this_type == 1000 {
             glob_fc_lst[*fi].num_nds = 6;
             new_fc = &mut glob_fc_lst[*fi];
             new_fc.set_node(0,  0,  self.nodes[0]);
@@ -615,7 +606,7 @@ impl Element {
             self.faces.push_back(*fi);
             *fi += 1usize;
         }
-        else if (self.this_type == 3) {
+        else if self.this_type == 3 {
             glob_fc_lst[*fi].num_nds = 3;
             new_fc = &mut glob_fc_lst[*fi];
             new_fc.set_node(0, 0, self.nodes[0]);
@@ -630,7 +621,7 @@ impl Element {
             new_fc.set_node(2, 0, self.nodes[0]);
             self.faces.push_back(*fi);
             *fi += 1usize;
-        } else if(self.this_type == 41) {
+        } else if self.this_type == 41 {
             glob_fc_lst[*fi].num_nds = 4;
             new_fc = &mut glob_fc_lst[*fi];
             new_fc.set_node(0, 0, self.nodes[0]);
@@ -653,7 +644,6 @@ impl Element {
     }
 
     pub fn set_int_disp(&mut self, new_disp : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..self.num_int_dof {
             self.internal_disp[i1] = new_disp[i1];
         }
@@ -661,7 +651,6 @@ impl Element {
     }
 
     pub fn set_int_prev_disp(&mut self, new_disp : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..self.num_int_dof {
             self.int_prev_disp[i1] = new_disp[i1];
         }
@@ -669,7 +658,6 @@ impl Element {
     }
 
     pub fn advance_int_disp(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..self.num_int_dof {
             self.int_prev_disp[i1] = self.internal_disp[i1];
         }
@@ -677,7 +665,6 @@ impl Element {
     }
 
     pub fn backstep_int_disp(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..self.num_int_dof {
             self.internal_disp[i1] = self.int_prev_disp[i1];
         }
@@ -685,7 +672,6 @@ impl Element {
     }
 
     pub fn set_intd_ld_u(&mut self, globd_ld_u : &mut Vec<f64>) {
-        let mut i1 : usize;
         let mut i2 : usize =  self.int_dof_index;
         for i1 in 0..self.num_int_dof {
             self.internald_ldu[i1] = globd_ld_u[i2];
@@ -699,7 +685,6 @@ impl Element {
     }
 
     pub fn add_design_variable(&mut self, d_index : usize, coef : f64) {
-        let mut i1 : usize =  self.design_vars.len();
         let mut dv = IDCapsule::new();
         dv.int_dat = d_index;
         dv.doub_dat = coef;
@@ -709,7 +694,7 @@ impl Element {
 
     pub fn add_comp_dvar(&mut self, d_index : usize) {
         for dv in self.comp_dvars.iter_mut() {
-            if (*dv == d_index) {
+            if *dv == d_index {
                 return;
             }
         }

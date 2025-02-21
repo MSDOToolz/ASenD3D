@@ -1,13 +1,11 @@
 use crate::list_ent::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 use crate::fmath::*;
 
 impl MatrixRow {
     pub fn add_entry(&mut self, row : usize, col : usize, val : f64) {
         for me in self.row_vec.iter_mut() {
-            if (me.col == col) {
+            if me.col == col {
                 me.value += val;
                 return;
             }
@@ -23,7 +21,6 @@ impl MatrixRow {
 
 impl SparseMat {
     pub fn set_dim(&mut self, new_dim : usize) {
-        let mut i1 : usize;
         self.dim = new_dim;
         self.matrix = vec![MatrixRow::new(); new_dim];
         return;
@@ -54,7 +51,7 @@ impl SparseMat {
     }
 
     pub fn vector_multiply(&mut self, prod : &mut Vec<f64>, inp_vec : &mut Vec<f64>, transpose : bool) {
-        if(transpose) {
+        if transpose {
             for i1 in self.matrix.iter_mut() {
                 for i2 in i1.row_vec.iter_mut() {
                     prod[i2.col]  +=  i2.value * inp_vec[i2.row];
@@ -76,7 +73,7 @@ impl SparseMat {
         for i1 in self.matrix.iter_mut() {
             for i2 in i1.row_vec.iter_mut() {
                 this_val = fabs(i2.value);
-                if (this_val > max_val) {
+                if this_val > max_val {
                     max_val = this_val;
                 }
             }

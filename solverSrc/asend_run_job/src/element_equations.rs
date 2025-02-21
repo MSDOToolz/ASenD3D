@@ -36,7 +36,7 @@ impl Element {
         for i1 in 0..st_row {
             i3 = st_row;
             i4 = i1*self.num_int_dof;
-            for i2 in 0..self.num_int_dof {
+            for _i2 in 0..self.num_int_dof {
                 scr1[i3] = self.internal_mat[i4];
                 i3 += 1usize;
                 i4 += 1usize;
@@ -49,7 +49,7 @@ impl Element {
                     mat[i4] -=  self.internal_mat[i5]*scr2[i3];
                     i5 += 1usize;
                 }
-                i4 +=  (end_row+1);
+                i4 +=  end_row+1;
             }
         }
         
@@ -171,7 +171,7 @@ impl Element {
             glb_ind = nd_ar[nd].dof_index[dof];
             i3 = i1*self.num_int_dof;
             i4 = st_row;
-            for i2 in 0..self.num_int_dof {
+            for _i2 in 0..self.num_int_dof {
                 scr1[i4]  -=  self.internal_mat[i3]*ext_vec[glb_ind];
                 i3 += 1usize;
                 i4 += 1usize;
@@ -203,7 +203,7 @@ impl Element {
 
     //dup1
 
-    pub fn get_ruk_dfd0(&mut self, rvec : &mut Vec<DiffDoub0>, d_rdu : &mut Vec<f64>, d_rd_t : &mut Vec<f64>, get_matrix : bool, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_ruk_dfd0(&mut self, rvec : &mut Vec<DiffDoub0>, d_rdu : &mut Vec<f64>, d_rd_t : &mut Vec<f64>, get_matrix : bool, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
@@ -397,7 +397,7 @@ impl Element {
     }
 
     pub fn get_rum_dfd0(& self, rvec : &mut Vec<DiffDoub0>, d_rd_a : &mut Vec<f64>, get_matrix : bool, actual_props : bool, n_lgeom : bool, 
-        pre : &mut DiffDoub0StressPrereq, scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
+        pre : &mut DiffDoub0StressPrereq, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>) {
         
         let mut i1 : usize;
         let mut i2 : usize;
@@ -438,7 +438,7 @@ impl Element {
         for i1 in 0..nd_dof {
             rvec[i1].set_val(0.0);
             if get_matrix {
-                for i2 in 0..nd_dof {
+                for _i2 in 0..nd_dof {
                     d_rd_a[i3] = 0.0;
                     i3 += 1usize;
                 }
@@ -546,7 +546,6 @@ impl Element {
                     }
                     i5 = 0;
                     for i2 in 0..nd_dof {
-                        i7 = 0;
                         for i3 in 0..nd_dof {
                             i6 = i2;
                             i7 = i3;
@@ -606,7 +605,7 @@ impl Element {
     }
 
     pub fn get_rud_dfd0(&mut self, rvec : &mut Vec<DiffDoub0>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub0StressPrereq, 
-        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
+        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
@@ -678,7 +677,7 @@ impl Element {
             for i1 in 0..nd_dof {
                 pre.glob_acc[i1].set_val_dfd0(& pre.glob_vel[i1]);
             }
-            self.get_rum_dfd0(rtmp, d_rtmp,  get_matrix,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar, dv_ar);
+            self.get_rum_dfd0(rtmp, d_rtmp,  get_matrix,  true,  cmd.nonlinear_geom, pre, scr_dfd);
             for i1 in 0..nd_dof {
                 rvec[i1].add(& rtmp[i1]);
             }
@@ -711,7 +710,7 @@ impl Element {
                     i3 += 1usize;
                 }
             }
-            self.get_ruk_dfd0(rtmp, &mut  d_rtmp, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom,  pre,  nd_ar, dv_ar);
+            self.get_ruk_dfd0(rtmp, &mut  d_rtmp, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom,  pre);
             for i1 in 0..nd_dof {
                 rvec[i1].add(& rtmp[i1]);
             }
@@ -824,7 +823,7 @@ impl Element {
     }
 
     pub fn get_ru_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rdu : &mut SparseMat, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub0StressPrereq, 
-        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
+        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, nd_ar : &mut Vec<Node>) {
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
@@ -889,7 +888,7 @@ impl Element {
         }
         
         if self.this_type != 1 {
-            self.get_ruk_dfd0(&mut rvec, &mut  d_rdu, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom, pre, nd_ar, dv_ar);
+            self.get_ruk_dfd0(&mut rvec, &mut  d_rdu, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom, pre);
         }
         
         if self.num_int_dof > 0 {
@@ -925,7 +924,7 @@ impl Element {
                         pre.glob_acc[i3].set_val(1.0);
                         i2  +=  2;
                     }
-                    self.get_rum_dfd0(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd,  nd_ar, dv_ar);
+                    self.get_rum_dfd0(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     c1 = cmd.time_step;
                     c1 = -1.0 / (c1 * c1 * (cmd.newmark_beta - cmd.newmark_gamma));
                     i2 = 0;
@@ -938,7 +937,7 @@ impl Element {
                     }
                 }
                 else {
-                    self.get_rum_dfd0(&mut rtmp, &mut d_rtmp,  true,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar,  dv_ar);
+                    self.get_rum_dfd0(&mut rtmp, &mut d_rtmp,  true,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
@@ -956,7 +955,7 @@ impl Element {
                     }
                 }
                 if self.this_type != 1 {
-                    self.get_rud_dfd0(&mut rtmp, &mut  d_rtmp,  true, cmd, pre, scr, scr_dfd, nd_ar, dv_ar);
+                    self.get_rud_dfd0(&mut rtmp, &mut  d_rtmp,  true, cmd, pre, scr, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
@@ -984,20 +983,20 @@ impl Element {
                         pre.glob_acc[i3].set_val(1.0);
                         i2  +=  2;
                     }
-                    self.get_rum_dfd0(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar, dv_ar);
+                    self.get_rum_dfd0(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     for i1 in 0..nd_dof {
                         temp_acc[i1].mult(& rtmp[i1]);
                         rvec[i1].add(& temp_acc[i1]);
                     }
                 }
                 else {
-                    self.get_rum_dfd0(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar,  dv_ar);
+                    self.get_rum_dfd0(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
                 }
                 if self.this_type != 1 {
-                    self.get_rud_dfd0(&mut rtmp, &mut  d_rtmp,  false,  cmd,  pre, scr, scr_dfd, nd_ar,  dv_ar);
+                    self.get_rud_dfd0(&mut rtmp, &mut  d_rtmp,  false,  cmd,  pre, scr, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
@@ -1200,7 +1199,7 @@ impl Element {
         
         if self.this_type == 21 {
             //self.get_rt_frc_fld_dfd0(glob_r, globd_rd_t, &mut  scr.scr_m1, &mut  scr.scr_m2,  get_matrix, cmd, &mut  pre, &mut  nd_ar);
-            self.get_rt_frc_fld_dfd0(glob_r, globd_rd_t, &mut  d_rd_t, &mut  d_rtmp,  get_matrix, cmd, pre, nd_ar);
+            self.get_rt_frc_fld_dfd0(glob_r, globd_rd_t, &mut  d_rd_t, &mut  d_rtmp,  get_matrix, pre, nd_ar);
             return;
         }
         
@@ -1412,7 +1411,7 @@ impl Element {
         return;
     }
 
-    pub fn get_rt_frc_fld_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rd_t : &mut SparseMat, d_rd_u : &mut Vec<f64>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub0StressPrereq, nd_ar : &mut Vec<Node>) {
+    pub fn get_rt_frc_fld_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rd_t : &mut SparseMat, d_rd_u : &mut Vec<f64>, d_rd_v : &mut Vec<f64>, get_matrix : bool, pre : &mut DiffDoub0StressPrereq, nd_ar : &mut Vec<Node>) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
@@ -1675,7 +1674,7 @@ impl Element {
             // work dissipation term
             mat_mul_ar_dfd0(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_u,  1,  3,  6);
             i3 = 0;
-            for i1 in 0..2 {
+            for _i1 in 0..2 {
                 for i2 in 0..6 {
                     d_rd_u[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
@@ -1713,16 +1712,15 @@ impl Element {
 
     pub fn get_app_load_dfd0(& self, app_ld : &mut Vec<DiffDoub0>, ld_pt : & Load, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut glob_ind : usize;
         let mut nd : usize;
         let mut dof : usize;
-        let mut nd_dof : usize =  self.num_nds*self.dof_per_nd;
-        let mut num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
-        let mut ld_type : CppStr = ld_pt.this_type.clone();
+        let nd_dof : usize =  self.num_nds*self.dof_per_nd;
+        let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
+        let ld_type : CppStr = ld_pt.this_type.clone();
         //let mut d_rd_a = &mut scr.scr_m1;
         let mut d_rd_a = match scr.next() {
             None => panic!("Error: ran out of scratch matrices"),
@@ -1757,14 +1755,14 @@ impl Element {
         
         if ld_type.s == "bodyForce" {
             i2 = 0;
-            for i1 in 0..nd_dof {
+            for _i1 in 0..nd_dof {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
                 pre.glob_acc[i3].set_val(ld_pt.load[dof]);
                 i2  +=  2;
             }
-            self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr, scr_dfd, nd_ar, dv_ar);
+            self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr_dfd);
             i2 = 0;
             for i1 in 0..nd_dof {
                 dof = self.dof_table[i2 + 1];
@@ -1800,7 +1798,7 @@ impl Element {
         }
         else if ld_type.s == "gravitational" {
             i2 = 0;
-            for i1 in 0..nd_dof {
+            for _i1 in 0..nd_dof {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
@@ -1809,7 +1807,7 @@ impl Element {
                 }
                 i2  +=  2;
             }
-            self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom,  pre, scr, scr_dfd, nd_ar,  dv_ar);
+            self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom,  pre, scr_dfd);
         }
         else if ld_type.s == "centrifugal" {
             ang_vel2.set_val(ld_pt.angular_vel);
@@ -1818,7 +1816,7 @@ impl Element {
             nn_inv.set_val(1.0 / (self.num_nds as f64));
             dp.set_val(0.0);
             for i1 in 0..3 {
-                for i2 in 0..self.num_nds {
+                for _i2 in 0..self.num_nds {
                     el_cent[i1].add(& pre.glob_nds[i3]);
                     i3 += 1usize;
                 }
@@ -1838,7 +1836,7 @@ impl Element {
                 ax_to_el[i1].mult(& ang_vel2);
             }
             i2 = 0;
-            for i1 in 0..nd_dof {
+            for _i1 in 0..nd_dof {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
@@ -1847,7 +1845,7 @@ impl Element {
                 }
                 i2  +=  2;
             }
-            self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom, pre, scr, scr_dfd, nd_ar, dv_ar);
+            self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom, pre, scr_dfd);
         }
         else if ld_type.s == "surfaceTraction" || ld_type.s == "surfacePressure" {
             let mut this_fc : &Face;
@@ -1885,7 +1883,7 @@ impl Element {
                                 i4  +=  self.num_nds;
                             }
                         }
-                        self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr, scr_dfd, nd_ar, dv_ar);
+                        self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr_dfd);
                         i2 = 0;
                         for i1 in 0..nd_dof {
                             nd = self.dof_table[i2];
@@ -1939,18 +1937,17 @@ impl Element {
 
     pub fn get_app_therm_load_dfd0(& self, app_ld : &mut Vec<DiffDoub0>, ld_pt : & Load, pre : &mut DiffDoub0StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut glob_ind : usize;
-        let mut num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
-        let mut ld_type : CppStr = ld_pt.this_type.clone();
+        let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
+        let ld_type : CppStr = ld_pt.this_type.clone();
         //let mut el_app_ld = &mut scr.scr_v1;
-        let mut el_app_ld = match scr_dfd.next() {
+        let el_app_ld = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch matrices"),
             Some(x) => &mut x.dat,
         };
         //let mut d_rd_t = &mut scr.scr_m1;
-        let mut d_rd_t = match scr.next() {
+        let d_rd_t = match scr.next() {
             None => panic!("Error: ran out of scratch matrices"),
             Some(x) => &mut x.dat,
         };
@@ -2052,15 +2049,13 @@ impl Element {
 //DiffDoub1 versions: 
     //dup1
 
-    pub fn get_ruk_dfd1(&mut self, rvec : &mut Vec<DiffDoub1>, d_rdu : &mut Vec<f64>, d_rd_t : &mut Vec<f64>, get_matrix : bool, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
+    pub fn get_ruk_dfd1(&mut self, rvec : &mut Vec<DiffDoub1>, d_rdu : &mut Vec<f64>, d_rd_t : &mut Vec<f64>, get_matrix : bool, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
         let mut i6 : usize;
         let mut i7 : usize;
-        let mut tot_dof : usize;
+        let tot_dof : usize;
         
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
@@ -2093,11 +2088,11 @@ impl Element {
         for i1 in 0..tot_dof {
             rvec[i1].set_val(0.0);
             if get_matrix {
-                for i2 in 0..tot_dof {
+                for _i2 in 0..tot_dof {
                     d_rdu[i3] = 0.0;
                     i3 += 1usize;
                 }
-                for i2 in 0..self.num_nds {
+                for _i2 in 0..self.num_nds {
                     d_rd_t[i4] = 0.0;
                     i4 += 1usize;
                 }
@@ -2217,7 +2212,7 @@ impl Element {
                     for i3 in 0..tot_dof {
                         i6 = i2;
                         i7 = i3;
-                        for i4 in 0..self.def_dim {
+                        for _i4 in 0..self.def_dim {
                             d_rdu[i5] +=  pre.bmat[i6].val*pre.cbmat[i7].val;
                             i6 +=  tot_dof;
                             i7 +=  tot_dof;
@@ -2233,7 +2228,7 @@ impl Element {
                     for i3 in 0..self.num_nds {
                         i6 = i2;
                         i7 = i3;
-                        for i4 in 0..6 {
+                        for _i4 in 0..6 {
                             d_rd_t[i5]  -=  pre.bmat[i6].val * cten[i7].val;
                             i6  +=  tot_dof;
                             i7  +=  self.num_nds;
@@ -2248,7 +2243,7 @@ impl Element {
     }
 
     pub fn get_rum_dfd1(& self, rvec : &mut Vec<DiffDoub1>, d_rd_a : &mut Vec<f64>, get_matrix : bool, actual_props : bool, n_lgeom : bool, 
-        pre : &mut DiffDoub1StressPrereq, scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
+        pre : &mut DiffDoub1StressPrereq, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>) {
         
         let mut i1 : usize;
         let mut i2 : usize;
@@ -2257,13 +2252,11 @@ impl Element {
         let mut i5 : usize;
         let mut i6 : usize;
         let mut i7 : usize;
-        let mut i8 : usize;
-        let mut i9 : usize;
         let mut nd1 : usize;
         let mut dof1 : usize;
         let mut nd2 : usize;
         let mut dof2 : usize;
-        let mut nd_dof : usize =  self.num_nds * self.dof_per_nd;
+        let nd_dof : usize =  self.num_nds * self.dof_per_nd;
         
         let mut inst_disp = [DiffDoub1::new(); 60];
         
@@ -2271,14 +2264,11 @@ impl Element {
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
         let mut det_j = DiffDoub1::new();
-        let mut d_jwt = DiffDoub1::new();
         
         let mut tmp = DiffDoub1::new();
         let mut tmp61 = [DiffDoub1::new(); 6];
-        let mut tmp62 = [DiffDoub1::new(); 6];
         let mut det_jwt = DiffDoub1::new();
         
-        let mut rtmp = [DiffDoub1::new(); 30];
         let mut save_m = [DiffDoub1::new(); 36];
         
         let mut scr_v1 = match scr_dfd.next() {
@@ -2294,7 +2284,7 @@ impl Element {
         for i1 in 0..nd_dof {
             rvec[i1].set_val(0.0);
             if get_matrix {
-                for i2 in 0..nd_dof {
+                for _i2 in 0..nd_dof {
                     d_rd_a[i3] = 0.0;
                     i3 += 1usize;
                 }
@@ -2350,12 +2340,12 @@ impl Element {
                 // build matrix [d_u^i/d_u^g] * {n}
                 i7 = 0;
                 for i2 in 0..nd_dof {
-                    nd1 = self.dof_table[i7];
-                    dof1 = self.dof_table[i7 + 1];
+                    //nd1 = self.dof_table[i7];
+                    //dof1 = self.dof_table[i7 + 1];
                     self.get_inst_disp_dfd1(&mut inst_disp, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds,  n_lgeom,  i2,  MAX_INT);
                     i6 = 0;
                     i5 = i2;
-                    for i3 in 0..6 {
+                    for _i3 in 0..6 {
                         pre.bmat[i5].set_val(0.0);
                         for i4 in 0..self.num_nds {
                             tmp.set_val_dfd1(& n_vec[i4]);
@@ -2364,7 +2354,7 @@ impl Element {
                             i6 += 1usize;
                         }
                         i5  +=  nd_dof;
-                        i6  +=  (self.n_dim - self.num_nds);
+                        i6  +=  self.n_dim - self.num_nds;
                     }
                     i7  +=  2;
                 }
@@ -2373,7 +2363,7 @@ impl Element {
                 for i2 in 0..6 {
                     i4 = 0;
                     tmp61[i2].set_val(0.0);
-                    for i3 in 0..nd_dof {
+                    for _i3 in 0..nd_dof {
                         nd1 = self.dof_table[i4];
                         dof1 = self.dof_table[i4 + 1];
                         i6 = dof1 * self.num_nds + nd1;
@@ -2402,11 +2392,10 @@ impl Element {
                     }
                     i5 = 0;
                     for i2 in 0..nd_dof {
-                        i7 = 0;
                         for i3 in 0..nd_dof {
                             i6 = i2;
                             i7 = i3;
-                            for i4 in 0..6 {
+                            for _i4 in 0..6 {
                                 d_rd_a[i5]  +=  pre.cbmat[i6].val * pre.bmat[i7].val;
                                 i6  +=  nd_dof;
                                 i7  +=  nd_dof;
@@ -2462,7 +2451,7 @@ impl Element {
     }
 
     pub fn get_rud_dfd1(&mut self, rvec : &mut Vec<DiffDoub1>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub1StressPrereq, 
-        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
+        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
@@ -2472,10 +2461,10 @@ impl Element {
         let mut i7 : usize;
         let mut nd : usize;
         let mut dof : usize;
-        let mut nd_dof : usize =  self.num_nds * self.dof_per_nd;
+        let nd_dof : usize =  self.num_nds * self.dof_per_nd;
         let mut tmp = DiffDoub1::new();
         //let mut rtmp = &mut scr.scr_v3;
-        let mut rtmp = match scr_dfd.next() {
+        let rtmp = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch vectors"),
             Some(x) => &mut x.dat,
         };
@@ -2508,7 +2497,6 @@ impl Element {
         let mut sec_def = [DiffDoub1::new(); 9];
         let mut ux = [DiffDoub1::new(); 9];
         let mut bvel = [DiffDoub1::new(); 9];
-        let mut dbvel = [DiffDoub1::new(); 9];
         
         let mut tmp_s : [f64; 3] = [0f64; 3];
         
@@ -2516,7 +2504,7 @@ impl Element {
         for i1 in 0..nd_dof {
             rvec[i1].set_val(0.0);
             if get_matrix {
-                for i2 in 0..nd_dof {
+                for _i2 in 0..nd_dof {
                     d_rd_v[i3] = 0.0;
                     i3 += 1usize;
                 }
@@ -2535,14 +2523,14 @@ impl Element {
             for i1 in 0..nd_dof {
                 pre.glob_acc[i1].set_val_dfd1(& pre.glob_vel[i1]);
             }
-            self.get_rum_dfd1(rtmp, d_rtmp,  get_matrix,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar, dv_ar);
+            self.get_rum_dfd1(rtmp, d_rtmp,  get_matrix,  true,  cmd.nonlinear_geom, pre, scr_dfd);
             for i1 in 0..nd_dof {
                 rvec[i1].add(& rtmp[i1]);
             }
             if get_matrix {
                 i3 = 0;
-                for i1 in 0..nd_dof {
-                    for i2 in 0..nd_dof {
+                for _i1 in 0..nd_dof {
+                    for _i2 in 0..nd_dof {
                         d_rd_v[i3]  +=  d_rtmp[i3];
                         i3 += 1usize;
                     }
@@ -2556,7 +2544,7 @@ impl Element {
             }
             i3 = 0;
             i4 = 0;
-            for i1 in 0..self.dof_per_nd {
+            for _i1 in 0..self.dof_per_nd {
                 for i2 in 0..self.n_dim {
                     if i2 >= self.num_nds {
                         pre.glob_disp[i3].set_val(0.0);
@@ -2568,15 +2556,15 @@ impl Element {
                     i3 += 1usize;
                 }
             }
-            self.get_ruk_dfd1(rtmp, &mut  d_rtmp, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom,  pre,  nd_ar, dv_ar);
+            self.get_ruk_dfd1(rtmp, &mut  d_rtmp, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom,  pre);
             for i1 in 0..nd_dof {
                 rvec[i1].add(& rtmp[i1]);
             }
             if get_matrix {
                 i3 = 0;
                 i4 = 0;
-                for i1 in 0..nd_dof {
-                    for i2 in 0..nd_dof {
+                for _i1 in 0..nd_dof {
+                    for _i2 in 0..nd_dof {
                         d_rd_v[i3]  +=  d_rtmp[i4];
                         i3 += 1usize;
                         i4 += 1usize;
@@ -2634,7 +2622,7 @@ impl Element {
                 for i2 in 0..6 {
                     bvel[i2].set_val(0.0);
                     i4 = 0;
-                    for i3 in 0..nd_dof {
+                    for _i3 in 0..nd_dof {
                         nd = self.dof_table[i4];
                         dof = self.dof_table[i4 + 1];
                         tmp.set_val_dfd1(& pre.bmat[i5]);
@@ -2662,7 +2650,7 @@ impl Element {
                         for i3 in 0..nd_dof {
                             i6 = i2;
                             i7 = i3;
-                            for i4 in 0..6 {
+                            for _i4 in 0..6 {
                                 //i5 = i2 * nd_dof + i3;
                                 //i6 = i4 * nd_dof + i2;
                                 //i7 = i4 * nd_dof + i3;
@@ -2681,8 +2669,7 @@ impl Element {
     }
 
     pub fn get_ru_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rdu : &mut SparseMat, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub1StressPrereq, 
-        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
+        scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, nd_ar : &mut Vec<Node>) {
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
@@ -2693,8 +2680,8 @@ impl Element {
         let mut dof2 : usize;
         let mut glob_ind : usize;
         let mut glob_ind2 : usize;
-        let mut nd_dof : usize;
-        let mut tot_dof : usize;
+        let nd_dof : usize;
+        let tot_dof : usize;
         let mut temp_acc = [DiffDoub1::new(); 30];
         //let mut rvec = &mut scr.scr_v1;
         let mut rvec = match scr_dfd.next() {
@@ -2725,8 +2712,7 @@ impl Element {
             Some(x) => &mut x.dat,
         };
         let mut c1 : f64;
-        let mut c2 : f64;
-        let mut tmp = DiffDoub1::new();
+        let c2 : f64;
         
         nd_dof = self.num_nds*self.dof_per_nd;
         tot_dof = nd_dof + self.num_int_dof;
@@ -2735,7 +2721,7 @@ impl Element {
             rvec[i1].set_val(0.0);
             if get_matrix && i1 < nd_dof {
                 i3 = i1 * tot_dof;
-                for i2 in 0..tot_dof {
+                for _i2 in 0..tot_dof {
                     d_rdu[i3] = 0.0;
                     i3 += 1usize;
                 }
@@ -2748,7 +2734,7 @@ impl Element {
         }
         
         if self.this_type != 1 {
-            self.get_ruk_dfd1(&mut rvec, &mut  d_rdu, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom, pre, nd_ar, dv_ar);
+            self.get_ruk_dfd1(&mut rvec, &mut  d_rdu, &mut  d_rd_t,  get_matrix,  cmd.nonlinear_geom, pre);
         }
         
         if self.num_int_dof > 0 {
@@ -2761,7 +2747,7 @@ impl Element {
                 i4 = 0;
                 for i1 in 0..tot_dof {
                     i3 = i1 * tot_dof + nd_dof;
-                    for i2 in nd_dof..tot_dof {
+                    for _i2 in nd_dof..tot_dof {
                         self.internal_mat[i4] = d_rdu[i3];
                         i3 += 1usize;
                         i4 += 1usize;
@@ -2784,7 +2770,7 @@ impl Element {
                         pre.glob_acc[i3].set_val(1.0);
                         i2  +=  2;
                     }
-                    self.get_rum_dfd1(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd,  nd_ar, dv_ar);
+                    self.get_rum_dfd1(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     c1 = cmd.time_step;
                     c1 = -1.0 / (c1 * c1 * (cmd.newmark_beta - cmd.newmark_gamma));
                     i2 = 0;
@@ -2797,7 +2783,7 @@ impl Element {
                     }
                 }
                 else {
-                    self.get_rum_dfd1(&mut rtmp, &mut d_rtmp,  true,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar,  dv_ar);
+                    self.get_rum_dfd1(&mut rtmp, &mut d_rtmp,  true,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
@@ -2805,8 +2791,8 @@ impl Element {
                     c1 = -1.0 / (c1 * c1 * (cmd.newmark_beta - cmd.newmark_gamma));
                     i3 = 0;
                     i4 = 0;
-                    for i1 in 0..nd_dof {
-                        for i2 in 0..nd_dof {
+                    for _i1 in 0..nd_dof {
+                        for _i2 in 0..nd_dof {
                             d_rdu[i3]  +=  c1 * d_rtmp[i4];
                             i3 += 1usize;
                             i4 += 1usize;
@@ -2815,15 +2801,15 @@ impl Element {
                     }
                 }
                 if self.this_type != 1 {
-                    self.get_rud_dfd1(&mut rtmp, &mut  d_rtmp,  true, cmd, pre, scr, scr_dfd, nd_ar, dv_ar);
+                    self.get_rud_dfd1(&mut rtmp, &mut  d_rtmp,  true, cmd, pre, scr, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
                     c2 = cmd.time_step * cmd.newmark_gamma * c1;
                     i3 = 0;
                     i4 = 0;
-                    for i1 in 0..nd_dof {
-                        for i2 in 0..nd_dof {
+                    for _i1 in 0..nd_dof {
+                        for _i2 in 0..nd_dof {
                             d_rdu[i3]  +=  c2 * d_rtmp[i4];
                             i3 += 1usize;
                             i4 += 1usize;
@@ -2843,20 +2829,20 @@ impl Element {
                         pre.glob_acc[i3].set_val(1.0);
                         i2  +=  2;
                     }
-                    self.get_rum_dfd1(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar, dv_ar);
+                    self.get_rum_dfd1(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     for i1 in 0..nd_dof {
                         temp_acc[i1].mult(& rtmp[i1]);
                         rvec[i1].add(& temp_acc[i1]);
                     }
                 }
                 else {
-                    self.get_rum_dfd1(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr, scr_dfd, nd_ar,  dv_ar);
+                    self.get_rum_dfd1(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
                 }
                 if self.this_type != 1 {
-                    self.get_rud_dfd1(&mut rtmp, &mut  d_rtmp,  false,  cmd,  pre, scr, scr_dfd, nd_ar,  dv_ar);
+                    self.get_rud_dfd1(&mut rtmp, &mut  d_rtmp,  false,  cmd,  pre, scr, scr_dfd);
                     for i1 in 0..nd_dof {
                         rvec[i1].add(& rtmp[i1]);
                     }
@@ -2873,7 +2859,7 @@ impl Element {
             if get_matrix {
                 i3 = i1*tot_dof;
                 i5 = 0;
-                for i2 in 0..nd_dof {
+                for _i2 in 0..nd_dof {
                     nd2 = self.nodes[self.dof_table[i5]];
                     dof2 = self.dof_table[i5+1];
                     glob_ind2 = nd_ar[nd2].dof_index[dof2];
@@ -2889,7 +2875,6 @@ impl Element {
     }
 
     pub fn get_rtk_dfd1(&mut self, rvec : &mut Vec<DiffDoub1>, d_rd_t : &mut Vec<f64>, get_matrix : bool, pre : &mut DiffDoub1StressPrereq) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
@@ -2910,7 +2895,7 @@ impl Element {
         for i1 in 0..self.num_nds {
             rvec[i1].set_val(0.0);
             if get_matrix {
-                for i2 in 0..self.num_nds {
+                for _i2 in 0..self.num_nds {
                     d_rd_t[i3] = 0.0;
                     i3 += 1usize;
                 }
@@ -2951,7 +2936,6 @@ impl Element {
     }
 
     pub fn get_rtm_dfd1(& self, rvec : &mut Vec<DiffDoub1>, d_rd_tdot : &mut Vec<f64>, get_matrix : bool, actual_props : bool, pre : &mut DiffDoub1StressPrereq) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
@@ -2959,7 +2943,6 @@ impl Element {
         let mut det_j = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
         let mut pt_tdot = DiffDoub1::new();
-        let mut rtmp = [DiffDoub1::new(); 10];
         let mut d_rtmp = [DiffDoub1::new(); 100];
         let mut save_cp = DiffDoub1::new();
         let mut tmp_s : [f64; 3] = [0f64; 3];
@@ -2968,7 +2951,7 @@ impl Element {
         for i1 in 0..self.num_nds {
             rvec[i1].set_val(0.0);
             if get_matrix {
-                for i2 in 0..self.num_nds {
+                for _i2 in 0..self.num_nds {
                     d_rd_tdot[i3] = 0.0;
                     i3 += 1usize;
                 }
@@ -3035,12 +3018,10 @@ impl Element {
 
     pub fn get_rt_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rd_t : &mut SparseMat, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub1StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, nd_ar : &mut Vec<Node>) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut glob_ind1 : usize;
         let mut glob_ind2 : usize;
-        let mut c1 : f64 =  1.0/(cmd.time_step*cmd.newmark_gamma);
+        let c1 : f64 =  1.0/(cmd.time_step*cmd.newmark_gamma);
         //let mut rvec = &mut scr.scr_v1;
         let mut rvec = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch vectors"),
@@ -3064,7 +3045,7 @@ impl Element {
         
         if self.this_type == 21 {
             //self.get_rt_frc_fld_dfd1(glob_r, globd_rd_t, &mut  scr.scr_m1, &mut  scr.scr_m2,  get_matrix, cmd, &mut  pre, &mut  nd_ar);
-            self.get_rt_frc_fld_dfd1(glob_r, globd_rd_t, &mut  d_rd_t, &mut  d_rtmp,  get_matrix, cmd, pre, nd_ar);
+            self.get_rt_frc_fld_dfd1(glob_r, globd_rd_t, &mut  d_rd_t, &mut  d_rtmp,  get_matrix, pre, nd_ar);
             return;
         }
         
@@ -3078,7 +3059,7 @@ impl Element {
             for i1 in 0..self.num_nds {
                 rvec[i1].add(& rtmp[i1]);
                 if get_matrix {
-                    for i2 in 0..self.num_nds {
+                    for _i2 in 0..self.num_nds {
                         d_rd_t[i3]  +=  c1 * d_rtmp[i3];
                         i3 += 1usize;
                     }
@@ -3108,8 +3089,8 @@ impl Element {
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
-        let mut nd_dof : usize =  6;
-        let mut tot_dof : usize =  6;
+        let nd_dof : usize =  6;
+        let tot_dof : usize =  6;
         let mut nd : usize;
         let mut nd2 : usize;
         let mut dof : usize;
@@ -3261,7 +3242,7 @@ impl Element {
             if get_matrix {
                 i3 = i1 * tot_dof;
                 i5 = 0;
-                for i2 in 0..nd_dof {
+                for _i2 in 0..nd_dof {
                     nd2 = self.nodes[self.dof_table[i5]];
                     dof2 = self.dof_table[i5 + 1];
                     glob_ind2 = nd_ar[nd2].dof_index[dof2];
@@ -3276,18 +3257,12 @@ impl Element {
         return;
     }
 
-    pub fn get_rt_frc_fld_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rd_t : &mut SparseMat, d_rd_u : &mut Vec<f64>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub1StressPrereq, nd_ar : &mut Vec<Node>) {
+    pub fn get_rt_frc_fld_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rd_t : &mut SparseMat, d_rd_u : &mut Vec<f64>, d_rd_v : &mut Vec<f64>, get_matrix : bool, pre : &mut DiffDoub1StressPrereq, nd_ar : &mut Vec<Node>) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
-        let mut i4 : usize;
-        let mut i5 : usize;
-        let mut nd_dof : usize =  6;
-        let mut tot_dof : usize =  6;
         let mut nd : usize;
         let mut nd2 : usize;
-        let mut dof : usize;
-        let mut dof2 : usize;
         let mut glob_ind : usize;
         let mut glob_ind2 : usize;
         let mut rvec = [DiffDoub1::new(); 2];
@@ -3545,7 +3520,7 @@ impl Element {
             // work dissipation term
             mat_mul_ar_dfd1(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_u,  1,  3,  6);
             i3 = 0;
-            for i1 in 0..2 {
+            for _i1 in 0..2 {
                 for i2 in 0..6 {
                     d_rd_u[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
@@ -3560,7 +3535,7 @@ impl Element {
             
             mat_mul_ar_dfd1(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_v,  1,  3,  6);
             i3 = 0;
-            for i1 in 0..2 {
+            for _i1 in 0..2 {
                 for i2 in 0..6 {
                     d_rd_v[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
@@ -3569,7 +3544,7 @@ impl Element {
             
             mat_mul_ar_dfd1(&mut tmp_mat, &mut  f_n1, &mut  d_dvecd_u,  1,  3,  6);
             i3 = 0;
-            for i1 in 0..2 {
+            for _i1 in 0..2 {
                 for i2 in 0..6 {
                     d_rd_v[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
@@ -3583,16 +3558,15 @@ impl Element {
 
     pub fn get_app_load_dfd1(& self, app_ld : &mut Vec<DiffDoub1>, ld_pt : & Load, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut glob_ind : usize;
         let mut nd : usize;
         let mut dof : usize;
-        let mut nd_dof : usize =  self.num_nds*self.dof_per_nd;
-        let mut num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
-        let mut ld_type : CppStr = ld_pt.this_type.clone();
+        let nd_dof : usize =  self.num_nds*self.dof_per_nd;
+        let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
+        let ld_type : CppStr = ld_pt.this_type.clone();
         //let mut d_rd_a = &mut scr.scr_m1;
         let mut d_rd_a = match scr.next() {
             None => panic!("Error: ran out of scratch matrices"),
@@ -3627,14 +3601,14 @@ impl Element {
         
         if ld_type.s == "bodyForce" {
             i2 = 0;
-            for i1 in 0..nd_dof {
+            for _i1 in 0..nd_dof {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
                 pre.glob_acc[i3].set_val(ld_pt.load[dof]);
                 i2  +=  2;
             }
-            self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr, scr_dfd, nd_ar, dv_ar);
+            self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr_dfd);
             i2 = 0;
             for i1 in 0..nd_dof {
                 dof = self.dof_table[i2 + 1];
@@ -3670,7 +3644,7 @@ impl Element {
         }
         else if ld_type.s == "gravitational" {
             i2 = 0;
-            for i1 in 0..nd_dof {
+            for _i1 in 0..nd_dof {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
@@ -3679,7 +3653,7 @@ impl Element {
                 }
                 i2  +=  2;
             }
-            self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom,  pre, scr, scr_dfd, nd_ar,  dv_ar);
+            self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom,  pre, scr_dfd);
         }
         else if ld_type.s == "centrifugal" {
             ang_vel2.set_val(ld_pt.angular_vel);
@@ -3688,7 +3662,7 @@ impl Element {
             nn_inv.set_val(1.0 / (self.num_nds as f64));
             dp.set_val(0.0);
             for i1 in 0..3 {
-                for i2 in 0..self.num_nds {
+                for _i2 in 0..self.num_nds {
                     el_cent[i1].add(& pre.glob_nds[i3]);
                     i3 += 1usize;
                 }
@@ -3708,7 +3682,7 @@ impl Element {
                 ax_to_el[i1].mult(& ang_vel2);
             }
             i2 = 0;
-            for i1 in 0..nd_dof {
+            for _i1 in 0..nd_dof {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
@@ -3717,7 +3691,7 @@ impl Element {
                 }
                 i2  +=  2;
             }
-            self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom, pre, scr, scr_dfd, nd_ar, dv_ar);
+            self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  true,  n_lgeom, pre, scr_dfd);
         }
         else if ld_type.s == "surfaceTraction" || ld_type.s == "surfacePressure" {
             let mut this_fc : &Face;
@@ -3755,7 +3729,7 @@ impl Element {
                                 i4  +=  self.num_nds;
                             }
                         }
-                        self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr, scr_dfd, nd_ar, dv_ar);
+                        self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr_dfd);
                         i2 = 0;
                         for i1 in 0..nd_dof {
                             nd = self.dof_table[i2];
@@ -3809,18 +3783,17 @@ impl Element {
 
     pub fn get_app_therm_load_dfd1(& self, app_ld : &mut Vec<DiffDoub1>, ld_pt : & Load, pre : &mut DiffDoub1StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut glob_ind : usize;
-        let mut num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
-        let mut ld_type : CppStr = ld_pt.this_type.clone();
+        let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
+        let ld_type : CppStr = ld_pt.this_type.clone();
         //let mut el_app_ld = &mut scr.scr_v1;
-        let mut el_app_ld = match scr_dfd.next() {
+        let el_app_ld = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch matrices"),
             Some(x) => &mut x.dat,
         };
         //let mut d_rd_t = &mut scr.scr_m1;
-        let mut d_rd_t = match scr.next() {
+        let d_rd_t = match scr.next() {
             None => panic!("Error: ran out of scratch matrices"),
             Some(x) => &mut x.dat,
         };
@@ -3918,8 +3891,6 @@ impl Element {
     //end dup
  
 //end skip 
- 
- 
  
  
 }

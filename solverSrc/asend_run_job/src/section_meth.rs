@@ -1,20 +1,17 @@
 use crate::section::*;
-use crate::constants::*;
 use crate::matrix_functions::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 use crate::fmath::*;
 
 impl Material {
     pub fn set_stiffness(&mut self, row : usize, col : usize, val : f64) {
-        self.stiffness[(6 * row + col)] = val;
-        self.stiffness[(6 * col + row)] = val;
+        self.stiffness[6 * row + col] = val;
+        self.stiffness[6 * col + row] = val;
         return;
     }
 
     pub fn set_damping(&mut self, row : usize, col : usize, val : f64) {
-        self.damping[(6 * row + col)] = val;
-        self.damping[(6 * col + row)] = val;
+        self.damping[6 * row + col] = val;
+        self.damping[6 * col + row] = val;
         return;
     }
 
@@ -62,20 +59,20 @@ impl Section {
     }
 
     pub fn set_stiffness(&mut self, row : usize, col : usize, val : f64) {
-        self.stiffness[(6*row+col)] = val;
-        self.stiffness[(6*col+row)] = val;
+        self.stiffness[6*row+col] = val;
+        self.stiffness[6*col+row] = val;
         return;
     }
 
     pub fn set_mass(&mut self, row : usize, col : usize, val : f64) {
-        self.mass[(6*row+col)] = val;
-        self.mass[(6*col+row)] = val;
+        self.mass[6*row+col] = val;
+        self.mass[6*col+row] = val;
         return;
     }
 
     pub fn set_damping(&mut self, row : usize, col : usize, val : f64) {
-        self.damping[(6 * row + col)] = val;
-        self.damping[(6 * col + row)] = val;
+        self.damping[6 * row + col] = val;
+        self.damping[6 * col + row] = val;
         return;
     }
 
@@ -92,7 +89,7 @@ impl Section {
     pub fn get_layer_mat_ptr(& self, layi : usize) -> usize {
         let mut i1 : usize =  0;
         for lay in self.layers.iter() {
-            if (i1 == layi) {
+            if i1 == layi {
                 return lay.mat_ptr;
             }
             i1 += 1usize;

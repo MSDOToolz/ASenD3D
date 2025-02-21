@@ -4,12 +4,9 @@ use crate::list_ent::*;
 use crate::lu_mat::*;
 use crate::lower_tri_mat::*;
 use crate::constraint::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 use crate::fmath::*;
 
 pub fn sub_vec(sub_v : &mut Vec<f64>, v_in : &mut Vec<f64>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         sub_v[i2] = v_in[i1];
@@ -18,7 +15,6 @@ pub fn sub_vec(sub_v : &mut Vec<f64>, v_in : &mut Vec<f64>, st : usize, end : us
 }
 
 pub fn return_sv(sub_v : &mut Vec<f64>, v_in : &mut Vec<f64>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         v_in[i1] = sub_v[i2];
@@ -27,7 +23,6 @@ pub fn return_sv(sub_v : &mut Vec<f64>, v_in : &mut Vec<f64>, st : usize, end : 
 }
 
 pub fn vec_to_ar(ar : &mut [f64], vc : & Vec<f64>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         ar[i2] = vc[i1];
@@ -36,7 +31,7 @@ pub fn vec_to_ar(ar : &mut [f64], vc : & Vec<f64>, st : usize, end : usize) {
 }
 
 pub fn get_dist(p1 : & [f64], p2 : & [f64]) -> f64 {
-    let mut dist : f64;
+    let dist : f64;
     let mut vec : [f64; 3] = [0f64; 3];
     vec[0] = p1[0] - p2[0];
     vec[1] = p1[1] - p2[1];
@@ -53,9 +48,6 @@ pub fn cross_prod(prod : &mut [f64], v1 : & [f64], v2 : & [f64]) {
 }
 
 pub fn q_rfactor(mat : &mut Vec<f64>, col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
     let mut i3_min : usize;
@@ -72,27 +64,27 @@ pub fn q_rfactor(mat : &mut Vec<f64>, col_dim : usize, st_row : usize, end_row :
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if(tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         } else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if(i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*col_dim + i1;
             k12 = i2*col_dim + i1;
-            if(fabs(mat[k11]) < TOL) {
+            if fabs(mat[k11]) < TOL {
                 mat[k11] = TOL;
             }
             theta = atan(mat[k12]/mat[k11]);
             sth = sin(theta);
             cth = cos(theta);
             i3_min = i1;
-            if(tri_diag == 2) {
+            if tri_diag == 2 {
                 i3_max = i1 + 2;
-                if(i3_max > end_col) {
+                if i3_max > end_col {
                     i3_max = end_col;
                 }
             } else {
@@ -113,8 +105,6 @@ pub fn q_rfactor(mat : &mut Vec<f64>, col_dim : usize, st_row : usize, end_row :
 }
 
 pub fn solveq_rx_eqb(x_vec : &mut Vec<f64>, mat : &mut Vec<f64>, b_vec : &mut Vec<f64>, col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
@@ -129,11 +119,11 @@ pub fn solveq_rx_eqb(x_vec : &mut Vec<f64>, mat : &mut Vec<f64>, b_vec : &mut Ve
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if(tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         } else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if(i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
@@ -154,9 +144,9 @@ pub fn solveq_rx_eqb(x_vec : &mut Vec<f64>, mat : &mut Vec<f64>, b_vec : &mut Ve
     for i1 in (st_col..(end_col+1)).rev() {
         i3 = st_row + (i1 - st_col);
         i2_min = i1 + 1;
-        if(tri_diag == 2) {
+        if tri_diag == 2 {
             i2_max = i1 + 2;
-            if(i2_max > end_col) {
+            if i2_max > end_col {
                 i2_max = end_col;
             }
         } else {
@@ -177,10 +167,9 @@ pub fn solveq_rx_eqb(x_vec : &mut Vec<f64>, mat : &mut Vec<f64>, b_vec : &mut Ve
 
 pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut ConstraintList, pc_mat : &mut LowerTriMat, rhs : &mut Vec<f64>, conv_tol : f64, max_it : usize) {
     let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
-    let mut dim : usize =  mat.dim;
-    let mut status_freq : usize =  dim / 24;
+    let dim : usize =  mat.dim;
+    let status_freq : usize =  dim / 24;
     let mut res : f64;
     let mut r_next : f64;
     let mut alpha : f64;
@@ -192,7 +181,7 @@ pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut 
     let mut w_vec = vec![0f64; dim];
     let mut t_vec = vec![0f64; dim];
     
-    if (!pc_mat.pos_def()) {
+    if !pc_mat.pos_def() {
         println!("{}", "Warning: preconditioning matrix for conjugate gradient solver is not positive definite." );
     }
     
@@ -211,7 +200,7 @@ pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut 
     
     i1 = 0;
     i3 = 0;
-    while (i1 < max_it && res > conv_tol) {
+    while i1 < max_it && res > conv_tol {
         for i2 in 0..dim {
             z_vec[i2] = 0.0;
         }
@@ -237,7 +226,7 @@ pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut 
         }
         res = r_next;
         
-        if (i3 == status_freq) {
+        if i3 == status_freq {
             println!("{}{}{}{}", "Conjugate gradient iteration: " , i1 , ", residual: " , res );
             i3 = 0;
         }
@@ -245,7 +234,7 @@ pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut 
         i3 += 1usize;
     }
     
-    if (i1 == max_it) {
+    if i1 == max_it {
         println!("{}{}{}{}", "Warning: Conjugate gradient solver did not converge to specified tolerance, " , conv_tol , " within tne maximum number of iterations, " , max_it );
     }
     
@@ -264,7 +253,7 @@ pub fn g_mres_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut Con
     let mut it_ct : usize;
     let mut res_nrm : f64;
     let mut tmp : f64;
-    let mut dim : usize =  mat.dim;
+    let dim : usize =  mat.dim;
     
     let mut res_vec = vec![0f64; dim];
     let mut tmp_v = vec![0f64; dim];
@@ -290,7 +279,7 @@ pub fn g_mres_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut Con
     println!("{}{}", "Initial residual norm: " , res_nrm );
     
     it_ct = 0;
-    while (res_nrm > conv_tol && it_ct < max_it) {
+    while res_nrm > conv_tol && it_ct < max_it {
         tmp = 1.0 / res_nrm;
         for i1 in 0..dim {
             h_mat[i1] = tmp * res_vec[i1];
@@ -351,8 +340,8 @@ pub fn g_mres_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut Con
                 i3 += 1usize;
             }
         }
-        q_rfactor(&mut phi_mat,  restart,  0,  restart,  0,  (restart-1),  1);
-        solveq_rx_eqb(&mut tmp_v2, &mut  phi_mat, &mut  tmp_v,  restart,  0,  restart,  0,  (restart-1),  1);
+        q_rfactor(&mut phi_mat,  restart,  0,  restart,  0,  restart-1,  1);
+        solveq_rx_eqb(&mut tmp_v2, &mut  phi_mat, &mut  tmp_v,  restart,  0,  restart,  0,  restart-1,  1);
         //update the solution std::vector
         i3 = 0;
         for i1 in 0..restart {
@@ -378,7 +367,7 @@ pub fn g_mres_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut Con
         println!("{}{}{}{}", "Iteration: " , it_ct , ",  Residual Norm: " , res_nrm );
     }
     
-    if (res_nrm > conv_tol) {
+    if res_nrm > conv_tol {
         println!("{}{}", "Warning: GMRES solver did not converge to the requested tolerance of " , conv_tol );
         println!("{}{}{}{}", "Residual norm after " , it_ct , " iterations: " , res_nrm );
     }
@@ -387,8 +376,6 @@ pub fn g_mres_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut Con
 }
 
 pub fn sym_factor(mat : &mut Vec<f64>, q_mat : &mut Vec<f64>, mat_dim : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
     let mut i5 : usize;
@@ -401,7 +388,7 @@ pub fn sym_factor(mat : &mut Vec<f64>, q_mat : &mut Vec<f64>, mat_dim : usize) {
     i3 = 0;
     for i1 in 0..mat_dim {
         for i2 in 0..mat_dim {
-            if(i2 == i1) {
+            if i2 == i1 {
                 q_mat[i3] = 1.0;
             } else {
                 q_mat[i3] = 0.0;
@@ -413,7 +400,7 @@ pub fn sym_factor(mat : &mut Vec<f64>, q_mat : &mut Vec<f64>, mat_dim : usize) {
     for i1 in 0..mat_dim {
         for i2 in i1+2..mat_dim {
             i3 = (i1+1)*mat_dim + i1;
-            if(fabs(mat[i3]) < TOL) {
+            if fabs(mat[i3]) < TOL {
                 theta = PI_2;
             } else {
                 i4 = i2*mat_dim + i1;
@@ -423,7 +410,7 @@ pub fn sym_factor(mat : &mut Vec<f64>, q_mat : &mut Vec<f64>, mat_dim : usize) {
             cth = cos(theta);
             i4 = (i1+1)*mat_dim + i1;
             i5 = i2*mat_dim + i1;
-            for i3 in i1..mat_dim {
+            for _i3 in i1..mat_dim {
                 a1 = cth*mat[i4] + sth*mat[i5];
                 a2 = -sth*mat[i4] + cth*mat[i5];
                 mat[i4] = a1;
@@ -433,7 +420,7 @@ pub fn sym_factor(mat : &mut Vec<f64>, q_mat : &mut Vec<f64>, mat_dim : usize) {
             }
             i4 = i1 + 1;
             i5 = i2;
-            for i3 in 0..mat_dim {
+            for _i3 in 0..mat_dim {
                 a1 = cth*mat[i4] + sth*mat[i5];
                 a2 = -sth*mat[i4] + cth*mat[i5];
                 mat[i4] = a1;
@@ -452,9 +439,7 @@ pub fn sym_factor(mat : &mut Vec<f64>, q_mat : &mut Vec<f64>, mat_dim : usize) {
 }
 
 pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim : usize, e_vals : &mut Vec<f64>, lam : f64, tri_diag : usize) {
-    let mut i1 : usize;
     let mut i2 : usize;
-    let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
     let mut i3_min : usize;
@@ -472,18 +457,18 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
     
     for i1 in 0..=(mat_dim - 1) {
         i2_min = i1 + 1;
-        if(tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = mat_dim - 1;
         } else {
             i2_max = i1 + 1;
-            if(i2_max > (mat_dim - 1)) {
+            if i2_max > (mat_dim - 1) {
                 i2_max = mat_dim - 1;
             }
         }
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*mat_dim + i1;
             k12 = i2*mat_dim + i1;
-            if(fabs(mat[k11].val) < TOL) {
+            if fabs(mat[k11].val) < TOL {
                 mat[k11].val = TOL;
             }
             theta.set_val_dfd1(&mut mat[k12]);
@@ -495,9 +480,9 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
             cth.set_val_dfd1(&mut theta);
             cth.cs();
             i3_min = i1;
-            if(tri_diag == 2) {
+            if tri_diag == 2 {
                 i3_max = i1 + 2;
-                if(i3_max > (mat_dim - 1)) {
+                if i3_max > (mat_dim - 1) {
                     i3_max = mat_dim - 1;
                 }
             } else {
@@ -526,17 +511,17 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
     
     c_fun.set_val_dfd1(&mut mat[0]);
     i2 = mat_dim + 1;
-    for i1 in 1..mat_dim {
+    for _i1 in 1..mat_dim {
         c_fun.mult(& mat[i2]);
-        while(fabs(c_fun.val) > MAX_MAG) {
+        while fabs(c_fun.val) > MAX_MAG {
             c_fun.val *=  MIN_MAG;
             c_fun.dval *=  MIN_MAG;
         }
-        while(fabs(c_fun.val) < MIN_MAG) {
+        while fabs(c_fun.val) < MIN_MAG {
             c_fun.val *=  MAX_MAG;
             c_fun.dval *=  MAX_MAG;
         }
-        i2 +=  (mat_dim + 1);
+        i2 +=  mat_dim + 1;
     }
     
     let mut term : f64;
@@ -544,11 +529,11 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
         term = *ev - lam;
         tmp.set_val_2(term,   -1.0);
         c_fun.dvd(& tmp);
-        while(fabs(c_fun.val) > MAX_MAG) {
+        while fabs(c_fun.val) > MAX_MAG {
             c_fun.val *=  MIN_MAG;
             c_fun.dval *=  MIN_MAG;
         }
-        while(fabs(c_fun.val) < MIN_MAG) {
+        while fabs(c_fun.val) < MIN_MAG {
             c_fun.val *=  MAX_MAG;
             c_fun.dval *=  MAX_MAG;
         }
@@ -559,24 +544,23 @@ pub fn get_char_fun(c_fun : &mut DiffDoub1, mat : &mut Vec<DiffDoub1>, mat_dim :
 
 pub fn get_evals(e_vals : &mut Vec<f64>, mat : &mut Vec<f64>, mat_dim : usize, lam_init : f64, conv_tol : f64, tri_diag : usize) {
     let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
-    let mut mat_size : usize =  mat_dim*mat_dim;
+    let mat_size : usize =  mat_dim*mat_dim;
     let mut e_val_list : Vec<f64> = Vec::new();
     let mut mat_copy = vec![DiffDoub1::new(); mat_size];
     let mut c_fun = DiffDoub1::new();
     let mut lam : f64 =  lam_init;
     let mut d_lam : f64;
     let mut d_trm : f64;
-    let mut back_step : f64 =  1.0e+6*conv_tol;
+    let back_step : f64 =  1.0e+6*conv_tol;
     let mut num_found : usize =  0;
-    let mut max_it : usize =  100*mat_dim;
+    let max_it : usize =  100*mat_dim;
     let mut it : usize =  0;
-    while(num_found < mat_dim && it < max_it) {
+    while num_found < mat_dim && it < max_it {
         i3 = 0;
         for i1 in 0..mat_dim {
             for i2 in 0..mat_dim {
-                if(i1 == i2) {
+                if i1 == i2 {
                     d_trm = mat[i3] - lam;
                     mat_copy[i3].set_val_2(d_trm,   -1.0);
                 } else {
@@ -588,7 +572,7 @@ pub fn get_evals(e_vals : &mut Vec<f64>, mat : &mut Vec<f64>, mat_dim : usize, l
         get_char_fun(&mut c_fun, &mut mat_copy, mat_dim, &mut e_val_list, lam, tri_diag);
         d_lam = -c_fun.val/c_fun.dval;
         lam +=  d_lam;
-        if(fabs(d_lam) < conv_tol) {
+        if fabs(d_lam) < conv_tol {
             //e_val_list.add_entry(lam);
             e_val_list.push(lam);
             num_found += 1usize;
@@ -608,15 +592,13 @@ pub fn get_evals(e_vals : &mut Vec<f64>, mat : &mut Vec<f64>, mat_dim : usize, l
 pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
     let mut vec = vec![0f64; mat_dim];
     let mut prev_vec = vec![0f64; mat_dim];
-    let mut high : f64;
+    let high : f64;
     let mut tmp : f64;
     let mut mag : f64;
     let mut dp : f64 = 0.0;
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut it : usize;
-    let mut max_it : usize;
+    let max_it : usize;
     
     mag = 0.0;
     for i1 in 0..mat_dim {
@@ -632,7 +614,7 @@ pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
     let mut conv : bool =  false;
     max_it = 100*mat_dim;
     it = 0;
-    while(!conv && it < max_it) {
+    while !conv && it < max_it {
         i3 = 0;
         mag = 0.0;
         for i1 in 0..mat_dim {
@@ -648,7 +630,7 @@ pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
         for i1 in 0..mat_dim {
             dp +=  vec[i1]*prev_vec[i1];
         }
-        if(fabs(dp) > 0.99999999*mag) {
+        if fabs(dp) > 0.99999999*mag {
             conv = true;
         } else {
             mag = 1.0/mag;
@@ -659,16 +641,16 @@ pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
         it += 1usize;
     }
     
-    if(dp < 0.0) {
+    if dp < 0.0 {
         return  dp;
     }
     
     high = dp;
     
     i3 = 0;
-    for i1 in 0..mat_dim {
+    for _i1 in 0..mat_dim {
         mat[i3] -=  high;
-        i3 +=  (mat_dim + 1);
+        i3 +=  mat_dim + 1;
     }
     
     mag = 0.0;
@@ -684,7 +666,7 @@ pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
     
     conv = false;
     it = 0;
-    while(!conv && it < max_it) {
+    while !conv && it < max_it {
         i3 = 0;
         mag = 0.0;
         for i1 in 0..mat_dim {
@@ -700,7 +682,7 @@ pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
         for i1 in 0..mat_dim {
             dp +=  vec[i1]*prev_vec[i1];
         }
-        if(fabs(dp) > 0.99999999*mag) {
+        if fabs(dp) > 0.99999999*mag {
             conv = true;
         } else {
             mag = 1.0/mag;
@@ -712,9 +694,9 @@ pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
     }
     
     i3 = 0;
-    for i1 in 0..mat_dim {
+    for _i1 in 0..mat_dim {
         mat[i3] +=  high;
-        i3 +=  (mat_dim + 1);
+        i3 +=  mat_dim + 1;
     }
     
     dp +=  high;
@@ -722,16 +704,13 @@ pub fn get_low_eval(mat : &mut Vec<f64>, mat_dim : usize) -> f64 {
 }
 
 pub fn eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Vec<f64>, mat_dim : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
-    let mut i5 : usize;
     let mut tmp : f64;
-    let mut mat_size : usize =  mat_dim*mat_dim;
+    let mat_size : usize =  mat_dim*mat_dim;
     let mut new_td : usize =  tri_diag;
     let mut q_mat = vec![0f64; 1];
-    if (tri_diag == 0) {
+    if tri_diag == 0 {
         q_mat = vec![0f64; mat_size];
         sym_factor(mat, &mut q_mat, mat_dim);
         new_td = 1;
@@ -742,13 +721,13 @@ pub fn eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Ve
     let mut mat_mag : f64 =  0.0;
     for i1 in 0..mat_size {
         tmp = fabs(mat[i1]);
-        if(tmp > mat_mag) {
+        if tmp > mat_mag {
             mat_mag = tmp;
         }
     }
     
     low -=  0.001*mat_mag;
-    let mut conv_tol : f64 =  1.0e-12*mat_mag;
+    let conv_tol : f64 =  1.0e-12*mat_mag;
     get_evals(e_vals, mat, mat_dim, low, conv_tol, new_td);
     
     //doub_list_ent *this_val = e_vals.get_first();
@@ -761,13 +740,13 @@ pub fn eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Ve
     let mut mag : f64;
     let mut dp : f64;
     let mut it : usize;
-    let mut max_it : usize =  100*mat_dim;
+    let max_it : usize =  100*mat_dim;
     for i5 in 0..mat_dim {
         shift = e_vals[i5] + 1.0e-8*mat_mag;
         i3 = 0;
         for i1 in 0..mat_dim {
             for i2 in 0..mat_dim {
-                if (i1 == i2) {
+                if i1 == i2 {
                     mat_copy[i3] = mat[i3] - shift;
                 }
                 else {
@@ -776,7 +755,7 @@ pub fn eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Ve
                 i3 += 1usize;
             }
         }
-        q_rfactor(&mut mat_copy,  mat_dim,  0,  (mat_dim - 1),  0,  (mat_dim - 1),  new_td);
+        q_rfactor(&mut mat_copy,  mat_dim,  0,  mat_dim - 1,  0,  mat_dim - 1,  new_td);
         mag = 0.0;
         for i1 in 0..mat_dim {
             tmp = sin((i1 * (i5 + 1)) as f64);
@@ -789,11 +768,11 @@ pub fn eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Ve
         }
         conv = false;
         it = 0;
-        while (!conv && it < max_it) {
+        while !conv && it < max_it {
             for i1 in 0..mat_dim {
                 b_vec[i1] = prev_vec[i1];
             }
-            solveq_rx_eqb(&mut vec, &mut  mat_copy, &mut  b_vec,  mat_dim,  0,  (mat_dim - 1),  0,  (mat_dim - 1),  new_td);
+            solveq_rx_eqb(&mut vec, &mut  mat_copy, &mut  b_vec,  mat_dim,  0,  mat_dim - 1,  0,  mat_dim - 1,  new_td);
             mag = 0.0;
             dp = 0.0;
             for i1 in 0..mat_dim {
@@ -801,13 +780,13 @@ pub fn eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Ve
                 dp  +=  vec[i1] * prev_vec[i1];
             }
             mag = sqrt(mag);
-            if (fabs(dp) > 0.999999 * mag) {
+            if fabs(dp) > 0.999999 * mag {
                 conv = true;
-                if (tri_diag == 0) {
+                if tri_diag == 0 {
                     i3 = 0;
                     //i4 = i5;
                     i4 = i5 * mat_dim;
-                    for i1 in 0..mat_dim {
+                    for _i1 in 0..mat_dim {
                         //i4 = i5*mat_dim + i1
                         e_vecs[i4] = 0.0;
                         for i2 in 0..mat_dim {
@@ -842,7 +821,6 @@ pub fn eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Ve
 }
 
 pub fn sym_eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mut Vec<f64>, mat_dim : usize, tri_diag : usize) {
-    let mut i1 : usize;
     let mut i2 : usize;
     let mut i3 : usize;
     let mut i3_min : usize;
@@ -860,7 +838,7 @@ pub fn sym_eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mu
     let mut q_mat = vec![0f64; mat_dim];
     let mut srt_order = vec![0usize; mat_dim];
     
-    if (tri_diag == 0) {
+    if tri_diag == 0 {
         sym_factor(mat, &mut q_mat, mat_dim);
     }
     
@@ -892,19 +870,19 @@ pub fn sym_eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mu
         }
         dp = 0.0;
         loop_ct = 0;
-        while (fabs(dp) < 0.99999999*mag && loop_ct < 10000) {
+        while fabs(dp) < 0.99999999*mag && loop_ct < 10000 {
             // multiply by mat
             for i2 in 0..mat_dim {
                 temp_v2[i2] = 0.0;
-                if (tri_diag == 1) {
-                    if (i2 == 0) {
+                if tri_diag == 1 {
+                    if i2 == 0 {
                         i3_min = 0;
                     }
                     else {
                         i3_min = i2 - 1;
                     }
                     i3_max = i2 + 2;
-                    if (i3_max > mat_dim) {
+                    if i3_max > mat_dim {
                         i3_max = mat_dim;
                     }
                 }
@@ -949,7 +927,7 @@ pub fn sym_eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mu
             loop_ct += 1usize;
         }
         e_vals[i1] = dp;
-        if (tri_diag == 0) {
+        if tri_diag == 0 {
             i4 = 0;
             for i2 in 0..mat_dim {
                 i5 = i1 * mat_dim + i2;
@@ -975,9 +953,9 @@ pub fn sym_eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mu
         srt_order[i1] = i1;
     }
     
-    for i1 in 0..mat_dim {
+    for _i1 in 0..mat_dim {
         for i2 in 0..(mat_dim - 1) {
-            if (e_vals[i2 + 1] < e_vals[i2]) {
+            if e_vals[i2 + 1] < e_vals[i2] {
                 tmp = e_vals[i2];
                 e_vals[i2] = e_vals[i2 + 1];
                 e_vals[i2 + 1] = tmp;
@@ -991,7 +969,7 @@ pub fn sym_eigen_solve(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &mu
     for i1 in 0..mat_dim {
         i2 = mat_dim * i1;
         i3 = mat_dim * srt_order[i1];
-        for i4 in 0..mat_dim {
+        for _i4 in 0..mat_dim {
             e_vecs[i2] = e_vtmp[i3];
             i2 += 1usize;
             i3 += 1usize;
@@ -1009,7 +987,7 @@ pub fn eigen_sparse_direct(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, num_p
     let mut i5 : usize;
     let mut i6 : usize;
     
-    let mut h_cols : usize =  5*num_pairs;
+    let h_cols : usize =  5*num_pairs;
     i1 = h_cols*mat_dim;
     let mut h_mat = vec![0f64; i1];
     let mut t_vec1 = vec![0f64; mat_dim];
@@ -1021,7 +999,7 @@ pub fn eigen_sparse_direct(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, num_p
         coef_mat[i2] = 0.0;
     }
     
-    let mut mag : f64 =  0.0;
+    let mut mag : f64;
     let mut tmp : f64;
     for i2 in 0..mat_dim {
         mass_mat[i2] = sqrt(mass_mat[i2]);
@@ -1058,7 +1036,7 @@ pub fn eigen_sparse_direct(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, num_p
         for i2 in 0..mat_dim {
             t_vec1[i2] = t_vec2[i2]*mass_mat[i2];
         }
-        if(i1 == 1) {
+        if i1 == 1 {
             st_vec = 0;
         } else {
             st_vec = i1 - 2;
@@ -1105,7 +1083,7 @@ pub fn eigen_sparse_direct(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, num_p
     
     i1 = 0;
     i2 = h_cols - 2;
-    while (i1 < num_pairs && i2 >= 0) {
+    while i1 < num_pairs && i2 > 0 {
         for i3 in 0..mat_dim {
             t_vec1[i3] = 0.0;
         }
@@ -1128,14 +1106,14 @@ pub fn eigen_sparse_direct(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, num_p
         for i3 in 0..mat_dim {
             t_vec2[i3]  *=  mag;
         }
-        if (i1 > 0) {
+        if i1 > 0 {
             tmp = 0.0;
             i4 = mat_dim * (i1 - 1);
             for i3 in 0..mat_dim {
                 tmp  +=  e_vecs[i4] * t_vec2[i3];
                 i4 += 1usize;
             }
-            if (fabs(tmp) < 0.9) {
+            if fabs(tmp) < 0.9 {
                 for i3 in 0..mat_dim {
                     e_vecs[i4] = t_vec2[i3];
                     i4 += 1usize;
@@ -1170,9 +1148,8 @@ pub fn eigen_sparse_direct(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, num_p
 }
 
 pub fn ray_quot(grad : &mut Vec<f64>, kv : &mut Vec<f64>, mv : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut ConstraintList, mass_mat : &mut Vec<f64>, in_vec : &mut Vec<f64>) -> f64 {
-    let mut i1 : usize;
-    let mut r_c : f64;
-    let mut dim : usize =  mat.dim;
+    let r_c : f64;
+    let dim : usize =  mat.dim;
     let mut v_kv : f64;
     let mut v_mv : f64 =  0.0;
     for i1 in 0..dim {
@@ -1194,9 +1171,8 @@ pub fn ray_quot(grad : &mut Vec<f64>, kv : &mut Vec<f64>, mv : &mut Vec<f64>, ma
 }
 
 pub fn unitize_vec(vec : &mut Vec<f64>, dim : usize) -> f64 {
-    let mut i1 : usize;
     let mut mag : f64;
-    let mut minv : f64;
+    let minv : f64;
     mag = 0.0;
     for i1 in 0..dim {
         mag  +=  vec[i1] * vec[i1];
@@ -1210,19 +1186,13 @@ pub fn unitize_vec(vec : &mut Vec<f64>, dim : usize) -> f64 {
 }
 
 pub fn get_nearest_evec_rq(mat : &mut SparseMat, cnst : &mut ConstraintList, mass_mat : &mut Vec<f64>, in_vecs : &mut Vec<f64>, e_vals : &mut Vec<f64>, num_vecs : usize, max_it : usize) {
-    let mut i1 : usize;
     let mut i2 : usize;
     let mut i3 : usize;
-    let mut i4 : usize;
-    let mut dim : usize;
+    let dim : usize;
     let mut dp : f64;
-    let mut mag : f64;
-    let mut minv : f64;
     let mut res : f64;
     let mut r_q0 : f64;
-    let mut r_q1 : f64;
-    let mut step_len : f64;
-    let mut reduced : bool;
+    let mut _r_q1 : f64;
     
     dim = mat.dim;
     
@@ -1242,10 +1212,10 @@ pub fn get_nearest_evec_rq(mat : &mut SparseMat, cnst : &mut ConstraintList, mas
         return_sv(&mut t_vec1, in_vecs, i2, i2 + dim);
         res = 1.0;
         i3 = 0;
-        while (i3 < max_it && res > 1.0e-6) {
+        while i3 < max_it && res > 1.0e-6 {
             for i4 in 0..dim {
                 v_step[i4] = -grad0[i4];
-                if (v_step[i4] == 0.0) {
+                if v_step[i4] == 0.0 {
                     v_step[i4] = 1.0e-12;
                 }
             }
@@ -1254,13 +1224,13 @@ pub fn get_nearest_evec_rq(mat : &mut SparseMat, cnst : &mut ConstraintList, mas
                 in_vecs[i2 + i4]  +=  0.01*v_step[i4];
             }
             sub_vec(&mut t_vec1, in_vecs,  i2,  i2 + dim);
-            r_q1 = ray_quot(&mut grad1, &mut  kv, &mut  mv, mat, cnst,  mass_mat, &mut  t_vec1);
+            _r_q1 = ray_quot(&mut grad1, &mut  kv, &mut  mv, mat, cnst,  mass_mat, &mut  t_vec1);
             for i4 in 0..dim {
                 in_vecs[i2 + i4]  -=  0.01 * v_step[i4];
             }
             for i4 in 0..dim {
                 d2_rq[i4] = (grad1[i4] - grad0[i4]) / (0.01 * v_step[i4]);
-                if (d2_rq[i4] != 0.0) {
+                if d2_rq[i4] != 0.0 {
                     v_step[i4] = -grad0[i4] / d2_rq[i4];
                 }
                 else {
@@ -1289,9 +1259,6 @@ pub fn get_nearest_evec_rq(mat : &mut SparseMat, cnst : &mut ConstraintList, mas
 
 //dup1
 pub fn q_rfactor_dfd0(mat : &mut Vec<DiffDoub0>, col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
     let mut i3_min : usize;
@@ -1309,18 +1276,18 @@ pub fn q_rfactor_dfd0(mat : &mut Vec<DiffDoub0>, col_dim : usize, st_row : usize
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if(tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         } else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if(i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*col_dim + i1;
             k12 = i2*col_dim + i1;
-            if(fabs(mat[k11].val) < TOL) {
+            if fabs(mat[k11].val) < TOL {
                 mat[k11].val = TOL;
             }
             theta.set_val_dfd0(& mat[k12]);
@@ -1332,9 +1299,9 @@ pub fn q_rfactor_dfd0(mat : &mut Vec<DiffDoub0>, col_dim : usize, st_row : usize
             cth.set_val_dfd0(& theta);
             cth.cs();
             i3_min = i1;
-            if(tri_diag == 2) {
+            if tri_diag == 2 {
                 i3_max = i1 + 2;
-                if(i3_max > end_col) {
+                if i3_max > end_col {
                     i3_max = end_col;
                 }
             } else {
@@ -1364,9 +1331,6 @@ pub fn q_rfactor_dfd0(mat : &mut Vec<DiffDoub0>, col_dim : usize, st_row : usize
 }
 
 pub fn q_rfactor_ar_dfd0(mat : &mut [DiffDoub0], col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
     let mut i3_min : usize;
@@ -1384,19 +1348,19 @@ pub fn q_rfactor_ar_dfd0(mat : &mut [DiffDoub0], col_dim : usize, st_row : usize
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if (tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         }
         else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if (i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
         for i2 in i2_min..=i2_max {
             k11 = (i2_min - 1) * col_dim + i1;
             k12 = i2 * col_dim + i1;
-            if (fabs(mat[k11].val) < TOL) {
+            if fabs(mat[k11].val) < TOL {
                 mat[k11].val = TOL;
             }
             theta.set_val_dfd0(& mat[k12]);
@@ -1408,9 +1372,9 @@ pub fn q_rfactor_ar_dfd0(mat : &mut [DiffDoub0], col_dim : usize, st_row : usize
             cth.set_val_dfd0(& theta);
             cth.cs();
             i3_min = i1;
-            if (tri_diag == 2) {
+            if tri_diag == 2 {
                 i3_max = i1 + 2;
-                if (i3_max > end_col) {
+                if i3_max > end_col {
                     i3_max = end_col;
                 }
             }
@@ -1441,8 +1405,6 @@ pub fn q_rfactor_ar_dfd0(mat : &mut [DiffDoub0], col_dim : usize, st_row : usize
 }
 
 pub fn solveq_rx_eqb_dfd0(x_vec : &mut Vec<DiffDoub0>, mat : &mut Vec<DiffDoub0>, b_vec : &mut Vec<DiffDoub0>, col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
@@ -1458,11 +1420,11 @@ pub fn solveq_rx_eqb_dfd0(x_vec : &mut Vec<DiffDoub0>, mat : &mut Vec<DiffDoub0>
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if(tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         } else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if(i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
@@ -1495,9 +1457,9 @@ pub fn solveq_rx_eqb_dfd0(x_vec : &mut Vec<DiffDoub0>, mat : &mut Vec<DiffDoub0>
     for i1 in (st_col..(end_col+1)).rev() {
         i3 = st_row + (i1 - st_col);
         i2_min = i1 + 1;
-        if(tri_diag == 2) {
+        if tri_diag == 2 {
             i2_max = i1 + 2;
-            if(i2_max > end_col) {
+            if i2_max > end_col {
                 i2_max = end_col;
             }
         } else {
@@ -1522,8 +1484,6 @@ pub fn solveq_rx_eqb_dfd0(x_vec : &mut Vec<DiffDoub0>, mat : &mut Vec<DiffDoub0>
 }
 
 pub fn solveq_rx_eqb_ar_dfd0(x_vec : &mut [DiffDoub0], mat : &mut [DiffDoub0], b_vec : &mut [DiffDoub0], col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
@@ -1539,12 +1499,12 @@ pub fn solveq_rx_eqb_ar_dfd0(x_vec : &mut [DiffDoub0], mat : &mut [DiffDoub0], b
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if (tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         }
         else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if (i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
@@ -1577,9 +1537,9 @@ pub fn solveq_rx_eqb_ar_dfd0(x_vec : &mut [DiffDoub0], mat : &mut [DiffDoub0], b
     for i1 in (st_col..(end_col+1)).rev() {
         i3 = st_row + (i1 - st_col);
         i2_min = i1 + 1;
-        if (tri_diag == 2) {
+        if tri_diag == 2 {
             i2_max = i1 + 2;
-            if (i2_max > end_col) {
+            if i2_max > end_col {
                 i2_max = end_col;
             }
         }
@@ -1605,20 +1565,18 @@ pub fn solveq_rx_eqb_ar_dfd0(x_vec : &mut [DiffDoub0], mat : &mut [DiffDoub0], b
 }
 
 pub fn get_det_inv_dfd0(det : &mut DiffDoub0, inv : &mut Vec<DiffDoub0>, mat : &mut Vec<DiffDoub0>, col_dim : usize, tri_diag : usize, x_vec : &mut Vec<DiffDoub0>, b_vec : &mut Vec<DiffDoub0>) {
-    q_rfactor_dfd0(mat,  col_dim,  0,  (col_dim-1),  0,  (col_dim-1),  tri_diag);
-    let mut i1 : usize;
-    let mut i2 : usize;
+    q_rfactor_dfd0(mat,  col_dim,  0,  col_dim-1,  0,  col_dim-1,  tri_diag);
     let mut i3 : usize;
     det.set_val(1.0);
     for i1 in 0..col_dim {
         for i2 in 0..col_dim {
-            if(i1 == i2) {
+            if i1 == i2 {
                 b_vec[i2].set_val(1.0);
             } else {
                 b_vec[i2].set_val(0.0);
             }
         }
-        solveq_rx_eqb_dfd0(x_vec, mat, b_vec, col_dim, 0, (col_dim-1), 0, (col_dim-1), tri_diag);
+        solveq_rx_eqb_dfd0(x_vec, mat, b_vec, col_dim, 0, col_dim-1, 0, col_dim-1, tri_diag);
         for i2 in 0..col_dim {
             i3 = i2*col_dim + i1;
             inv[i3].set_val_dfd0(& x_vec[i2]);
@@ -1630,21 +1588,19 @@ pub fn get_det_inv_dfd0(det : &mut DiffDoub0, inv : &mut Vec<DiffDoub0>, mat : &
 }
 
 pub fn get_det_inv_ar_dfd0(det : &mut DiffDoub0, inv : &mut [DiffDoub0], mat : &mut [DiffDoub0], col_dim : usize, tri_diag : usize, x_vec : &mut [DiffDoub0], b_vec : &mut [DiffDoub0]) {
-    q_rfactor_ar_dfd0(mat,  col_dim,  0,  (col_dim - 1),  0,  (col_dim - 1),  tri_diag);
-    let mut i1 : usize;
-    let mut i2 : usize;
+    q_rfactor_ar_dfd0(mat,  col_dim,  0,  col_dim - 1,  0,  col_dim - 1,  tri_diag);
     let mut i3 : usize;
     det.set_val(1.0);
     for i1 in 0..col_dim {
         for i2 in 0..col_dim {
-            if (i1 == i2) {
+            if i1 == i2 {
                 b_vec[i2].set_val(1.0);
             }
             else {
                 b_vec[i2].set_val(0.0);
             }
         }
-        solveq_rx_eqb_ar_dfd0(x_vec, mat, b_vec, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
+        solveq_rx_eqb_ar_dfd0(x_vec, mat, b_vec, col_dim, 0, col_dim - 1, 0, col_dim - 1, tri_diag);
         for i2 in 0..col_dim {
             i3 = i2 * col_dim + i1;
             inv[i3].set_val_dfd0(& x_vec[i2]);
@@ -1662,9 +1618,6 @@ pub fn get_det_inv_ar_dfd0(det : &mut DiffDoub0, inv : &mut [DiffDoub0], mat : &
 //DiffDoub1 versions: 
 //dup1
 pub fn q_rfactor_dfd1(mat : &mut Vec<DiffDoub1>, col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
     let mut i3_min : usize;
@@ -1682,18 +1635,18 @@ pub fn q_rfactor_dfd1(mat : &mut Vec<DiffDoub1>, col_dim : usize, st_row : usize
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if(tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         } else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if(i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
         for i2 in i2_min..=i2_max {
             k11 = (i2_min-1)*col_dim + i1;
             k12 = i2*col_dim + i1;
-            if(fabs(mat[k11].val) < TOL) {
+            if fabs(mat[k11].val) < TOL {
                 mat[k11].val = TOL;
             }
             theta.set_val_dfd1(& mat[k12]);
@@ -1705,9 +1658,9 @@ pub fn q_rfactor_dfd1(mat : &mut Vec<DiffDoub1>, col_dim : usize, st_row : usize
             cth.set_val_dfd1(& theta);
             cth.cs();
             i3_min = i1;
-            if(tri_diag == 2) {
+            if tri_diag == 2 {
                 i3_max = i1 + 2;
-                if(i3_max > end_col) {
+                if i3_max > end_col {
                     i3_max = end_col;
                 }
             } else {
@@ -1737,9 +1690,6 @@ pub fn q_rfactor_dfd1(mat : &mut Vec<DiffDoub1>, col_dim : usize, st_row : usize
 }
 
 pub fn q_rfactor_ar_dfd1(mat : &mut [DiffDoub1], col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
     let mut i3_min : usize;
@@ -1757,19 +1707,19 @@ pub fn q_rfactor_ar_dfd1(mat : &mut [DiffDoub1], col_dim : usize, st_row : usize
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if (tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         }
         else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if (i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
         for i2 in i2_min..=i2_max {
             k11 = (i2_min - 1) * col_dim + i1;
             k12 = i2 * col_dim + i1;
-            if (fabs(mat[k11].val) < TOL) {
+            if fabs(mat[k11].val) < TOL {
                 mat[k11].val = TOL;
             }
             theta.set_val_dfd1(& mat[k12]);
@@ -1781,9 +1731,9 @@ pub fn q_rfactor_ar_dfd1(mat : &mut [DiffDoub1], col_dim : usize, st_row : usize
             cth.set_val_dfd1(& theta);
             cth.cs();
             i3_min = i1;
-            if (tri_diag == 2) {
+            if tri_diag == 2 {
                 i3_max = i1 + 2;
-                if (i3_max > end_col) {
+                if i3_max > end_col {
                     i3_max = end_col;
                 }
             }
@@ -1814,8 +1764,6 @@ pub fn q_rfactor_ar_dfd1(mat : &mut [DiffDoub1], col_dim : usize, st_row : usize
 }
 
 pub fn solveq_rx_eqb_dfd1(x_vec : &mut Vec<DiffDoub1>, mat : &mut Vec<DiffDoub1>, b_vec : &mut Vec<DiffDoub1>, col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
@@ -1831,11 +1779,11 @@ pub fn solveq_rx_eqb_dfd1(x_vec : &mut Vec<DiffDoub1>, mat : &mut Vec<DiffDoub1>
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if(tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         } else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if(i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
@@ -1868,9 +1816,9 @@ pub fn solveq_rx_eqb_dfd1(x_vec : &mut Vec<DiffDoub1>, mat : &mut Vec<DiffDoub1>
     for i1 in (st_col..(end_col+1)).rev() {
         i3 = st_row + (i1 - st_col);
         i2_min = i1 + 1;
-        if(tri_diag == 2) {
+        if tri_diag == 2 {
             i2_max = i1 + 2;
-            if(i2_max > end_col) {
+            if i2_max > end_col {
                 i2_max = end_col;
             }
         } else {
@@ -1895,8 +1843,6 @@ pub fn solveq_rx_eqb_dfd1(x_vec : &mut Vec<DiffDoub1>, mat : &mut Vec<DiffDoub1>
 }
 
 pub fn solveq_rx_eqb_ar_dfd1(x_vec : &mut [DiffDoub1], mat : &mut [DiffDoub1], b_vec : &mut [DiffDoub1], col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
@@ -1912,12 +1858,12 @@ pub fn solveq_rx_eqb_ar_dfd1(x_vec : &mut [DiffDoub1], mat : &mut [DiffDoub1], b
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if (tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         }
         else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if (i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
@@ -1950,9 +1896,9 @@ pub fn solveq_rx_eqb_ar_dfd1(x_vec : &mut [DiffDoub1], mat : &mut [DiffDoub1], b
     for i1 in (st_col..(end_col+1)).rev() {
         i3 = st_row + (i1 - st_col);
         i2_min = i1 + 1;
-        if (tri_diag == 2) {
+        if tri_diag == 2 {
             i2_max = i1 + 2;
-            if (i2_max > end_col) {
+            if i2_max > end_col {
                 i2_max = end_col;
             }
         }
@@ -1978,20 +1924,18 @@ pub fn solveq_rx_eqb_ar_dfd1(x_vec : &mut [DiffDoub1], mat : &mut [DiffDoub1], b
 }
 
 pub fn get_det_inv_dfd1(det : &mut DiffDoub1, inv : &mut Vec<DiffDoub1>, mat : &mut Vec<DiffDoub1>, col_dim : usize, tri_diag : usize, x_vec : &mut Vec<DiffDoub1>, b_vec : &mut Vec<DiffDoub1>) {
-    q_rfactor_dfd1(mat,  col_dim,  0,  (col_dim-1),  0,  (col_dim-1),  tri_diag);
-    let mut i1 : usize;
-    let mut i2 : usize;
+    q_rfactor_dfd1(mat,  col_dim,  0,  col_dim-1,  0,  col_dim-1,  tri_diag);
     let mut i3 : usize;
     det.set_val(1.0);
     for i1 in 0..col_dim {
         for i2 in 0..col_dim {
-            if(i1 == i2) {
+            if i1 == i2 {
                 b_vec[i2].set_val(1.0);
             } else {
                 b_vec[i2].set_val(0.0);
             }
         }
-        solveq_rx_eqb_dfd1(x_vec, mat, b_vec, col_dim, 0, (col_dim-1), 0, (col_dim-1), tri_diag);
+        solveq_rx_eqb_dfd1(x_vec, mat, b_vec, col_dim, 0, col_dim-1, 0, col_dim-1, tri_diag);
         for i2 in 0..col_dim {
             i3 = i2*col_dim + i1;
             inv[i3].set_val_dfd1(& x_vec[i2]);
@@ -2003,21 +1947,19 @@ pub fn get_det_inv_dfd1(det : &mut DiffDoub1, inv : &mut Vec<DiffDoub1>, mat : &
 }
 
 pub fn get_det_inv_ar_dfd1(det : &mut DiffDoub1, inv : &mut [DiffDoub1], mat : &mut [DiffDoub1], col_dim : usize, tri_diag : usize, x_vec : &mut [DiffDoub1], b_vec : &mut [DiffDoub1]) {
-    q_rfactor_ar_dfd1(mat,  col_dim,  0,  (col_dim - 1),  0,  (col_dim - 1),  tri_diag);
-    let mut i1 : usize;
-    let mut i2 : usize;
+    q_rfactor_ar_dfd1(mat,  col_dim,  0,  col_dim - 1,  0,  col_dim - 1,  tri_diag);
     let mut i3 : usize;
     det.set_val(1.0);
     for i1 in 0..col_dim {
         for i2 in 0..col_dim {
-            if (i1 == i2) {
+            if i1 == i2 {
                 b_vec[i2].set_val(1.0);
             }
             else {
                 b_vec[i2].set_val(0.0);
             }
         }
-        solveq_rx_eqb_ar_dfd1(x_vec, mat, b_vec, col_dim, 0, (col_dim - 1), 0, (col_dim - 1), tri_diag);
+        solveq_rx_eqb_ar_dfd1(x_vec, mat, b_vec, col_dim, 0, col_dim - 1, 0, col_dim - 1, tri_diag);
         for i2 in 0..col_dim {
             i3 = i2 * col_dim + i1;
             inv[i3].set_val_dfd1(& x_vec[i2]);
@@ -2033,12 +1975,9 @@ pub fn get_det_inv_ar_dfd1(det : &mut DiffDoub1, inv : &mut [DiffDoub1], mat : &
 //end skip 
  
  
- 
- 
 //dup2
 
 pub fn sub_vec_dfd0(sub_v : &mut Vec<DiffDoub0>, in_v : &mut Vec<DiffDoub0>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         sub_v[i2].set_val_dfd0(& in_v[i1]);
@@ -2047,7 +1986,6 @@ pub fn sub_vec_dfd0(sub_v : &mut Vec<DiffDoub0>, in_v : &mut Vec<DiffDoub0>, st 
 }
 
 pub fn return_sv_dfd0(sub_v : &mut Vec<DiffDoub0>, in_v : &mut Vec<DiffDoub0>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         in_v[i1].set_val_dfd0(& sub_v[i2]);
@@ -2056,7 +1994,6 @@ pub fn return_sv_dfd0(sub_v : &mut Vec<DiffDoub0>, in_v : &mut Vec<DiffDoub0>, s
 }
 
 pub fn vec_to_ar_dfd0(ar : &mut [DiffDoub0], vc : &mut Vec<DiffDoub0>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         ar[i2].set_val_dfd0(& vc[i1]);
@@ -2065,7 +2002,6 @@ pub fn vec_to_ar_dfd0(ar : &mut [DiffDoub0], vc : &mut Vec<DiffDoub0>, st : usiz
 }
 
 pub fn ar_to_vec_dfd0(ar : &mut [DiffDoub0], vc : &mut Vec<DiffDoub0>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         vc[i1].set_val_dfd0(& ar[i2]);
@@ -2074,9 +2010,6 @@ pub fn ar_to_vec_dfd0(ar : &mut [DiffDoub0], vc : &mut Vec<DiffDoub0>, st : usiz
 }
 
 pub fn mat_mul_dfd0(prod : &mut Vec<DiffDoub0>, mat1 : & Vec<DiffDoub0>, mat2 : & Vec<DiffDoub0>, m1_rows : usize, m1_cols : usize, m2_cols : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i4 : usize;
     let mut i5 : usize;
     let mut i6 : usize;
@@ -2084,11 +2017,11 @@ pub fn mat_mul_dfd0(prod : &mut Vec<DiffDoub0>, mat1 : & Vec<DiffDoub0>, mat2 : 
     
     i4 = 0;
     i5 = 0;
-    for i1 in 0..m1_rows {
+    for _i1 in 0..m1_rows {
         for i2 in 0..m2_cols {
             i6 = i2;
             prod[i4].set_val(0.0);
-            for i3 in 0..m1_cols {
+            for _i3 in 0..m1_cols {
                 tmp.set_val_dfd0(& mat1[i5]);
                 tmp.mult(& mat2[i6]);
                 prod[i4].add(& tmp);
@@ -2104,9 +2037,6 @@ pub fn mat_mul_dfd0(prod : &mut Vec<DiffDoub0>, mat1 : & Vec<DiffDoub0>, mat2 : 
 }
 
 pub fn mat_mul_ar_dfd0(prod : &mut [DiffDoub0], mat1 : & [DiffDoub0], mat2 : & [DiffDoub0], m1_rows : usize, m1_cols : usize, m2_cols : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i4 : usize;
     let mut i5 : usize;
     let mut i6 : usize;
@@ -2114,11 +2044,11 @@ pub fn mat_mul_ar_dfd0(prod : &mut [DiffDoub0], mat1 : & [DiffDoub0], mat2 : & [
     
     i4 = 0;
     i5 = 0;
-    for i1 in 0..m1_rows {
+    for _i1 in 0..m1_rows {
         for i2 in 0..m2_cols {
             i6 = i2;
             prod[i4].set_val(0.0);
-            for i3 in 0..m1_cols {
+            for _i3 in 0..m1_cols {
                 tmp.set_val_dfd0(& mat1[i5]);
                 tmp.mult(& mat2[i6]);
                 prod[i4].add(& tmp);
@@ -2134,16 +2064,13 @@ pub fn mat_mul_ar_dfd0(prod : &mut [DiffDoub0], mat1 : & [DiffDoub0], mat2 : & [
 }
 
 pub fn transpose_dfd0(mat_t : &mut Vec<DiffDoub0>, mat : &mut Vec<DiffDoub0>, row_dim : usize, col_dim : usize) {
-    let mut tmp = DiffDoub0::new();
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
     
     i3 = 0;
     for i1 in 0..row_dim {
         i4 = i1;
-        for i2 in 0..col_dim {
+        for _i2 in 0..col_dim {
             mat_t[i4].set_val_dfd0(& mat[i3]);
             i3 += 1usize;
             i4 +=  row_dim;
@@ -2153,16 +2080,13 @@ pub fn transpose_dfd0(mat_t : &mut Vec<DiffDoub0>, mat : &mut Vec<DiffDoub0>, ro
 }
 
 pub fn transpose_ar_dfd0(mat_t : &mut [DiffDoub0], mat : &mut [DiffDoub0], row_dim : usize, col_dim : usize) {
-    let mut tmp = DiffDoub0::new();
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
     
     i3 = 0;
     for i1 in 0..row_dim {
         i4 = i1;
-        for i2 in 0..col_dim {
+        for _i2 in 0..col_dim {
             mat_t[i4].set_val_dfd0(& mat[i3]);
             i3 += 1usize;
             i4  +=  row_dim;
@@ -2204,7 +2128,6 @@ pub fn rotate_orient_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0
     let mut a3 = [DiffDoub0::new(); 9];
     let mut tmp_v = [DiffDoub0::new(); 3];
     let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     
     one_half.set_val(0.5);
@@ -2218,7 +2141,7 @@ pub fn rotate_orient_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0
     mag.add(& tmp);
     mag.add(& tmp2);
     mag.sqt();
-    if(mag.val < MAG_TOL) {
+    if mag.val < MAG_TOL {
         let mut loc_rot = [DiffDoub0::new(); 3];
         i3 = 0;
         for i1 in 0..3 {
@@ -2312,10 +2235,10 @@ pub fn rotate_orient_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0
         a1[2].set_val_dfd0(& unit_rot[2]);
         
         i1 = 0;
-        if(fabs(unit_rot[1].val) < fabs(unit_rot[0].val)) {
+        if fabs(unit_rot[1].val) < fabs(unit_rot[0].val) {
             i1 = 1;
         }
-        if(fabs(unit_rot[2].val) < fabs(unit_rot[i1].val)) {
+        if fabs(unit_rot[2].val) < fabs(unit_rot[i1].val) {
             i1 = 2;
         }
         tmp.set_val(1.0);
@@ -2325,7 +2248,7 @@ pub fn rotate_orient_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0
         tmp.sqt();// tmp = sqrt(1 - unit_rot[i1]^2)
         a1[3+i1].set_val_dfd0(& tmp);
         for i2 in 0..3 {
-            if(i2 != i1) {
+            if i2 != i1 {
                 i3 = 3 + i2;
                 tmp2.set_val_dfd0(& a1[i1]);
                 a1[i3].set_val_dfd0(& tmp2);
@@ -2396,7 +2319,6 @@ pub fn rotate_orient_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0
 //dup2
 
 pub fn sub_vec_dfd1(sub_v : &mut Vec<DiffDoub1>, in_v : &mut Vec<DiffDoub1>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         sub_v[i2].set_val_dfd1(& in_v[i1]);
@@ -2405,7 +2327,6 @@ pub fn sub_vec_dfd1(sub_v : &mut Vec<DiffDoub1>, in_v : &mut Vec<DiffDoub1>, st 
 }
 
 pub fn return_sv_dfd1(sub_v : &mut Vec<DiffDoub1>, in_v : &mut Vec<DiffDoub1>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         in_v[i1].set_val_dfd1(& sub_v[i2]);
@@ -2414,7 +2335,6 @@ pub fn return_sv_dfd1(sub_v : &mut Vec<DiffDoub1>, in_v : &mut Vec<DiffDoub1>, s
 }
 
 pub fn vec_to_ar_dfd1(ar : &mut [DiffDoub1], vc : &mut Vec<DiffDoub1>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         ar[i2].set_val_dfd1(& vc[i1]);
@@ -2423,7 +2343,6 @@ pub fn vec_to_ar_dfd1(ar : &mut [DiffDoub1], vc : &mut Vec<DiffDoub1>, st : usiz
 }
 
 pub fn ar_to_vec_dfd1(ar : &mut [DiffDoub1], vc : &mut Vec<DiffDoub1>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         vc[i1].set_val_dfd1(& ar[i2]);
@@ -2432,9 +2351,6 @@ pub fn ar_to_vec_dfd1(ar : &mut [DiffDoub1], vc : &mut Vec<DiffDoub1>, st : usiz
 }
 
 pub fn mat_mul_dfd1(prod : &mut Vec<DiffDoub1>, mat1 : & Vec<DiffDoub1>, mat2 : & Vec<DiffDoub1>, m1_rows : usize, m1_cols : usize, m2_cols : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i4 : usize;
     let mut i5 : usize;
     let mut i6 : usize;
@@ -2442,11 +2358,11 @@ pub fn mat_mul_dfd1(prod : &mut Vec<DiffDoub1>, mat1 : & Vec<DiffDoub1>, mat2 : 
     
     i4 = 0;
     i5 = 0;
-    for i1 in 0..m1_rows {
+    for _i1 in 0..m1_rows {
         for i2 in 0..m2_cols {
             i6 = i2;
             prod[i4].set_val(0.0);
-            for i3 in 0..m1_cols {
+            for _i3 in 0..m1_cols {
                 tmp.set_val_dfd1(& mat1[i5]);
                 tmp.mult(& mat2[i6]);
                 prod[i4].add(& tmp);
@@ -2462,9 +2378,6 @@ pub fn mat_mul_dfd1(prod : &mut Vec<DiffDoub1>, mat1 : & Vec<DiffDoub1>, mat2 : 
 }
 
 pub fn mat_mul_ar_dfd1(prod : &mut [DiffDoub1], mat1 : & [DiffDoub1], mat2 : & [DiffDoub1], m1_rows : usize, m1_cols : usize, m2_cols : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i4 : usize;
     let mut i5 : usize;
     let mut i6 : usize;
@@ -2472,11 +2385,11 @@ pub fn mat_mul_ar_dfd1(prod : &mut [DiffDoub1], mat1 : & [DiffDoub1], mat2 : & [
     
     i4 = 0;
     i5 = 0;
-    for i1 in 0..m1_rows {
+    for _i1 in 0..m1_rows {
         for i2 in 0..m2_cols {
             i6 = i2;
             prod[i4].set_val(0.0);
-            for i3 in 0..m1_cols {
+            for _i3 in 0..m1_cols {
                 tmp.set_val_dfd1(& mat1[i5]);
                 tmp.mult(& mat2[i6]);
                 prod[i4].add(& tmp);
@@ -2492,16 +2405,13 @@ pub fn mat_mul_ar_dfd1(prod : &mut [DiffDoub1], mat1 : & [DiffDoub1], mat2 : & [
 }
 
 pub fn transpose_dfd1(mat_t : &mut Vec<DiffDoub1>, mat : &mut Vec<DiffDoub1>, row_dim : usize, col_dim : usize) {
-    let mut tmp = DiffDoub1::new();
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
     
     i3 = 0;
     for i1 in 0..row_dim {
         i4 = i1;
-        for i2 in 0..col_dim {
+        for _i2 in 0..col_dim {
             mat_t[i4].set_val_dfd1(& mat[i3]);
             i3 += 1usize;
             i4 +=  row_dim;
@@ -2511,16 +2421,13 @@ pub fn transpose_dfd1(mat_t : &mut Vec<DiffDoub1>, mat : &mut Vec<DiffDoub1>, ro
 }
 
 pub fn transpose_ar_dfd1(mat_t : &mut [DiffDoub1], mat : &mut [DiffDoub1], row_dim : usize, col_dim : usize) {
-    let mut tmp = DiffDoub1::new();
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
     
     i3 = 0;
     for i1 in 0..row_dim {
         i4 = i1;
-        for i2 in 0..col_dim {
+        for _i2 in 0..col_dim {
             mat_t[i4].set_val_dfd1(& mat[i3]);
             i3 += 1usize;
             i4  +=  row_dim;
@@ -2562,7 +2469,6 @@ pub fn rotate_orient_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1
     let mut a3 = [DiffDoub1::new(); 9];
     let mut tmp_v = [DiffDoub1::new(); 3];
     let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     
     one_half.set_val(0.5);
@@ -2576,7 +2482,7 @@ pub fn rotate_orient_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1
     mag.add(& tmp);
     mag.add(& tmp2);
     mag.sqt();
-    if(mag.val < MAG_TOL) {
+    if mag.val < MAG_TOL {
         let mut loc_rot = [DiffDoub1::new(); 3];
         i3 = 0;
         for i1 in 0..3 {
@@ -2670,10 +2576,10 @@ pub fn rotate_orient_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1
         a1[2].set_val_dfd1(& unit_rot[2]);
         
         i1 = 0;
-        if(fabs(unit_rot[1].val) < fabs(unit_rot[0].val)) {
+        if fabs(unit_rot[1].val) < fabs(unit_rot[0].val) {
             i1 = 1;
         }
-        if(fabs(unit_rot[2].val) < fabs(unit_rot[i1].val)) {
+        if fabs(unit_rot[2].val) < fabs(unit_rot[i1].val) {
             i1 = 2;
         }
         tmp.set_val(1.0);
@@ -2683,7 +2589,7 @@ pub fn rotate_orient_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1
         tmp.sqt();// tmp = sqrt(1 - unit_rot[i1]^2)
         a1[3+i1].set_val_dfd1(& tmp);
         for i2 in 0..3 {
-            if(i2 != i1) {
+            if i2 != i1 {
                 i3 = 3 + i2;
                 tmp2.set_val_dfd1(& a1[i1]);
                 a1[i3].set_val_dfd1(& tmp2);
@@ -2752,7 +2658,6 @@ pub fn rotate_orient_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1
 //dup2
 
 pub fn sub_vec_dfd2(sub_v : &mut Vec<DiffDoub2>, in_v : &mut Vec<DiffDoub2>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         sub_v[i2].set_val_dfd2(& in_v[i1]);
@@ -2761,7 +2666,6 @@ pub fn sub_vec_dfd2(sub_v : &mut Vec<DiffDoub2>, in_v : &mut Vec<DiffDoub2>, st 
 }
 
 pub fn return_sv_dfd2(sub_v : &mut Vec<DiffDoub2>, in_v : &mut Vec<DiffDoub2>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         in_v[i1].set_val_dfd2(& sub_v[i2]);
@@ -2770,7 +2674,6 @@ pub fn return_sv_dfd2(sub_v : &mut Vec<DiffDoub2>, in_v : &mut Vec<DiffDoub2>, s
 }
 
 pub fn vec_to_ar_dfd2(ar : &mut [DiffDoub2], vc : &mut Vec<DiffDoub2>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         ar[i2].set_val_dfd2(& vc[i1]);
@@ -2779,7 +2682,6 @@ pub fn vec_to_ar_dfd2(ar : &mut [DiffDoub2], vc : &mut Vec<DiffDoub2>, st : usiz
 }
 
 pub fn ar_to_vec_dfd2(ar : &mut [DiffDoub2], vc : &mut Vec<DiffDoub2>, st : usize, end : usize) {
-    let mut i1 : usize;
     let mut i2 : usize =  0;
     for i1 in st..end {
         vc[i1].set_val_dfd2(& ar[i2]);
@@ -2788,9 +2690,6 @@ pub fn ar_to_vec_dfd2(ar : &mut [DiffDoub2], vc : &mut Vec<DiffDoub2>, st : usiz
 }
 
 pub fn mat_mul_dfd2(prod : &mut Vec<DiffDoub2>, mat1 : & Vec<DiffDoub2>, mat2 : & Vec<DiffDoub2>, m1_rows : usize, m1_cols : usize, m2_cols : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i4 : usize;
     let mut i5 : usize;
     let mut i6 : usize;
@@ -2798,11 +2697,11 @@ pub fn mat_mul_dfd2(prod : &mut Vec<DiffDoub2>, mat1 : & Vec<DiffDoub2>, mat2 : 
     
     i4 = 0;
     i5 = 0;
-    for i1 in 0..m1_rows {
+    for _i1 in 0..m1_rows {
         for i2 in 0..m2_cols {
             i6 = i2;
             prod[i4].set_val(0.0);
-            for i3 in 0..m1_cols {
+            for _i3 in 0..m1_cols {
                 tmp.set_val_dfd2(& mat1[i5]);
                 tmp.mult(& mat2[i6]);
                 prod[i4].add(& tmp);
@@ -2818,9 +2717,6 @@ pub fn mat_mul_dfd2(prod : &mut Vec<DiffDoub2>, mat1 : & Vec<DiffDoub2>, mat2 : 
 }
 
 pub fn mat_mul_ar_dfd2(prod : &mut [DiffDoub2], mat1 : & [DiffDoub2], mat2 : & [DiffDoub2], m1_rows : usize, m1_cols : usize, m2_cols : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
     let mut i4 : usize;
     let mut i5 : usize;
     let mut i6 : usize;
@@ -2828,11 +2724,11 @@ pub fn mat_mul_ar_dfd2(prod : &mut [DiffDoub2], mat1 : & [DiffDoub2], mat2 : & [
     
     i4 = 0;
     i5 = 0;
-    for i1 in 0..m1_rows {
+    for _i1 in 0..m1_rows {
         for i2 in 0..m2_cols {
             i6 = i2;
             prod[i4].set_val(0.0);
-            for i3 in 0..m1_cols {
+            for _i3 in 0..m1_cols {
                 tmp.set_val_dfd2(& mat1[i5]);
                 tmp.mult(& mat2[i6]);
                 prod[i4].add(& tmp);
@@ -2848,16 +2744,13 @@ pub fn mat_mul_ar_dfd2(prod : &mut [DiffDoub2], mat1 : & [DiffDoub2], mat2 : & [
 }
 
 pub fn transpose_dfd2(mat_t : &mut Vec<DiffDoub2>, mat : &mut Vec<DiffDoub2>, row_dim : usize, col_dim : usize) {
-    let mut tmp = DiffDoub2::new();
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
     
     i3 = 0;
     for i1 in 0..row_dim {
         i4 = i1;
-        for i2 in 0..col_dim {
+        for _i2 in 0..col_dim {
             mat_t[i4].set_val_dfd2(& mat[i3]);
             i3 += 1usize;
             i4 +=  row_dim;
@@ -2867,16 +2760,13 @@ pub fn transpose_dfd2(mat_t : &mut Vec<DiffDoub2>, mat : &mut Vec<DiffDoub2>, ro
 }
 
 pub fn transpose_ar_dfd2(mat_t : &mut [DiffDoub2], mat : &mut [DiffDoub2], row_dim : usize, col_dim : usize) {
-    let mut tmp = DiffDoub2::new();
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i4 : usize;
     
     i3 = 0;
     for i1 in 0..row_dim {
         i4 = i1;
-        for i2 in 0..col_dim {
+        for _i2 in 0..col_dim {
             mat_t[i4].set_val_dfd2(& mat[i3]);
             i3 += 1usize;
             i4  +=  row_dim;
@@ -2918,7 +2808,6 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
     let mut a3 = [DiffDoub2::new(); 9];
     let mut tmp_v = [DiffDoub2::new(); 3];
     let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     
     one_half.set_val(0.5);
@@ -2932,7 +2821,7 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
     mag.add(& tmp);
     mag.add(& tmp2);
     mag.sqt();
-    if(mag.val < MAG_TOL) {
+    if mag.val < MAG_TOL {
         let mut loc_rot = [DiffDoub2::new(); 3];
         i3 = 0;
         for i1 in 0..3 {
@@ -3026,10 +2915,10 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
         a1[2].set_val_dfd2(& unit_rot[2]);
         
         i1 = 0;
-        if(fabs(unit_rot[1].val) < fabs(unit_rot[0].val)) {
+        if fabs(unit_rot[1].val) < fabs(unit_rot[0].val) {
             i1 = 1;
         }
-        if(fabs(unit_rot[2].val) < fabs(unit_rot[i1].val)) {
+        if fabs(unit_rot[2].val) < fabs(unit_rot[i1].val) {
             i1 = 2;
         }
         tmp.set_val(1.0);
@@ -3039,7 +2928,7 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
         tmp.sqt();// tmp = sqrt(1 - unit_rot[i1]^2)
         a1[3+i1].set_val_dfd2(& tmp);
         for i2 in 0..3 {
-            if(i2 != i1) {
+            if i2 != i1 {
                 i3 = 3 + i2;
                 tmp2.set_val_dfd2(& a1[i1]);
                 a1[i3].set_val_dfd2(& tmp2);
@@ -3107,12 +2996,10 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
 //end skip 
  
  
- 
- 
 //dup1
 
 pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0], rot : &mut [DiffDoub0], v1 : usize, v2 : usize) {
-    if(v1 + v2 == 0) {
+    if v1 + v2 == 0 {
         rotate_orient_dfd0(inst_ori, loc_ori, rot);
         return;
     }
@@ -3124,12 +3011,11 @@ pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0],
     let mut d_inst_ori = [DiffDoub1::new(); 9];
     let mut d2_inst_ori = [DiffDoub2::new(); 9];
     //end preserve
-    let mut i1 : usize;
-    let mut is_diff : bool =  loc_ori[0].diff_type();
+    let is_diff : bool =  loc_ori[0].diff_type();
     let mut param : f64;
     let mut param2 : f64;
-    if(!is_diff) {
-        if(v1*v2 == 0) {
+    if !is_diff {
+        if v1*v2 == 0 {
             for i1 in 0..9 {
                 param = loc_ori[i1].val;
                 d_loc_ori[i1].set_val(param);
@@ -3138,7 +3024,7 @@ pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0],
             //v1 = v1 + v2;
             for i1 in 1..4 {
                 param = rot[i1-1].val;
-                if(i1 == vnz) {
+                if i1 == vnz {
                     d_rot[i1-1].set_val_2(param,   1.0);
                 } else {
                     d_rot[i1-1].set_val_2(param,   0.0);
@@ -3155,10 +3041,10 @@ pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0],
                 param2 = loc_ori[i1].dval;
                 d2_loc_ori[i1].set_val_2(param,   param2);
             }
-            if(v1 == v2) {
+            if v1 == v2 {
                 for i1 in 1..4 {
                     param = rot[i1-1].val;
-                    if(i1 == v1) {
+                    if i1 == v1 {
                         d2_rot[i1-1].set_val_3(param, 1.0, 1.0);
                     } else {
                         d2_rot[i1-1].set_val(param);
@@ -3167,9 +3053,9 @@ pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0],
             } else {
                 for i1 in 1..4 {
                     param = rot[i1-1].val;
-                    if(i1 == v1) {
+                    if i1 == v1 {
                         d2_rot[i1-1].set_val_2(param,   1.0);
-                    } else if(i1 == v2) {
+                    } else if i1 == v2 {
                         d2_rot[i1-1].set_val_3(param, 0.0, 1.0);
                     } else {
                         d2_rot[i1-1].set_val_2(param,   0.0);
@@ -3192,7 +3078,7 @@ pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0],
         //v1 = v1 + v2;
         for i1 in 1..4 {
             param = rot[i1-1].val;
-            if(i1 == vnz) {
+            if i1 == vnz {
                 d2_rot[i1-1].set_val_3(param, 0.0, 1.0);
             } else {
                 d2_rot[i1-1].set_val_2(param,   0.0);
@@ -3216,7 +3102,7 @@ pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0],
 //dup1
 
 pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1], rot : &mut [DiffDoub1], v1 : usize, v2 : usize) {
-    if(v1 + v2 == 0) {
+    if v1 + v2 == 0 {
         rotate_orient_dfd1(inst_ori, loc_ori, rot);
         return;
     }
@@ -3226,12 +3112,11 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
     let mut d2_loc_ori = [DiffDoub2::new(); 9];
     let mut d_inst_ori = [DiffDoub1::new(); 9];
     let mut d2_inst_ori = [DiffDoub2::new(); 9];
-    let mut i1 : usize;
-    let mut is_diff : bool =  loc_ori[0].diff_type();
+    let is_diff : bool =  loc_ori[0].diff_type();
     let mut param : f64;
     let mut param2 : f64;
-    if(!is_diff) {
-        if(v1*v2 == 0) {
+    if !is_diff {
+        if v1*v2 == 0 {
             for i1 in 0..9 {
                 param = loc_ori[i1].val;
                 d_loc_ori[i1].set_val(param);
@@ -3240,7 +3125,7 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
             //v1 = v1 + v2;
             for i1 in 1..4 {
                 param = rot[i1-1].val;
-                if(i1 == vnz) {
+                if i1 == vnz {
                     d_rot[i1-1].set_val_2(param,   1.0);
                 } else {
                     d_rot[i1-1].set_val_2(param,   0.0);
@@ -3257,10 +3142,10 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
                 param2 = loc_ori[i1].dval;
                 d2_loc_ori[i1].set_val_2(param,   param2);
             }
-            if(v1 == v2) {
+            if v1 == v2 {
                 for i1 in 1..4 {
                     param = rot[i1-1].val;
-                    if(i1 == v1) {
+                    if i1 == v1 {
                         d2_rot[i1-1].set_val_3(param, 1.0, 1.0);
                     } else {
                         d2_rot[i1-1].set_val(param);
@@ -3269,9 +3154,9 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
             } else {
                 for i1 in 1..4 {
                     param = rot[i1-1].val;
-                    if(i1 == v1) {
+                    if i1 == v1 {
                         d2_rot[i1-1].set_val_2(param,   1.0);
-                    } else if(i1 == v2) {
+                    } else if i1 == v2 {
                         d2_rot[i1-1].set_val_3(param, 0.0, 1.0);
                     } else {
                         d2_rot[i1-1].set_val_2(param,   0.0);
@@ -3294,7 +3179,7 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
         //v1 = v1 + v2;
         for i1 in 1..4 {
             param = rot[i1-1].val;
-            if(i1 == vnz) {
+            if i1 == vnz {
                 d2_rot[i1-1].set_val_3(param, 0.0, 1.0);
             } else {
                 d2_rot[i1-1].set_val_2(param,   0.0);
@@ -3313,7 +3198,5 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
 //end dup
  
 //end skip 
- 
- 
  
  

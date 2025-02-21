@@ -3,7 +3,6 @@ use crate::list_ent::*;
 use crate::diff_doub::*;
 use crate::design_var::*;
 use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 
 impl Node {
@@ -15,7 +14,6 @@ impl Node {
     }
 
     pub fn set_displacement(&mut self, new_disp : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.displacement[i1] = new_disp[i1];
         }
@@ -23,7 +21,6 @@ impl Node {
     }
 
     pub fn set_velocity(&mut self, new_vel : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.velocity[i1] = new_vel[i1];
         }
@@ -31,7 +28,6 @@ impl Node {
     }
 
     pub fn set_acceleration(&mut self, new_acc : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.acceleration[i1] = new_acc[i1];
         }
@@ -53,7 +49,6 @@ impl Node {
     }
 
     pub fn add_to_displacement(&mut self, del_disp : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.displacement[i1]  +=  del_disp[i1];
         }
@@ -68,7 +63,6 @@ impl Node {
     }
 
     pub fn set_initial_disp(&mut self, new_disp : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.initial_disp[i1] = new_disp[i1];
         }
@@ -76,7 +70,6 @@ impl Node {
     }
 
     pub fn set_initial_vel(&mut self, new_vel : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.initial_vel[i1] = new_vel[i1];
         }
@@ -84,7 +77,6 @@ impl Node {
     }
 
     pub fn set_initial_acc(&mut self, new_acc : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.initial_acc[i1] = new_acc[i1];
         }
@@ -106,7 +98,6 @@ impl Node {
     }
 
     pub fn set_prev_disp(&mut self, new_disp : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.prev_disp[i1] = new_disp[i1];
         }
@@ -114,7 +105,6 @@ impl Node {
     }
 
     pub fn set_prev_vel(&mut self, new_vel : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.prev_vel[i1] = new_vel[i1];
         }
@@ -122,7 +112,6 @@ impl Node {
     }
 
     pub fn set_prev_acc(&mut self, new_acc : &mut [f64]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.prev_acc[i1] = new_acc[i1];
         }
@@ -151,7 +140,6 @@ impl Node {
     }
 
     pub fn initialize_disp(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.prev_disp[i1] = self.initial_disp[i1];
             self.prev_vel[i1] = self.initial_vel[i1];
@@ -162,7 +150,6 @@ impl Node {
     }
 
     pub fn initialize_fl_vel(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..3 {
             self.prev_fl_vel[i1] = self.initial_fl_vel[i1];
             self.prev_fl_vel_dot[i1] = self.initial_fl_vel_dot[i1];
@@ -191,9 +178,8 @@ impl Node {
     }
 
     pub fn update_vel_acc(&mut self, nm_beta : f64, nm_gamma : f64, del_t : f64) {
-        let mut c1 : f64;
-        let mut c2 : f64;
-        let mut i1 : usize;
+        let c1 : f64;
+        let c2 : f64;
         c1 = 1.0 / (del_t * del_t * (nm_beta - nm_gamma));
         c2 = del_t * del_t * (0.5 + nm_beta - nm_gamma);
         for i1 in 0..6 {
@@ -205,9 +191,8 @@ impl Node {
     }
 
     pub fn update_fl_vel_dot(&mut self, nm_gamma : f64, del_t : f64) {
-        let mut i1 : usize;
-        let mut c1 : f64;
-        let mut c2 : f64;
+        let c1 : f64;
+        let c2 : f64;
         c1 = 1.0 / nm_gamma;
         c2 = 1.0 / del_t;
         for i1 in 0..3 {
@@ -217,11 +202,11 @@ impl Node {
     }
 
     pub fn update_tdot(&mut self, nm_gamma : f64, del_t : f64) {
-        let mut c1 : f64;
-        let mut c2 : f64;
+        let c1 : f64;
+        let c2 : f64;
         c1 = 1.0 / nm_gamma;
         c2 = 1.0 / del_t;
-        if (self.fluid) {
+        if self.fluid {
             self.temp_change_rate = c1 * (c2 * (self.temperature - self.p_temp_lf) - (1.0 - nm_gamma) * self.prev_tdot);
         }
         else {
@@ -231,11 +216,11 @@ impl Node {
     }
 
     pub fn update_fl_den_dot(&mut self, nm_gamma : f64, del_t : f64) {
-        let mut c1 : f64;
-        let mut c2 : f64;
+        let c1 : f64;
+        let c2 : f64;
         c1 = 1.0 / nm_gamma;
         c2 = 1.0 / del_t;
-        if (self.fluid) {
+        if self.fluid {
             self.fl_den_dot = c1 * (c2 * (self.fl_den - self.p_fl_den_lf) - (1.0 - nm_gamma) * self.prev_fl_den_dot);
         }
         else {
@@ -245,18 +230,17 @@ impl Node {
     }
 
     pub fn update_turb_edot(&mut self, nm_gamma : f64, del_t : f64) {
-        let mut c1 : f64;
-        let mut c2 : f64;
+        let c1 : f64;
+        let c2 : f64;
         c1 = 1.0 / nm_gamma;
         c2 = 1.0 / del_t;
-        if (self.fluid) {
+        if self.fluid {
             self.turb_edot = c1 * (c2 * (self.turb_e - self.p_turb_elf) - (1.0 - nm_gamma) * self.prev_turb_edot);
         }
         return;
     }
 
     pub fn advance_disp(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.prev_disp[i1] = self.displacement[i1];
             self.prev_vel[i1] = self.velocity[i1];
@@ -266,7 +250,6 @@ impl Node {
     }
 
     pub fn advance_fl_vel(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..3 {
             self.prev_fl_vel[i1] = self.fl_vel[i1];
             self.prev_fl_vel_dot[i1] = self.fl_vel_dot[i1];
@@ -293,7 +276,6 @@ impl Node {
     }
 
     pub fn backstep_disp(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             self.displacement[i1] = self.prev_disp[i1];
             self.velocity[i1] = self.prev_vel[i1];
@@ -303,7 +285,6 @@ impl Node {
     }
 
     pub fn backstep_fl_vel(&mut self) {
-        let mut i1 : usize;
         for i1 in 0..3 {
             self.fl_vel[i1] = self.prev_fl_vel[i1];
             self.fl_vel_dot[i1] = self.prev_fl_vel_dot[i1];
@@ -346,7 +327,7 @@ impl Node {
         let mut d_index : usize;
         let mut d_val = DiffDoub0::new();
         let mut comp : usize;
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut coef = DiffDoub0::new();
         let mut this_dv : &DesignVariable;
         for dv in self.d_var_lst.iter() {
@@ -355,7 +336,7 @@ impl Node {
             this_dv.get_value_dfd0(&mut d_val);
             cat = this_dv.category.clone();
             comp = this_dv.component - 1;
-            if(cat.s == "nodeCoord") {
+            if cat.s == "nodeCoord" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
                 crd_out[comp].add(& coef);
@@ -365,7 +346,6 @@ impl Node {
     }
 
     pub fn get_disp_dfd0(&mut self, disp : &mut [DiffDoub0]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             disp[i1].set_val(self.displacement[i1]);
         }
@@ -373,11 +353,10 @@ impl Node {
     }
 
     pub fn get_elastic_dvload_dfd0(&mut self, ld : &mut [DiffDoub0], dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut d_index : usize;
         let mut d_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut comp : usize;
         let mut this_dv : &DesignVariable;
         
@@ -390,7 +369,7 @@ impl Node {
             this_dv.get_value_dfd0(&mut d_val);
             cat = this_dv.category.clone();
             comp = this_dv.component - 1;
-            if(cat.s == "elasticLoad") {
+            if cat.s == "elasticLoad" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
                 ld[comp].add(& coef);
@@ -403,7 +382,7 @@ impl Node {
         let mut d_index : usize;
         let mut d_val = DiffDoub0::new();
         let mut coef = DiffDoub0::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
         ld.set_val(0.0);
@@ -412,7 +391,7 @@ impl Node {
             this_dv = &dv_ar[d_index];
             this_dv.get_value_dfd0(&mut d_val);
             cat = this_dv.category.clone();
-            if (cat.s == "thermalLoad") {
+            if cat.s == "thermalLoad" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
                 ld.add(& coef);
@@ -435,7 +414,7 @@ impl Node {
         let mut d_index : usize;
         let mut d_val = DiffDoub1::new();
         let mut comp : usize;
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut coef = DiffDoub1::new();
         let mut this_dv : &DesignVariable;
         for dv in self.d_var_lst.iter() {
@@ -444,7 +423,7 @@ impl Node {
             this_dv.get_value_dfd1(&mut d_val);
             cat = this_dv.category.clone();
             comp = this_dv.component - 1;
-            if(cat.s == "nodeCoord") {
+            if cat.s == "nodeCoord" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
                 crd_out[comp].add(& coef);
@@ -454,7 +433,6 @@ impl Node {
     }
 
     pub fn get_disp_dfd1(&mut self, disp : &mut [DiffDoub1]) {
-        let mut i1 : usize;
         for i1 in 0..6 {
             disp[i1].set_val(self.displacement[i1]);
         }
@@ -462,11 +440,10 @@ impl Node {
     }
 
     pub fn get_elastic_dvload_dfd1(&mut self, ld : &mut [DiffDoub1], dv_ar : & Vec<DesignVariable>) {
-        let mut i1 : usize;
         let mut d_index : usize;
         let mut d_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut comp : usize;
         let mut this_dv : &DesignVariable;
         
@@ -479,7 +456,7 @@ impl Node {
             this_dv.get_value_dfd1(&mut d_val);
             cat = this_dv.category.clone();
             comp = this_dv.component - 1;
-            if(cat.s == "elasticLoad") {
+            if cat.s == "elasticLoad" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
                 ld[comp].add(& coef);
@@ -492,7 +469,7 @@ impl Node {
         let mut d_index : usize;
         let mut d_val = DiffDoub1::new();
         let mut coef = DiffDoub1::new();
-        let mut cat = CppStr::new();
+        let mut cat : CppStr;
         let mut this_dv : &DesignVariable;
         
         ld.set_val(0.0);
@@ -501,7 +478,7 @@ impl Node {
             this_dv = &dv_ar[d_index];
             this_dv.get_value_dfd1(&mut d_val);
             cat = this_dv.category.clone();
-            if (cat.s == "thermalLoad") {
+            if cat.s == "thermalLoad" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
                 ld.add(& coef);
@@ -513,8 +490,6 @@ impl Node {
     //end dup
  
 //end skip 
- 
- 
  
  
 }

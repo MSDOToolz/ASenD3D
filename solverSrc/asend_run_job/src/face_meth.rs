@@ -3,8 +3,6 @@ use crate::diff_doub::*;
 use crate::node::*;
 use crate::design_var::*;
 use crate::matrix_functions::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 
 impl Face {
@@ -15,19 +13,17 @@ impl Face {
     }
 
     pub fn sorted_nodes(&mut self, srt_nds : &mut [usize]) {
-        let mut i1 : usize;
-        let mut i2 : usize;
-        let mut i3 : usize;
+        let i3 : usize;
         let mut i4 : usize;
         let mut swap : usize;
         for i1 in 0..self.num_nds {
             srt_nds[i1] = self.glob_nodes[i1];
         }
         i3 = self.num_nds - 1;
-        for i1 in 0..i3 {
+        for _i1 in 0..i3 {
             for i2 in 0..i3 {
                 i4 = i2 + 1;
-                if(srt_nds[i4] < srt_nds[i2]) {
+                if srt_nds[i4] < srt_nds[i2] {
                     swap = srt_nds[i2];
                     srt_nds[i2] = srt_nds[i4];
                     srt_nds[i4] = swap;
@@ -38,10 +34,9 @@ impl Face {
     }
 
     pub fn get_low_nd(&mut self) -> usize {
-        let mut i1 : usize;
         let mut low_nd : usize =  self.glob_nodes[0];
         for i1 in 1..self.num_nds {
-            if(self.glob_nodes[i1] < low_nd) {
+            if self.glob_nodes[i1] < low_nd {
                 low_nd = self.glob_nodes[i1];
             }
         }
@@ -56,7 +51,7 @@ impl Face {
         let mut tmp_v = [DiffDoub0::new(); 3];
         let mut tmp = DiffDoub0::new();
         
-        if (self.num_nds == 4) {
+        if self.num_nds == 4 {
             nd_ar[self.glob_nodes[2]].get_crd_dfd0(&mut v1, dv_ar);
             nd_ar[self.glob_nodes[0]].get_crd_dfd0(&mut tmp_v, dv_ar);
             v1[0].sub(& tmp_v[0]);
@@ -117,7 +112,7 @@ impl Face {
         let mut tmp_v = [DiffDoub1::new(); 3];
         let mut tmp = DiffDoub1::new();
         
-        if (self.num_nds == 4) {
+        if self.num_nds == 4 {
             nd_ar[self.glob_nodes[2]].get_crd_dfd1(&mut v1, dv_ar);
             nd_ar[self.glob_nodes[0]].get_crd_dfd1(&mut tmp_v, dv_ar);
             v1[0].sub(& tmp_v[0]);
@@ -170,8 +165,6 @@ impl Face {
 //end skip 
  
  
- 
- 
 }
 
 impl FacePtList {
@@ -181,8 +174,7 @@ impl FacePtList {
     }
 
     pub fn add_if_absent(&mut self, new_i : usize, glob_faces : &mut Vec<Face>) -> bool {
-        let mut i1 : usize;
-        let mut new_num_nds : usize;
+        let new_num_nds : usize;
         let mut new_srtd : [usize; 8] = [0usize; 8];
         let mut this_num_nds : usize;
         let mut this_srtd : [usize; 8] = [0usize; 8];
@@ -195,15 +187,15 @@ impl FacePtList {
         for fi in self.fc_list.iter_mut() {
             //this_fc = &mut glob_faces[*fi];
             this_num_nds = glob_faces[*fi].num_nds;
-            if (this_num_nds == new_num_nds) {
+            if this_num_nds == new_num_nds {
                 glob_faces[*fi].sorted_nodes(&mut this_srtd);
                 all_match = true;
                 for i1 in 0..this_num_nds {
-                    if (this_srtd[i1] != new_srtd[i1]) {
+                    if this_srtd[i1] != new_srtd[i1] {
                         all_match = false;
                     }
                 }
-                if (all_match) {
+                if all_match {
                     glob_faces[new_i].on_surf = false;
                     glob_faces[*fi].on_surf = false;
                     return  false;

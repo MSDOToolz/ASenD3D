@@ -1,8 +1,6 @@
 use crate::lower_tri_mat::*;
 use crate::list_ent::*;
 use crate::constraint::*;
-use crate::cpp_str::CppStr;
-use crate::cpp_map::CppMap;
 
 
 impl LowerTriMat {
@@ -15,17 +13,15 @@ impl LowerTriMat {
     }
 
     pub fn allocate_from_sparse_mat(&mut self, sp_mat : &mut SparseMat, c_list : &mut ConstraintList, block_dim : usize) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut row : usize;
         let mut curr_block : usize;
         let mut blk_mc : usize;
-        let mut const_dim : usize;
         let mut this_mat : &SparseMat;
         
-        if(!self.allocated) {
+        if !self.allocated {
             self.set_dim(sp_mat.dim);
         }
         
@@ -39,9 +35,9 @@ impl LowerTriMat {
             blk_mc = block_dim * curr_block;
             for me in mr.row_vec.iter() {
                 i2 = me.col;
-                if(i2 <= row && i2 >= blk_mc) {
+                if i2 <= row && i2 >= blk_mc {
                     i3 = row - i2 + 1;
-                    if(i3 > self.range[row]) {
+                    if i3 > self.range[row] {
                         self.range[row] = i3;
                     }
                 }
@@ -57,9 +53,9 @@ impl LowerTriMat {
                     blk_mc = block_dim * curr_block;
                     for me2 in mr.row_vec.iter() {
                         i3 = me2.col;
-                        if(i3 <= i2 && i3 >= blk_mc) {
+                        if i3 <= i2 && i3 >= blk_mc {
                             i4 = i2 - i3 + 1;
-                            if(i4 > self.range[i2]) {
+                            if i4 > self.range[i2] {
                                 self.range[i2] = i4;
                             }
                         }
@@ -73,7 +69,7 @@ impl LowerTriMat {
         for i1 in 0..self.dim {
             self.size +=  self.range[i1];
             self.min_col[i1] = i1 - (self.range[i1] - 1);
-            if(self.range[i1] > self.max_bandwidth) {
+            if self.range[i1] > self.max_bandwidth {
                 self.max_bandwidth = self.range[i1];
             }
         }
@@ -100,7 +96,6 @@ impl LowerTriMat {
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
-        let mut const_dim : usize;
         let mut const_sf : f64;
         let mut this_mat : &SparseMat;
         
@@ -112,7 +107,7 @@ impl LowerTriMat {
         for mr in sp_mat.matrix.iter() {
             for me in mr.row_vec.iter() {
                 i2 = me.col;
-                if(i2 <= i1 && i2 >= self.min_col[i1]) {
+                if i2 <= i1 && i2 >= self.min_col[i1] {
                     i3 = self.range[i1] + (i2 - self.min_col[i1]);
                     self.mat[i3] +=  me.value;
                 }
@@ -128,7 +123,7 @@ impl LowerTriMat {
                     i2 = me.col;
                     for me2 in mr.row_vec.iter() {
                         i3 = me2.col;
-                        if(i3 <= i2 && i3 >= self.min_col[i2]) {
+                        if i3 <= i2 && i3 >= self.min_col[i2] {
                             i4 = self.range[i2] + (i3 - self.min_col[i2]);
                             self.mat[i4]  +=  const_sf * me.value * me2.value;
                         }
@@ -141,11 +136,9 @@ impl LowerTriMat {
     }
 
     pub fn ldl_factor(&mut self) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
-        let mut i5 : usize;
         let mut st_col : usize;
         let mut sum : f64;
         
@@ -171,10 +164,10 @@ impl LowerTriMat {
             self.mat[i2] = self.mat[i2] - sum;
             //get l terms for column i1
             i2 = i1 + 1;
-            while(i2 < (i1 + self.max_bandwidth) && i2 < self.dim) {// i2 = row in l
-                if(self.min_col[i2] <= i1) {
+            while i2 < (i1 + self.max_bandwidth) && i2 < self.dim {// i2 = row in l
+                if self.min_col[i2] <= i1 {
                     st_col = self.min_col[i2];
-                    if(self.min_col[i1] > st_col) {
+                    if self.min_col[i1] > st_col {
                         st_col = self.min_col[i1];
                     }
                     i4 = self.range[i2] + (st_col - self.min_col[i2]);
@@ -195,7 +188,6 @@ impl LowerTriMat {
     }
 
     pub fn ldl_solve(&mut self, soln_vec : &mut Vec<f64>, rhs : &mut Vec<f64>) {
-        let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
         let mut stop_row : usize;
@@ -215,11 +207,11 @@ impl LowerTriMat {
         for i1 in (0..self.dim).rev() {
             sum = 0.0;
             stop_row = i1 + self.max_bandwidth + 1;
-            if(stop_row > self.dim) {
+            if stop_row > self.dim {
                 stop_row = self.dim;
             }
             for i2 in (i1+1)..stop_row {
-                if (i1 >= self.min_col[i2]) {
+                if i1 >= self.min_col[i2] {
                     i3 = self.range[i2] + (i1 - self.min_col[i2]);
                     sum += self.mat[i3]*soln_vec[i2];
                 }
@@ -231,14 +223,13 @@ impl LowerTriMat {
     }
 
     pub fn pos_def(&mut self) -> bool {
-        let mut i1 : usize;
         let mut d_val : f64;
-        if (!self.allocated) {
+        if !self.allocated {
             return  false;
         }
         for i1 in 0..self.dim {
             d_val = self.mat[self.range[i1 + 1] - 1];
-            if (d_val < 0.0) {
+            if d_val < 0.0 {
                 return  false;
             }
         }
