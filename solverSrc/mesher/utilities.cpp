@@ -7,21 +7,21 @@ using namespace std;
 
 const double tol = 1.0e-12;
 
-void crossProd(double prod[], double v1[], double v2[]) {
+void cross_prod(double prod[], double v1[], double v2[]) {
 	prod[0] = v1[1] * v2[2] - v1[2] * v2[1];
 	prod[1] = v1[2] * v2[0] - v1[0] * v2[2];
 	prod[2] = v1[0] * v2[1] - v1[1] * v2[0];
 	return;
 }
 
-void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void q_rfactor(double mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
-	int i2Min;
-	int i2Max;
-	int i3Min;
-	int i3Max;
+	int i2_min;
+	int i2_max;
+	int i3_min;
+	int i3_max;
 	int k11;
 	int k12;
 	int k22;
@@ -32,39 +32,39 @@ void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int en
 	double p1;
 	double p2;
 
-	for (i1 = stCol; i1 <= endCol; i1++) {
-		i2Min = stRow + (i1 - stCol) + 1;
-		if (triDiag == 0) {
-			i2Max = endRow;
+	for (i1 = st_col; i1 <= end_col; i1++) {
+		i2_min = st_row + (i1 - st_col) + 1;
+		if (tri_diag == 0) {
+			i2_max = end_row;
 		}
 		else {
-			i2Max = stRow + (i1 - stCol) + 1;
-			if (i2Max > endRow) {
-				i2Max = endRow;
+			i2_max = st_row + (i1 - st_col) + 1;
+			if (i2_max > end_row) {
+				i2_max = end_row;
 			}
 		}
-		for (i2 = i2Min; i2 <= i2Max; i2++) {
-			k11 = (i2Min - 1) * colDim + i1;
-			k12 = i2 * colDim + i1;
+		for (i2 = i2_min; i2 <= i2_max; i2++) {
+			k11 = (i2_min - 1) * col_dim + i1;
+			k12 = i2 * col_dim + i1;
 			if (abs(mat[k11]) < tol) {
 				mat[k11] = tol;
 			}
 			theta = atan(mat[k12] / mat[k11]);
 			sth = sin(theta);
 			cth = cos(theta);
-			i3Min = i1;
-			if (triDiag == 2) {
-				i3Max = i1 + 2;
-				if (i3Max > endCol) {
-					i3Max = endCol;
+			i3_min = i1;
+			if (tri_diag == 2) {
+				i3_max = i1 + 2;
+				if (i3_max > end_col) {
+					i3_max = end_col;
 				}
 			}
 			else {
-				i3Max = endCol;
+				i3_max = end_col;
 			}
-			for (i3 = i3Min; i3 <= i3Max; i3++) {
-				k22 = (i2Min - 1) * colDim + i3;
-				k23 = i2 * colDim + i3;
+			for (i3 = i3_min; i3 <= i3_max; i3++) {
+				k22 = (i2_min - 1) * col_dim + i3;
+				k23 = i2 * col_dim + i3;
 				p1 = cth * mat[k22] + sth * mat[k23];
 				p2 = -sth * mat[k22] + cth * mat[k23];
 				mat[k22] = p1;
@@ -76,12 +76,12 @@ void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int en
 	return;
 }
 
-void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag) {
+void solveq_rx_eqb(double x_vec[], double mat[], double b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag) {
 	int i1;
 	int i2;
 	int i3;
-	int i2Min;
-	int i2Max;
+	int i2_min;
+	int i2_max;
 	int k11;
 	int k12;
 	double theta;
@@ -89,145 +89,145 @@ void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stR
 	double cth;
 	double p1;
 	double p2;
-	double rowSum;
+	double row_sum;
 
-	for (i1 = stCol; i1 <= endCol; i1++) {
-		i2Min = stRow + (i1 - stCol) + 1;
-		if (triDiag == 0) {
-			i2Max = endRow;
+	for (i1 = st_col; i1 <= end_col; i1++) {
+		i2_min = st_row + (i1 - st_col) + 1;
+		if (tri_diag == 0) {
+			i2_max = end_row;
 		}
 		else {
-			i2Max = stRow + (i1 - stCol) + 1;
-			if (i2Max > endRow) {
-				i2Max = endRow;
+			i2_max = st_row + (i1 - st_col) + 1;
+			if (i2_max > end_row) {
+				i2_max = end_row;
 			}
 		}
-		i3 = i2Min - 1;
-		for (i2 = i2Min; i2 <= i2Max; i2++) {
-			k12 = i2 * colDim + i1;
+		i3 = i2_min - 1;
+		for (i2 = i2_min; i2 <= i2_max; i2++) {
+			k12 = i2 * col_dim + i1;
 			theta = mat[k12];
 			sth = sin(theta);
 			cth = cos(theta);
-			p1 = cth * bVec[i3] + sth * bVec[i2];
-			p2 = -sth * bVec[i3] + cth * bVec[i2];
-			bVec[i3] = p1;
-			bVec[i2] = p2;
+			p1 = cth * b_vec[i3] + sth * b_vec[i2];
+			p2 = -sth * b_vec[i3] + cth * b_vec[i2];
+			b_vec[i3] = p1;
+			b_vec[i2] = p2;
 		}
-		xVec[i1] = 0.0;
+		x_vec[i1] = 0.0;
 	}
 
-	for (i1 = endCol; i1 >= stCol; i1--) {
-		i3 = stRow + (i1 - stCol);
-		i2Min = i1 + 1;
-		if (triDiag == 2) {
-			i2Max = i1 + 2;
-			if (i2Max > endCol) {
-				i2Max = endCol;
+	for (i1 = end_col; i1 >= st_col; i1--) {
+		i3 = st_row + (i1 - st_col);
+		i2_min = i1 + 1;
+		if (tri_diag == 2) {
+			i2_max = i1 + 2;
+			if (i2_max > end_col) {
+				i2_max = end_col;
 			}
 		}
 		else {
-			i2Max = endCol;
+			i2_max = end_col;
 		}
-		rowSum = 0.0;
-		k11 = i3 * colDim + i2Min;
-		for (i2 = i2Min; i2 <= i2Max; i2++) {
-			rowSum += mat[k11] * xVec[i2];
+		row_sum = 0.0;
+		k11 = i3 * col_dim + i2_min;
+		for (i2 = i2_min; i2 <= i2_max; i2++) {
+			row_sum += mat[k11] * x_vec[i2];
 			k11++;
 		}
-		k11 = i3 * colDim + i1;
-		xVec[i1] = (bVec[i3] - rowSum) / mat[k11];
+		k11 = i3 * col_dim + i1;
+		x_vec[i1] = (b_vec[i3] - row_sum) / mat[k11];
 	}
 
 	return;
 }
 
-void readInputLine(string& fileLine, string headings[], int hdLdSpace[], string data[], int& dataLen) {
+void read_input_line(string& file_line, string headings[], int hd_ld_space[], string data[], int& data_len) {
 	int i1;
 	int i2;
-	int lnLen;
-	int wrdLen;
-	//getline(inFile, fileLine);
-	i1 = fileLine.find("#");
+	int ln_len;
+	int wrd_len;
+	//getline(in_file, file_line);
+	i1 = file_line.find("#");
 	if (i1 > -1) {
-		fileLine = fileLine.substr(0, i1);
+		file_line = file_line.substr(0, i1);
 	}
-	fileLine = fileLine + " ";
-	lnLen = fileLine.length();
-	i1 = fileLine.find(":");
-	dataLen = 0;
+	file_line = file_line + " ";
+	ln_len = file_line.length();
+	i1 = file_line.find(":");
+	data_len = 0;
 	if (i1 > -1) {
-		i2 = fileLine.find_first_not_of(" -\n\t");
-		wrdLen = i1 - i2;
-		if (headings[0] == "" || hdLdSpace[0] == i2) {
-			headings[0] = fileLine.substr(i2, wrdLen);
-			hdLdSpace[0] = i2;
+		i2 = file_line.find_first_not_of(" -\n\t");
+		wrd_len = i1 - i2;
+		if (headings[0] == "" || hd_ld_space[0] == i2) {
+			headings[0] = file_line.substr(i2, wrd_len);
+			hd_ld_space[0] = i2;
 			headings[1] = "";
-			hdLdSpace[1] = 0;
+			hd_ld_space[1] = 0;
 			headings[2] = "";
-			hdLdSpace[2] = 0;
+			hd_ld_space[2] = 0;
 			headings[3] = "";
-			hdLdSpace[3] = 0;
+			hd_ld_space[3] = 0;
 		}
-		else if (headings[1] == "" || hdLdSpace[1] == i2) {
-			headings[1] = fileLine.substr(i2, wrdLen);
-			hdLdSpace[1] = i2;
+		else if (headings[1] == "" || hd_ld_space[1] == i2) {
+			headings[1] = file_line.substr(i2, wrd_len);
+			hd_ld_space[1] = i2;
 			headings[2] = "";
-			hdLdSpace[2] = 0;
+			hd_ld_space[2] = 0;
 			headings[3] = "";
-			hdLdSpace[3] = 0;
+			hd_ld_space[3] = 0;
 		}
-		else if (headings[2] == "" || hdLdSpace[2] == i2) {
-			headings[2] = fileLine.substr(i2, wrdLen);
-			hdLdSpace[2] = i2;
+		else if (headings[2] == "" || hd_ld_space[2] == i2) {
+			headings[2] = file_line.substr(i2, wrd_len);
+			hd_ld_space[2] = i2;
 			headings[3] = "";
-			hdLdSpace[3] = 0;
+			hd_ld_space[3] = 0;
 		}
 		else {
-			headings[3] = fileLine.substr(i2, wrdLen);
-			hdLdSpace[3] = i2;
+			headings[3] = file_line.substr(i2, wrd_len);
+			hd_ld_space[3] = i2;
 		}
 		i1++;
-		while (i1 < lnLen) {
-			fileLine = fileLine.substr(i1);
-			i1 = fileLine.find_first_not_of(" ,[]\t\n");
+		while (i1 < ln_len) {
+			file_line = file_line.substr(i1);
+			i1 = file_line.find_first_not_of(" ,[]\t\n");
 			if (i1 > -1) {
-				fileLine = fileLine.substr(i1);
-				lnLen = fileLine.length();
-				i1 = fileLine.find_first_of(" ,[]\t\n");
+				file_line = file_line.substr(i1);
+				ln_len = file_line.length();
+				i1 = file_line.find_first_of(" ,[]\t\n");
 				if (i1 > -1) {
-					data[dataLen] = fileLine.substr(0, i1);
-					dataLen++;
+					data[data_len] = file_line.substr(0, i1);
+					data_len++;
 				}
 				else {
-					i1 = lnLen;
+					i1 = ln_len;
 				}
 			}
 			else {
-				i1 = lnLen;
+				i1 = ln_len;
 			}
 		}
 	}
 	else {
-		i1 = fileLine.find("- ");
+		i1 = file_line.find("- ");
 		if (i1 > -1) {
 			i1++;
-			while (i1 < lnLen) {
-				fileLine = fileLine.substr(i1);
-				i1 = fileLine.find_first_not_of(" ,[]\t\n");
+			while (i1 < ln_len) {
+				file_line = file_line.substr(i1);
+				i1 = file_line.find_first_not_of(" ,[]\t\n");
 				if (i1 > -1) {
-					fileLine = fileLine.substr(i1);
-					lnLen = fileLine.length();
-					i1 = fileLine.find_first_of(" ,[]\t\n");
+					file_line = file_line.substr(i1);
+					ln_len = file_line.length();
+					i1 = file_line.find_first_of(" ,[]\t\n");
 					if (i1 > -1) {
-						data[dataLen] = fileLine.substr(0, i1);
-						dataLen++;
+						data[data_len] = file_line.substr(0, i1);
+						data_len++;
 					}
 					else {
-						i1 = lnLen;
+						i1 = ln_len;
 					}
 				}
 				else {
-					i1 = lnLen;
+					i1 = ln_len;
 				}
 			}
 		}

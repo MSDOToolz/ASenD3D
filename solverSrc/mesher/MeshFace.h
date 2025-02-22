@@ -1,5 +1,5 @@
-#ifndef MESHFACE
-#define MESHFACE
+#ifndef meshface
+#define meshface
 #include "MeshNode.h"
 #include "MeshElement.h"
 #include <vector>
@@ -9,28 +9,28 @@ public:
 
 	int nodes[3];
 	int elements[2];
-	double normDir[3];
-	double projDist;
+	double norm_dir[3];
+	double proj_dist;
 
 	MeshFace();
 
 	void copy_data(MeshFace& f_in);
 
-	void initNormDir(std::vector<MeshNode>& nd_ar);
+	void init_norm_dir(std::vector<MeshNode>& nd_ar);
 
-	void normDirFromElCent(double cent[], std::vector<MeshNode>& nd_ar);
+	void norm_dir_from_el_cent(double cent[], std::vector<MeshNode>& nd_ar);
 
-	void getCentroid(double cent[], std::vector<MeshNode>& nd_ar);
+	void get_centroid(double cent[], std::vector<MeshNode>& nd_ar);
 
-	double getLongestEdgeLen(std::vector<MeshNode>& nd_ar);
+	double get_longest_edge_len(std::vector<MeshNode>& nd_ar);
 
-	bool getIntersection(double outParam[], double pt[], double vec[], std::vector<MeshNode>& nd_ar);
+	bool get_intersection(double out_param[], double pt[], double vec[], std::vector<MeshNode>& nd_ar);
 
-	bool edgesIntersect(int fc, double distTol, std::vector<MeshNode>& nd_ar, std::vector<MeshFace>& fc_ar);
+	bool edges_intersect(int fc, double dist_tol, std::vector<MeshNode>& nd_ar, std::vector<MeshFace>& fc_ar);
 
-	int getSharedNodes(int ndPts[], bool shared[], int fc, std::vector<MeshNode>& nd_ar, std::vector<MeshFace>& fc_ar);
+	int get_shared_nodes(int nd_pts[], bool shared[], int fc, std::vector<MeshNode>& nd_ar, std::vector<MeshFace>& fc_ar);
 
-	void printInfo(std::vector<MeshNode>& nd_ar);
+	void print_info(std::vector<MeshNode>& nd_ar);
 };
 
 #endif

@@ -1,62 +1,62 @@
-#ifndef SPATIALGRID
-#define SPATIALGRID
+#ifndef spatialgrid
+#define spatialgrid
 #include <list>
 #include <vector>
 #include "MeshNode.h"
 #include "MeshElement.h"
 #include "MeshFace.h"
 
-//class MeshEnt {
+//class mesh_ent {
 //private:
 //	MeshNode* nd;
 //	MeshElement* el;
 //	MeshFace* fc;
-//	MeshEnt* next;
+//	mesh_ent* next;
 //
 //public:
-//	MeshEnt();
+//	mesh_ent();
 //
-//	void setPt(MeshNode* newNd);
+//	void set_pt(MeshNode* new_nd);
 //
-//	void setPt(MeshElement* newEl);
+//	void set_pt(MeshElement* new_el);
 //
-//	void setPt(MeshFace* newFc);
+//	void set_pt(MeshFace* new_fc);
 //
-//	void setNext(MeshEnt* newNext);
+//	void set_next(mesh_ent* new_next);
 //
-//	MeshNode* getPt(MeshNode* pt);
+//	MeshNode* get_pt(MeshNode* pt);
 //
-//	MeshElement* getPt(MeshElement* pt);
+//	MeshElement* get_pt(MeshElement* pt);
 //
-//	MeshFace* getPt(MeshFace* pt);
+//	MeshFace* get_pt(MeshFace* pt);
 //
-//	MeshEnt* getNext();
+//	mesh_ent* get_next();
 //
 //};
 //
-//class EntityList {
+//class entity_list {
 //private:
-//	MeshEnt* first;
-//	MeshEnt* last;
+//	mesh_ent* first;
+//	mesh_ent* last;
 //	int length;
 //
 //public:
-//	EntityList();
+//	entity_list();
 //
-//	void addEntry(MeshNode* newNd);
+//	void add_entry(MeshNode* new_nd);
 //
-//	void addEntry(MeshElement* newEl);
+//	void add_entry(MeshElement* new_el);
 //
-//	void addEntry(MeshFace* newFc);
+//	void add_entry(MeshFace* new_fc);
 //
-//	int copyToArray(MeshEnt* outLst[], int maxLen);
+//	int copy_to_array(mesh_ent* out_lst[], int max_len);
 //
-//	~EntityList();
+//	~entity_list();
 //};
 
 class IntList {
 public:
-	std::list<int> iLst;
+	std::list<int> i_lst;
 
 	IntList();
 
@@ -65,27 +65,27 @@ public:
 
 class SpatialGrid {
 private:
-	double xMin;
-	double xSp;
-	int xBins;
-	double yMin;
-	double ySp;
-	int yBins;
-	double zMin;
-	double zSp;
-	int zBins;
-	std::vector<IntList> listAr;
+	double x_min;
+	double x_sp;
+	int x_bins;
+	double y_min;
+	double y_sp;
+	int y_bins;
+	double z_min;
+	double z_sp;
+	int z_bins;
+	std::vector<IntList> list_ar;
 
 public:
 	SpatialGrid();
 
-	void initialize(double xRange[], double xSpacing, double yRange[], double ySpacing, double zRange[], double zSpacing);
+	void initialize(double x_range[], double x_spacing, double y_range[], double y_spacing, double z_range[], double z_spacing);
 
-	void addEnt(int label, double crd[]);
+	void add_ent(int label, double crd[]);
 
-	int getInXYZRange(std::vector<int>& outLst, int maxLen, double xRange[], double yRange[], double zRange[]);
+	int get_in_xyzrange(std::vector<int>& out_lst, int max_len, double x_range[], double y_range[], double z_range[]);
 
-	int getInRadius(std::vector<int>& outList, int maxLen, double pt[], double rad);
+	int get_in_radius(std::vector<int>& out_list, int max_len, double pt[], double rad);
 };
 
 #endif

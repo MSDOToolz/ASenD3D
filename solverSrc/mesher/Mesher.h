@@ -12,57 +12,57 @@ private:
 	std::vector<MeshNode> nodes;
 	int nd_ct;
 	int nd_cap;
-	SpatialGrid nodeGrid;
+	SpatialGrid node_grid;
 	std::vector<MeshElement> elements;
 	int el_ct;
 	int el_cap;
-	SpatialGrid elementGrid;
+	SpatialGrid element_grid;
 	std::vector<MeshFace> faces;
 	int fc_ct;
 	int fc_cap;
-	SpatialGrid faceGrid;
+	SpatialGrid face_grid;
 	
-	std::vector<int> gridOut1;
-	std::vector<int> gridOut2;
-	int gOLen;
+	std::vector<int> grid_out1;
+	std::vector<int> grid_out2;
+	int g_olen;
 
-	int numBoundNds;
-	double avgProj;
-	double maxProj;
-	double maxEdgeLen;
-	double globProjWt;
-	int maxNumEls;
+	int num_bound_nds;
+	double avg_proj;
+	double max_proj;
+	double max_edge_len;
+	double glob_proj_wt;
+	int max_num_els;
 
-	int newEl;
-	std::vector<MeshFace> newElFcs;
-	int newNd;
+	int new_el;
+	std::vector<MeshFace> new_el_fcs;
+	int new_nd;
 
 public:
 	Mesher();
 
-	void readInput(std::string fileName);
+	void read_input(std::string file_name);
 
-	void initBoundaryNormals();
+	void init_boundary_normals();
 
 	void prep();
 
-	bool checkNewEl(MeshElement& newEl, std::vector<MeshFace>& newFaces);
+	bool check_new_el(MeshElement& new_el, std::vector<MeshFace>& new_faces);
 
-	bool addFaceIfAbsent(int newEl);
+	bool add_face_if_absent(int new_el);
 
-	bool adoptConnectedNd(int fc_i, double tgtPt[], double srchRad);
+	bool adopt_connected_nd(int fc_i, double tgt_pt[], double srch_rad);
 
-	bool adoptAnyNd(int fc_i, double tgtPt[], double srchRad);
+	bool adopt_any_nd(int fc_i, double tgt_pt[], double srch_rad);
 
-	bool createNewNd(int fc_i, double tgtPt[]);
+	bool create_new_nd(int fc_i, double tgt_pt[]);
 
-	bool generateMesh();
+	bool generate_mesh();
 
-	void distributeNodes();
+	void distribute_nodes();
 
-	void writeOutput(std::string fileName);
+	void write_output(std::string file_name);
 
-	void printCurrentMesh();
+	void print_current_mesh();
 };
 
 #endif

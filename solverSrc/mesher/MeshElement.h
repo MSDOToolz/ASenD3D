@@ -1,5 +1,5 @@
-#ifndef MESHELEMENT
-#define MESHELEMENT
+#ifndef meshelement
+#define meshelement
 #include "MeshNode.h"
 #include <vector>
 
@@ -9,11 +9,11 @@ public:
 
 	MeshElement();
 
-	void getCentroid(double cent[], std::vector<MeshNode>& nd_ar);
+	void get_centroid(double cent[], std::vector<MeshNode>& nd_ar);
 
-	double getVolume(std::vector<MeshNode>& nd_ar);
+	double get_volume(std::vector<MeshNode>& nd_ar);
 
-	bool pointIn(double pt[], std::vector<MeshNode>& nd_ar);
+	bool point_in(double pt[], std::vector<MeshNode>& nd_ar);
 	
 };
 

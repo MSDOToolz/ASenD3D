@@ -3,15 +3,14 @@
 #include <vector>
 
 using namespace std;
-
 IntList::IntList() {
-	iLst.clear();
+	i_lst.clear();
 	return;
 }
 
 int IntList::copy_to_vector(vector<int>& in_vec, int st_i, int max_len) {
 	int i1 = st_i;
-	for (auto& i2 : iLst) {
+	for (auto& i2 : i_lst) {
 		if (i1 >= max_len) {
 			return i1;
 		}
@@ -22,123 +21,123 @@ int IntList::copy_to_vector(vector<int>& in_vec, int st_i, int max_len) {
 }
 
 SpatialGrid::SpatialGrid() {
-	listAr.clear();
+	list_ar.clear();
 	return;
 }
 
-void SpatialGrid::initialize(double xRange[], double xSpacing, double yRange[], double ySpacing, double zRange[], double zSpacing) {
-	xMin = xRange[0];
-	xSp = xSpacing;
-	yMin = yRange[0];
-	ySp = ySpacing;
-	zMin = zRange[0];
-	zSp = zSpacing;
-	xBins = (xRange[1] - xMin) / xSp + 1;
-	yBins = (yRange[1] - yMin) / ySp + 1;
-	zBins = (zRange[1] - zMin) / zSp + 1;
-	int totBins = xBins * yBins * zBins;
-	listAr = vector<IntList>(totBins);
+void SpatialGrid::initialize(double x_range[], double x_spacing, double y_range[], double y_spacing, double z_range[], double z_spacing) {
+	x_min = x_range[0];
+	x_sp = x_spacing;
+	y_min = y_range[0];
+	y_sp = y_spacing;
+	z_min = z_range[0];
+	z_sp = z_spacing;
+	x_bins = (x_range[1] - x_min) / x_sp + 1;
+	y_bins = (y_range[1] - y_min) / y_sp + 1;
+	z_bins = (z_range[1] - z_min) / z_sp + 1;
+	int tot_bins = x_bins * y_bins * z_bins;
+	list_ar = vector<IntList>(tot_bins);
 	return;
 }
 
-void SpatialGrid::addEnt(int label, double crd[]) {
-	int xB = (crd[0] - xMin) / xSp;
-	if (xB < 0) {
-		xB = 0;
+void SpatialGrid::add_ent(int label, double crd[]) {
+	int x_b = (crd[0] - x_min) / x_sp;
+	if (x_b < 0) {
+		x_b = 0;
 	}
-	if (xB >= xBins) {
-		xB = xBins - 1;
+	if (x_b >= x_bins) {
+		x_b = x_bins - 1;
 	}
-	int yB = (crd[1] - yMin) / ySp;
-	if (yB < 0) {
-		yB = 0;
+	int y_b = (crd[1] - y_min) / y_sp;
+	if (y_b < 0) {
+		y_b = 0;
 	}
-	if (yB >= yBins) {
-		yB = yBins - 1;
+	if (y_b >= y_bins) {
+		y_b = y_bins - 1;
 	}
-	int zB = (crd[2] - zMin) / zSp;
-	if (zB < 0) {
-		zB = 0;
+	int z_b = (crd[2] - z_min) / z_sp;
+	if (z_b < 0) {
+		z_b = 0;
 	}
-	if (zB >= zBins) {
-		zB = zBins - 1;
+	if (z_b >= z_bins) {
+		z_b = z_bins - 1;
 	}
-	int ind = (zB*yBins + yB)*xBins + xB;
-	listAr[ind].iLst.push_back(label);
+	int ind = (z_b*y_bins + y_b)*x_bins + x_b;
+	list_ar[ind].i_lst.push_back(label);
 }
 
-int SpatialGrid::getInXYZRange(vector<int>& outLst, int maxLen, double xRange[], double yRange[], double zRange[]) {
-	int iMin;
-	int iMax;
-	int jMin;
-	int jMax;
-	int kMin;
-	int kMax;
+int SpatialGrid::get_in_xyzrange(vector<int>& out_lst, int max_len, double x_range[], double y_range[], double z_range[]) {
+	int i_min;
+	int i_max;
+	int j_min;
+	int j_max;
+	int k_min;
+	int k_max;
 
-	if (xRange[0] < xRange[1]) {
-		iMin = (xRange[0] - xMin) / xSp;
-		if (iMin < 0) {
-			iMin = 0;
+	if (x_range[0] < x_range[1]) {
+		i_min = (x_range[0] - x_min) / x_sp;
+		if (i_min < 0) {
+			i_min = 0;
 		}
-		iMax = (xRange[1] - xMin) / xSp;
-		if (iMax >= xBins) {
-			iMax = xBins - 1;
+		i_max = (x_range[1] - x_min) / x_sp;
+		if (i_max >= x_bins) {
+			i_max = x_bins - 1;
 		}
 	}
 	else {
-		iMin = 0;
-		iMax = xBins - 1;
+		i_min = 0;
+		i_max = x_bins - 1;
 	}
 
-	if (yRange[0] < yRange[1]) {
-		jMin = (yRange[0] - yMin) / ySp;
-		if (jMin < 0) {
-			jMin = 0;
+	if (y_range[0] < y_range[1]) {
+		j_min = (y_range[0] - y_min) / y_sp;
+		if (j_min < 0) {
+			j_min = 0;
 		}
-		jMax = (yRange[1] - yMin) / ySp;
-		if (jMax >= yBins) {
-			jMax = yBins - 1;
+		j_max = (y_range[1] - y_min) / y_sp;
+		if (j_max >= y_bins) {
+			j_max = y_bins - 1;
 		}
 	}
 	else {
-		jMin = 0;
-		jMax = yBins - 1;
+		j_min = 0;
+		j_max = y_bins - 1;
 	}
 
-	if (zRange[0] < zRange[1]) {
-		kMin = (zRange[0] - zMin) / zSp;
-		if (kMin < 0) {
-			kMin = 0;
+	if (z_range[0] < z_range[1]) {
+		k_min = (z_range[0] - z_min) / z_sp;
+		if (k_min < 0) {
+			k_min = 0;
 		}
-		kMax = (zRange[1] - zMin) / zSp;
-		if (kMax >= zBins) {
-			kMax = zBins - 1;
+		k_max = (z_range[1] - z_min) / z_sp;
+		if (k_max >= z_bins) {
+			k_max = z_bins - 1;
 		}
 	}
 	else {
-		kMin = 0;
-		kMax = zBins - 1;
+		k_min = 0;
+		k_max = z_bins - 1;
 	}
 
 	int i;
 	int j;
 	int k;
 	int ind;
-	int lstLen = 0;
-	int numAdded;
-	for (k = kMin; k <= kMax; k++) {
-		for (j = jMin; j <= jMax; j++) {
-			for (i = iMin; i <= iMax; i++) {
-				ind = (k * yBins + j)*xBins + i;
-				lstLen = listAr[ind].copy_to_vector(outLst, lstLen, maxLen);
+	int lst_len = 0;
+	int num_added;
+	for (k = k_min; k <= k_max; k++) {
+		for (j = j_min; j <= j_max; j++) {
+			for (i = i_min; i <= i_max; i++) {
+				ind = (k * y_bins + j)*x_bins + i;
+				lst_len = list_ar[ind].copy_to_vector(out_lst, lst_len, max_len);
 			}
 		}
 	}
 
-	return lstLen;
+	return lst_len;
 }
 
-int SpatialGrid::getInRadius(vector<int>& outList, int maxLen, double pt[], double rad) {
+int SpatialGrid::get_in_radius(vector<int>& out_list, int max_len, double pt[], double rad) {
 	double range[6];
 	range[0] = pt[0] - rad;
 	range[1] = pt[0] + rad;
@@ -147,5 +146,5 @@ int SpatialGrid::getInRadius(vector<int>& outList, int maxLen, double pt[], doub
 	range[4] = pt[2] - rad;
 	range[5] = pt[2] + rad;
 
-	return getInXYZRange(outList, maxLen, &range[0], &range[2], &range[4]);
+	return get_in_xyzrange(out_list, max_len, &range[0], &range[2], &range[4]);
 }

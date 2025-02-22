@@ -27,19 +27,19 @@ int main(int argc, char* argv[]) {
 		cout << "Error: no input file provided for unstructured tet mesh." << endl;
 		return 1;
 	}
-	mesher.readInput(inputFile);
+	mesher.read_input(inputFile);
 	mesher.prep();
 	cout << "generating mesh" << endl;
-	bool resolved = mesher.generateMesh();
+	bool resolved = mesher.generate_mesh();
 	cout << "finished mesh" << endl;
 	if (resolved) {
 		cout << "distributing nodes" << endl;
-		mesher.distributeNodes();
-		mesher.generateMesh();
+		mesher.distribute_nodes();
+		mesher.generate_mesh();
 	}
 	else {
 		cout << "Warning: mesh reached maximum number of elements unresolved." << endl;
 	}
-	mesher.writeOutput(outputFile);
+	mesher.write_output(outputFile);
 	return 0;
 }

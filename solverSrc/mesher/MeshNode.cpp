@@ -1,6 +1,7 @@
 #include "MeshNode.h"
+#include "constants.h"
 
 MeshNode::MeshNode() {
-	label = 2000000000;
+	label = max_int;
 	return;
 }

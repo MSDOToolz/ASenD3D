@@ -1,5 +1,5 @@
-#ifndef MESHNODE
-#define MESHNODE
+#ifndef meshnode
+#define meshnode
 
 class MeshNode {
 public:

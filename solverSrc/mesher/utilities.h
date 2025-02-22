@@ -1,14 +1,14 @@
-#ifndef UTILITIES
-#define UTILITIES
+#ifndef utilities
+#define utilities
 #include <string>
 #include <fstream>
 
-void crossProd(double prod[], double v1[], double v2[]);
+void cross_prod(double prod[], double v1[], double v2[]);
 
-void qRFactor(double mat[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void q_rfactor(double mat[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void solveqRxEqb(double xVec[], double mat[], double bVec[], int colDim, int stRow, int endRow, int stCol, int endCol, int triDiag);
+void solveq_rx_eqb(double x_vec[], double mat[], double b_vec[], int col_dim, int st_row, int end_row, int st_col, int end_col, int tri_diag);
 
-void readInputLine(std::string& fileLine, std::string headings[], int hdLdSpace[], std::string data[], int& dataLen);
+void read_input_line(std::string& file_line, std::string headings[], int hd_ld_space[], std::string data[], int& data_len);
 
 #endif
