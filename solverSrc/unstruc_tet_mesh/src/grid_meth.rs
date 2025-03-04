@@ -1,12 +1,11 @@
 use crate::spatial_grid::*;
-use crate::cpp_str::CppStr;
 
 
 impl IntList {
     pub fn copy_to_vector(&mut self, in_vec : &mut Vec<usize>, st_i : usize, max_len : usize) -> usize {
         let mut i1 : usize =  st_i;
         for i2 in self.i_lst.iter_mut() {
-            if (i1 >= max_len) {
+            if i1 >= max_len {
                 return  i1;
             }
             in_vec[i1] = *i2;
@@ -28,47 +27,59 @@ impl SpatialGrid {
         self.x_bins = ((x_range[1] - self.x_min) / self.x_sp + 1.0) as usize;
         self.y_bins = ((y_range[1] - self.y_min) / self.y_sp + 1.0) as usize;
         self.z_bins = ((z_range[1] - self.z_min) / self.z_sp + 1.0) as usize;
-        let mut tot_bins : usize =  self.x_bins * self.y_bins * self.z_bins;
+        let tot_bins : usize =  self.x_bins * self.y_bins * self.z_bins;
         self.list_ar = vec![IntList::new(); tot_bins];
         return;
     }
 
     pub fn add_ent(&mut self, label : usize, crd : & [f64]) {
-        let mut x_b : usize =  ((crd[0] - self.x_min) / self.x_sp) as usize;
-        if (x_b < 0) {
+        let mut x_b : usize;
+        if crd[0] < self.x_min {
             x_b = 0;
         }
-        if (x_b >= self.x_bins) {
+        else {
+            x_b = ((crd[0] - self.x_min) / self.x_sp) as usize;
+        }
+        if x_b >= self.x_bins {
             x_b = self.x_bins - 1;
         }
-        let mut y_b : usize =  ((crd[1] - self.y_min) / self.y_sp) as usize;
-        if (y_b < 0) {
+
+        let mut y_b : usize;
+        if crd[1] < self.y_min {
             y_b = 0;
         }
-        if (y_b >= self.y_bins) {
+        else {
+            y_b = ((crd[1] - self.y_min) / self.y_sp) as usize;
+        }
+        if y_b >= self.y_bins {
             y_b = self.y_bins - 1;
         }
-        let mut z_b : usize =  ((crd[2] - self.z_min) / self.z_sp) as usize;
-        if (z_b < 0) {
+
+        let mut z_b : usize;
+        if crd[2] < self.z_min {
             z_b = 0;
         }
-        if (z_b >= self.z_bins) {
+        else {
+            z_b = ((crd[2] - self.z_min) / self.z_sp) as usize;
+        }
+        if z_b >= self.z_bins {
             z_b = self.z_bins - 1;
         }
-        let mut ind : usize =  (z_b*self.y_bins + y_b)*self.x_bins + x_b;
+
+        let ind : usize =  (z_b*self.y_bins + y_b)*self.x_bins + x_b;
         self.list_ar[ind].i_lst.push_back(label);
     }
 
     pub fn get_in_xyzrange(&mut self, out_lst : &mut Vec<usize>, max_len : usize, x_range : & [f64], y_range : & [f64], z_range : & [f64]) -> usize {
-        let mut i_min : usize;
+        let i_min : usize;
         let mut i_max : usize;
-        let mut j_min : usize;
+        let j_min : usize;
         let mut j_max : usize;
-        let mut k_min : usize;
+        let k_min : usize;
         let mut k_max : usize;
         
-        if (x_range[0] < x_range[1]) {
-            if (x_range[0] < self.x_min) {
+        if x_range[0] < x_range[1] {
+            if x_range[0] < self.x_min {
                 i_min = 0;
             }
             else {
@@ -76,7 +87,7 @@ impl SpatialGrid {
             }
              
             i_max = ((x_range[1] - self.x_min) / self.x_sp) as usize;
-            if (i_max >= self.x_bins) {
+            if i_max >= self.x_bins {
                 i_max = self.x_bins - 1;
             }
         }
@@ -85,8 +96,8 @@ impl SpatialGrid {
             i_max = self.x_bins - 1;
         }
         
-        if (y_range[0] < y_range[1]) {
-            if (y_range[0] < self.y_min) {
+        if y_range[0] < y_range[1] {
+            if y_range[0] < self.y_min {
                 j_min = 0;
             }
             else {
@@ -94,7 +105,7 @@ impl SpatialGrid {
             }
 
             j_max = ((y_range[1] - self.y_min) / self.y_sp) as usize;
-            if (j_max >= self.y_bins) {
+            if j_max >= self.y_bins {
                 j_max = self.y_bins - 1;
             }
         }
@@ -103,8 +114,8 @@ impl SpatialGrid {
             j_max = self.y_bins - 1;
         }
         
-        if (z_range[0] < z_range[1]) {
-            if (z_range[0] < self.z_min) {
+        if z_range[0] < z_range[1] {
+            if z_range[0] < self.z_min {
                 k_min = 0;
             }
             else {
@@ -112,7 +123,7 @@ impl SpatialGrid {
             }
 
             k_max = ((z_range[1] - self.z_min) / self.z_sp) as usize;
-            if (k_max >= self.z_bins) {
+            if k_max >= self.z_bins {
                 k_max = self.z_bins - 1;
             }
         }

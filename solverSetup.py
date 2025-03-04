@@ -27,6 +27,8 @@ if(procRes.returncode != 0):
         print('It looks like rustup, the tool for building the core solver locally is not installed.')
         print('You may attempt to use the included pre-build of the core solver, though it is recommended to build locally.')
         print('rustup can be installed from www.rust-lang.org/tools/install')
+        solveDir = thisDir + '/solverSrc/asend_run_job/target/release/asend_run_job.exe'
+        setEnvPath('solverpath', solveDir)
     else:
         print('It looks like rustup, the tool for building the core solver locally is not installed.')
         print('It can be installed from the command line, with')
@@ -44,12 +46,27 @@ if(procRes.returncode != 0):
                     print("Core solver build failed.  Please check www.rust-lang.org.tools.install for updates")
                 else:
                     print("Core solver build successful")
+        else:
+            print("Ok. Visit www.rust-lang.org/tools/install for instructions on manual installation of rustup")
                     
 if(procRes.returncode == 0):
+    print('Core solver successfully set up. Building unstructured tet element mesher...')
     solveDir = thisDir + '/solverSrc/asend_run_job/target/release/asend_run_job.exe'
     setEnvPath('solverpath', solveDir)
-    # meshDir = thisDir + '/solverSrc/unstruc_tet_mesh/target/release/unstruc_tet_mesh.exe'
-    # setEnvPath('mesherpath',meshDir)
+    
+    meshRt = thisDir + '/solverSrc/unstruc_tet_mesh'
+    os.chdir(meshRt)
+    meshRes = subprocess.run(['cargo', 'build', '--release'],capture_output=True,text=True)
+    if(meshRes.returncode == 0):
+        print('Tet mesher successfully built.')
+        print('Finished ASenD3D solver setup')
+    else:
+        print('Problem building tet mesher.  See output:')
+        print(meshRes.stdout)
+        print(meshRes.stderr)
+
+meshDir = thisDir + '/solverSrc/unstruc_tet_mesh/target/release/unstruc_tet_mesh.exe'
+setEnvPath('mesherpath',meshDir)
                     
 os.chdir(wkDir)
 

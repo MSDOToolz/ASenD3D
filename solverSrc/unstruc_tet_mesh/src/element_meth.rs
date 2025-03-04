@@ -57,9 +57,9 @@ impl MeshElement {
         rhs[2] = pt[2] - n1[2];
         q_rfactor(&mut mat,  3,  0,  2,  0,  2,  0);
         solveq_rx_eqb(&mut soln, &mut  mat, &mut  rhs,  3,  0,  2,  0,  2,  0);
-        if (soln[0] > 0.0000000001 && soln[1] > 0.0000000001 && soln[2] > 0.0000000001) {
+        if soln[0] > 0.0000000001 && soln[1] > 0.0000000001 && soln[2] > 0.0000000001 {
             sol_sum = soln[0] + soln[1] + soln[2];
-            if (sol_sum < 0.9999999999) {
+            if sol_sum < 0.9999999999 {
                 return  true;
             }
         }

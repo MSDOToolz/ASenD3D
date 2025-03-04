@@ -45,18 +45,20 @@ impl LowerTriMat {
         }
         
         for cnst in c_list.const_vec.iter() {
-            this_mat = &cnst.mat;
-            for mr in this_mat.matrix.iter() {
-                for me in mr.row_vec.iter() {
-                    i2 = me.col;
-                    curr_block = i2 / block_dim;
-                    blk_mc = block_dim * curr_block;
-                    for me2 in mr.row_vec.iter() {
-                        i3 = me2.col;
-                        if i3 <= i2 && i3 >= blk_mc {
-                            i4 = i2 - i3 + 1;
-                            if i4 > self.range[i2] {
-                                self.range[i2] = i4;
+            if cnst.is_active {
+                this_mat = &cnst.mat;
+                for mr in this_mat.matrix.iter() {
+                    for me in mr.row_vec.iter() {
+                        i2 = me.col;
+                        curr_block = i2 / block_dim;
+                        blk_mc = block_dim * curr_block;
+                        for me2 in mr.row_vec.iter() {
+                            i3 = me2.col;
+                            if i3 <= i2 && i3 >= blk_mc {
+                                i4 = i2 - i3 + 1;
+                                if i4 > self.range[i2] {
+                                    self.range[i2] = i4;
+                                }
                             }
                         }
                     }
@@ -116,16 +118,18 @@ impl LowerTriMat {
         }
         
         for cnst in c_list.const_vec.iter() {
-            this_mat = &cnst.mat;
-            const_sf = cnst.scale_fact;
-            for mr in this_mat.matrix.iter() {
-                for me in mr.row_vec.iter() {
-                    i2 = me.col;
-                    for me2 in mr.row_vec.iter() {
-                        i3 = me2.col;
-                        if i3 <= i2 && i3 >= self.min_col[i2] {
-                            i4 = self.range[i2] + (i3 - self.min_col[i2]);
-                            self.mat[i4]  +=  const_sf * me.value * me2.value;
+            if cnst.is_active {
+                this_mat = &cnst.mat;
+                const_sf = cnst.scale_fact;
+                for mr in this_mat.matrix.iter() {
+                    for me in mr.row_vec.iter() {
+                        i2 = me.col;
+                        for me2 in mr.row_vec.iter() {
+                            i3 = me2.col;
+                            if i3 <= i2 && i3 >= self.min_col[i2] {
+                                i4 = self.range[i2] + (i3 - self.min_col[i2]);
+                                self.mat[i4]  +=  const_sf * me.value * me2.value;
+                            }
                         }
                     }
                 }

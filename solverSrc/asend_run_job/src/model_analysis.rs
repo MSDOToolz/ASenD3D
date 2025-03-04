@@ -523,6 +523,7 @@ impl Model {
             }
             if !self.therm_lt.is_allocated() {
                 self.build_thermal_soln_load(true);
+                self.thermal_const.update_active_status(0.0);
                 self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat,  &mut  self.thermal_const,   self.job[sci].solver_block_dim);
             }
             if !self.therm_scaled {
@@ -543,6 +544,7 @@ impl Model {
             }
             if !self.elastic_lt.is_allocated() {
                 self.build_elastic_soln_load(true,  true);
+                self.elastic_const.update_active_status(0.0);
                 self.scale_elastic_const();
                 self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const,   6 * self.job[sci].solver_block_dim);
             }
@@ -841,7 +843,13 @@ impl Model {
             if !self.therm_scaled {
                 self.scale_thermal_const();
             }
+            self.thermal_const.update_active_status(time);
             self.build_thermal_const_load();
+            if self.thermal_const.any_just_activated() {
+                self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat,&mut self.thermal_const, self.job[sci].solver_block_dim);
+                self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const);
+                self.therm_lt.ldl_factor();
+            }
             if self.job[sci].solver_method.s == "direct" {
                 self.therm_lt.ldl_solve(&mut self.therm_sol_vec, &mut  self.therm_ld_vec);
             }
@@ -864,6 +872,7 @@ impl Model {
             } else {
                 max_nlit = 1;
             }
+            self.elastic_const.update_active_status(time);
             d_utol = 1.0e-12;
             d_unorm = 1.0;
             i2 = 0;
@@ -886,7 +895,12 @@ impl Model {
                         this_el.update_external(&mut self.elastic_ld_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
                     }
                 }
-                if self.job[sci].nonlinear_geom {
+                if self.elastic_const.any_just_activated() {
+                    self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, self.job[sci].solver_block_dim);
+                    self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+                    self.elastic_lt.ldl_factor();
+                }
+                else if self.job[sci].nonlinear_geom {
                     self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
                     self.elastic_lt.ldl_factor();
                 }
@@ -1430,6 +1444,7 @@ impl Model {
             &mut self.d0_pre, &mut self.d0_scratch.iter_mut());
         
         if self.job[sci].elastic {
+            self.elastic_const.update_active_status(time);
             if self.job[sci].dynamic {
                 c1 = self.job[sci].time_step * self.job[sci].newmark_gamma;
                 c2 = self.job[sci].time_step;
@@ -1440,7 +1455,13 @@ impl Model {
                     self.d_ld_u[i1]  -=  c2 * self.a_adj[i1];
                 }
             }
-            if self.job[sci].nonlinear_geom {
+            if self.elastic_const.any_just_activated() {
+                self.build_elastic_soln_load(true, full_ref);
+                self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, self.job[sci].solver_block_dim);
+                self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+                self.elastic_lt.ldl_factor();
+            }
+            else if self.job[sci].nonlinear_geom {
                 self.build_elastic_soln_load(true,  full_ref);
                 self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
                 self.elastic_lt.ldl_factor();
@@ -1488,12 +1509,18 @@ impl Model {
                 }
             }
             tot_nodes = self.nodes.len();
+            self.thermal_const.update_active_status(time);
             if self.job[sci].dynamic {
                 c3 = -1.0 / (self.job[sci].time_step * self.job[sci].newmark_gamma);
                 for i1 in 0..tot_nodes {
                     self.tdot_adj[i1] = c3 * self.d_ld_tdot[i1];
                     self.d_ld_t[i1]  -=  self.tdot_adj[i1];
                 }
+            }
+            if self.thermal_const.any_just_activated() {
+                self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const, self.job[sci].solver_block_dim);
+                self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const);
+                self.therm_lt.ldl_factor();
             }
             if self.job[sci].solver_method.s == "direct" {
                 self.therm_lt.ldl_solve(&mut self.t_adj, &mut  self.d_ld_t);

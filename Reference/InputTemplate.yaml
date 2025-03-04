@@ -132,6 +132,7 @@ constraints:
             dof:
             coef:
       rhs:
+      activeTime: [start,end]
 
 ##
 

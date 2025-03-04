@@ -885,6 +885,13 @@ impl Model {
         return;
     }
 
+    pub fn get_curr_constraint(&mut self, curr_type : &CppStr, curr_ct : usize) -> &mut Constraint {
+        if curr_type.s == "displacement" {
+            return &mut self.elastic_const.const_vec[curr_ct];
+        }
+        &mut self.thermal_const.const_vec[curr_ct]
+    }
+
     pub fn read_constraint_input(&mut self, file_name : &mut CppStr) {
         let mut file_line = CppStr::new();
         let mut headings  = vec![CppStr::new(); 4];
@@ -896,7 +903,9 @@ impl Model {
         
         let mut ec_ct : usize =  0;
         let mut tc_ct : usize =  0;
-        let mut new_con = Constraint::new();
+        let mut curr_ct : usize = 0;
+        let mut curr_type : CppStr = CppStr::new();
+        let mut flt_in : [f64; 2] = [0.0, 0.0];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
@@ -922,7 +931,6 @@ impl Model {
         self.elastic_const.const_vec = vec![Constraint::new(); ec_ct];
         self.thermal_const.const_vec = vec![Constraint::new(); tc_ct];
         
-        let mut tm_pt : &mut ConstraintTerm;
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             ec_ct = MAX_INT;
             tc_ct = MAX_INT;
@@ -931,12 +939,6 @@ impl Model {
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[0].s == "constraints" {
                     if headings[1].s == "type" && data_len == 1 {
-                        if new_con.this_type.s == "displacement" {
-                            self.elastic_const.const_vec[ec_ct] = new_con.clone();
-                        }
-                        else if new_con.this_type.s == "temperature" {
-                            self.thermal_const.const_vec[tc_ct] = new_con.clone();
-                        }
                         if data[0].s == "displacement" {
                             if ec_ct == MAX_INT {
                                 ec_ct = 0;
@@ -944,8 +946,9 @@ impl Model {
                             else {
                                 ec_ct += 1usize;
                             }
-                            new_con = Constraint::new();
-                            new_con.this_type = CppStr::from("displacement");
+                            curr_ct = ec_ct;
+                            curr_type = CppStr::from("displacement");
+                            self.get_curr_constraint(&mut curr_type, curr_ct).this_type = CppStr::from("displacement");
                         }
                         else if data[0].s == "temperature" {
                             if tc_ct == MAX_INT {
@@ -954,8 +957,9 @@ impl Model {
                             else {
                                 tc_ct += 1usize;
                             }
-                            new_con = Constraint::new();
-                            new_con.this_type = CppStr::from("temperature");
+                            curr_ct = tc_ct;
+                            curr_type = CppStr::from("temperature");
+                            self.get_curr_constraint(&curr_type, curr_ct).this_type = CppStr::from("temperature");
                         }
                         else {
                             panic!("Error: {} is not a valid constraint type. Allowable values are {}", data[0].s, all_types.s);
@@ -965,37 +969,41 @@ impl Model {
                         if headings[2].s == "nodeSet" && data_len == 1 {
                             let mut new_cn = ConstraintTerm::new();
                             new_cn.node_set = data[0].clone();
-                            new_con.terms.push_back(new_cn);
+                            self.get_curr_constraint(&curr_type, curr_ct).terms.push_back(new_cn);
                         } else if headings[2].s == "dof" && data_len == 1 {
-                            tm_pt = match new_con.terms.back_mut() {
-                                None => panic!("failed to access back of constraint terms list"),
-                                Some(x) => x,
-                            };
-                            tm_pt.dof = CppStr::stoi(&mut data[0]);
+                            match self.get_curr_constraint(&curr_type, curr_ct).terms.back_mut() {
+                                None => {panic!("failed to access back of constraint terms list");},
+                                Some(x) => {x.dof = CppStr::stoi(&mut data[0]);},
+                            }
                         } else if headings[2].s == "coef" && data_len == 1 {
-                            tm_pt = match new_con.terms.back_mut() {
-                                None => panic!("failed to acces back of constraint terms list"),
-                                Some(x) => x,
-                            };
-                            tm_pt.coef = CppStr::stod(&mut data[0]);
+                            match self.get_curr_constraint(&curr_type, curr_ct).terms.back_mut() {
+                                None => {panic!("failed to access back of constraint terms list");},
+                                Some(x) => {x.coef = CppStr::stod(&mut data[0]);},
+                            }
                         }
-                    } else if headings[1].s == "rhs" && data_len == 1 {
-                        new_con.rhs = CppStr::stod(&mut data[0]);
+                    } 
+                    else if headings[1].s == "rhs" && data_len == 1 {
+                        self.get_curr_constraint(&curr_type, curr_ct).rhs = CppStr::stod(&mut data[0])
+                    }
+                    else if headings[1].s == "active_time" && data_len == 2 {
+                        flt_in[0] = data[0].stod();
+                        flt_in[1] = data[1].stod();
+                        self.get_curr_constraint(&curr_type, curr_ct).set_act_time(&flt_in);
                     }
                 }
             }
         } else {
             panic!("Error: could not open Constraint input file: {}",file_name.s);
         }
-
-        if new_con.this_type.s == "displacement" {
-            self.elastic_const.const_vec[ec_ct] = new_con.clone();
-        }
-        else if new_con.this_type.s == "temperature" {
-            self.thermal_const.const_vec[tc_ct] = new_con.clone();
-        }
         
         return;
+    }
+
+    pub fn get_curr_ld(&mut self, curr_type : &CppStr, curr_ct : usize) -> &mut Load {
+        if curr_type.s == "elastic" {
+            return &mut self.elastic_loads[curr_ct];
+        }
+        &mut self.thermal_loads[curr_ct]
     }
 
     pub fn read_load_input(&mut self, file_name : &mut CppStr) {
@@ -1009,10 +1017,11 @@ impl Model {
         let mut doub_inp : [f64; 10] = [0.0; 10 ];
         let mut elastic_list = CppStr::from("nodalForce bodyForce gravitational centrifugal surfacePressure surfaceTraction");
         let mut thermal_list = CppStr::from("bodyHeadGen surfaceFlux");
-        let mut new_ld = Load::new();
         
-        let mut e_ld_ct : usize =  0;
-        let mut t_ld_ct : usize =  0;
+        let mut e_ld_ct : usize = 0;
+        let mut t_ld_ct : usize = 0;
+        let mut curr_ld : usize = 0;
+        let mut curr_type : CppStr = CppStr::new();
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
@@ -1048,14 +1057,6 @@ impl Model {
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[0].s == "loads" {
                     if headings[1].s == "type" && data_len == 1 {
-                        i1 = elastic_list.find(new_ld.this_type.s.as_str());
-                        if i1 < MAX_INT {
-                            self.elastic_loads[e_ld_ct] = new_ld.clone();
-                        }
-                        i1 = thermal_list.find(new_ld.this_type.s.as_str());
-                        if i1 < MAX_INT {
-                            self.thermal_loads[t_ld_ct] = new_ld.clone();
-                        }
                         i1 = elastic_list.find(data[0].s.as_str());
                         if i1 < MAX_INT {
                             if e_ld_ct == MAX_INT {
@@ -1064,10 +1065,9 @@ impl Model {
                             else {
                                 e_ld_ct += 1usize;
                             }
-                            //self.elastic_loads[e_ld_ct].this_type = data[0].clone();
-                            //new_ld = &mut self.elastic_loads[e_ld_ct];
-                            new_ld = Load::new();
-                            new_ld.this_type = data[0].clone();
+                            curr_type = CppStr::from("elastic");
+                            curr_ld = e_ld_ct;
+                            self.get_curr_ld(&curr_type,curr_ld).this_type = data[0].clone();
                         }
                         i1 = thermal_list.find(data[0].s.as_str());
                         if i1 < MAX_INT {
@@ -1077,10 +1077,9 @@ impl Model {
                             else {
                                 t_ld_ct += 1usize;
                             }
-                            //self.thermal_loads[t_ld_ct].this_type = data[0].clone();
-                            //new_ld = &mut self.thermal_loads[t_ld_ct];
-                            new_ld = Load::new();
-                            new_ld.this_type = data[0].clone();
+                            curr_type = CppStr::from("thermal");
+                            curr_ld = t_ld_ct;
+                            self.get_curr_ld(&curr_type,curr_ld).this_type = data[0].clone();
                         }
                     } else if headings[1].s == "activeTime" && data_len > 0 {
                         doub_inp[0] = CppStr::stod(&mut data[0]);
@@ -1089,7 +1088,7 @@ impl Model {
                         } else {
                             doub_inp[1] = 1.0e+100;
                         }
-                        new_ld.set_act_time(&mut doub_inp);
+                        self.get_curr_ld(&curr_type,curr_ld).set_act_time(&mut doub_inp);
                     } else if headings[1].s == "load" && data_len > 0 {
                         for i1 in 0..6 {
                             if i1 < data_len {
@@ -1098,44 +1097,35 @@ impl Model {
                                 doub_inp[i1] = 0.0;
                             }
                         }
-                        new_ld.set_load(&mut doub_inp);
+                        self.get_curr_ld(&curr_type,curr_ld).set_load(&mut doub_inp);
                     } else if headings[1].s == "nodeSet" && data_len == 1 {
-                        new_ld.node_set = data[0].clone();
+                        self.get_curr_ld(&curr_type,curr_ld).node_set = data[0].clone();
                     } else if headings[1].s == "elementSet" && data_len == 1 {
-                        new_ld.element_set = data[0].clone();
+                        self.get_curr_ld(&curr_type,curr_ld).element_set = data[0].clone();
                     } else if headings[1].s == "normDir" && data_len == 3 {
                         doub_inp[0] = CppStr::stod(&mut data[0]);
                         doub_inp[1] = CppStr::stod(&mut data[1]);
                         doub_inp[2] = CppStr::stod(&mut data[2]);
-                        new_ld.set_norm_dir(&mut doub_inp);
+                        self.get_curr_ld(&curr_type,curr_ld).set_norm_dir(&mut doub_inp);
                     } else if headings[1].s == "normTolerance" && data_len == 1 {
-                        new_ld.norm_tol = CppStr::stod(&mut data[0]);
+                        self.get_curr_ld(&curr_type,curr_ld).norm_tol = CppStr::stod(&mut data[0]);
                     } else if headings[1].s == "center" && data_len == 3 {
                         doub_inp[0] = CppStr::stod(&mut data[0]);
                         doub_inp[1] = CppStr::stod(&mut data[1]);
                         doub_inp[2] = CppStr::stod(&mut data[2]);
-                        new_ld.set_center(&mut doub_inp);
+                        self.get_curr_ld(&curr_type,curr_ld).set_center(&mut doub_inp);
                     } else if headings[1].s == "axis" && data_len == 3 {
                         doub_inp[0] = CppStr::stod(&mut data[0]);
                         doub_inp[1] = CppStr::stod(&mut data[1]);
                         doub_inp[2] = CppStr::stod(&mut data[2]);
-                        new_ld.set_axis(&mut doub_inp);
+                        self.get_curr_ld(&curr_type,curr_ld).set_axis(&mut doub_inp);
                     } else if headings[1].s == "angularVelocity" {
-                        new_ld.angular_vel = CppStr::stod(&mut data[0]);
+                        self.get_curr_ld(&curr_type,curr_ld).angular_vel = CppStr::stod(&mut data[0]);
                     }
                 }
             }
         } else {
             panic!("Error: could not open Load input file: {}", file_name.s);
-        }
-
-        i1 = elastic_list.find(new_ld.this_type.s.as_str());
-        if i1 < MAX_INT {
-            self.elastic_loads[e_ld_ct] = new_ld.clone();
-        }
-        i1 = thermal_list.find(new_ld.this_type.s.as_str());
-        if i1 < MAX_INT {
-            self.thermal_loads[t_ld_ct] = new_ld.clone();
         }
         
         return;

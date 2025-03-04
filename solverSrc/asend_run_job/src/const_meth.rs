@@ -5,6 +5,28 @@ use crate::node::*;
 use std::collections::LinkedList;
 
 impl Constraint {
+    pub fn set_act_time(&mut self, new_at : &[f64]) {
+        self.active_time[0] = new_at[0];
+        self.active_time[1] = new_at[1];
+    }
+
+    pub fn update_active_status(&mut self, time : f64) {
+        self.was_active = self.is_active;
+        if self.active_time[0] <= time && self.active_time[1] >= time {
+            self.is_active = true;
+        }
+        else {
+            self.is_active = false;
+        }
+    }
+
+    pub fn just_activated(&self) -> bool {
+        if self.is_active && !self.was_active {
+            return true;
+        }
+        false
+    }
+
     pub fn build_mat(&mut self, nd_ar : &mut Vec<Node>, set_ar : &mut Vec<Set>) {
         let mut set_len : usize =  1;
         let mut seti_len : usize;
@@ -108,16 +130,35 @@ impl ConstraintList {
         return;
     }
 
+    pub fn update_active_status(&mut self, time : f64) {
+        for cnst in self.const_vec.iter_mut() {
+            cnst.update_active_status(time);
+        }
+    }
+
+    pub fn any_just_activated(&self) -> bool {
+        for cnst in self.const_vec.iter() {
+            if cnst.just_activated() {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn get_total_vec_mult(&mut self, prod : &mut Vec<f64>, vec : &mut Vec<f64>, tmp_v : &mut Vec<f64>) {
         for cnst in self.const_vec.iter_mut() {
-            cnst.full_vec_multiply(prod, vec, tmp_v);
+            if cnst.is_active {
+                cnst.full_vec_multiply(prod, vec, tmp_v);
+            }
         }
         return;
     }
 
     pub fn get_total_load(&mut self, c_ld : &mut Vec<f64>, u_vec : &mut Vec<f64>, q_vec : &mut Vec<f64>) {
         for cnst in self.const_vec.iter_mut() {
-            cnst.get_load(c_ld, u_vec, q_vec);
+            if cnst.is_active {
+                cnst.get_load(c_ld, u_vec, q_vec);
+            }
         }
         return;
     }

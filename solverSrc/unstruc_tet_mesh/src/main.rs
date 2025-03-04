@@ -23,11 +23,11 @@ fn main() {
     let mut input_file : CppStr;
     let mut output_file : CppStr;
     
-    if (n_arg > 2) {
+    if n_arg > 2 {
         input_file = CppStr::from(args[1].as_str());
         output_file = CppStr::from(args[2].as_str());
     }
-    else if(n_arg > 1) {
+    else if n_arg > 1 {
         input_file = CppStr::from(args[1].as_str());
         output_file = CppStr::from("mesh_out.yaml");
     }
@@ -41,7 +41,7 @@ fn main() {
     println!("generating mesh");
     let resolved = mesher.generate_mesh();
     println!("finished mesh");
-    if(resolved) {
+    if resolved {
         println!("distributing nodes");
         mesher.distribute_nodes();
         mesher.generate_mesh();

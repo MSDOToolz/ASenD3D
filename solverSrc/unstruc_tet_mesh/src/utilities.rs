@@ -3,7 +3,7 @@ use crate::fmath::*;
 use crate::cpp_str::CppStr;
 
 use std::fs::File;
-use std::io::{self, Read, BufRead};
+use std::io::{self, BufRead};
 use std::path::Path;
 
 pub fn cross_prod(prod : &mut [f64], v1 : &mut [f64], v2 : &mut [f64]) {
@@ -30,28 +30,28 @@ pub fn q_rfactor(mat : &mut [f64], col_dim : usize, st_row : usize, end_row : us
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if (tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         }
         else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if (i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
         for i2 in i2_min..=i2_max {
             k11 = (i2_min - 1) * col_dim + i1;
             k12 = i2 * col_dim + i1;
-            if (fabs(mat[k11]) < TOL) {
+            if fabs(mat[k11]) < TOL {
                 mat[k11] = TOL;
             }
             theta = atan(mat[k12] / mat[k11]);
             sth = sin(theta);
             cth = cos(theta);
             i3_min = i1;
-            if (tri_diag == 2) {
+            if tri_diag == 2 {
                 i3_max = i1 + 2;
-                if (i3_max > end_col) {
+                if i3_max > end_col {
                     i3_max = end_col;
                 }
             }
@@ -73,8 +73,6 @@ pub fn q_rfactor(mat : &mut [f64], col_dim : usize, st_row : usize, end_row : us
 }
 
 pub fn solveq_rx_eqb(x_vec : &mut [f64], mat : &mut [f64], b_vec : &mut [f64], col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
     let mut i3 : usize;
     let mut i2_min : usize;
     let mut i2_max : usize;
@@ -89,12 +87,12 @@ pub fn solveq_rx_eqb(x_vec : &mut [f64], mat : &mut [f64], b_vec : &mut [f64], c
     
     for i1 in st_col..=end_col {
         i2_min = st_row + (i1 - st_col) + 1;
-        if (tri_diag == 0) {
+        if tri_diag == 0 {
             i2_max = end_row;
         }
         else {
             i2_max = st_row + (i1 - st_col) + 1;
-            if (i2_max > end_row) {
+            if i2_max > end_row {
                 i2_max = end_row;
             }
         }
@@ -115,9 +113,9 @@ pub fn solveq_rx_eqb(x_vec : &mut [f64], mat : &mut [f64], b_vec : &mut [f64], c
     for i1 in (st_col..(end_col+1)).rev() {
         i3 = st_row + (i1 - st_col);
         i2_min = i1 + 1;
-        if (tri_diag == 2) {
+        if tri_diag == 2 {
             i2_max = i1 + 2;
-            if (i2_max > end_col) {
+            if i2_max > end_col {
                 i2_max = end_col;
             }
         }

@@ -2,7 +2,6 @@ use crate::mesh_node::*;
 use crate::mesh_element::*;
 use crate::mesh_face::*;
 use crate::spatial_grid::*;
-use crate::cpp_str::CppStr;
 
 
 #[derive(Clone)]

@@ -8,8 +8,7 @@ use crate::mesh_element::*;
 use crate::mesh_face::*;
 
 use std::fs::File;
-use std::io::{self, Write, Read, BufRead};
-use std::path::Path;
+use std::io::Write;
 
 impl Mesher {
 
@@ -20,9 +19,6 @@ impl Mesher {
         let mut data  = vec![CppStr::new(); 3];
         let mut data_len : usize = 0usize;
         //let mut self.new_nd : usize;
-        let mut nd_crd : [f64; 3] = [0f64; 3];
-        let mut new_fc : usize;
-        let mut fc_nd : [usize; 3] = [0usize; 3];
         
         self.nd_ct = 0;
         self.fc_ct = 0;
@@ -31,16 +27,16 @@ impl Mesher {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
-                if (headings[0].s == "nodes" && data_len == 3) {
+                if headings[0].s == "nodes" && data_len == 3 {
                     self.nd_ct += 1usize;
                 }
-                else if (headings[0].s == "faces" && data_len == 3) {
+                else if headings[0].s == "faces" && data_len == 3 {
                     self.fc_ct += 1usize;
                 }
-                else if (headings[0].s == "globProjWt" && data_len == 1) {
+                else if headings[0].s == "globProjWt" && data_len == 1 {
                     self.glob_proj_wt = CppStr::stod(&mut data[0]);
                 }
-                else if (headings[0].s == "maxNumEls" && data_len == 1) {
+                else if headings[0].s == "maxNumEls" && data_len == 1 {
                     self.max_num_els = CppStr::stoi(&mut data[0]);
                 }
             }
@@ -50,16 +46,16 @@ impl Mesher {
         }
         
         let mut rad : usize =  1;
-        while (12*rad*rad < self.nd_ct) {
+        while 12*rad*rad < self.nd_ct {
             rad += 1usize;
         }
         
         self.nd_cap = 15 * rad * rad * rad;
         self.el_cap = 6 * self.nd_cap;
-        if (self.max_num_els == MAX_INT) {
+        if self.max_num_els == MAX_INT {
             self.max_num_els = self.el_cap;
         }
-        else if (self.el_cap > self.max_num_els) {
+        else if self.el_cap > self.max_num_els {
             self.el_cap = self.max_num_els;
         }
         self.fc_cap = 2 * self.el_cap;
@@ -75,13 +71,13 @@ impl Mesher {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
-                if (headings[0].s == "nodes" && data_len == 3) {
+                if headings[0].s == "nodes" && data_len == 3 {
                     self.nodes[self.nd_ct].coord[0] = CppStr::stod(&mut data[0]);
                     self.nodes[self.nd_ct].coord[1] = CppStr::stod(&mut data[1]);
                     self.nodes[self.nd_ct].coord[2] = CppStr::stod(&mut data[2]);
                     self.nd_ct += 1usize;
                 }
-                else if (headings[0].s == "faces" && data_len == 3) {
+                else if headings[0].s == "faces" && data_len == 3 {
                     self.faces[self.fc_ct].nodes[0] = CppStr::stoi(&mut data[0]);
                     self.faces[self.fc_ct].nodes[1] = CppStr::stoi(&mut data[1]);
                     self.faces[self.fc_ct].nodes[2] = CppStr::stoi(&mut data[2]);
@@ -94,12 +90,9 @@ impl Mesher {
     }
 
     pub fn init_boundary_normals(&mut self) {
-        let mut i1 : usize;
         let mut lst_len : usize;
         let mut cent : [f64; 3] = [0f64; 3];
-        
         let mut srch_dir : usize;
-        let mut proj : f64;
         let mut x_range : [f64; 2] = [0f64; 2];
         let mut y_range : [f64; 2] = [0f64; 2];
         let mut z_range : [f64; 2] = [0f64; 2];
@@ -108,20 +101,19 @@ impl Mesher {
         let mut dp : f64;
         let mut intersects : bool;
         let mut int_ct : i32;
-        let mut fci : usize;
         let mut fci2 : usize;
         for fci in 0..self.fc_ct {
             //let mut this_fc = &mut self.faces[fci];
             self.faces[fci].get_centroid(&mut cent,  &mut self.nodes);
             //let mut norm_dir = &mut this_fc.norm_dir;
             srch_dir = 0;
-            if (fabs(self.faces[fci].norm_dir[1]) > fabs(self.faces[fci].norm_dir[0])) {
+            if fabs(self.faces[fci].norm_dir[1]) > fabs(self.faces[fci].norm_dir[0]) {
                 srch_dir = 1;
             }
-            if (fabs(self.faces[fci].norm_dir[2]) > fabs(self.faces[fci].norm_dir[1])) {
+            if fabs(self.faces[fci].norm_dir[2]) > fabs(self.faces[fci].norm_dir[1]) {
                 srch_dir = 2;
             }
-            if (srch_dir == 0) {
+            if srch_dir == 0 {
                 vec[0] = 1.0;
                 vec[1] = 7.52893558402e-4;
                 vec[2] = 5.39890329009e-4;
@@ -132,7 +124,7 @@ impl Mesher {
                 z_range[0] = cent[2] - self.avg_proj;
                 z_range[1] = cent[2] + self.avg_proj;
             }
-            else if (srch_dir == 1) {
+            else if srch_dir == 1 {
                 vec[0] = 7.52893558402e-4;
                 vec[1] = 1.0;
                 vec[2] = 5.39890329009e-4;
@@ -159,37 +151,35 @@ impl Mesher {
             for i1 in 0..lst_len {
                 fci2 = self.grid_out1[i1];
                 //let mut this_fc2 = &mut self.faces[fci2];
-                if (fci != fci2) {
+                if fci != fci2 {
                     intersects = self.faces[fci2].get_intersection(&mut int_out, &mut  cent, &mut  vec, &mut  self.nodes);
-                    if (intersects && int_out[0] > 0.0) {
+                    if intersects && int_out[0] > 0.0 {
                         int_ct  *=  -1;
                     }
                 }
             }
             // if in_ct > 0, number of intersections is even, vec points out of the surface
             dp = vec[0] * self.faces[fci].norm_dir[0] + vec[1] * self.faces[fci].norm_dir[1] + vec[2] * self.faces[fci].norm_dir[2];
-            if ((int_ct > 0 && dp > 0.0) || (int_ct < 0 && dp < 0.0)) {
+            if (int_ct > 0 && dp > 0.0) || (int_ct < 0 && dp < 0.0) {
                 self.faces[fci].norm_dir[0]  *=  -1.0;
                 self.faces[fci].norm_dir[1]  *=  -1.0;
                 self.faces[fci].norm_dir[2]  *=  -1.0;
             }
             //
-            if (cent[0] > 9.99) {
-                dp = dp;
-            }
+            // if cent[0] > 9.99 {
+            //     dp = dp;
+            // }
             //
         }
         return;
     }
 
     pub fn prep(&mut self) {
-        let mut i1 : usize;
-        let mut i2 : usize;
         self.num_bound_nds = self.nd_ct;
         
         //allocate the grid output list
-        let mut num_faces : usize =  self.fc_ct;
-        if (num_faces > self.num_bound_nds) {
+        let num_faces : usize =  self.fc_ct;
+        if num_faces > self.num_bound_nds {
             self.g_olen = 2 * num_faces;
         }
         else {
@@ -204,29 +194,29 @@ impl Mesher {
         let mut z_range : [f64; 2] = [ 1.0e+100,-1.0e+100 ];
         
         for i1 in 0..self.nd_ct {
-            let mut this_nd = &self.nodes[i1];
-            let mut crd = &this_nd.coord;
-            if (crd[0] < x_range[0]) {
+            let this_nd = &self.nodes[i1];
+            let crd = &this_nd.coord;
+            if crd[0] < x_range[0] {
                 x_range[0] = crd[0];
             }
-            if (crd[0] > x_range[1]) {
+            if crd[0] > x_range[1] {
                 x_range[1] = crd[0];
             }
-            if (crd[1] < y_range[0]) {
+            if crd[1] < y_range[0] {
                 y_range[0] = crd[1];
             }
-            if (crd[1] > y_range[1]) {
+            if crd[1] > y_range[1] {
                 y_range[1] = crd[1];
             }
-            if (crd[2] < z_range[0]) {
+            if crd[2] < z_range[0] {
                 z_range[0] = crd[2];
             }
-            if (crd[2] > z_range[1]) {
+            if crd[2] > z_range[1] {
                 z_range[1] = crd[2];
             }
         }
         
-        let mut spacing : f64 =  0.0;
+        let mut spacing : f64;
         self.avg_proj = 0.0;
         self.max_proj = 0.0;
         self.max_edge_len = 0.0;
@@ -234,15 +224,15 @@ impl Mesher {
             //let mut this_fc = &self.faces[i1];
             spacing = self.faces[i1].proj_dist;
             self.avg_proj  +=  spacing;
-            if (spacing > self.max_proj) {
+            if spacing > self.max_proj {
                 self.max_proj = spacing;
             }
             spacing = self.faces[i1].get_longest_edge_len(&mut self.nodes);
-            if (spacing > self.max_edge_len) {
+            if spacing > self.max_edge_len {
                 self.max_edge_len = spacing;
             }
         }
-        self.avg_proj  /=  (num_faces as f64);
+        self.avg_proj  /=  num_faces as f64;
         spacing = self.avg_proj;
         self.node_grid.initialize(&mut x_range,  spacing, &mut  y_range,  spacing, &mut  z_range,  spacing);
         self.element_grid.initialize(&mut x_range,  spacing, &mut  y_range,  spacing, &mut  z_range,  spacing);
@@ -251,7 +241,7 @@ impl Mesher {
         //add boundary self.nodes and self.faces to their grids
         let mut cent : [f64; 3] = [0f64; 3];
         for i1 in 0..self.nd_ct {
-            let mut this_nd = &self.nodes[i1];
+            let this_nd = &self.nodes[i1];
             self.node_grid.add_ent(i1, &this_nd.coord);
         }
         
@@ -279,12 +269,12 @@ impl Mesher {
                 //let mut lst_fc = &self.faces[self.grid_out1[i1]];
                 //fc_nds = lst_fc->get_nd_pt();
                 //cout << fc_nds[0]->get_label() << ", " << fc_nds[1]->get_label() << ", " << fc_nds[2]->get_label() << endl;
-                num_shared = self.faces[fi1].get_shared_nodes(&mut lst_nd, &mut  shared,  i2, &mut  self.nodes, &self.faces);
-                if (num_shared == 2) {
+                num_shared = self.faces[fi1].get_shared_nodes(&mut lst_nd, &mut  shared,  i2, &self.faces);
+                if num_shared == 2 {
                     neighb_ct += 1usize;
                 }
             }
-            if (neighb_ct != 3) {
+            if neighb_ct != 3 {
                 //cout << "neighbCt " << neighb_ct;
                 //fc_nds = this_fc->get_nd_pt();
                 //cout << fc_nds[0]->get_label() << ", " << fc_nds[1]->get_label() << ", " << fc_nds[2]->get_label() << endl;
@@ -300,23 +290,20 @@ impl Mesher {
     }
 
     pub fn check_new_el(&mut self) -> bool {
-        let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
-        let mut i4 : usize;
-        let mut nei : usize = self.el_ct;
+        let nei : usize = self.el_ct;
         let mut n1 : usize;
         let mut n2 : usize;
         let mut lst_len : usize;
         let mut cent : [f64; 3] = [0f64; 3];
-        let mut el_edges : [usize; 12] = [ 0,1,0,2,0,3,1,2,1,3,2,3 ];
-        let mut face_edges : [usize; 6] = [ 0,1,0,2,1,2 ];
+        let el_edges : [usize; 12] = [ 0,1,0,2,0,3,1,2,1,3,2,3 ];
+        let face_edges : [usize; 6] = [ 0,1,0,2,1,2 ];
         
         
         let mut vec : [f64; 3] = [0f64; 3];
         let mut out_p : [f64; 3] = [0f64; 3];
         let mut intersects : bool;
-        let mut el_nds = &self.elements[nei].nodes;
+        let el_nds = &self.elements[nei].nodes;
         
         
         let mut fc_nd_out : [usize; 3] = [0usize; 3];
@@ -325,34 +312,34 @@ impl Mesher {
         self.elements[nei].get_centroid(&mut cent,  &mut self.nodes);
         lst_len = self.face_grid.get_in_radius(&mut self.grid_out2,  self.g_olen, &mut  cent,  1.01 * self.max_edge_len);
         for i1 in 0..lst_len {
-            let mut this_fc = &self.faces[self.grid_out2[i1]];
+            let this_fc = &self.faces[self.grid_out2[i1]];
             
             for i2 in 0..4 {
                 // any face of new element already exists and is closed
-                i3 = this_fc.get_shared_nodes(&mut fc_nd_out, &mut  shared,  i2, &mut  self.nodes, &self.new_el_fcs);
-                let mut fc_els = &this_fc.elements;
-                if (i3 == 3 && fc_els[1] < MAX_INT) {
+                i3 = this_fc.get_shared_nodes(&mut fc_nd_out, &mut  shared,  i2, &self.new_el_fcs);
+                let fc_els = &this_fc.elements;
+                if i3 == 3 && fc_els[1] < MAX_INT {
                     return  false;
                 }
                 // any edge of new element intersects existing edge
                 intersects = this_fc.edges_intersect(i2,  1.0e-6 * self.avg_proj, &mut  self.nodes, &self.new_el_fcs);
-                if (intersects) {
+                if intersects {
                     return  false;
                 }
             }
             
             // any edge of new element intersects existing face
             i3 = 0;
-            for i2 in 0..6 {
+            for _i2 in 0..6 {
                 n1 = el_edges[i3];
                 n2 = el_edges[i3 + 1];
-                let mut pt = &self.nodes[el_nds[n1]].coord;
-                let mut pt2 = &self.nodes[el_nds[n2]].coord;
+                let pt = &self.nodes[el_nds[n1]].coord;
+                let pt2 = &self.nodes[el_nds[n2]].coord;
                 vec[0] = pt2[0] - pt[0];
                 vec[1] = pt2[1] - pt[1];
                 vec[2] = pt2[2] - pt[2];
                 intersects = this_fc.get_intersection(&mut out_p, pt, &mut  vec, &self.nodes);
-                if (intersects && out_p[0] < 0.9999999999 && out_p[0] > 0.0000000001) {
+                if intersects && out_p[0] < 0.9999999999 && out_p[0] > 0.0000000001 {
                     return  false;
                 }
                 i3  +=  2;
@@ -360,19 +347,19 @@ impl Mesher {
             
             // any edge of existing face intersects face of new element
             
-            let mut fc_nds = &this_fc.nodes;
+            let fc_nds = &this_fc.nodes;
             i3 = 0;
-            for i2 in 0..3 {
+            for _i2 in 0..3 {
                 n1 = face_edges[i3];
                 n2 = face_edges[i3 + 1];
-                let mut pt = &self.nodes[fc_nds[n1]].coord;
-                let mut pt2 = &self.nodes[fc_nds[n2]].coord;
+                let pt = &self.nodes[fc_nds[n1]].coord;
+                let pt2 = &self.nodes[fc_nds[n2]].coord;
                 vec[0] = pt2[0] - pt[0];
                 vec[1] = pt2[1] - pt[1];
                 vec[2] = pt2[2] - pt[2];
                 for i4 in 0..4 {
                     intersects = self.new_el_fcs[i4].get_intersection(&mut out_p, pt, &mut  vec, &self.nodes);
-                    if (intersects && out_p[0] < 0.9999999999 && out_p[0] > 0.0000000001) {
+                    if intersects && out_p[0] < 0.9999999999 && out_p[0] > 0.0000000001 {
                         return  false;
                     }
                 }
@@ -384,11 +371,11 @@ impl Mesher {
         
         lst_len = self.element_grid.get_in_radius(&mut self.grid_out2,  self.g_olen, &mut  cent,  1.01 * self.max_edge_len);
         for i1 in 0..lst_len {
-            let mut this_el = &self.elements[self.grid_out2[i1]];
+            let this_el = &self.elements[self.grid_out2[i1]];
             for i2 in 0..4 {
-                let mut pt = & self.nodes[el_nds[i2]].coord;
+                let pt = & self.nodes[el_nds[i2]].coord;
                 intersects = this_el.point_in(pt, &self.nodes);
-                if (intersects) {
+                if intersects {
                     return  false;
                 }
             }
@@ -398,10 +385,10 @@ impl Mesher {
         
         lst_len = self.node_grid.get_in_radius(&mut self.grid_out2,  self.g_olen, &mut  cent,  1.01 * self.max_edge_len);
         for i1 in 0..lst_len {
-            let mut this_nd = &self.nodes[self.grid_out2[i1]];
-            let mut pt = &this_nd.coord;
+            let this_nd = &self.nodes[self.grid_out2[i1]];
+            let pt = &this_nd.coord;
             intersects = self.elements[nei].point_in(pt, &self.nodes);
-            if (intersects) {
+            if intersects {
                 return  false;
             }
         }
@@ -410,25 +397,23 @@ impl Mesher {
     }
 
     pub fn add_face_if_absent(&mut self, new_el : usize) -> bool {
-        let mut i1 : usize;
         let mut cent : [f64; 3] = [0f64; 3];
-        let mut new_face = &self.faces[self.fc_ct];
+        let new_face = &self.faces[self.fc_ct];
         new_face.get_centroid(&mut cent,  &mut  self.nodes);
         
         let mut this_nds : [usize; 3] = [0usize; 3];
         
-        let mut new_fc_els : [usize; 2] = [0usize; 2];
         let mut shared : [bool; 3] = [false; 3];
         let mut num_shared : usize;
         
-        let mut lst_len : usize =  self.face_grid.get_in_radius(&mut self.grid_out2,  self.g_olen, &mut  cent,  0.1*self.avg_proj);
+        let lst_len : usize =  self.face_grid.get_in_radius(&mut self.grid_out2,  self.g_olen, &mut  cent,  0.1*self.avg_proj);
         let mut fi1 : usize;
         for i1 in 0..lst_len {
             fi1 = self.grid_out2[i1];
-            let mut this_fc = &self.faces[fi1];
-            num_shared = this_fc.get_shared_nodes(&mut this_nds, &mut  shared,  self.fc_ct, &mut  self.nodes, &self.faces);
-            if (num_shared == 3) {
-                self.faces[fi1].elements[1] = self.new_el;
+            let this_fc = &self.faces[fi1];
+            num_shared = this_fc.get_shared_nodes(&mut this_nds, &mut  shared,  self.fc_ct,  &self.faces);
+            if num_shared == 3 {
+                self.faces[fi1].elements[1] = new_el;
                 return  false;
             }
         }
@@ -440,8 +425,6 @@ impl Mesher {
     }
 
     pub fn adopt_connected_nd(&mut self, fc_i : usize, tgt_pt : &mut [f64], srch_rad : f64) -> bool {
-        let mut i1 : usize;
-        let mut i2 : usize;
         //let mut this_fc = &self.faces[fc_i];
         let mut face_nds : [usize; 3] = [0usize; 3];
         let mut shared : [bool; 3] = [false; 3];
@@ -455,7 +438,7 @@ impl Mesher {
         //let mut new_el_nds = &mut self.elements[self.el_ct].nodes;
         let ec : usize = self.el_ct;
         let mut el_check : bool;
-        let mut fc_added : bool;
+        let mut _fc_added : bool;
         
         
         self.new_el_fcs[0].copy_data(&mut self.faces[fc_i]);
@@ -464,28 +447,28 @@ impl Mesher {
         //let mut this_fc_nds = &self.faces[fc_i].nodes;
         //let mut this_fc_els = &self.faces[fc_i].elements;
         self.faces[fc_i].get_centroid(&mut cent,  &mut  self.nodes);
-        let mut lst_len : usize =  self.face_grid.get_in_radius(&mut self.grid_out1,  self.g_olen, tgt_pt,  1.01 * self.max_edge_len);
+        let lst_len : usize =  self.face_grid.get_in_radius(&mut self.grid_out1,  self.g_olen, tgt_pt,  1.01 * self.max_edge_len);
         for i1 in 0..lst_len {
-            let mut list_fc = &self.faces[self.grid_out1[i1]];
-            num_shared = list_fc.get_shared_nodes(&mut face_nds, &mut  shared,  fc_i, &mut  self.nodes, &self.faces);
-            if (num_shared == 2) {
+            let list_fc = &self.faces[self.grid_out1[i1]];
+            num_shared = list_fc.get_shared_nodes(&mut face_nds, &mut  shared,  fc_i, &self.faces);
+            if num_shared == 2 {
                 un_shared = MAX_INT;
                 for i2 in 0..3 {
-                    if (!shared[i2]) {
+                    if !shared[i2] {
                         un_shared = face_nds[i2];
                     }
                 }
-                let mut crd = &self.nodes[un_shared].coord;
+                let crd = &self.nodes[un_shared].coord;
                 d_vec[0] = crd[0] - tgt_pt[0];
                 d_vec[1] = crd[1] - tgt_pt[1];
                 d_vec[2] = crd[2] - tgt_pt[2];
                 dist = sqrt(d_vec[0] * d_vec[0] + d_vec[1] * d_vec[1] + d_vec[2] * d_vec[2]);
-                if (dist < srch_rad) {
+                if dist < srch_rad {
                     d_vec[0] = crd[0] - cent[0];
                     d_vec[1] = crd[1] - cent[1];
                     d_vec[2] = crd[2] - cent[2];
                     dp = d_vec[0] * self.faces[fc_i].norm_dir[0] + d_vec[1] * self.faces[fc_i].norm_dir[1] + d_vec[2] * self.faces[fc_i].norm_dir[2];
-                    if (dp > 1.0e-3*self.avg_proj) {
+                    if dp > 1.0e-3*self.avg_proj {
                         self.elements[ec].nodes[0] = self.faces[fc_i].nodes[0];
                         self.elements[ec].nodes[1] = self.faces[fc_i].nodes[1];
                         self.elements[ec].nodes[2] = self.faces[fc_i].nodes[2];
@@ -516,7 +499,7 @@ impl Mesher {
                         new_fc.init_norm_dir(&mut self.nodes);
                         
                         el_check = self.check_new_el();
-                        if (el_check) {
+                        if el_check {
                             self.elements[self.el_ct].get_centroid(&mut cent,  &mut  self.nodes);
                             self.element_grid.add_ent(self.el_ct, &mut  cent);
                             
@@ -524,15 +507,15 @@ impl Mesher {
                             
                             self.new_el_fcs[1].norm_dir_from_el_cent(&mut cent, &mut  self.nodes);
                             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[1]);
-                            fc_added = self.add_face_if_absent(self.el_ct);
+                            _fc_added = self.add_face_if_absent(self.el_ct);
                             
                             self.new_el_fcs[2].norm_dir_from_el_cent(&mut cent, &mut  self.nodes);
                             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[2]);
-                            fc_added = self.add_face_if_absent(self.el_ct);
+                            _fc_added = self.add_face_if_absent(self.el_ct);
                             
                             self.new_el_fcs[3].norm_dir_from_el_cent(&mut cent, &mut  self.nodes);
                             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[3]);
-                            fc_added = self.add_face_if_absent(self.el_ct);
+                            _fc_added = self.add_face_if_absent(self.el_ct);
                             
                             self.el_ct += 1usize;
                             return  true;
@@ -546,8 +529,6 @@ impl Mesher {
     }
 
     pub fn adopt_any_nd(&mut self, fc_i : usize, tgt_pt : &mut [f64], srch_rad : f64) -> bool {
-        let mut i1 : usize;
-        let mut i2 : usize;
         //let mut this_fc = &self.faces[fc_i];
                 
         let mut ndi : usize;
@@ -559,7 +540,7 @@ impl Mesher {
         //let mut new_el_nds = &mut self.elements[self.el_ct].nodes;
         let ec : usize = self.el_ct;
         let mut el_check : bool;
-        let mut fc_added : bool;
+        let mut _fc_added : bool;
         
         self.new_el_fcs[0].copy_data(&self.faces[fc_i]);
         
@@ -567,29 +548,29 @@ impl Mesher {
         //let mut this_fc_nds = &this_fc.nodes;
         //let mut this_fc_els = &this_fc.elements;
         self.faces[fc_i].get_centroid(&mut cent,  &mut  self.nodes);
-        let mut lst_len : usize =  self.node_grid.get_in_radius(&mut self.grid_out1, self.g_olen, tgt_pt, srch_rad);
+        let lst_len : usize =  self.node_grid.get_in_radius(&mut self.grid_out1, self.g_olen, tgt_pt, srch_rad);
         for i1 in 0..lst_len {
             //list_nd = self.grid_out1[i1]->get_pt(list_nd);
             ndi = self.grid_out1[i1];
-            let mut list_nd = &self.nodes[ndi];
-            if (ndi != self.faces[fc_i].nodes[0] && ndi != self.faces[fc_i].nodes[1] && ndi != self.faces[fc_i].nodes[2]) {
-                let mut crd = &list_nd.coord;
+            let list_nd = &self.nodes[ndi];
+            if ndi != self.faces[fc_i].nodes[0] && ndi != self.faces[fc_i].nodes[1] && ndi != self.faces[fc_i].nodes[2] {
+                let crd = &list_nd.coord;
                 d_vec[0] = crd[0] - tgt_pt[0];
                 d_vec[1] = crd[1] - tgt_pt[1];
                 d_vec[2] = crd[2] - tgt_pt[2];
                 dist = sqrt(d_vec[0] * d_vec[0] + d_vec[1] * d_vec[1] + d_vec[2] * d_vec[2]);
-                if (dist < srch_rad) {
+                if dist < srch_rad {
                     d_vec[0] = crd[0] - cent[0];
                     d_vec[1] = crd[1] - cent[1];
                     d_vec[2] = crd[2] - cent[2];
                     dp = d_vec[0] * self.faces[fc_i].norm_dir[0] + d_vec[1] * self.faces[fc_i].norm_dir[1] + d_vec[2] * self.faces[fc_i].norm_dir[2];
-                    if (dp > 1.0e-3*self.avg_proj) {
+                    if dp > 1.0e-3*self.avg_proj {
                         self.elements[ec].nodes[0] = self.faces[fc_i].nodes[0];
                         self.elements[ec].nodes[1] = self.faces[fc_i].nodes[1];
                         self.elements[ec].nodes[2] = self.faces[fc_i].nodes[2];
                         self.elements[ec].nodes[3] = ndi;
                         
-                        let mut new_fc = &mut self.new_el_fcs[1];
+                        let new_fc = &mut self.new_el_fcs[1];
                         new_fc.nodes[0] = self.faces[fc_i].nodes[0];
                         new_fc.nodes[1] = self.faces[fc_i].nodes[1];
                         new_fc.nodes[2] = ndi;
@@ -597,7 +578,7 @@ impl Mesher {
                         new_fc.elements[1] = MAX_INT;
                         new_fc.init_norm_dir(&mut self.nodes);
                         
-                        let mut new_fc = &mut self.new_el_fcs[2];
+                        let new_fc = &mut self.new_el_fcs[2];
                         new_fc.nodes[0] = self.faces[fc_i].nodes[1];
                         new_fc.nodes[1] = self.faces[fc_i].nodes[2];
                         new_fc.nodes[2] = ndi;
@@ -605,7 +586,7 @@ impl Mesher {
                         new_fc.elements[1] = MAX_INT;
                         new_fc.init_norm_dir(&mut self.nodes);
                         
-                        let mut new_fc = &mut self.new_el_fcs[3];
+                        let new_fc = &mut self.new_el_fcs[3];
                         new_fc.nodes[0] = self.faces[fc_i].nodes[2];
                         new_fc.nodes[1] = self.faces[fc_i].nodes[0];
                         new_fc.nodes[2] = ndi;
@@ -614,7 +595,7 @@ impl Mesher {
                         new_fc.init_norm_dir(&mut self.nodes);
                         
                         el_check = self.check_new_el();
-                        if (el_check) {
+                        if el_check {
                             //self.elements.add_ent(self.new_el);
                             self.elements[self.el_ct].get_centroid(&mut cent,  &mut  self.nodes);
                             self.element_grid.add_ent(self.el_ct, &mut  cent);
@@ -623,15 +604,15 @@ impl Mesher {
                             
                             self.new_el_fcs[1].norm_dir_from_el_cent(&mut cent, &mut  self.nodes);
                             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[1]);
-                            fc_added = self.add_face_if_absent(self.el_ct);
+                            _fc_added = self.add_face_if_absent(self.el_ct);
                             
                             self.new_el_fcs[2].norm_dir_from_el_cent(&mut cent, &mut  self.nodes);
                             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[2]);
-                            fc_added = self.add_face_if_absent(self.el_ct);
+                            _fc_added = self.add_face_if_absent(self.el_ct);
                             
                             self.new_el_fcs[3].norm_dir_from_el_cent(&mut cent, &mut  self.nodes);
                             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[3]);
-                            fc_added = self.add_face_if_absent(self.el_ct);
+                            _fc_added = self.add_face_if_absent(self.el_ct);
                             
                             self.el_ct += 1usize;
                             
@@ -650,14 +631,14 @@ impl Mesher {
         self.nodes[self.nd_ct].coord[1] = tgt_pt[1];
         self.nodes[self.nd_ct].coord[2] = tgt_pt[2];
         //let mut this_fc = &self.faces[fc_i];
-        let mut el_check : bool;
-        let mut fc_added : bool;
+        let el_check : bool;
+        let mut _fc_added : bool;
         let mut cent : [f64; 3] = [0f64; 3];
         
         //let mut this_fc_nds = &this_fc.nodes;
         //let mut this_fc_els = &this_fc.elements;
         //let mut new_el_nds = &self.elements[self.el_ct].nodes;
-        let mut ec : usize = self.el_ct;
+        let ec : usize = self.el_ct;
         self.elements[ec].nodes[0] = self.faces[fc_i].nodes[0];
         self.elements[ec].nodes[1] = self.faces[fc_i].nodes[1];
         self.elements[ec].nodes[2] = self.faces[fc_i].nodes[2];
@@ -694,7 +675,7 @@ impl Mesher {
         new_fc.norm_dir_from_el_cent(&mut cent, &mut  self.nodes);
         
         el_check = self.check_new_el();
-        if (el_check) {
+        if el_check {
             self.node_grid.add_ent(self.nd_ct, tgt_pt);
             
             self.element_grid.add_ent(self.el_ct, &mut  cent);
@@ -702,13 +683,13 @@ impl Mesher {
             self.faces[fc_i].elements[1] = self.el_ct;
             
             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[1]);
-            fc_added = self.add_face_if_absent(self.el_ct);
+            _fc_added = self.add_face_if_absent(self.el_ct);
             
             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[2]);
-            fc_added = self.add_face_if_absent(self.el_ct);
+            _fc_added = self.add_face_if_absent(self.el_ct);
             
             self.faces[self.fc_ct].copy_data(&mut self.new_el_fcs[3]);
-            fc_added = self.add_face_if_absent(self.el_ct);
+            _fc_added = self.add_face_if_absent(self.el_ct);
             
             self.nd_ct += 1usize;
             self.el_ct += 1usize;
@@ -731,13 +712,13 @@ impl Mesher {
         let mut edge_closed : bool;
         
         let mut el_added : bool =  true;
-        while (el_added) {
+        while el_added {
             el_added = false;
             fc_i = 0;
-            while (fc_i < self.fc_ct && self.el_ct < self.max_num_els) {
+            while fc_i < self.fc_ct && self.el_ct < self.max_num_els {
                 //let mut this_fc = &self.faces[fc_i];
                 //let mut fc_els = &this_fc.elements;
-                if (self.faces[fc_i].elements[1] == MAX_INT) {
+                if self.faces[fc_i].elements[1] == MAX_INT {
                     self.faces[fc_i].get_centroid(&mut fc_cent,  &mut  self.nodes);
                     fc_proj = self.faces[fc_i].proj_dist;
                     proj = self.glob_proj_wt * self.avg_proj + (1.0 - self.glob_proj_wt) * fc_proj;
@@ -747,22 +728,22 @@ impl Mesher {
                     tgt_pt[2] = fc_cent[2] + 0.5 * proj * self.faces[fc_i].norm_dir[2];
                     srch_rad = 0.75 * proj;
                     edge_closed = self.adopt_connected_nd(fc_i, &mut  tgt_pt,  srch_rad);
-                    if (!edge_closed) {
+                    if !edge_closed {
                         edge_closed = self.adopt_any_nd(fc_i, &mut  tgt_pt,  srch_rad);
                     }
-                    if (!edge_closed) {
+                    if !edge_closed {
                         tgt_pt[0] = fc_cent[0] + proj * self.faces[fc_i].norm_dir[0];
                         tgt_pt[1] = fc_cent[1] + proj * self.faces[fc_i].norm_dir[1];
                         tgt_pt[2] = fc_cent[2] + proj * self.faces[fc_i].norm_dir[2];
                         edge_closed = self.create_new_nd(fc_i, &mut  tgt_pt);
                     }
-                    if (!edge_closed) {
+                    if !edge_closed {
                         tgt_pt[0] = fc_cent[0] + 0.5 * proj * self.faces[fc_i].norm_dir[0];
                         tgt_pt[1] = fc_cent[1] + 0.5 * proj * self.faces[fc_i].norm_dir[1];
                         tgt_pt[2] = fc_cent[2] + 0.5 * proj * self.faces[fc_i].norm_dir[2];
                         edge_closed = self.create_new_nd(fc_i, &mut  tgt_pt);
                     }
-                    if (edge_closed) {
+                    if edge_closed {
                         el_added = true;
                     }
                 }
@@ -770,7 +751,7 @@ impl Mesher {
             }
         }
         
-        if (self.el_ct >= self.max_num_els) {
+        if self.el_ct >= self.max_num_els {
             return  false;
         }
         
@@ -779,7 +760,6 @@ impl Mesher {
 
     pub fn distribute_nodes(&mut self) {
         let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
@@ -787,7 +767,7 @@ impl Mesher {
         let mut i7 : usize;
         let mut i8 : usize;
         let mut i9 : usize;
-        let mut dim : usize =  self.nd_ct * 3;
+        let dim : usize =  self.nd_ct * 3;
         
         let mut e_vol : f64;
         let mut avg_wt : f64;
@@ -818,7 +798,7 @@ impl Mesher {
         
         i3 = 0;
         for i1 in 0..12 {
-            if (i3 < 9) {
+            if i3 < 9 {
                 i4 = 0;
             }
             else {
@@ -826,8 +806,8 @@ impl Mesher {
             }
             i5 = i1 * 12;
             i6 = (i1 + 1) * 12;
-            while (i4 <= (i3 + 9)) {
-                if (i4 >= i5 && i4 < i6) {
+            while i4 <= (i3 + 9) {
+                if i4 >= i5 && i4 < i6 {
                     el_mat[i4] = -1.0;
                 }
                 i4  +=  3;
@@ -840,13 +820,13 @@ impl Mesher {
         i1 = 0;
         avg_wt = 0.0;
         for i2 in 0..self.el_ct {
-            let mut this_el = &self.elements[i2];
+            let this_el = &self.elements[i2];
             e_vol = this_el.get_volume(&mut self.nodes);
             el_wt[i1] = e_vol;
             avg_wt  +=  e_vol;
             i1 += 1usize;
         }
-        avg_wt  /=  (i1 as f64);
+        avg_wt  /=  i1 as f64;
         for i2 in 0..i1 {
             el_wt[i2]  /=  avg_wt;
         }
@@ -859,10 +839,9 @@ impl Mesher {
         }
         
         //this_nd = self.nodes.get_first();
-        i1 = 0;
         for i1 in 0..self.num_bound_nds {
-            let mut this_nd = &self.nodes[i1];
-            let mut crd = &this_nd.coord;
+            let this_nd = &self.nodes[i1];
+            let crd = &this_nd.coord;
             for i3 in 0..3 {
                 i4 = i1 * 3 + i3;
                 d_mat[i4] = 100000.0;
@@ -886,14 +865,13 @@ impl Mesher {
         }
         
         i1 = 0;
-        while (i1 < dim && res > 1.0e-12) {
+        while i1 < dim && res > 1.0e-12 {
             for i2 in 0..dim {
                 z_vec[i2] = 0.0;
             }
-            i2 = 0;
             for i2 in 0..self.el_ct {
-                let mut this_el = &self.elements[i2];
-                let mut el_nds = &this_el.nodes;
+                let this_el = &self.elements[i2];
+                let el_nds = &this_el.nodes;
                 i7 = 0;//index in el_mat
                 for i3 in 0..4 {
                     for i4 in 0..3 {
@@ -901,7 +879,7 @@ impl Mesher {
                         for i5 in 0..4 {
                             for i6 in 0..3 {
                                 i9 = 3 * el_nds[i5] + i6;//global col
-                                z_vec[i8]  +=  (el_wt[i2] * el_mat[i7] * h_vec[i9]);
+                                z_vec[i8]  +=  el_wt[i2] * el_mat[i7] * h_vec[i9];
                                 i7 += 1usize;
                             }
                         }
@@ -909,19 +887,19 @@ impl Mesher {
                 }
             }
             for i2 in 0..dim {
-                z_vec[i2]  +=  (d_mat[i2] * h_vec[i2]);
+                z_vec[i2]  +=  d_mat[i2] * h_vec[i2];
             }
             dp = 0.0;
             for i2 in 0..dim {
-                dp  +=  (z_vec[i2] * h_vec[i2]);
+                dp  +=  z_vec[i2] * h_vec[i2];
             }
             alpha = res / dp;
             r_next = 0.0;
             for i2 in 0..dim {
-                x_vec[i2]  +=  (alpha * h_vec[i2]);
-                g_vec[i2]  +=  (alpha * z_vec[i2]);
+                x_vec[i2]  +=  alpha * h_vec[i2];
+                g_vec[i2]  +=  alpha * z_vec[i2];
                 w_vec[i2] = p_inv[i2] * g_vec[i2];
-                r_next  +=  (g_vec[i2] * w_vec[i2]);
+                r_next  +=  g_vec[i2] * w_vec[i2];
             }
             beta = r_next / res;
             for i2 in 0..dim {
@@ -931,10 +909,9 @@ impl Mesher {
             i1 += 1usize;
         }
         
-        i1 = 0;
         for i1 in self.num_bound_nds..self.nd_ct {
-            let mut this_nd = &mut self.nodes[i1];
-            let mut crd = &mut this_nd.coord;
+            let this_nd = &mut self.nodes[i1];
+            let crd = &mut this_nd.coord;
             for i3 in 0..3 {
                 i4 = 3 * i1 + i3;
                 crd[i3] = x_vec[i4];
@@ -945,7 +922,6 @@ impl Mesher {
     }
 
     pub fn write_output(&mut self, file_name : &mut CppStr) {
-        let mut i1 : usize;
         
         let mut out_file = match File::create(&file_name.s) {
             Err(_why) => panic!("could not open file {}", file_name.s),
@@ -954,15 +930,15 @@ impl Mesher {
         
         let _ = out_file.write(format!("{}", "nodes:\n").as_bytes());
         for i1 in 0..self.nd_ct {
-            let mut this_nd = &self.nodes[i1];
-            let mut crd = &this_nd.coord;
+            let this_nd = &self.nodes[i1];
+            let crd = &this_nd.coord;
             let _ = out_file.write(format!("{}{}{}{}{}{}{}", "  - [" , crd[0] , ", " , crd[1] , ", " , crd[2] , "]\n").as_bytes());
         }
         
         let _ = out_file.write(format!("{}", "elements:\n").as_bytes());
         for i1 in 0..self.el_ct {
-            let mut this_el = &self.elements[i1];
-            let mut el_nds = &this_el.nodes;
+            let this_el = &self.elements[i1];
+            let el_nds = &this_el.nodes;
             let _ = out_file.write(format!("{}{}", "  - [" , el_nds[0]).as_bytes());
             for i1 in 1..4 {
                 let _ = out_file.write(format!("{}{}", ", " , el_nds[i1]).as_bytes());
@@ -974,22 +950,21 @@ impl Mesher {
     }
 
     pub fn print_current_mesh(&mut self) {
-        let mut i1 : usize;
         
         println!("{}", "Current Mesh:" );
         println!("{}", "Nodes:" );
         
         //this_nd = self.nodes.get_first();
         for i1 in 0..self.nd_ct {
-            let mut this_nd = &self.nodes[i1];
-            let mut crd = &this_nd.coord;
+            let this_nd = &self.nodes[i1];
+            let crd = &this_nd.coord;
             println!("{}{}{}{}{}", crd[0] , ", " , crd[1] , ", " , crd[2] );
         }
         println!("{}", "Elements:" );
         //this_el = self.elements.get_first();
         for i1 in 0..self.el_ct {
-            let mut this_el = &self.elements[i1];
-            let mut el_nds = &this_el.nodes;
+            let this_el = &self.elements[i1];
+            let el_nds = &this_el.nodes;
             print!("{}{}", el_nds[0] , ", ");
             print!("{}{}", el_nds[1] , ", ");
             print!("{}{}", el_nds[2] , ", ");
@@ -999,13 +974,13 @@ impl Mesher {
         println!("{}", "Faces:" );
         //this_fc = self.faces.get_first();
         for i1 in 0..self.fc_ct {
-            let mut this_fc = &self.faces[i1];
+            let this_fc = &self.faces[i1];
             print!("{}", "  nodes: ");
-            let mut el_nds = &this_fc.nodes;
+            let el_nds = &this_fc.nodes;
             print!("{}{}", el_nds[0] , ", ");
             print!("{}{}", el_nds[1] , ", ");
             print!("{}{}", el_nds[2] , ", ");
-            let mut fc_els = &this_fc.elements;
+            let fc_els = &this_fc.elements;
             print!("{}", "element pt: ");
             println!("{}{}{}", fc_els[0] , ", " , fc_els[1] );
         }

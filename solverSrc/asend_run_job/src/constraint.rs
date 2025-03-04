@@ -28,6 +28,9 @@ pub struct Constraint {
     pub this_type : CppStr,
     pub terms : LinkedList<ConstraintTerm>,
     pub rhs : f64,
+    pub active_time : [f64; 2],
+    pub is_active : bool,
+    pub was_active : bool,
     pub mat : SparseMat,
     pub scale_fact : f64,
 }
@@ -38,10 +41,14 @@ impl Constraint {
             this_type : CppStr::from("none"),
             terms : LinkedList::new(),
             rhs : 0f64,
+            active_time : [0.0, 1.0e+100],
+            is_active : true,
+            was_active : false,
             mat : SparseMat::new(),
             scale_fact : 0f64,
         }
     }
+
 }
 
 #[derive(Clone)]
