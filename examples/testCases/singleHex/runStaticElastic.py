@@ -10,6 +10,7 @@ from asendUtils.model.Model import *
 from asendUtils.model.Constraint import *
 from asendUtils.objective.Objective import *
 from asendUtils.job.ASenDJob import *
+# from asendUtils.ResultsProcessor import *
 
 if(not os.path.exists('staticElastic')):
     os.mkdir('staticElastic')
@@ -67,10 +68,16 @@ myJob.readObjectiveInput('staticElastic/staticObjective.yaml')
 myJob.solve()
 myJob.calcObjGradient()
 
-myJob.writeNodeResults('staticElastic/results/nodeResults.yaml',['displacement'])
-myJob.writeElementResults('staticElastic/results/elementResults.yaml',['strain','stress'])
-myJob.writeObjective('staticElastic/results/objectiveResults.yaml')
+myJob.writeNodeResults('staticElastic/results/nodeResults.csv',['displacement'])
+myJob.writeElementResults('staticElastic/results/elementResults.csv',['strain','stress'])
+myJob.writeObjective('staticElastic/results/objectiveResults.csv')
 
 myJob.writeJobInput('staticElastic/staticElasticJob.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()
+
+# rp = ResultsProcessor('singleHex.yaml')
+# rp.loadNodeResults('staticElastic/results/nodeResults.csv')
+# rp.loadElementResults('staticElastic/results/elementResults.csv')
+# rp.plotNodeResults('displacement', component=1, deformed=True)
+# rp.plotElementResults('stress',component=1,deformed=True)

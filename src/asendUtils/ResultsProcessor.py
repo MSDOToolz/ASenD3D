@@ -1,5 +1,6 @@
 #from ruamel.yaml import YAML
 import numpy as np
+import pandas as pd
 import yaml
 from yaml import CLoader as Loader
 from asendUtils.visualization.plotlyUtils import *
@@ -18,22 +19,24 @@ class ResultsProcessor:
         if(not nodeResFile == None):
             self.loadNodeResults(nodeResFile)
         else:
-            self.nodeData = dict()
+            self.nodeData = pd.DataFrame()
 
         if(not elementResFile == None):
             self.loadElementResults(elementResFile)
         else:
-            self.elementData = dict()
+            self.elementData = pd.DataFrame()
             
         if(not modalResFile == None):
-            self.loadModalResults(modalResFile)
+            self.loadModalVals(modalResFile)
         else:
-            self.modalData = dict()
+            self.modalVals = pd.DataFrame()
+        self.modalVec = pd.DataFrame()
             
         if(not objResFile == None):
             self.loadObjectiveResults(objResFile)
         else:
-            self.objectiveData = dict()
+            self.objectiveVals = pd.DataFrame()
+            self.objectiveGrad = pd.DataFrame()
             
     def loadDesignVariableInput(self,dVarFile):
         inFile = open(dVarFile)
@@ -41,24 +44,35 @@ class ResultsProcessor:
         inFile.close()
 
     def loadNodeResults(self,nodeResFile):
-        inFile = open(nodeResFile,'r')
-        self.nodeData = yaml.load(inFile,Loader=Loader)
-        inFile.close()
+        self.nodeData = pd.read_csv(nodeResFile,index_col=0)
+        # inFile = open(nodeResFile,'r')
+        # self.nodeData = yaml.load(inFile,Loader=Loader)
+        # inFile.close()
 
     def loadElementResults(self,elementResFile):
-        inFile = open(elementResFile,'r')
-        self.elementData = yaml.load(inFile,Loader=Loader)
-        inFile.close()
+        self.elementData = pd.read_csv(elementResFile)
+        # inFile = open(elementResFile,'r')
+        # self.elementData = yaml.load(inFile,Loader=Loader)
+        # inFile.close()
         
-    def loadModalResults(self,modalResFile):
-        inFile = open(modalResFile,'r')
-        self.modalData = yaml.load(inFile,Loader=Loader)
-        inFile.close()
+    def loadModalVals(self,modalResFile):
+        self.modalVals = pd.read_csv(modalResFile)
+        # inFile = open(modalResFile,'r')
+        # self.modalData = yaml.load(inFile,Loader=Loader)
+        # inFile.close()
+        
+    def loadModalVec(self,modalResFile,mode=0):
+        rep = '_mode' + str(mode) + '.'
+        f_name = modalResFile.replace('.',rep)
+        self.modalVec = pd.read_csv(f_name,index_col=0)
         
     def loadObjectiveResults(self,objResFile):
-        inFile = open(objResFile,'r')
-        self.objectiveData = yaml.load(inFile,Loader=Loader)
-        inFile.close()
+        self.objectiveVals = pd.read_csv(objResFile,index_col=0)
+        f_name = objResFile.replace('.','_grad.')
+        self.objectiveGrad = pd.read_csv(f_name,index_col=0)
+        # inFile = open(objResFile,'r')
+        # self.objectiveData = yaml.load(inFile,Loader=Loader)
+        # inFile.close()
         
     def getPlotNdElSet(self,elementSet):
         numNds = len(self.modelData['nodes'])
@@ -93,19 +107,11 @@ class ResultsProcessor:
             if(lab in ndSet):
                 crdAr[lab] = np.array(nd[1:4])
         if(deformed):
-            for ndU in self.nodeData['nodeResults']['displacement']:
-                lab = ndU[0]
-                if(lab in ndSet):
-                    crdAr[lab] = crdAr[lab] + defScaleFact*np.array(ndU[1:4])
-        xLst = list()
-        yLst = list()
-        zLst = list()
-        for nd in allNds:
-            lab = nd[0]
-            if(lab in ndSet):
-                xLst.append(crdAr[lab,0])
-                yLst.append(crdAr[lab,1])
-                zLst.append(crdAr[lab,2])
+            crdAr +=  defScaleFact*np.array(self.nodeData.loc[list(range(0,numNds)), ['U1','U2','U3']])
+        setCrd = crdAr[list(ndSet)]
+        xLst = list(crdAr[:,0])
+        yLst = list(crdAr[:,1])
+        zLst = list(crdAr[:,2])
             
         return {'xLst': xLst, 'yLst': yLst, 'zLst': zLst}
 
@@ -323,20 +329,38 @@ class ResultsProcessor:
         ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
         numNds = len(self.modelData['nodes'])
         
-        valAr = np.zeros(numNds,dtype=float)
-        for nd in self.nodeData['nodeResults'][field]:
-            lab = nd[0]
-            if(component == 'mag'):
-                vec = np.array(nd[1:4])
-                val = np.linalg.norm(vec)
-            else:
-                val = nd[component]
-            valAr[lab] = val
-        values = list()
-        for nd in self.modelData['nodes']:
-            lab = nd[0]
-            if(lab in ndSet):
-                values.append(valAr[lab])
+        abrv = {'displacement': ['U1','U2','U3','R1','R2','R3'],
+                'velocity': ['V1','V2','V3','RV1','RV2','RV3'],
+                'acceleration': ['A1','A2','A3','RA1','RA2','RA3'],
+                'temperature': ['T'],
+                'tdot': ['TDOT'],
+                'reactionForce': ['RF1','RF2','RF3','RM1','RM2','RM3'],
+                'reactionHeatGen': ['RHG']}
+        
+        if (component == 'mag'):
+            cols = abrv[field][0:3]
+            uAr = np.array(self.nodeData.loc[list(ndSet), cols])
+            values = list()
+            for u in uAr:
+                values.append(np.linalg.norm(u))
+        else:
+            fldLab = abrv[field][component-1]
+            values = list(self.nodeData.loc[list(ndSet), fldLab])
+        
+        # valAr = np.zeros(numNds,dtype=float)
+        # for nd in self.nodeData['nodeResults'][field]:
+        #     lab = nd[0]
+        #     if(component == 'mag'):
+        #         vec = np.array(nd[1:4])
+        #         val = np.linalg.norm(vec)
+        #     else:
+        #         val = nd[component]
+        #     valAr[lab] = val
+        # values = list()
+        # for nd in self.modelData['nodes']:
+        #     lab = nd[0]
+        #     if(lab in ndSet):
+        #         values.append(valAr[lab])
         
         verts = self.buildElementVertexList(elSet)
         cbTitle = field + str(component)
@@ -344,53 +368,64 @@ class ResultsProcessor:
         
     def plotElementResults(self,field,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
+        
+        abrv = {'stress': ['S11','S22','S33','S12','S13','S23'],
+                'strain': ['E11','E22','E33','E12','E13','E23'],
+                'strainEnergDen': ['SE'],
+                'sectionFrcMom': ['SECT_F1','SECT_F2','SECT_F3','SECT_M1','SECT_M2','SECT_M3'],
+                'sectionDef': ['SECT_E1','SECT_E2','SECT_E3','SECT_K1','SECT_K2','SECT_K3'],
+                'heatFlux': ['HFLX1','HFLX2','HFLX3'],
+                'tempGradient': ['TGRAD1','TGRAD2','TGRAD3']}
+        
+        fldLab = abrv[field][component-1]
                                         
         ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
         numNds = len(self.modelData['nodes'])
         
-        ndValues = np.zeros(numNds,dtype=float)
-        numHits = np.zeros(numNds,dtype=int)
         numEls = 0
         for et in self.modelData['elements']:
             numEls = numEls + len(et['connectivity'])
+        
+        df1 = self.elementData[self.elementData['int_pt'] == 0]
+        df2 = df1[df1['layer'] == layer]
         elValues = np.zeros(numEls,dtype=float)
-        for el in self.elementData['elementResults'][field]:
-            if(el[2] == layer):
-                lab = el[0]
-                i = component + 2
-                val = el[i]
-                elValues[lab] = val
-        # for et in self.modelData['elements']:
-        #     elst = et['connectivity']
-        #     for el in elst:
+        for r, ei in enumerate(df2['element']):
+            elValues[ei] = df2.loc[r,fldLab]
+        
+        # elValues = np.zeros(numEls,dtype=float)
+        # for el in self.elementData['elementResults'][field]:
+        #     if(el[2] == layer):
         #         lab = el[0]
-        #         v = elValues[lab]
-        #         for i, nd in enumerate(el):
-        #             if(i > 0):
-        #                 ndValues[nd] = ndValues[nd] + v
-        #                 numHits[nd] = numHits[nd] + 1
-        # nVLst = list()
-        # for nd in self.modelData['nodes']:
-        #     lab = nd[0]
-        #     if(lab in ndSet):
-        #         nVLst.append(ndValues[lab]/numHits[lab])
+        #         i = component + 2
+        #         val = el[i]
+        #         elValues[lab] = val
         
         fcVals = self.getFaceValues(elSet,elValues)
         verts = self.buildElementVertexList(elSet)
         cbTitle = field + str(component)
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell',title=cbTitle)
         
-    def plotModalResults(self,mode,elementSet='all',defScaleFact=1.0):
+    def plotModalResults(self,elementSet='all',defScaleFact=1.0):
         nodeCopy = self.nodeData.copy()
-        for md in self.modalData['modalResults']['modes']:
-            if(md['mode'] == mode):
-                self.nodeData['nodeResults'] = dict()
-                self.nodeData['nodeResults']['displacement'] = md['displacement']
+        # for md in self.modalData['modalResults']['modes']:
+        #     if(md['mode'] == mode):
+        #         self.nodeData['nodeResults'] = dict()
+        #         self.nodeData['nodeResults']['displacement'] = md['displacement']
+        self.nodeData = self.modalVec
         self.plotNodeResults('displacement',component='mag',elementSet=elementSet,deformed=True,defScaleFact=defScaleFact)
         self.nodeData = nodeCopy
         
     def animateNodeResults(self,fileName,field,timeSteps,component=1,elementSet='all',deformed=False,defScaleFact=1.0,frameDuration=1000):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
+        
+        abrv = {'displacement': ['U1','U2','U3','R1','R2','R3'],
+                'velocity': ['V1','V2','V3','RV1','RV2','RV3'],
+                'acceleration': ['A1','A2','A3','RA1','RA2','RA3'],
+                'temperature': ['T'],
+                'tdot': ['TDOT'],
+                'reactionForce': ['RF1','RF2','RF3','RM1','RM2','RM3'],
+                'reactionHeatGen': ['RHG']}
+        fldLab = abrv[field][component-1]
         
         allNdCrd = list()
         allNdValues = list()
@@ -404,19 +439,27 @@ class ResultsProcessor:
             fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
             self.loadNodeResults(fn)
             ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
-            for nd in self.nodeData['nodeResults'][field]:
-                lab = nd[0]
-                if(component == 'mag'):
-                    vec = np.array(nd[1:4])
-                    val = np.linalg.norm(vec)
-                else:
-                    val = nd[component]
-                valAr[lab] = val
-            ndValues = list()
-            for nd in self.modelData['nodes']:
-                lab = nd[0]
-                if(lab in ndSet):
-                    ndValues.append(valAr[lab])
+            if (component == 'mag'):
+                cols = abrv[field][0:3]
+                uAr = np.array(self.nodeData.loc[list(ndSet), cols])
+                ndValues = list()
+                for u in uAr:
+                    ndValues.append(np.linalg.norm(u))
+            else:
+                ndValues = list(self.nodeData.loc[list(ndSet), fldLab])
+            # for nd in self.nodeData['nodeResults'][field]:
+            #     lab = nd[0]
+            #     if(component == 'mag'):
+            #         vec = np.array(nd[1:4])
+            #         val = np.linalg.norm(vec)
+            #     else:
+            #         val = nd[component]
+            #     valAr[lab] = val
+            # ndValues = list()
+            # for nd in self.modelData['nodes']:
+            #     lab = nd[0]
+            #     if(lab in ndSet):
+            #         ndValues.append(valAr[lab])
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
             if(firstStep):
@@ -428,6 +471,15 @@ class ResultsProcessor:
         
     def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,frameDuration=1000):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
+        
+        abrv = {'stress': ['S11','S22','S33','S12','S13','S23'],
+                'strain': ['E11','E22','E33','E12','E13','E23'],
+                'strainEnergDen': ['SE'],
+                'sectionFrcMom': ['SECT_F1','SECT_F2','SECT_F3','SECT_M1','SECT_M2','SECT_M3'],
+                'sectionDef': ['SECT_E1','SECT_E2','SECT_E3','SECT_K1','SECT_K2','SECT_K3'],
+                'heatFlux': ['HFLX1','HFLX2','HFLX3'],
+                'tempGradient': ['TGRAD1','TGRAD2','TGRAD3']}
+        fldLab = abrv[field][component-1]
         
         allNdCrd = list()
         allFcValues = list()
@@ -449,42 +501,35 @@ class ResultsProcessor:
             ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
             fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
             self.loadElementResults(fn)
+            
+            df1 = self.elementData[self.elementData['int_pt'] == 0]
+            df2 = df1[df1['layer'] == layer]
             elValues = np.zeros(numEls,dtype=float)
-            for el in self.elementData['elementResults'][field]:
-                if(el[2] == layer):
-                    lab = el[0]
-                    i = component + 2
-                    val = el[i]
-                    elValues[lab] = val
-            # valAr = np.zeros(numNds,dtype=float)
-            # numHits = np.zeros(numNds,dtype=int)
-            # for et in self.modelData['elements']:
-            #     elst = et['connectivity']
-            #     for el in elst:
+            for r, ei in enumerate(df2['elements']):
+                elValues[ei] = df2.loc[r,fldLab]
+            
+            # elValues = np.zeros(numEls,dtype=float)
+            # for el in self.elementData['elementResults'][field]:
+            #     if(el[2] == layer):
             #         lab = el[0]
-            #         v = elValues[lab]
-            #         for i, nd in enumerate(el):
-            #             if(i > 0):
-            #                 valAr[nd] = valAr[nd] + v
-            #                 numHits[nd] = numHits[nd] + 1
-            # ndValues = list()
-            # for nd in self.modelData['nodes']:
-            #     lab = nd[0]
-            #     if(lab in ndSet):
-            #         ndValues.append(valAr[lab]/numHits[lab])
+            #         i = component + 2
+            #         val = el[i]
+            #         elValues[lab] = val
+            
             fcVals = self.getFaceValues(elSet,elValues)
             allNdCrd.append(ndCrd)
             allFcValues.append(fcVals)
         cbTitle = field + str(component)
         animateMeshSolution(allNdCrd,allFcValues,verts,'cell',frameDuration,cbTitle)
         
-    def animateModalSolution(self,mode,elementSet='all',defScaleFact=1.0):
+    def animateModalSolution(self,elementSet='all',defScaleFact=1.0):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
         nodeCopy = self.nodeData.copy()
-        for md in self.modalData['modalResults']['modes']:
-            if(md['mode'] == mode):
-                self.nodeData['nodeResults'] = dict()
-                self.nodeData['nodeResults']['displacement'] = md['displacement']
+        # for md in self.modalData['modalResults']['modes']:
+        #     if(md['mode'] == mode):
+        #         self.nodeData['nodeResults'] = dict()
+        #         self.nodeData['nodeResults']['displacement'] = md['displacement']
+        self.nodeData = self.modalVec
         
         allNdCrd = list()
         allNdValues = list()
@@ -497,16 +542,22 @@ class ResultsProcessor:
             sinTh = np.math.sin(tRad)
             sf = sinTh*defScaleFact
             ndCrd = self.buildNodalPlotCrd(ndSet,deformed=True,defScaleFact=sf)
-            for nd in self.nodeData['nodeResults']['displacement']:
-                lab = nd[0]
-                if(lab in ndSet):
-                    vec = np.array(nd[1:4])
-                    valAr[lab] = np.linalg.norm(vec)
+            
+            cols = ['U1','U2','U3']
+            uAr = np.array(self.nodeData.loc[list(ndSet), cols])
             ndValues = list()
-            for nd in self.modelData['nodes']:
-                lab = nd[0]
-                if(lab in ndSet):
-                    ndValues.append(valAr[lab])
+            for u in uAr:
+                ndValues.append(np.linalg.norm(u))
+            # for nd in self.nodeData['nodeResults']['displacement']:
+            #     lab = nd[0]
+            #     if(lab in ndSet):
+            #         vec = np.array(nd[1:4])
+            #         valAr[lab] = np.linalg.norm(vec)
+            # ndValues = list()
+            # for nd in self.modelData['nodes']:
+            #     lab = nd[0]
+            #     if(lab in ndSet):
+            #         ndValues.append(valAr[lab])
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
         cbTitle = 'displacement'
@@ -515,6 +566,17 @@ class ResultsProcessor:
         
     def extractNodeHistory(self,fileName,field,timeSteps,nodeSet):
         fnLst = fileName.split('.')
+        
+        abrv = {'displacement': ['U1','U2','U3','R1','R2','R3'],
+                'velocity': ['V1','V2','V3','RV1','RV2','RV3'],
+                'acceleration': ['A1','A2','A3','RA1','RA2','RA3'],
+                'temperature': ['T'],
+                'tdot': ['TDOT'],
+                'reactionForce': ['RF1','RF2','RF3','RM1','RM2','RM3'],
+                'reactionHeatGen': ['RHG']}
+        
+        rescols = abrv[field]
+        
         try:
             ndI = int(nodeSet)
             vals = list()
@@ -522,31 +584,40 @@ class ResultsProcessor:
             for ts in timeSteps:
                 fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
                 self.loadNodeResults(fn)
-                for nd in self.nodeData['nodeResults'][field]:
-                    if(nd[0] == ndI):
-                        vals.append(nd[1:])
-                        timePts.append(self.nodeData['nodeResults']['time'])
+                resrow = self.nodeData.loc[ndI]
+                vals.append(list(resrow[rescols]))
+                timepts.append(resrow['time'])
+                # for nd in self.nodeData['nodeResults'][field]:
+                #     if(nd[0] == ndI):
+                #         vals.append(nd[1:])
+                #         timePts.append(self.nodeData['nodeResults']['time'])
             series = dict()
             lab = 'node_' + str(ndI)
             series[lab] = vals
         except:
             series = dict()
+            nsLabs = []
             for ns in self.modelData['sets']['node']:
                 if(ns['name'] == nodeSet):
-                    for nd in ns['labels']:
+                    nsLabs = ns['labels']
+                    for nd in nsLabs:
                         lab = 'node_' + str(nd)
                         series[lab] = list()
             timePts = list()
             for ts in timeSteps:
                 fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
                 self.loadNodeResults(fn)
-                timePts.append(self.nodeData['nodeResults']['time'])
-                for nd in self.nodeData['nodeResults'][field]:
-                    try:
-                        lab = 'node_' + str(nd[0])
-                        series[lab].append(nd[1:])
-                    except:
-                        pass
+                timePts.append(self.nodeData.loc[0,'time'])
+                for nd in nsLabs:
+                    lab = 'node_' + str(nd)
+                    resrow = self.nodeData.loc[nd, rescols]
+                    series[lab].append(list(resrow))
+                # for nd in self.nodeData['nodeResults'][field]:
+                #     try:
+                #         lab = 'node_' + str(nd[0])
+                #         series[lab].append(nd[1:])
+                #     except:
+                #         pass
         return series, timePts
         
     def nodeHistorySeries(self,fileName,field,timeSteps,nodeSet,component=1):
@@ -572,8 +643,19 @@ class ResultsProcessor:
             ytitle = yTitle
         plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=ytitle)
         
-    def plotElementHistory(self,fileName,field,timeSteps,elementSet,component=1,xTitle='Time',yTitle=None):
+    def plotElementHistory(self,fileName,field,timeSteps,elementSet,layer=0,component=1,xTitle='Time',yTitle=None):
         fnLst = fileName.split('.')
+        
+        abrv = {'stress': ['S11','S22','S33','S12','S13','S23'],
+                'strain': ['E11','E22','E33','E12','E13','E23'],
+                'strainEnergDen': ['SE'],
+                'sectionFrcMom': ['SECT_F1','SECT_F2','SECT_F3','SECT_M1','SECT_M2','SECT_M3'],
+                'sectionDef': ['SECT_E1','SECT_E2','SECT_E3','SECT_K1','SECT_K2','SECT_K3'],
+                'heatFlux': ['HFLX1','HFLX2','HFLX3'],
+                'tempGradient': ['TGRAD1','TGRAD2','TGRAD3']}
+        
+        rescol = abrv[field][component-1]
+        
         try:
             elI = int(elementSet)
             vals = list()
@@ -581,12 +663,18 @@ class ResultsProcessor:
             for ts in timeSteps:
                 fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
                 self.loadElementResults(fn)
-                for el in self.elementData['elementResults'][field]:
-                    if(el[0] == elI):
-                        vals.append(el[component+2])
-                        timePts.append(self.nodeData['elementResults']['time'])
+                
+                df1 = self.elementData[self.elementData['element'] == elI]
+                df2 = df1[df1['int_pt'] == 0]
+                resrow = df2[df2['layer'] == layer]
+                vals.append(resrow[rescol])
+                timePts.append(resrow['time'])
+                # for el in self.elementData['elementResults'][field]:
+                #     if(el[0] == elI):
+                #         vals.append(el[component+2])
+                #         timePts.append(self.elementData['elementResults']['time'])
             series = dict()
-            lab = 'element_' + str(ndI)
+            lab = 'element_' + str(elI)
             series[lab] = vals
             if(yTitle == None):
                 ytitle = field + str(component)
@@ -595,22 +683,31 @@ class ResultsProcessor:
             plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=yTitle)
         except:
             series = dict()
+            esLabs = []
             for es in self.modelData['sets']['element']:
                 if(es['name'] == elementSet):
-                    for el in es['labels']:
+                    esLabs = es['labels']
+                    for el in esLabs:
                         lab = 'element_' + str(el)
                         series[lab] = list()
             timePts = list()
             for ts in timeSteps:
                 fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
                 self.loadElementResults(fn)
-                timePts.append(self.elementData['elementResults']['time'])
-                for el in self.elementData['elementResults'][field]:
-                    try:
-                        lab = 'element_' + str(el[0])
-                        series[lab].append(el[component+2])
-                    except:
-                        pass
+                timePts.append(self.elementData.loc[0, 'time'])
+                
+                df1 = self.elementData[self.elementData['element'].isin(esLabs)]
+                df2 = df1[df1['int_pt'] == 0]
+                df3 = df2[df2['layer'] == layer]
+                for r, ei in enumerate(df3['element']):
+                    lab = 'element_' + str(ei)
+                    series[lab].append(df3.loc[r,rescol])
+                # for el in self.elementData['elementResults'][field]:
+                #     try:
+                #         lab = 'element_' + str(el[0])
+                #         series[lab].append(el[component+2])
+                #     except:
+                #         pass
             if(yTitle == None):
                 ytitle = field + str(component)
             else:
@@ -631,7 +728,8 @@ class ResultsProcessor:
         elValues = np.zeros(numEls,dtype=float)
         
         modSets = self.modelData['sets']['element']
-        objGrad = self.objectiveData['objectiveGradient']
+        #objGrad = self.objectiveData['objectiveGradient']
+        objGrad = list(self.objectiveGrad['objGrad'])
         for di, d in enumerate(self.dVarData['designVariables']):
             if(di in dSet):
                 try:
@@ -639,17 +737,17 @@ class ResultsProcessor:
                     try:
                         eli = int(dES)
                         if(magnitude):
-                            elValues[eli] = abs(objGrad[di][1])
+                            elValues[eli] = abs(objGrad[di])
                         else:
-                            elValues[eli] = objGrad[di][1]
+                            elValues[eli] = objGrad[di]
                     except:
                         for eS in modSets:
                             if(eS['name'] == dES):
                                 for el in eS['labels']:
                                     if(magnitude):
-                                        elValues[el] = abs(objGrad[di][1])
+                                        elValues[el] = abs(objGrad[di])
                                     else:
-                                        elValues[el] = objGrad[di][1]
+                                        elValues[el] = objGrad[di]
                 except:
                     pass
         
@@ -658,7 +756,7 @@ class ResultsProcessor:
         verts = self.buildElementVertexList(elSet)
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell')
         
-    def extractModalAmplitudes(self,fileName,timeSteps,nodeSet,modeList):
+    def extractModalAmplitudes(self,nodeResFile,modalResFile,timeSteps,nodeSet,modeList):
         try:
             nSet = {int(nodeSet)}
         except:
@@ -667,23 +765,41 @@ class ResultsProcessor:
                     nSet = set(ns['labels'])
         
         normMdDisp = dict()
-        for md in self.modalData['modalResults']['modes']:
-            mdStr = str(md['mode'])
-            maxMag = 0.
-            for nu in md['displacement']:
-                vec = np.array(nu[1:4])
-                mag = np.linalg.norm(vec)
+        for mi in modeList:
+            self.loadModalVec(modalResFile,mi)
+            uAr = np.array(self.modalVec[['U1','U2','U3']])
+            mdStr = str(mi)
+            maxMag = 0.0
+            for u in uAr:
+                mag = np.linalg.norm(u)
                 if(mag > maxMag):
                     maxMag = mag
             mFact = 1.0/maxMag
-            for nu in md['displacement']:
-                lab = nu[0]
-                if(lab in nSet):
-                    ndStr = str(lab)
-                    dk = ndStr + ',' + mdStr
-                    normMdDisp[dk] = mFact*np.array(nu[1:4])
+            for ni in nSet:
+                nu = np.array(self.modalVec.loc[ni, ['U1','U2','U3']])
+                dk = str(ni) + ',' + mdStr
+                normMdDisp[dk] = mFact*nu
+        
+        self.loadModalVals(modalResFile)
+        freq = list(self.modalVals['frequency'])
+        
+        # for md in self.modalData['modalResults']['modes']:
+        #     mdStr = str(md['mode'])
+        #     maxMag = 0.
+        #     for nu in md['displacement']:
+        #         vec = np.array(nu[1:4])
+        #         mag = np.linalg.norm(vec)
+        #         if(mag > maxMag):
+        #             maxMag = mag
+        #     mFact = 1.0/maxMag
+        #     for nu in md['displacement']:
+        #         lab = nu[0]
+        #         if(lab in nSet):
+        #             ndStr = str(lab)
+        #             dk = ndStr + ',' + mdStr
+        #             normMdDisp[dk] = mFact*np.array(nu[1:4])
                     
-        freq = self.modalData['modalResults']['frequencies']
+        # freq = self.modalData['modalResults']['frequencies']
         
         series, timePts = self.extractNodeHistory(fileName,'displacement',timeSteps,nodeSet)
         outDat = dict()

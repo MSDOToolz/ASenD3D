@@ -11,6 +11,7 @@ from asendUtils.model.Model import *
 from asendUtils.model.Constraint import *
 from asendUtils.objective.Objective import *
 from asendUtils.job.ASenDJob import *
+# from asendUtils.ResultsProcessor import *
 
 if(not os.path.exists('dynamicElastic')):
     os.mkdir('dynamicElastic')
@@ -62,8 +63,11 @@ myJob.solve(dynamic=True,timeStep=0.00573573,simPeriod=0.115,saveSolnHist=True,
 
 
 tSteps = list(range(0,20))
-myJob.writeNodeResults('dynamicElastic/results/nodeResults.yaml',['displacement'],timeSteps=tSteps)
+myJob.writeNodeResults('dynamicElastic/results/nodeResults.csv',['displacement'],timeSteps=tSteps)
 
 myJob.writeJobInput('dynamicElastic/dynamicElasticJob.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()
+
+# rp = ResultsProcessor('singleHex.yaml')
+# rp.animateNodeResults('dynamicElastic/results/nodeResults.csv','displacement',tSteps,deformed=True)

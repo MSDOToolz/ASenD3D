@@ -10,6 +10,7 @@ import sys
 from asendUtils.model.Model import *
 from asendUtils.objective.Objective import *
 from asendUtils.job.ASenDJob import *
+# from asendUtils.ResultsProcessor import *
 
 if(not os.path.exists('transverseTipLoading')):
     os.mkdir('transverseTipLoading')
@@ -42,10 +43,14 @@ myJob.readObjectiveInput('transverseTipLoading/objective.yaml')
 myJob.solve()
 myJob.calcObjGradient()
 
-myJob.writeNodeResults('transverseTipLoading/results/nodeResults.yaml',['displacement'])
-myJob.writeElementResults('transverseTipLoading/results/elementResults.yaml',['strain','stress'])
-myJob.writeObjective('transverseTipLoading/results/objectiveResults.yaml')
+myJob.writeNodeResults('transverseTipLoading/results/nodeResults.csv',['displacement'])
+myJob.writeElementResults('transverseTipLoading/results/elementResults.csv',['strain','stress'])
+myJob.writeObjective('transverseTipLoading/results/objectiveResults.csv')
 
 myJob.writeJobInput('transverseTipLoading/job.yaml')
 
 myJob.executeJob()
+
+# rp = ResultsProcessor('shellBeam.yaml')
+# rp.loadNodeResults('transverseTipLoading/results/nodeResults.csv')
+# rp.plotNodeResults('displacement',3,deformed=True)

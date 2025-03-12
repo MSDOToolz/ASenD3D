@@ -1,8 +1,6 @@
 use crate::model::*;
 use crate::constants::*;
 use crate::diff_doub::*;
-use crate::node::*;
-use crate::element::*;
 use crate::nd_el_set::*;
 use crate::matrix_functions::*;
 use crate::cpp_str::CppStr;
@@ -55,15 +53,13 @@ impl Model {
 
     }
 
-    pub fn write_node_results(&mut self, file_name : &mut CppStr, node_set : &mut CppStr, fields : &mut LinkedList<CppStr>, time_step : usize) {
+    pub fn write_node_results(&mut self, file_name : &CppStr, node_set : &CppStr, fields : &mut LinkedList<CppStr>, time_step : usize) {
         let mut i1 : usize;
         let mut glob_ind : usize;
         let set_pt : usize;
         let mut nd_dat : [f64; 6] = [0f64; 6];
-        let mut ndof : usize;
         let time : f64;
         
-        //let mut scmd = &self.job[self.solve_cmd];
         let sci = self.solve_cmd;
         
         if time_step < MAX_INT {
@@ -103,102 +99,112 @@ impl Model {
             time = -1.0;
         }
         
-        if CppMap::key_in_map(&mut self.ns_map, &mut node_set.s) {
-            set_pt = self.ns_map.at(&node_set.to_string());
+        if CppMap::key_in_map(&mut self.ns_map, &node_set.s) {
+            set_pt = self.ns_map.at(&node_set.s);
         }
         else {
             println!("Warning: there is no Node Set named {}. Defaulting to all nodes in writeNodeResults",node_set.s);
             set_pt = self.ns_map.at(&"all".to_string());
         }
-        //let mut this_set = &self.node_sets[set_pt];
         
         let mut out_file = match File::create(&file_name.s) {
             Err(_why) => panic!("could not open file {}", file_name.s),
             Ok(file) => file,
         };
-        
-        let _ = out_file.write(format!("{}", "nodeResults:\n").as_bytes());
-        let _ = out_file.write(format!("{}{}{}", "    time: " , time , "\n").as_bytes());
-        let _ = out_file.write(format!("{}{}{}", "    nodeSet: " , node_set.s , "\n").as_bytes());
-        
-        for this_field in fields.iter_mut() {
-            let _ = out_file.write(format!("{}{}{}", "    " , this_field.s , ":\n").as_bytes());
-            // -----------------
-            // calculate reaction force if necessary
-            if this_field.s == "reactionForce" {
-                for i1 in 0..self.el_mat_dim {
-                    self.elastic_ld_vec[i1] = 0.0;
-                }
-                self.build_elastic_soln_load(false,  false);
-                let mut nd_pt : &Node;
-                for nd_label in self.node_sets[set_pt].labels.iter_mut() {
-                    nd_pt = &self.nodes[*nd_label];
-                    let _ = out_file.write(format!("{}{}", "        - [" , *nd_label).as_bytes());
-                    ndof = nd_pt.num_dof;
-                    for i1 in 0..ndof {
-                        glob_ind = nd_pt.dof_index[i1];
-                        let _ = out_file.write(format!("{0}{1:.12e}", ", " , -self.elastic_ld_vec[glob_ind]).as_bytes());
-                    }
-                    let _ = out_file.write(format!("{}", "]\n").as_bytes());
-                }
+
+        let _ = out_file.write(b"node,");
+        for this_field in fields.iter() {
+            if this_field.s == "displacement" {
+                let _ = out_file.write(b"U1,U2,U3,R1,R2,R3,");
+            }
+            else if this_field.s == "velocity" {
+                let _ = out_file.write(b"V1,V2,V3,RV1,RV2,RV3,");
+            }
+            else if this_field.s == "acceleration" {
+                let _ = out_file.write(b"A1,A2,A3,RA1,RA2,RA3,");
+            }
+            else if this_field.s == "temperature" {
+                let _ = out_file.write(b"T,");
+            }
+            else if this_field.s == "tdot" {
+                let _ = out_file.write(b"TDOT,");
+            }
+            else if this_field.s == "reactionForce" {
+                let _ = out_file.write(b"RF1,RF2,RF3,RM1,RM2,RM3,");
             }
             else if this_field.s == "reactionHeatGen" {
-                for i1 in 0..self.el_mat_dim {
-                    self.therm_ld_vec[i1] = 0.0;
-                }
-                self.build_thermal_soln_load(false);
-                let mut nd_pt : &Node;
-                for nd_label in self.node_sets[set_pt].labels.iter_mut() {
-                    nd_pt = &self.nodes[*nd_label];
-                    let _ = out_file.write(format!("{}{}", "        - [" , *nd_label).as_bytes());
-                    glob_ind = nd_pt.sorted_rank;
-                    let _ = out_file.write(format!("{0}{1:.12e}{2}", ", " , -self.therm_ld_vec[glob_ind] , "\n").as_bytes());
-                }
+                let _ = out_file.write(b"RHG,");
             }
-            else {
-                let mut nd_pt : &Node;
-                for nd_label in self.node_sets[set_pt].labels.iter_mut() {
-                    nd_pt = &self.nodes[*nd_label];
-                    let _ = out_file.write(format!("{}{}", "        - [" , *nd_label).as_bytes());
+        }
+        let _ = out_file.write(b"time\n");
+
+        let mut lab_vec = vec![0usize; self.node_sets[set_pt].labels.len()];
+        let mut i2 = 0usize;
+        for ni in self.node_sets[set_pt].labels.iter() {
+            lab_vec[i2] = *ni;
+            i2 += 1;
+        }
+        
+        for nd_label in lab_vec.iter() {
+            let _ = out_file.write(format!("{},", *nd_label).as_bytes());
+            for this_field in fields.iter_mut() {
+                // -----------------
+                // calculate reaction force if necessary
+                if this_field.s == "reactionForce" {
+                    for i1 in 0..self.el_mat_dim {
+                        self.elastic_ld_vec[i1] = 0.0;
+                    }
+                    self.build_elastic_soln_load(false,  false);
+                    let nd_pt = &self.nodes[*nd_label];
+                    for i1 in 0..6 {
+                        glob_ind = nd_pt.dof_index[i1];
+                        let _ = out_file.write(format!("{0:.12e},", -self.elastic_ld_vec[glob_ind]).as_bytes());
+                    }
+                }
+                else if this_field.s == "reactionHeatGen" {
+                    for i1 in 0..self.el_mat_dim {
+                        self.therm_ld_vec[i1] = 0.0;
+                    }
+                    self.build_thermal_soln_load(false);
+                    let nd_pt = &self.nodes[*nd_label];
+                    glob_ind = nd_pt.sorted_rank;
+                    let _ = out_file.write(format!("{0:.12e},", -self.therm_ld_vec[glob_ind]).as_bytes());
+                }
+                else {
+                    let nd_pt = &self.nodes[*nd_label];
                     if this_field.s == "displacement" {
-                        ndof = nd_pt.num_dof;
-                        for i1 in 0..ndof {
-                            let _ = out_file.write(format!("{0}{1:.12e}", ", " , nd_pt.displacement[i1]).as_bytes());
+                        for i1 in 0..6 {
+                            let _ = out_file.write(format!("{0:.12e},", nd_pt.displacement[i1]).as_bytes());
                         }
-                        let _ = out_file.write(format!("{}", "]\n").as_bytes());
                     }
                     else if this_field.s == "velocity" {
-                        ndof = nd_pt.num_dof;
-                        for i1 in 0..ndof {
-                            let _ = out_file.write(format!("{0}{1:.12e}", ", " , nd_pt.velocity[i1]).as_bytes());
+                        for i1 in 0..6 {
+                            let _ = out_file.write(format!("{0:.12e},", nd_pt.velocity[i1]).as_bytes());
                         }
-                        let _ = out_file.write(format!("{}", "]\n").as_bytes());
                     }
                     else if this_field.s == "acceleration" {
-                        ndof = nd_pt.num_dof;
-                        for i1 in 0..ndof {
-                            let _ = out_file.write(format!("{0}{1:.12e}", ", " , nd_pt.acceleration[i1]).as_bytes());
+                        for i1 in 0..6 {
+                            let _ = out_file.write(format!("{0:.12e},", nd_pt.acceleration[i1]).as_bytes());
                         }
-                        let _ = out_file.write(format!("{}", "]\n").as_bytes());
                     }
                     else if this_field.s == "temperature" {
                         nd_dat[0] = nd_pt.temperature;
-                        let _ = out_file.write(format!("{0}{1:.12e}{2}", ", " , nd_dat[0] , "]\n").as_bytes());
+                        let _ = out_file.write(format!("{0:.12e},", nd_dat[0]).as_bytes());
                     }
                     else if this_field.s == "tdot" {
                         nd_dat[0] = nd_pt.temp_change_rate;
-                        let _ = out_file.write(format!("{0}{1:.12e}{2}", ", " , nd_dat[0] , "]\n").as_bytes());
+                        let _ = out_file.write(format!("{0:.12e},", nd_dat[0]).as_bytes());
                     }
                 }
             }
+            let _ = out_file.write(format!("{0:.12e}\n", time).as_bytes());
         }
-        
-        return;
+
     }
 
     pub fn write_element_results(&mut self, file_name : &mut CppStr, el_set : &mut CppStr, fields : &mut LinkedList<CppStr>, position : &mut CppStr, time_step : usize) {
         let mut i1 : usize;
-        let mut i2 : usize;
+        let mut str_ind : usize;
         let set_pt : usize;
         let mut this_type : usize;
         let mut num_ip : usize;
@@ -214,7 +220,6 @@ impl Model {
         let mut field_list : CppStr;
         let time : f64;
         
-        //let mut scmd = &self.job[self.solve_cmd];
         let sci = self.solve_cmd;
         
         if time_step < MAX_INT {
@@ -272,167 +277,118 @@ impl Model {
             Err(_why) => panic!("could not open file {}", file_name.s),
             Ok(file) => file,
         };
-        
-        let _ = out_file.write(format!("{}", "elementResults:\n").as_bytes());
-        let _ = out_file.write(format!("{}{}{}", "    time: " , time , "\n").as_bytes());
-        let _ = out_file.write(format!("{}{}{}", "    elSet: " , el_set.s , "\n").as_bytes());
-        
-        for this_field in fields.iter_mut() {
-            let _ = out_file.write(format!("{}{}{}", "    " , this_field.s , ":\n").as_bytes());
-            field_list = CppStr::from("stress strain");
-            i2 = field_list.find(this_field.s.as_str());
-            if i2 < MAX_INT {
-                let _ = out_file.write(format!("{}", "    ##  - [element label, integration pt, layer, S11, S22, S33, S12, S13, S23]\n").as_bytes());
+
+        let _ = out_file.write(b"element,int_pt,layer,");
+        for this_field in fields.iter() {
+            if this_field.s == "stress" {
+                let _ = out_file.write(b"S11,S22,S33,S12,S13,S23,");
             }
-            field_list = CppStr::from("strainEnergyDen");
-            i2 = field_list.find(this_field.s.as_str());
-            if i2 < MAX_INT {
-                let _ = out_file.write(format!("{}", "    ##  - [element label, integration pt, layer, strain energy]\n").as_bytes());
+            else if this_field.s == "strain" {
+                let _ = out_file.write(b"E11,E22,E33,E12,E13,E23,");
             }
-            field_list = CppStr::from("sectionDef sectionFrcMom");
-            i2 = field_list.find(this_field.s.as_str());
-            if i2 < MAX_INT {
-                let _ = out_file.write(format!("{}", "    ## for shells:  - [element label, integration pt, S11, S22, S12, K11, K22, K12]\n").as_bytes());
-                let _ = out_file.write(format!("{}", "    ## for beams:  - [element label, integration pt, S11, S12, S13, K11, K12, K13]\n").as_bytes());
+            else if this_field.s == "strainEnergDen" {
+                let _ = out_file.write(b"SE,");
             }
-            if this_field.s == "heatFlux" {
-                let _ = out_file.write(format!("{}", "    ##  - [element label, integration pt, layer, f1, f2, f3]\n").as_bytes());
+            else if this_field.s == "sectionFrcMom" {
+                let _ = out_file.write(b"SECT_F1,SECT_F2,SECT_F3,SECT_M1,SECT_M2,SECT_M3,");
             }
-            if this_field.s == "tempGradient" {
-                let _ = out_file.write(format!("{}", "    ##  - [element label, integration pt, layer, dT/dx, dT/dy, dT/dz]\n").as_bytes());
+            else if this_field.s == "sectionDef" {
+                let _ = out_file.write(b"SECT_E1,SECT_E2,SECT_E3,SECT_K1,SECT_K2,SECT_K3,");
             }
-            
-            let mut el_pt : &mut Element;
-            for el_label in this_set.labels.iter() {
-                el_pt = &mut self.elements[*el_label];
-                this_type = el_pt.this_type;
-                
-                field_list = CppStr::from("stress strain strainEnergyDen");
-                i2 = field_list.find(&this_field.s.as_str());
-                if i2 < MAX_INT {
-                    el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
-                    if position.s == "intPts" {
-                        num_ip = el_pt.num_ip;
-                        vec_to_ar(&mut int_pts, & el_pt.int_pts,  0,  3 * num_ip);
-                    }
-                    else {
-                        num_ip = 1;
-                        int_pts[0] = el_pt.s_cent[0];
-                        int_pts[1] = el_pt.s_cent[1];
-                        int_pts[2] = el_pt.s_cent[2];
-                    }
-                    for i1 in 0..num_ip {
-                        if this_type == 3 || this_type == 41 {
-                            num_lay = self.sections[el_pt.sect_ptr].layers.len();
-                        } else {
-                            num_lay = 1;
-                        }
-                        for i2 in 0..num_lay {
+            else if this_field.s == "heatFlux" {
+                let _ = out_file.write(b"HFLX1,HFLX2,HFLX3,");
+            }
+            else if this_field.s == "tempGradient" {
+                let _ = out_file.write(b"TGRAD1,TGRAD2,TGRAD3,");
+            }
+        }
+        let _ = out_file.write(b"time\n");
+
+        for el_label in this_set.labels.iter() {
+            let el_pt = &mut self.elements[*el_label];
+            this_type = el_pt.this_type;
+            if position.s == "intPts" {
+                num_ip = el_pt.num_ip;
+                vec_to_ar(&mut int_pts, & el_pt.int_pts,  0,  3 * num_ip);
+            }
+            else {
+                num_ip = 1;
+                int_pts[0] = el_pt.s_cent[0];
+                int_pts[1] = el_pt.s_cent[1];
+                int_pts[2] = el_pt.s_cent[2];
+            }
+            el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
+            for i1 in 0..num_ip {
+                if this_type == 3 || this_type == 41 {
+                    num_lay = self.sections[el_pt.sect_ptr].layers.len();
+                } else {
+                    num_lay = 1;
+                }
+                for i2 in 0..num_lay {
+                    let _ = out_file.write(format!("{},{},{},", *el_label, i1, i2).as_bytes());
+                    for this_field in fields.iter_mut() {
+                                                
+                        field_list = CppStr::from("stress strain strainEnergyDen");
+                        str_ind = field_list.find(&this_field.s.as_str());
+                        if str_ind < MAX_INT {
                             el_pt.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut int_pts[(3*i1)..],  i2,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
-                            let _ = out_file.write(format!("{}{}{}", "        - [" , el_label , ", ").as_bytes());
                             if this_field.s == "strain" {
-                                let _ = out_file.write(format!("{0}{1}{2}{3}{4:.12e}", i1 , ", " , i2 , ", " , strain[0].val).as_bytes());
-                                for i3 in 1..6 {
-                                    let _ = out_file.write(format!("{0}{1:.12e}", ", " , strain[i3].val).as_bytes());
+                                for i3 in 0..6 {
+                                    let _ = out_file.write(format!("{0:.12e},", strain[i3].val).as_bytes());
                                 }
-                                let _ = out_file.write(format!("{}", "]\n").as_bytes());
                             } else if this_field.s == "stress" {
-                                let _ = out_file.write(format!("{0}{1}{2}{3}{4:.12e}", i1 , ", " , i2 , ", " , stress[0].val).as_bytes());
-                                for i3 in 1..6 {
-                                    let _ = out_file.write(format!("{0}{1:.12e}", ", " , stress[i3].val).as_bytes());
+                                for i3 in 0..6 {
+                                    let _ = out_file.write(format!("{0:.12e},", stress[i3].val).as_bytes());
                                 }
-                                let _ = out_file.write(format!("{}", "]\n").as_bytes());
                             } else {
                                 seden = 0.0;
                                 for i3 in 0..6 {
                                     seden  +=  stress[i3].val * strain[i3].val;
                                 }
                                 seden  *=  0.5;
-                                let _ = out_file.write(format!("{0}{1}{2}{3}{4:.12e}{5}", i1 , ", " , i2 , ", " , seden , "]\n").as_bytes());
+                                let _ = out_file.write(format!("{0:.12e},", seden).as_bytes());
                             }
                         }
-                    }
-                }
-                
-                field_list = CppStr::from("sectionDef sectionFrcMom");
-                i2 = field_list.find(&this_field.s.as_str());
-                if i2 < MAX_INT && el_pt.dof_per_nd == 6 {
-                    el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
-                    if position.s == "intPts" {
-                        num_ip = el_pt.num_ip;
-                        vec_to_ar(&mut int_pts, & el_pt.int_pts,  0,  3 * num_ip);
-                    }
-                    else {
-                        num_ip = 1;
-                        int_pts[0] = el_pt.s_cent[0];
-                        int_pts[1] = el_pt.s_cent[1];
-                        int_pts[2] = el_pt.s_cent[2];
-                    }
-                    for i1 in 0..num_ip {
-                        el_pt.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut int_pts[(3*i1)..],  self.job[sci].nonlinear_geom, &mut self.d0_pre);
-                        let _ = out_file.write(format!("{}{}{}", "        - [" , el_label , ", ").as_bytes());
-                        if this_field.s == "sectionDef" {
-                            let _ = out_file.write(format!("{0}{1}{2:.12e}", i1 , ", " , def[0].val).as_bytes());
-                            for i3 in 1..6 {
-                                let _ = out_file.write(format!("{0}{1:.12e}", ", " , def[i3].val).as_bytes());
+                        
+                        field_list = CppStr::from("sectionDef sectionFrcMom");
+                        str_ind = field_list.find(&this_field.s.as_str());
+                        if str_ind < MAX_INT && el_pt.dof_per_nd == 6 {
+                            el_pt.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut int_pts[(3*i1)..],  self.job[sci].nonlinear_geom, &mut self.d0_pre);
+                            if this_field.s == "sectionDef" {
+                                for i3 in 0..6 {
+                                    let _ = out_file.write(format!("{0:.12e},", def[i3].val).as_bytes());
+                                }
                             }
-                            let _ = out_file.write(format!("{0}", "]\n").as_bytes());
-                        }
-                        else if this_field.s == "sectionFrcMom" {
-                            let _ = out_file.write(format!("{0}{1}{2:.12e}", i1 , ", " , frc_mom[0].val).as_bytes());
-                            for i3 in 1..6 {
-                                let _ = out_file.write(format!("{0}{1:.12e}", ", " , frc_mom[i3].val).as_bytes());
+                            else if this_field.s == "sectionFrcMom" {
+                                for i3 in 0..6 {
+                                    let _ = out_file.write(format!("{0:.12e},", frc_mom[i3].val).as_bytes());
+                                }
                             }
-                            let _ = out_file.write(format!("{}", "]\n").as_bytes());
                         }
-                    }
-                }
-                
-                field_list = CppStr::from("tempGradient heatFlux");
-                i2 = field_list.find(&this_field.s.as_str());
-                if i2 < MAX_INT {
-                    el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
-                    if position.s == "intPts" {
-                        num_ip = el_pt.num_ip;
-                        vec_to_ar(&mut int_pts, & el_pt.int_pts,  0,  3 * num_ip);
-                    }
-                    else {
-                        num_ip = 1;
-                        int_pts[0] = el_pt.s_cent[0];
-                        int_pts[1] = el_pt.s_cent[1];
-                        int_pts[2] = el_pt.s_cent[2];
-                    }
-                    for i1 in 0..num_ip {
-                        this_type = el_pt.this_type;
-                        if this_type == 3 || this_type == 41 {
-                            num_lay = self.sections[el_pt.sect_ptr].layers.len();
-                        }
-                        else {
-                            num_lay = 1;
-                        }
-                        for i2 in 0..num_lay {
+                        
+                        field_list = CppStr::from("tempGradient heatFlux");
+                        str_ind = field_list.find(&this_field.s.as_str());
+                        if str_ind < MAX_INT {
                             el_pt.get_flux_tgrad_dfd0(&mut flux, &mut t_grad, &mut int_pts[(3*i1)..],  i2, &mut self.d0_pre);
-                            let _ = out_file.write(format!("{}{}{}{}{}{}{}", "        - [" , el_label , ", " , i1 , ", " , i2 , ", ").as_bytes());
                             if this_field.s == "tempGradient" {
-                                let _ = out_file.write(format!("{0:.12e}{1}{2:.12e}{3}{4:.12e}{5}", t_grad[0].val , ", " , t_grad[1].val , ", " , t_grad[2].val , "]\n").as_bytes());
+                                let _ = out_file.write(format!("{0:.12e},{1:.12e},{2:.12e},", t_grad[0].val, t_grad[1].val, t_grad[2].val).as_bytes());
                             }
                             else if this_field.s == "heatFlux" {
-                                let _ = out_file.write(format!("{0:.12e}{1}{2:.12e}{3}{4:.12e}{5}", flux[0].val , ", " , flux[1].val , ", " , flux[2].val , "]\n").as_bytes());
+                                let _ = out_file.write(format!("{0:.12e},{1:.12e},{2:.12e},", flux[0].val, flux[1].val, flux[2].val).as_bytes());
                             }
                         }
                     }
+                    let _ = out_file.write(format!("{0:.12e}\n", time).as_bytes());
                 }
-                
             }
         }
+        
         
         return;
     }
 
     pub fn write_modal_results(&mut self, file_name : &mut CppStr) {
         let mut i3 : usize;
-        let mut nd : usize;
-        let mut dof_per_nd : usize;
         let mut glob_ind : usize;
         let mcmd = &self.job[self.modal_cmd];
         let n_mds : usize =  mcmd.num_modes;
@@ -442,46 +398,53 @@ impl Model {
             Ok(file) => file,
         };
         
-        let _ = out_file.write(format!("{}", "modalResults:\n").as_bytes());
-        let _ = out_file.write(format!("{}", "    eigenValues:\n").as_bytes());
-        for i1 in 0..n_mds {
-            let _ = out_file.write(format!("{0}{1:.12e}{2}", "      - " , self.eig_vals[i1] , "\n").as_bytes());
-        }
+        let _ = out_file.write(b"mode,eigenvalue,");
         if mcmd.this_type.s == "buckling" {
-            let _ = out_file.write(format!("{}", "    loadFactors:\n").as_bytes());
+            let _ = out_file.write(b"load_factor\n");
         }
         else {
-            let _ = out_file.write(format!("{}", "    frequencies:\n").as_bytes());
+            let _ = out_file.write(b"frequency\n");
         }
+
         for i1 in 0..n_mds {
-            let _ = out_file.write(format!("{0}{1:.12e}{2}", "      - " , self.load_fact[i1] , "\n").as_bytes());
+            let _ = out_file.write(format!("{0},{1:.12e},{2:.12e}\n", i1, self.eig_vals[i1], self.load_fact[i1]).as_bytes());
         }
-        
+
         if mcmd.write_modes {
-            let _ = out_file.write(format!("{}", "    modes:\n").as_bytes());
+            let dot_ind = file_name.find(".");
+            let exten : CppStr;
+            let rt_file : CppStr;
+            if dot_ind < MAX_INT {
+                rt_file = file_name.substr(0, dot_ind);
+                exten = file_name.substr(dot_ind,MAX_INT);
+            }
+            else {
+                rt_file = file_name.clone();
+                exten = CppStr::from("");
+            }
             for i1 in 0..n_mds {
-                let _ = out_file.write(format!("{}{}{}", "      - mode: " , i1 , "\n").as_bytes());
-                let _ = out_file.write(format!("{}", "        displacement:\n").as_bytes());
-                for this_nd in self.nodes.iter_mut() {
-                    nd = this_nd.label;
-                    let _ = out_file.write(format!("{}{}", "          - [" , nd).as_bytes());
-                    dof_per_nd = this_nd.num_dof;
-                    for i2 in 0..dof_per_nd {
+                let full_file = format!("{}_mode{}{}", rt_file.s, i1, exten.s);
+                let mut out_file = match File::create(&full_file) {
+                    Err(_why) => panic!("could not open file {}", full_file),
+                    Ok(file) => file,
+                };
+                let _ = out_file.write(b"Node,U1,U2,U3,R1,R2,R3\n");
+                for this_nd in self.nodes.iter() {
+                    let _ = out_file.write(format!("{}", this_nd.label).as_bytes());
+                    for i2 in 0..6 {
                         glob_ind = this_nd.dof_index[i2];
                         i3 = i1 * self.el_mat_dim + glob_ind;
-                        let _ = out_file.write(format!("{0}{1:.12e}", ", " , self.eig_vecs[i3]).as_bytes());
+                        let _ = out_file.write(format!(",{0:.12e}", self.eig_vecs[i3]).as_bytes());
                     }
-                    let _ = out_file.write(format!("{}", "]\n").as_bytes());
+                    let _ = out_file.write(b"\n");
                 }
             }
         }
         
-        return;
     }
 
     pub fn write_objective(&mut self, file_name : &mut CppStr, include_fields : &mut LinkedList<CppStr>, write_grad : bool) {
         let num_dv : usize;
-        let mut tot_obj : f64;
         let mut this_val : f64;
         
         let mut out_file = match File::create(&file_name.s) {
@@ -489,55 +452,74 @@ impl Model {
             Ok(file) => file,
         };
         
-        let _ = out_file.write(format!("{}", "objective:\n").as_bytes());
-        let _ = out_file.write(format!("{}", "    terms:\n").as_bytes());
-        tot_obj = 0.0;
-        for this_term in self.obj.terms.iter_mut() {
+        let _ = out_file.write(b"objectiveTerm,value");
+        for fld_str in include_fields.iter() {
+            let _ = out_file.write(format!(",{}",fld_str.s).as_bytes());
+        }
+        let _ = out_file.write(b"\n");
+        let mut ti = 0usize;
+        for this_term in self.obj.terms.iter() {
             this_val = this_term.value;
-            let _ = out_file.write(format!("{0}{1:.12e}{2}", "        - value: " , this_val , "\n").as_bytes());
+            let _ = out_file.write(format!("{0},{1:.12e}", ti, this_val).as_bytes());
             for fld_str in include_fields.iter_mut() {
                 if fld_str.s == "category" {
-                    let _ = out_file.write(format!("{}{}{}", "          category: " , this_term.category.s , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{}", this_term.category.s).as_bytes());
                 }
                 else if fld_str.s == "operator" {
-                    let _ = out_file.write(format!("{}{}{}", "          operator: " , this_term.optr.s , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{}", this_term.optr.s).as_bytes());
                 }
                 else if fld_str.s == "component" {
-                    let _ = out_file.write(format!("{}{}{}", "          component: " , this_term.component , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{}", this_term.component).as_bytes());
                 }
                 else if fld_str.s == "layer" {
-                    let _ = out_file.write(format!("{}{}{}", "          Layer: " , this_term.layer , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{}", this_term.layer).as_bytes());
                 }
                 else if fld_str.s == "coefficient" {
-                    let _ = out_file.write(format!("{0}{1:.12e}{2}", "          coefficient: " , this_term.coef , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{0:.12e}", this_term.coef).as_bytes());
                 }
                 else if fld_str.s == "exponent" {
-                    let _ = out_file.write(format!("{0}{1:.12e}{2}", "          exponent: " , this_term.expnt , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{0:.12e}", this_term.expnt).as_bytes());
                 }
                 else if fld_str.s == "elementSet" {
-                    let _ = out_file.write(format!("{}{}{}", "          elementSet: " , this_term.el_set_name.s , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{}", this_term.el_set_name.s).as_bytes());
                 }
                 else if fld_str.s == "nodeSet" {
-                    let _ = out_file.write(format!("{}{}{}", "          nodeSet: " , this_term.nd_set_name.s , "\n").as_bytes());
+                    let _ = out_file.write(format!(",{}", this_term.nd_set_name.s).as_bytes());
                 }
                 else if fld_str.s == "activeTime" {
-                    let _ = out_file.write(format!("{0}{1:.12e}{2}{3:.12e}{4}", "          activeTime: [" , this_term.active_time[0] , ", " , this_term.active_time[1] , "]\n").as_bytes());
+                    let _ = out_file.write(format!(",{0:.12e}", this_term.active_time[0]).as_bytes());
                 }
             }
-            tot_obj  +=  this_val;
+            let _ = out_file.write(b"\n");
+            ti += 1;
         }
-        let _ = out_file.write(format!("{0}{1:.12e}{2}", "    totalValue: " , tot_obj , "\n").as_bytes());
+        
         if write_grad {
-            let _ = out_file.write(format!("{}", "objectiveGradient:\n").as_bytes());
+            let dot_ind = file_name.find(".");
+            let exten : CppStr;
+            let rt_file : CppStr;
+            if dot_ind < MAX_INT {
+                rt_file = file_name.substr(0, dot_ind);
+                exten = file_name.substr(dot_ind,MAX_INT);
+            }
+            else {
+                rt_file = file_name.clone();
+                exten = CppStr::from("");
+            }
+
+            let full_file = format!("{}_grad{}", rt_file.s, exten.s);
+            let mut out_file = match File::create(&full_file) {
+                Err(_why) => panic!("Error: could not open file, {}", full_file),
+                Ok(file) => file,
+            };
+
+            let _ = out_file.write(b"designVariable,objGrad\n");
             num_dv = self.design_vars.len();
             for i1 in 0..num_dv {
-                let _ = out_file.write(format!("{0}{1}{2}{3:.12e}{4}", "    - [" , i1 , ", " , self.d_ld_d[i1] , "]\n").as_bytes());
+                let _ = out_file.write(format!("{0},{1:.12e}\n", i1, self.d_ld_d[i1]).as_bytes());
             }
         }
         
-        return;
-    }
+    }   
 
 }
-
-

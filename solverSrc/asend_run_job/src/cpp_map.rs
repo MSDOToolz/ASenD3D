@@ -17,14 +17,14 @@ impl CppMap {
         self.m.insert(key,val);
     }
 
-    pub fn key_in_map(&mut self, key : & String) -> bool {
+    pub fn key_in_map(&self, key : & String) -> bool {
         match self.m.get(key) {
             None => false,
             Some(_x) => true,
         }
     }
 
-    pub fn at(&mut self, key : & String) -> usize {
+    pub fn at(&self, key : & String) -> usize {
         match self.m.get(key) {
             None => MAX_INT,
             Some(x) => *x,

@@ -33,8 +33,8 @@ myJob.readLoads('buckling/loads.yaml')
 myJob.solve()
 myJob.modalAnalysis()
 
-myJob.writeModalResults('buckling/results/bucklingResults.yaml')
+myJob.writeModalResults('buckling/results/bucklingResults.csv')
 
 myJob.writeJobInput('buckling/job.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()

@@ -1381,58 +1381,56 @@ impl Model {
     }
 
     pub fn read_node_results(&mut self, file_name : &mut CppStr) {
-        let mut i2 : usize;
-        let mut nd : usize;
-        let mut nd_dat : [f64; 6] = [0f64; 6];
-        
-        let mut file_line = CppStr::new();
-        let mut headings = vec![CppStr::new(); 4];
-        let mut hd_ld_space : [usize; 4] = [ 0,0,0,0 ];
-        let mut data = vec![CppStr::new(); 11];
-        let mut data_len : usize = 0usize;
-        let mut disp_fields = CppStr::from("displacement velocity acceleration");
-        let mut thrm_fields = CppStr::from("temperature tdot");
-        
+        let mut col_hd : Vec<&str> = vec![" "; 27];
+        let mut ln_dat : Vec<&str>;
+        let mut dat : f64;
+        let mut ndi : usize;
+        let mut ln_cpy : String;
+
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
-                file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
-                if headings[0].s == "nodeResults" && data_len > 1 {
-                    nd = CppStr::stoi(&mut data[0]);
-                    let this_nd = &mut self.nodes[nd];
-                    i2 = disp_fields.find(headings[1].s.as_str());
-                    if i2 < MAX_INT {
-                        for i1 in 0..this_nd.num_dof {
-                            nd_dat[i1] = CppStr::stod(&mut data[i1 + 1]);
-                        }
-                        if headings[1].s == "displacement" {
-                            this_nd.set_displacement(&mut nd_dat);
-                        }
-                        else if headings[1].s == "velocity" {
-                            this_nd.set_velocity(&mut nd_dat);
-                        }
-                        else {
-                            this_nd.set_acceleration(&mut nd_dat);
-                        }
-                    }
-                    i2 = thrm_fields.find(headings[1].s.as_str());
-                    if i2 < MAX_INT {
-                        nd_dat[0] = CppStr::stod(&mut data[1]);
-                        if headings[1].s == "temperature" {
-                            this_nd.temperature = nd_dat[0];
-                        }
-                        else {
-                            this_nd.temp_change_rate = nd_dat[0];
+                if line.contains("node") {
+                    ln_cpy = line.clone();
+                    col_hd = ln_cpy.split(',').collect();
+                }
+                else if line.contains(',') {
+                    ln_dat = line.split(',').collect();
+                    ndi = match ln_dat[0].parse::<usize>() {
+                        Err(_why) => panic!("Error: problem reading the node results file, {}", file_name.s),
+                        Ok(x) => x,
+                    };
+                    for i in 1..ln_dat.len() {
+                        dat = match ln_dat[i].parse::<f64>() {
+                            Err(_why) => panic!("Error: problem reading the node results file, {}", file_name.s),
+                            Ok(x) => x,
+                        };
+                        match col_hd[i] {
+                            "U1" => {self.nodes[ndi].displacement[0] = dat;},
+                            "U2" => {self.nodes[ndi].displacement[1] = dat;},
+                            "U3" => {self.nodes[ndi].displacement[2] = dat;},
+                            "R1" => {self.nodes[ndi].displacement[3] = dat;},
+                            "R2" => {self.nodes[ndi].displacement[4] = dat;},
+                            "R3" => {self.nodes[ndi].displacement[5] = dat;},
+                            "V1" => {self.nodes[ndi].velocity[0] = dat;},
+                            "V2" => {self.nodes[ndi].velocity[1] = dat;},
+                            "V3" => {self.nodes[ndi].velocity[2] = dat;},
+                            "RV1" => {self.nodes[ndi].velocity[3] = dat;},
+                            "RV2" => {self.nodes[ndi].velocity[4] = dat;},
+                            "RV3" => {self.nodes[ndi].velocity[5] = dat;},
+                            "A1" => {self.nodes[ndi].acceleration[0] = dat;},
+                            "A2" => {self.nodes[ndi].acceleration[1] = dat;},
+                            "A3" => {self.nodes[ndi].acceleration[2] = dat;},
+                            "RA1" => {self.nodes[ndi].acceleration[3] = dat;},
+                            "RA2" => {self.nodes[ndi].acceleration[4] = dat;},
+                            "RA3" => {self.nodes[ndi].acceleration[5] = dat;},
+                            "T" => {self.nodes[ndi].temperature = dat;},
+                            "TDOT" => {self.nodes[ndi].temp_change_rate = dat;},
+                            &_ => {},
                         }
                     }
                 }
             }
         }
-        else {
-            panic!("Error: could not open Node result input file: {}",file_name.s);
-        }
-        
-        return;
     }
 
     pub fn read_time_step_soln(&mut self, t_step : usize) {
