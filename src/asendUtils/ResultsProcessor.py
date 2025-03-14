@@ -369,15 +369,26 @@ class ResultsProcessor:
     def plotElementResults(self,field,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
         
-        abrv = {'stress': ['S11','S22','S33','S12','S13','S23'],
-                'strain': ['E11','E22','E33','E12','E13','E23'],
+        abrv = {'stress': ['S11','S22','S33','S12','S13','S23','MISES','PS1','PS2','PS3'],
+                'strain': ['E11','E22','E33','E12','E13','E23','PE1','PE2','PE3'],
                 'strainEnergDen': ['SE'],
                 'sectionFrcMom': ['SECT_F1','SECT_F2','SECT_F3','SECT_M1','SECT_M2','SECT_M3'],
                 'sectionDef': ['SECT_E1','SECT_E2','SECT_E3','SECT_K1','SECT_K2','SECT_K3'],
                 'heatFlux': ['HFLX1','HFLX2','HFLX3'],
                 'tempGradient': ['TGRAD1','TGRAD2','TGRAD3']}
         
-        fldLab = abrv[field][component-1]
+        allColLabs = set()
+        for f in abrv:
+            allColLabs = allColLabs.union(set(abrv[f]))
+        
+        try:
+            fldLab = abrv[field][component-1]
+        except:
+            if(str(component) in allColLabs):
+                fldLab = component
+            else:
+                print('Error: unrecognized element result component ' + str(component) + 'plotElementResults() failed')
+                return
                                         
         ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
         numNds = len(self.modelData['nodes'])
@@ -472,14 +483,26 @@ class ResultsProcessor:
     def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,frameDuration=1000):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
         
-        abrv = {'stress': ['S11','S22','S33','S12','S13','S23'],
-                'strain': ['E11','E22','E33','E12','E13','E23'],
+        abrv = {'stress': ['S11','S22','S33','S12','S13','S23','MISES','PS1','PS2','PS3'],
+                'strain': ['E11','E22','E33','E12','E13','E23','PE1','PE2','PE3'],
                 'strainEnergDen': ['SE'],
                 'sectionFrcMom': ['SECT_F1','SECT_F2','SECT_F3','SECT_M1','SECT_M2','SECT_M3'],
                 'sectionDef': ['SECT_E1','SECT_E2','SECT_E3','SECT_K1','SECT_K2','SECT_K3'],
                 'heatFlux': ['HFLX1','HFLX2','HFLX3'],
                 'tempGradient': ['TGRAD1','TGRAD2','TGRAD3']}
-        fldLab = abrv[field][component-1]
+        
+        allColLabs = set()
+        for f in abrv:
+            allColLabs = allColLabs.union(set(abrv[f]))
+        
+        try:
+            fldLab = abrv[field][component-1]
+        except:
+            if(str(component) in allColLabs):
+                fldLab = component
+            else:
+                print('Error: unrecognized element result component ' + str(component) + 'animateElementResults() failed')
+                return
         
         allNdCrd = list()
         allFcValues = list()
@@ -646,15 +669,26 @@ class ResultsProcessor:
     def plotElementHistory(self,fileName,field,timeSteps,elementSet,layer=0,component=1,xTitle='Time',yTitle=None):
         fnLst = fileName.split('.')
         
-        abrv = {'stress': ['S11','S22','S33','S12','S13','S23'],
-                'strain': ['E11','E22','E33','E12','E13','E23'],
+        abrv = {'stress': ['S11','S22','S33','S12','S13','S23','MISES','PS1','PS2','PS3'],
+                'strain': ['E11','E22','E33','E12','E13','E23','PE1','PE2','PE3'],
                 'strainEnergDen': ['SE'],
                 'sectionFrcMom': ['SECT_F1','SECT_F2','SECT_F3','SECT_M1','SECT_M2','SECT_M3'],
                 'sectionDef': ['SECT_E1','SECT_E2','SECT_E3','SECT_K1','SECT_K2','SECT_K3'],
                 'heatFlux': ['HFLX1','HFLX2','HFLX3'],
                 'tempGradient': ['TGRAD1','TGRAD2','TGRAD3']}
         
-        rescol = abrv[field][component-1]
+        allColLabs = set()
+        for f in abrv:
+            allColLabs = allColLabs.union(set(abrv[f]))
+        
+        try:
+            rescol = abrv[field][component-1]
+        except:
+            if(str(component) in allColLabs):
+                rescol = component
+            else:
+                print('Error: unrecognized element result component ' + str(component) + 'plotElementHistory() failed')
+                return
         
         try:
             elI = int(elementSet)

@@ -323,6 +323,7 @@ pub struct Element {
     pub design_vars : LinkedList<IDCapsule>,
     pub comp_dvars : LinkedList<usize>,
     pub sect_ptr : usize,
+    pub user_status : String,
 }
 
 impl Element {
@@ -354,6 +355,7 @@ impl Element {
             design_vars : LinkedList::new(),
             comp_dvars : LinkedList::new(),
             sect_ptr : 0usize,
+            user_status : String::from(""),
         }
     }
 }

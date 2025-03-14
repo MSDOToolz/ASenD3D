@@ -281,10 +281,10 @@ impl Model {
         let _ = out_file.write(b"element,int_pt,layer,");
         for this_field in fields.iter() {
             if this_field.s == "stress" {
-                let _ = out_file.write(b"S11,S22,S33,S12,S13,S23,");
+                let _ = out_file.write(b"S11,S22,S33,S12,S13,S23,MISES,PS1,PS2,PS3,");
             }
             else if this_field.s == "strain" {
-                let _ = out_file.write(b"E11,E22,E33,E12,E13,E23,");
+                let _ = out_file.write(b"E11,E22,E33,E12,E13,E23,PE1,PE2,PE3,");
             }
             else if this_field.s == "strainEnergDen" {
                 let _ = out_file.write(b"SE,");
@@ -301,9 +301,16 @@ impl Model {
             else if this_field.s == "tempGradient" {
                 let _ = out_file.write(b"TGRAD1,TGRAD2,TGRAD3,");
             }
+            else if this_field.s == "userStatus" {
+                let _ = out_file.write(b"USTAT,");
+            }
         }
         let _ = out_file.write(b"time\n");
 
+        let mut mises : f64;
+        let mut princ = [0.0f64; 3];
+        let mut p_dir = [0.0f64; 9];
+        let mut ftens = [0.0f64; 6];
         for el_label in this_set.labels.iter() {
             let el_pt = &mut self.elements[*el_label];
             this_type = el_pt.this_type;
@@ -335,11 +342,19 @@ impl Model {
                             if this_field.s == "strain" {
                                 for i3 in 0..6 {
                                     let _ = out_file.write(format!("{0:.12e},", strain[i3].val).as_bytes());
+                                    ftens[i3] = strain[i3].val;
                                 }
+                                Model::principal_strain(&mut princ, &mut p_dir, &ftens);
+                                let _ = out_file.write(format!("{0:.12e},{1:.12e},{2:.12e},",princ[0],princ[1],princ[2]).as_bytes());
                             } else if this_field.s == "stress" {
                                 for i3 in 0..6 {
                                     let _ = out_file.write(format!("{0:.12e},", stress[i3].val).as_bytes());
+                                    ftens[i3] = stress[i3].val;
                                 }
+                                mises = Model::mises(&ftens);
+                                let _ = out_file.write(format!("{0:.12e},", mises).as_bytes());
+                                Model::principal_stress(&mut princ, &mut p_dir, &ftens);
+                                let _ = out_file.write(format!("{0:.12e},{1:.12e},{2:.12e},",princ[0],princ[1],princ[2]).as_bytes());
                             } else {
                                 seden = 0.0;
                                 for i3 in 0..6 {
@@ -376,6 +391,10 @@ impl Model {
                             else if this_field.s == "heatFlux" {
                                 let _ = out_file.write(format!("{0:.12e},{1:.12e},{2:.12e},", flux[0].val, flux[1].val, flux[2].val).as_bytes());
                             }
+                        }
+
+                        if this_field.s.contains("userStatus") {
+                            let _ = out_file.write(format!("{}{}{},", '"', el_pt.user_status, '"').as_bytes());
                         }
                     }
                     let _ = out_file.write(format!("{0:.12e}\n", time).as_bytes());

@@ -32,6 +32,8 @@ pub mod model_analysis;
 pub mod model_meth;
 pub mod model_input;
 pub mod model_output;
+pub mod model_res_utils;
+pub mod user;
 pub mod node_meth;
 pub mod objective_meth;
 pub mod section_meth;
@@ -47,7 +49,7 @@ use std::env;
 
 fn main() {
     let args : Vec<String> = env::args().collect();
-    //let args = vec!["".to_string(),"C:/Users/evans/ASenDHome/ASenD3D/examples/testCases/shellBeam/buckling/job.yaml".to_string()];
+    // let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/ASenD3D/examples/testCases/singleHex/staticElastic/staticElasticJob.yaml".to_string()];
     
     let job_file = match args.get(1) {
         None => panic!("Error: job input file not specified in call to analysis solver."),

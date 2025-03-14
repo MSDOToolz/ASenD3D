@@ -941,6 +941,7 @@ impl Model {
             }
         }
         
+        self.user_update_time_step();
         
         return;
     }
