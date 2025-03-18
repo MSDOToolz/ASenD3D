@@ -15,6 +15,9 @@ class Constraint:
         self.constData = dict()
         self.constData['type'] = constType
         
+    def setActiveTime(self,stTime=0.0,endTime=1e+100):
+        self.constData['activeTime'] = str([stTime,endTime])
+        
     def addTerm(self,nodeSet,dof,coef):
         newTrm = dict()
         newTrm['nodeSet'] = nodeSet

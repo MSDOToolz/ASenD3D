@@ -1,13 +1,19 @@
 use crate::model::*;
+use crate::element::ElementResults;
 use crate::diff_doub::*;
 use crate::matrix_functions::*;
 use crate::fmath::*;
 
 impl Model {
-    pub fn get_element_stress_strain(&mut self, stress : &mut [f64], strain : &mut [f64], el_i : usize, layer : usize, ip : usize) {
+    pub fn get_element_results(&mut self, el_i : usize, layer : usize, ip : usize)  -> ElementResults {
+        let mut res = ElementResults::new();
         let mut dds = [DiffDoub0::new(); 6];
         let mut dde = [DiffDoub0::new(); 6];
+        let mut dd_th_e = [DiffDoub0::new(); 6];
+        let mut dd_t_grad = [DiffDoub0::new(); 3];
+        let mut dd_h_flux = [DiffDoub0::new(); 3];
         let mut spt = [0f64; 3];
+        
         if ip == 0 {
             for i in 0..3 {
                 spt[i] = self.elements[el_i].s_cent[i];
@@ -17,18 +23,38 @@ impl Model {
             let si = 3*(ip - 1);
             vec_to_ar(&mut spt, & self.elements[el_i].int_pts,si,si+3);
         }
+        
         let sci = self.solve_cmd;
         let nl_g = self.job[sci].nonlinear_geom;
+        
         self.elements[el_i].get_stress_prereq_dfd0(&mut self.d0_pre, &mut self.sections, &mut self.materials, &mut self.nodes, &self.design_vars);
-        self.elements[el_i].get_stress_strain_dfd0(&mut dds, &mut dde, &mut spt, layer, nl_g, &mut self.d0_pre);
+        self.elements[el_i].get_stress_strain_dfd0(&mut dds, &mut dde, &mut dd_th_e, &mut spt, layer, nl_g, &mut self.d0_pre);
         for i in 0..6 {
-            stress[i] = dds[i].val;
-            strain[i] = dde[i].val;
+            res.tot_stress[i] = dds[i].val;
+            res.tot_strain[i] = dde[i].val;
+            res.initial_strain[i] = self.d0_pre.einit[i].val;
+            res.thermal_strain[i] = dd_th_e[i].val;
+            res.stress_strain[i] = res.tot_strain[i] - res.initial_strain[i] - res.thermal_strain[i];
         }
+        Model::principal_stress(&mut res.princ_stress, &mut res.p_stress_dir, &res.tot_stress);
+        res.mises_stress = Model::mises(&res.tot_stress);
+        Model::principal_strain(&mut res.princ_strain, &mut res.p_strain_dir, &res.stress_strain);
+
+        self.elements[el_i].get_flux_tgrad_dfd0(&mut dd_h_flux, &mut dd_t_grad, &mut spt, layer, &mut self.d0_pre);
+        for i in 0..3 {
+            res.heat_flux[i] = dd_h_flux[i].val;
+            res.temp_grad[i] = dd_t_grad[i].val;
+        }
+
+        res
     }
 
     pub fn set_element_user_status(&mut self, el_i : usize, stat_str : &str) {
         self.elements[el_i].user_status = stat_str.to_string();
+    }
+
+    pub fn get_element_user_status(&self, el_i : usize) -> String {
+        self.elements[el_i].user_status.clone()
     }
 
     pub fn array_eig(vals : &mut [f64], vecs : &mut [f64], mat : & [f64]) {
@@ -165,6 +191,26 @@ impl Model {
             p_strain[1] -= 1.0f64;
             p_strain[2] -= 1.0f64;
         }
+    }
+
+    pub fn get_el_cust_prop_ref(&self, el_i : usize, layer : usize, prop_name : &str) -> &Vec<f64> {
+        let si = self.elements[el_i].sect_ptr;
+        let mi = match self.sections[si].layers.len() {
+            0 => self.sections[si].mat_ptr,
+            1usize.. => self.sections[si].get_layer_mat_ptr(layer),
+        };
+        match self.materials[mi].custom.get(prop_name) {
+            None => panic!("Error: no custom property named '{}' exists for material {}.  Make sure this is defined in the model input file.", prop_name, self.materials[mi].name.s),
+            Some(x) => x,
+        }
+    }
+
+    pub fn get_element_custom_prop_vec(&self, el_i : usize, layer : usize, prop_name : &str) -> Vec<f64> {
+        self.get_el_cust_prop_ref(el_i,layer,prop_name).clone()
+    }
+
+    pub fn get_element_custom_prop_comp(&self, el_i: usize, layer : usize, prop_name : &str, component : usize) -> f64 {
+        self.get_el_cust_prop_ref(el_i,layer,prop_name)[component]
     }
 
 }

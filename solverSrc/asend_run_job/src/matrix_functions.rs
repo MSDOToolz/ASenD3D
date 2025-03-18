@@ -1975,6 +1975,7 @@ pub fn get_det_inv_ar_dfd1(det : &mut DiffDoub1, inv : &mut [DiffDoub1], mat : &
 //end skip 
  
  
+ 
 //dup2
 
 pub fn sub_vec_dfd0(sub_v : &mut Vec<DiffDoub0>, in_v : &mut Vec<DiffDoub0>, st : usize, end : usize) {
@@ -2996,6 +2997,7 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
 //end skip 
  
  
+ 
 //dup1
 
 pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0], rot : &mut [DiffDoub0], v1 : usize, v2 : usize) {
@@ -3198,5 +3200,6 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
 //end dup
  
 //end skip 
+ 
  
  

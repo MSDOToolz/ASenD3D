@@ -323,6 +323,7 @@ pub struct Element {
     pub design_vars : LinkedList<IDCapsule>,
     pub comp_dvars : LinkedList<usize>,
     pub sect_ptr : usize,
+    pub is_active : bool,
     pub user_status : String,
 }
 
@@ -355,7 +356,42 @@ impl Element {
             design_vars : LinkedList::new(),
             comp_dvars : LinkedList::new(),
             sect_ptr : 0usize,
+            is_active : true,
             user_status : String::from(""),
+        }
+    }
+}
+
+pub struct ElementResults {
+    pub tot_stress : [f64; 6],
+    pub princ_stress : [f64; 3],
+    pub p_stress_dir : [f64; 9],
+    pub mises_stress : f64,
+    pub tot_strain : [f64; 6],
+    pub stress_strain : [f64; 6],
+    pub princ_strain : [f64; 3],
+    pub p_strain_dir : [f64; 9],
+    pub initial_strain : [f64; 6],
+    pub thermal_strain : [f64; 6],
+    pub temp_grad : [f64; 3],
+    pub heat_flux : [f64; 3],
+}
+
+impl ElementResults {
+    pub fn new() -> ElementResults {
+        ElementResults {
+            tot_stress : [0f64; 6],
+            princ_stress : [0f64; 3],
+            p_stress_dir : [0f64; 9],
+            mises_stress : 0f64,
+            tot_strain : [0f64; 6],
+            stress_strain : [0f64; 6],
+            princ_strain : [0f64; 3],
+            p_strain_dir : [0f64; 9],
+            initial_strain : [0f64; 6],
+            thermal_strain : [0f64; 6],
+            temp_grad : [0f64; 3],
+            heat_flux : [0f64; 3],
         }
     }
 }

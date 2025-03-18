@@ -24,7 +24,7 @@ where P: AsRef<Path>, {
 }
 
 impl Model {
-    pub fn read_input_line(& self, file_line : &mut CppStr, headings : &mut Vec<CppStr>, hd_ld_space : &mut [usize], data : &mut Vec<CppStr>, data_len : &mut usize) {
+    pub fn read_input_line(& self, file_line : &mut CppStr, headings : &mut Vec<CppStr>, hd_ld_space : &mut [usize], data : &mut Vec<CppStr>, data_len : &mut usize) -> bool {
         let mut i1 : usize;
         let i2 : usize;
         let mut ln_len : usize;
@@ -83,6 +83,7 @@ impl Model {
                     i1 = ln_len;
                 }
             }
+            return true;
         } else {
             i1 = file_line.find("- ");
             if i1 < MAX_INT {
@@ -105,9 +106,9 @@ impl Model {
                     }
                 }
             }
+            return false;
         }
         
-        return;
     }
 
     pub fn read_job(&mut self, file_name : &mut CppStr) {
@@ -192,9 +193,6 @@ impl Model {
                     else {
                         self.job[cmd_ct].lump_mass = false;
                     }
-                }
-                else if headings[1].s == "fullReformFreq" {
-                    self.job[cmd_ct].full_reform = CppStr::stoi(&mut data[0]);
                 }
                 else if headings[1].s == "simPeriod" && data_len == 1 {
                     self.job[cmd_ct].sim_period = CppStr::stod(&mut data[0]);
@@ -307,6 +305,7 @@ impl Model {
         let mut data = vec![CppStr::new(); 11];
         let mut data_len : usize = 0usize;
         
+        let mut hd_updated : bool;
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
@@ -327,7 +326,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                hd_updated = self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 if headings[0].s == "nodes" && data_len == 4 {
                     nd_ct += 1usize;
                 }
@@ -338,12 +337,12 @@ impl Model {
                 }
                 else if headings[0].s == "sets" {
                     if headings[1].s == "node" {
-                        if headings[2].s == "name" && data_len == 1 {
+                        if headings[2].s != "" && hd_updated {
                             ns_ct += 1usize;
                         }
                     }
                     else if headings[1].s == "element" {
-                        if headings[2].s == "name" && data_len == 1 {
+                        if headings[2].s != "" && hd_updated {
                             es_ct += 1usize;
                         }
                     }
@@ -354,12 +353,12 @@ impl Model {
                     }
                 }
                 else if headings[0].s == "materials" {
-                    if headings[1].s == "name" && data_len == 1 {
+                    if headings[1].s != "" && headings[2].s == "" && hd_updated {
                         mat_ct += 1usize;
                     }
                 }
                 else if headings[0].s == "fluids" {
-                    if headings[1].s == "name" && data_len == 1 {
+                    if headings[1].s != "" && headings[2].s == "" && hd_updated {
                         fl_ct += 1usize;
                     }
                 }
@@ -382,7 +381,7 @@ impl Model {
             fl_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                hd_updated = self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[0].s == "nodes" && data_len == 4 {
                     nd_ct = CppStr::stoi(&mut data[0]);
                     self.nodes[nd_ct].label = nd_ct;
@@ -444,61 +443,67 @@ impl Model {
                     }
                 } else if headings[0].s == "sets" {
                     if headings[1].s == "node" {
-                        if headings[2].s == "name" && data_len == 1 {
-                            if ns_ct == MAX_INT {
-                                ns_ct = 0;
+                        if headings[2].s != "" {
+                            if hd_updated {
+                                if ns_ct == MAX_INT {
+                                    ns_ct = 0;
+                                }
+                                else {
+                                    ns_ct += 1usize;
+                                }
+                                let new_set : &mut Set = &mut self.node_sets[ns_ct];
+                                new_set.name = headings[2].clone();
                             }
                             else {
-                                ns_ct += 1usize;
-                            }
-                            let new_set : &mut Set = &mut self.node_sets[ns_ct];
-                            new_set.name = data[0].clone();
-                        } else if headings[2].s == "labels" {
-                            if data_len == 1 {
-                                self.node_sets[ns_ct].labels.push_back(CppStr::stoi(&mut data[0]));
-                            } else if data_len > 1 {
-                                i2 = CppStr::stoi(&mut data[0]);
-                                i3 = CppStr::stoi(&mut data[1]);
-                                if data_len == 3 {
-                                    i4 = CppStr::stoi(&mut data[2]);
-                                } else {
-                                    i4 = 1;
-                                }
-                                i1 = i2;
-                                while i1 < i3 {
-                                    self.node_sets[ns_ct].labels.push_back(i1);
-                                    i1 += i4;
+                                if data_len == 1 {
+                                    self.node_sets[ns_ct].labels.push_back(CppStr::stoi(&mut data[0]));
+                                } else if data_len > 1 {
+                                    i2 = CppStr::stoi(&mut data[0]);
+                                    i3 = CppStr::stoi(&mut data[1]);
+                                    if data_len == 3 {
+                                        i4 = CppStr::stoi(&mut data[2]);
+                                    } else {
+                                        i4 = 1;
+                                    }
+                                    i1 = i2;
+                                    while i1 < i3 {
+                                        self.node_sets[ns_ct].labels.push_back(i1);
+                                        i1 += i4;
+                                    }
                                 }
                             }
                         }
                     } else if headings[1].s == "element" {
-                        if headings[2].s == "name" && data_len == 1 {
-                            if es_ct == MAX_INT {
-                                es_ct = 0;
+                        if headings[2].s != "" {
+                            if hd_updated {
+                                if es_ct == MAX_INT {
+                                    es_ct = 0;
+                                }
+                                else {
+                                    es_ct += 1usize;
+                                }
+                                let new_set = &mut self.element_sets[es_ct];
+                                new_set.name = headings[2].clone();
                             }
                             else {
-                                es_ct += 1usize;
-                            }
-                            let new_set = &mut self.element_sets[es_ct];
-                            new_set.name = data[0].clone();
-                        } else if headings[2].s == "labels" {
-                            if data_len == 1 {
-                                self.element_sets[es_ct].labels.push_back(CppStr::stoi(&mut data[0]));
-                            } else if data_len > 1 {
-                                i2 = CppStr::stoi(&mut data[0]);
-                                i3 = CppStr::stoi(&mut data[1]);
-                                if data_len == 3 {
-                                    i4 = CppStr::stoi(&mut data[2]);
-                                } else {
-                                    i4 = 1;
-                                }
-                                i1 = i2;
-                                while i1 < i3 {
-                                    self.element_sets[es_ct].labels.push_back(i1);
-                                    i1 += i4;
+                                if data_len == 1 {
+                                    self.element_sets[es_ct].labels.push_back(CppStr::stoi(&mut data[0]));
+                                } else if data_len > 1 {
+                                    i2 = CppStr::stoi(&mut data[0]);
+                                    i3 = CppStr::stoi(&mut data[1]);
+                                    if data_len == 3 {
+                                        i4 = CppStr::stoi(&mut data[2]);
+                                    } else {
+                                        i4 = 1;
+                                    }
+                                    i1 = i2;
+                                    while i1 < i3 {
+                                        self.element_sets[es_ct].labels.push_back(i1);
+                                        i1 += i4;
+                                    }
                                 }
                             }
-                        }
+                        } 
                     }
                 } else if headings[0].s == "sections" {
                     if headings[1].s == "type" && data_len == 1 {
@@ -658,170 +663,119 @@ impl Model {
                         self.sections[sec_ct].el_set_name = data[0].clone();
                     }
                 } else if headings[0].s == "materials" {
-                    if headings[1].s == "name" && data_len == 1 {
-                        if mat_ct == MAX_INT {
-                            mat_ct = 0;
+                    if headings[1].s != "" {
+                        if headings[2].s == "" && hd_updated {
+                            if mat_ct == MAX_INT {
+                                mat_ct = 0;
+                            }
+                            else {
+                                mat_ct += 1usize;
+                            }
+                            self.materials[mat_ct].name = headings[1].clone();
                         }
-                        else {
-                            mat_ct += 1usize;
+                        else if headings[2].s == "density" && data_len == 1 {
+                            self.materials[mat_ct].density = CppStr::stod(&mut data[0]);
+                        } 
+                        else if headings[2].s == "elastic" {
+                            if headings[3].s == "E" && data_len > 0 {
+                                let this_mat = &mut self.materials[mat_ct];
+                                this_mat.modulus[0] = CppStr::stod(&mut data[0]);
+                                if data_len == 3 {
+                                    this_mat.modulus[1] = CppStr::stod(&mut data[1]);
+                                    this_mat.modulus[2] = CppStr::stod(&mut data[2]);
+                                } else {
+                                    this_mat.modulus[1] = this_mat.modulus[0];
+                                    this_mat.modulus[2] = this_mat.modulus[0];
+                                }
+                            } else if headings[3].s == "nu" && data_len > 0 {
+                                let this_mat = &mut self.materials[mat_ct];
+                                this_mat.poisson_ratio[0] = CppStr::stod(&mut data[0]);
+                                if data_len == 3 {
+                                    this_mat.poisson_ratio[1] = CppStr::stod(&mut data[1]);
+                                    this_mat.poisson_ratio[2] = CppStr::stod(&mut data[2]);
+                                } else {
+                                    this_mat.poisson_ratio[1] = this_mat.poisson_ratio[0];
+                                    this_mat.poisson_ratio[2] = this_mat.poisson_ratio[0];
+                                }
+                            } else if headings[3].s == "G" && data_len > 0 {
+                                let this_mat = &mut self.materials[mat_ct];
+                                this_mat.shear_mod[0] = CppStr::stod(&mut data[0]);
+                                if data_len == 3 {
+                                    this_mat.shear_mod[1] = CppStr::stod(&mut data[1]);
+                                    this_mat.shear_mod[2] = CppStr::stod(&mut data[2]);
+                                } else {
+                                    this_mat.shear_mod[1] = this_mat.shear_mod[0];
+                                    this_mat.shear_mod[2] = this_mat.shear_mod[0];
+                                }
+                            } else if headings[3].s == "stiffness" && data_len == 3 {
+                                int_inp[0] = CppStr::stoi(&mut data[0]) - 1;
+                                int_inp[1] = CppStr::stoi(&mut data[1]) - 1;
+                                doub_inp[0] = CppStr::stod(&mut data[2]);
+                                self.materials[mat_ct].set_stiffness(int_inp[0],  int_inp[1],  doub_inp[0]);
+                            }
+                        } 
+                        else if headings[2].s == "thermal" {
+                            if headings[3].s == "conductivity" && data_len == 6 {
+                                let this_mat = &mut self.materials[mat_ct];
+                                for i1 in 0..6 {
+                                    this_mat.conductivity[i1] = CppStr::stod(&mut data[i1]);
+                                }
+                            } else if headings[3].s == "expansion" && data_len == 6 {
+                                let this_mat = &mut self.materials[mat_ct];
+                                for i1 in 0..6 {
+                                    this_mat.expansion[i1] = CppStr::stod(&mut data[i1]);
+                                }
+                            } else if headings[3].s == "specHeat" && data_len == 1 {
+                                self.materials[mat_ct].spec_heat = CppStr::stod(&mut data[0]);
+                            }
                         }
-                        self.materials[mat_ct].name = data[0].clone();
-                    } else if headings[1].s == "density" && data_len == 1 {
-                        self.materials[mat_ct].density = CppStr::stod(&mut data[0]);
-                    } else if headings[1].s == "elastic" {
-                        if headings[2].s == "E" && data_len > 0 {
-                            let this_mat = &mut self.materials[mat_ct];
-                            this_mat.modulus[0] = CppStr::stod(&mut data[0]);
-                            if data_len == 3 {
-                                this_mat.modulus[1] = CppStr::stod(&mut data[1]);
-                                this_mat.modulus[2] = CppStr::stod(&mut data[2]);
-                            } else {
-                                this_mat.modulus[1] = this_mat.modulus[0];
-                                this_mat.modulus[2] = this_mat.modulus[0];
-                            }
-                        } else if headings[2].s == "nu" && data_len > 0 {
-                            let this_mat = &mut self.materials[mat_ct];
-                            this_mat.poisson_ratio[0] = CppStr::stod(&mut data[0]);
-                            if data_len == 3 {
-                                this_mat.poisson_ratio[1] = CppStr::stod(&mut data[1]);
-                                this_mat.poisson_ratio[2] = CppStr::stod(&mut data[2]);
-                            } else {
-                                this_mat.poisson_ratio[1] = this_mat.poisson_ratio[0];
-                                this_mat.poisson_ratio[2] = this_mat.poisson_ratio[0];
-                            }
-                        } else if headings[2].s == "G" && data_len > 0 {
-                            let this_mat = &mut self.materials[mat_ct];
-                            this_mat.shear_mod[0] = CppStr::stod(&mut data[0]);
-                            if data_len == 3 {
-                                this_mat.shear_mod[1] = CppStr::stod(&mut data[1]);
-                                this_mat.shear_mod[2] = CppStr::stod(&mut data[2]);
-                            } else {
-                                this_mat.shear_mod[1] = this_mat.shear_mod[0];
-                                this_mat.shear_mod[2] = this_mat.shear_mod[0];
-                            }
-                        } else if headings[2].s == "stiffness" && data_len == 3 {
+                        else if headings[2].s == "damping" && data_len == 3 {
                             int_inp[0] = CppStr::stoi(&mut data[0]) - 1;
                             int_inp[1] = CppStr::stoi(&mut data[1]) - 1;
                             doub_inp[0] = CppStr::stod(&mut data[2]);
-                            self.materials[mat_ct].set_stiffness(int_inp[0],  int_inp[1],  doub_inp[0]);
+                            self.materials[mat_ct].set_damping(int_inp[0],   int_inp[1],   doub_inp[0]);
                         }
-                    } else if headings[1].s == "thermal" {
-                        if headings[2].s == "conductivity" && data_len == 6 {
-                            let this_mat = &mut self.materials[mat_ct];
-                            for i1 in 0..6 {
-                                this_mat.conductivity[i1] = CppStr::stod(&mut data[i1]);
+                        else if headings[2].s == "custom" {
+                            if headings[3].s != "" && data_len > 0 {
+                                let mut dat_vec = vec![0.0f64; data_len];
+                                for di in 0..data_len {
+                                    dat_vec[di] = match data[di].s.parse::<f64>() {
+                                        Err(_why) => panic!("Error: could not parse input for custom material property '{}' to float type", data[di].s),
+                                        Ok(x) => x,
+                                    };
+                                }
+                                self.materials[mat_ct].custom.insert(headings[3].s.clone(),dat_vec);
                             }
-                        } else if headings[2].s == "expansion" && data_len == 6 {
-                            let this_mat = &mut self.materials[mat_ct];
-                            for i1 in 0..6 {
-                                this_mat.expansion[i1] = CppStr::stod(&mut data[i1]);
-                            }
-                        } else if headings[2].s == "specHeat" && data_len == 1 {
-                            self.materials[mat_ct].spec_heat = CppStr::stod(&mut data[0]);
-                        }
-                    }
-                    else if headings[1].s == "damping" && data_len == 3 {
-                        int_inp[0] = CppStr::stoi(&mut data[0]) - 1;
-                        int_inp[1] = CppStr::stoi(&mut data[1]) - 1;
-                        doub_inp[0] = CppStr::stod(&mut data[2]);
-                        self.materials[mat_ct].set_damping(int_inp[0],   int_inp[1],   doub_inp[0]);
-                    }
-                    else if headings[1].s == "failure" {
-                        if headings[2].s == "maxStress" {
-                            if headings[3].s == "tensile" && data_len > 0 {
-                                let n_mat = &mut self.materials[mat_ct];
-                                n_mat.max_ten_stress[0] = CppStr::stod(&mut data[0]);
-                                if data_len == 3 {
-                                    n_mat.max_ten_stress[1] = CppStr::stod(&mut data[1]);
-                                    n_mat.max_ten_stress[2] = CppStr::stod(&mut data[2]);
-                                } else {
-                                    n_mat.max_ten_stress[1] = n_mat.max_ten_stress[0];
-                                    n_mat.max_ten_stress[2] = n_mat.max_ten_stress[0];
-                                }
-                            } else if headings[3].s == "compressive" && data_len > 0 {
-                                let n_mat = &mut self.materials[mat_ct];
-                                n_mat.max_comp_stress[0] = CppStr::stod(&mut data[0]);
-                                if data_len == 3 {
-                                    n_mat.max_comp_stress[1] = CppStr::stod(&mut data[1]);
-                                    n_mat.max_comp_stress[2] = CppStr::stod(&mut data[2]);
-                                } else {
-                                    n_mat.max_comp_stress[1] = n_mat.max_comp_stress[0];
-                                    n_mat.max_comp_stress[2] = n_mat.max_comp_stress[0];
-                                }
-                            } else if headings[3].s == "shear" && data_len > 0 {
-                                let n_mat = &mut self.materials[mat_ct];
-                                n_mat.max_shear_stress[0] = CppStr::stod(&mut data[0]);
-                                if data_len == 3 {
-                                    n_mat.max_shear_stress[1] = CppStr::stod(&mut data[1]);
-                                    n_mat.max_shear_stress[2] = CppStr::stod(&mut data[2]);
-                                } else {
-                                    n_mat.max_shear_stress[1] = n_mat.max_shear_stress[0];
-                                    n_mat.max_shear_stress[2] = n_mat.max_shear_stress[0];
-                                }
-                            }
-                        } else if headings[2].s == "maxStrain" {
-                            if headings[3].s == "tensile" && data_len > 0 {
-                                let n_mat = &mut self.materials[mat_ct];
-                                n_mat.max_ten_strain[0] = CppStr::stod(&mut data[0]);
-                                if data_len == 3 {
-                                    n_mat.max_ten_strain[1] = CppStr::stod(&mut data[1]);
-                                    n_mat.max_ten_strain[2] = CppStr::stod(&mut data[2]);
-                                } else {
-                                    n_mat.max_ten_strain[1] = n_mat.max_ten_strain[0];
-                                    n_mat.max_ten_strain[2] = n_mat.max_ten_strain[0];
-                                }
-                            } else if headings[3].s == "compressive" && data_len > 0 {
-                                let n_mat = &mut self.materials[mat_ct];
-                                n_mat.max_comp_strain[0] = CppStr::stod(&mut data[0]);
-                                if data_len == 3 {
-                                    n_mat.max_comp_strain[1] = CppStr::stod(&mut data[1]);
-                                    n_mat.max_comp_strain[2] = CppStr::stod(&mut data[2]);
-                                } else {
-                                    n_mat.max_comp_strain[1] = n_mat.max_comp_strain[0];
-                                    n_mat.max_comp_strain[2] = n_mat.max_comp_strain[0];
-                                }
-                            } else if headings[3].s == "shear" && data_len > 0 {
-                                let n_mat = &mut self.materials[mat_ct];
-                                n_mat.max_shear_strain[0] = CppStr::stod(&mut data[0]);
-                                if data_len == 3 {
-                                    n_mat.max_shear_strain[1] = CppStr::stod(&mut data[1]);
-                                    n_mat.max_shear_strain[2] = CppStr::stod(&mut data[2]);
-                                } else {
-                                    n_mat.max_shear_strain[1] = n_mat.max_shear_strain[0];
-                                    n_mat.max_shear_strain[2] = n_mat.max_shear_strain[0];
-                                }
-                            }
-                        } else if headings[2].s == "maxStrainEnergy" && data_len == 1 {
-                            self.materials[mat_ct].max_str_eng = CppStr::stod(&mut data[0]);
-                        } else if headings[2].s == "maxMises" && data_len == 1 {
-                            self.materials[mat_ct].max_mises = CppStr::stod(&mut data[0]);
                         }
                     }
                 }
                 else if headings[0].s == "fluids" {
-                    if headings[1].s == "name" && data_len == 1 {
-                        if fl_ct == MAX_INT {
-                            fl_ct = 0;
+                    if headings[1].s != "" {
+                        if headings[2].s == "" && hd_updated {
+                            if fl_ct == MAX_INT {
+                                fl_ct = 0;
+                            }
+                            else {
+                                fl_ct += 1usize;
+                            }
+                            self.fluids[fl_ct].name = headings[1].clone();
                         }
-                        else {
-                            fl_ct += 1usize;
+                        else if headings[2].s == "viscosity" && data_len == 1 {
+                            self.fluids[fl_ct].viscosity = CppStr::stod(&mut data[0]);
                         }
-                        self.fluids[fl_ct].name = data[0].clone();
-                    }
-                    else if headings[1].s == "viscosity" && data_len == 1 {
-                        self.fluids[fl_ct].viscosity = CppStr::stod(&mut data[0]);
-                    }
-                    else if headings[1].s == "thermal" {
-                        if headings[2].s == "conductivity" && data_len == 1 {
-                            self.fluids[fl_ct].therm_cond = CppStr::stod(&mut data[0]);
+                        else if headings[2].s == "thermal" {
+                            if headings[3].s == "conductivity" && data_len == 1 {
+                                self.fluids[fl_ct].therm_cond = CppStr::stod(&mut data[0]);
+                            }
+                            else if headings[3].s == "specHeat" && data_len == 1 {
+                                self.fluids[fl_ct].spec_heat = CppStr::stod(&mut data[0]);
+                            }
                         }
-                        else if headings[2].s == "specHeat" && data_len == 1 {
-                            self.fluids[fl_ct].spec_heat = CppStr::stod(&mut data[0]);
+                        else if headings[2].s == "idealGasConst" && data_len == 1 {
+                            self.fluids[fl_ct].ideal_gas = CppStr::stod(&mut data[0]);
                         }
                     }
-                    else if headings[1].s == "idealGasConst" && data_len == 1 {
-                        self.fluids[fl_ct].ideal_gas = CppStr::stod(&mut data[0]);
-                    }
+                    
                 }
             }
         } else {

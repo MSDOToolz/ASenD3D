@@ -42,7 +42,7 @@ impl Constraint {
             terms : LinkedList::new(),
             rhs : 0f64,
             active_time : [0.0, 1.0e+100],
-            is_active : true,
+            is_active : false,
             was_active : false,
             mat : SparseMat::new(),
             scale_fact : 0f64,

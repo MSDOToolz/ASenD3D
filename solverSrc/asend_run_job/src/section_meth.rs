@@ -87,6 +87,10 @@ impl Section {
     }
 
     pub fn get_layer_mat_ptr(& self, layi : usize) -> usize {
+        let nl = self.layers.len();
+        if layi >= nl {
+            panic!("Error: material requested for layer index {} of section where highest index is {}.  Remember that layer indexing begins at 0", layi, nl-1);
+        }
         let mut i1 : usize =  0;
         for lay in self.layers.iter() {
             if i1 == layi {

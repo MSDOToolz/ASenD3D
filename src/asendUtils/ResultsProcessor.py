@@ -84,9 +84,9 @@ class ResultsProcessor:
                 for el in et['connectivity']:
                     elSet.add(el[0])
         else:
-            for es in self.modelData['sets']['element']:
-                if(es['name'] == elementSet):
-                    elSet = set(es['labels'])
+            # for es in self.modelData['sets']['element']:
+            #     if(es['name'] == elementSet):
+                    elSet = set(self.modelData['sets']['element'][elementSet])
                     # ndSet = set()
                     # for et in self.modelData['elements']:
                     #     for el in et['connectivity']:
@@ -310,14 +310,16 @@ class ResultsProcessor:
             elVal = np.zeros(numEls,dtype=int)
             
             elSets = self.modelData['sets']['element']
-            setDic = dict()
-            for si, es in enumerate(elSets):
-                setDic[es['name']] = si
+            # setDic = dict()
+            # for si, es in enumerate(elSets):
+            #     setDic[es['name']] = si
             
             for si, sec in enumerate(self.modelData['sections']):
                 setNm = sec['elementSet']
-                seti = setDic[setNm]
-                for eli in elSets[seti]['labels']:
+                # seti = setDic[setNm]
+                # for eli in elSets[seti]['labels']:
+                #     elVal[eli] = si
+                for eli in elSets[setNm]:
                     elVal[eli] = si
         
         fcVals = self.getFaceValues(elSet,elVal)
@@ -619,13 +621,13 @@ class ResultsProcessor:
             series[lab] = vals
         except:
             series = dict()
-            nsLabs = []
-            for ns in self.modelData['sets']['node']:
-                if(ns['name'] == nodeSet):
-                    nsLabs = ns['labels']
-                    for nd in nsLabs:
-                        lab = 'node_' + str(nd)
-                        series[lab] = list()
+            # nsLabs = []
+            # for ns in self.modelData['sets']['node']:
+            #     if(ns['name'] == nodeSet):
+            nsLabs = self.modelData['sets']['node'][nodeSet]
+            for nd in nsLabs:
+                lab = 'node_' + str(nd)
+                series[lab] = list()
             timePts = list()
             for ts in timeSteps:
                 fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
@@ -717,13 +719,13 @@ class ResultsProcessor:
             plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=yTitle)
         except:
             series = dict()
-            esLabs = []
-            for es in self.modelData['sets']['element']:
-                if(es['name'] == elementSet):
-                    esLabs = es['labels']
-                    for el in esLabs:
-                        lab = 'element_' + str(el)
-                        series[lab] = list()
+            # esLabs = []
+            # for es in self.modelData['sets']['element']:
+            #     if(es['name'] == elementSet):
+            esLabs = self.modelData['sets']['element'][elementSet]
+            for el in esLabs:
+                lab = 'element_' + str(el)
+                series[lab] = list()
             timePts = list()
             for ts in timeSteps:
                 fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
@@ -775,13 +777,13 @@ class ResultsProcessor:
                         else:
                             elValues[eli] = objGrad[di]
                     except:
-                        for eS in modSets:
-                            if(eS['name'] == dES):
-                                for el in eS['labels']:
-                                    if(magnitude):
-                                        elValues[el] = abs(objGrad[di])
-                                    else:
-                                        elValues[el] = objGrad[di]
+                        # for eS in modSets:
+                        #     if(eS['name'] == dES):
+                        for el in modSets[dES]:
+                            if(magnitude):
+                                elValues[el] = abs(objGrad[di])
+                            else:
+                                elValues[el] = objGrad[di]
                 except:
                     pass
         
@@ -794,9 +796,10 @@ class ResultsProcessor:
         try:
             nSet = {int(nodeSet)}
         except:
-            for ns in self.modelData['sets']['node']:
-                if(ns['name'] == nodeSet):
-                    nSet = set(ns['labels'])
+            # for ns in self.modelData['sets']['node']:
+            #     if(ns['name'] == nodeSet):
+            #         nSet = set(ns['labels'])
+            nSet = set(self.modelData['sets']['node'][nodeSet])
         
         normMdDisp = dict()
         for mi in modeList:

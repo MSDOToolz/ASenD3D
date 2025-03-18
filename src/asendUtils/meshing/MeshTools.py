@@ -219,18 +219,21 @@ def mergeDuplicateNodes(meshData,tolerance=None):
     meshData['elements'] = allEls
     
     try:
-        newSets = list()
-        for ns in meshData['sets']['node']:
-            newSet = dict()
-            newSet['name'] = ns['name']
+        # newSets = list()
+        newSets = dict()
+        ndSets = meshData['sets']['node']
+        for ns in ndSets:
+            # newSet = dict()
+            # newSet['name'] = ns['name']
             newLabs = set()
-            for nd in ns['labels']:
+            for nd in ndSets[ns]:
                 if(ndElem[nd] == -1):
                     newLabs.add(ndNewInd[nd])
                 else:
                     newLabs.add(ndNewInd[ndElim[nd]])
-            newSet['labels'] = list(newLabs)
-            newSets.append(newSet)
+            # newSet['labels'] = list(newLabs)
+            # newSets.append(newSet)
+            newSets[ns] = list(newLabs)
         meshData['sets']['node'] = newSets
     except:
         pass
@@ -264,36 +267,46 @@ def mergeMeshes(mData1,mData2,tolerance=None):
     mergedData['nodes'] = mrgNds
     mergedData['elements'] = mrgEls
     mergedData['sets'] = dict()
-    mergedData['sets']['node'] = list()
-    mergedData['sets']['element'] = list()
+    # mergedData['sets']['node'] = list()
+    # mergedData['sets']['element'] = list()
+    mergedData['sets']['node'] = dict()
+    mergedData['sets']['element'] = dict()
     try:
-        mergedData['sets']['node'].extend(mData1['sets']['node'])
+        # mergedData['sets']['node'].extend(mData1['sets']['node'])
+        for ns in mData1['sets']['node']:
+            mergedData['sets']['node'][ns] = mData1['sets']['node']
     except:
         pass
     try:
-        mergedData['sets']['element'].extend(mData1['sets']['element'])
+        # mergedData['sets']['element'].extend(mData1['sets']['element'])
+        for es in mData1['sets']['element']:
+            mergedData['sets']['element'][es] = mData1['sets']['element'][es]
     except:
         pass
     try:
-        for ns in mData2['sets']['node']:
-            newSet = dict()
-            newSet['name'] = ns['name']
+        ndSets = mData2['sets']['node']
+        for ns in ndSets:
+            # newSet = dict()
+            # newSet['name'] = ns['name']
             labs = list()
-            for nd in ns['labels']:
+            for nd in ndSets[ns]:
                 labs.append(nd+nLen1)
-            newSet['labels'] = labs
-            mergedData['sets']['node'].append(newSet)
+            # newSet['labels'] = labs
+            # mergedData['sets']['node'].append(newSet)
+            mergedData['sets']['node'][ns] = labs
     except:
         pass
     try:
-        for es in mData2['sets']['element']:
-            newSet = dict()
-            newSet['name'] = es['name']
+        elSets = mData2['sets']['element']
+        for es in elSets:
+            # newSet = dict()
+            # newSet['name'] = es['name']
             labs = list()
-            for el in es['labels']:
+            for el in elSets[es]:
                 labs.append(el+eLen1)
-            newSet['labels'] = labs
-            mergedData['sets']['element'].append(newSet)
+            # newSet['labels'] = labs
+            # mergedData['sets']['element'].append(newSet)
+            mergedData['sets']['element'][es] = labs
     except:
         pass
     return mergeDuplicateNodes(mergedData,tolerance)
@@ -356,30 +369,42 @@ def convertToQuadratic(meshData):
 
 def addNodeSet(meshData,newSet):
     try:
-        meshData['sets']['node'].append(newSet)
+        # meshData['sets']['node'].append(newSet)
+        for ns in newSet:
+            meshData['sets']['node'][ns] = newSet[ns]
     except:
-        nSets = list()
-        nSets.append(newSet)
+        # nSets = list()
+        # nSets.append(newSet)
+        # try:
+        #     meshData['sets']['node'] = nSets
+        # except:
+        #     sets = dict()
+        #     sets['node'] = nSets
+        #     meshData['sets'] = sets
         try:
-            meshData['sets']['node'] = nSets
+            meshData['sets']['node'] = newSet
         except:
-            sets = dict()
-            sets['node'] = nSets
-            meshData['sets'] = sets
+            meshData['sets'] = {'node': newSet}
     return meshData
 
 def addElementSet(meshData,newSet):
     try:
-        meshData['sets']['element'].append(newSet)
+        # meshData['sets']['element'].append(newSet)
+        for es in newSet:
+            meshData['sets']['element'][es] = newSet[es]
     except:
-        elSets = list()
-        elSets.append(newSet)
+        # elSets = list()
+        # elSets.append(newSet)
+        # try:
+        #     meshData['sets']['element'] = elSets
+        # except:
+        #     sets = dict()
+        #     sets['element'] = elSets
+        #     meshData['sets'] = sets
         try:
-            meshData['sets']['element'] = elSets
+            meshData['sets']['element'] = newSet
         except:
-            sets = dict()
-            sets['element'] = elSets
-            meshData['sets'] = sets
+            meshData['sets'] = {'element': newSet}
     return meshData
 
 def addFreeNodes(meshData,ndList,setName):
@@ -389,19 +414,21 @@ def addFreeNodes(meshData,ndList,setName):
     newNds = np.zeros((totLen,3),dtype=float)
     newNds[0:stLen] = meshData['nodes'].copy()
     newNds[stLen:totLen] = ndList.copy()
-    newSet = dict()
-    newSet['name'] = setName
-    newSet['labels'] = list(range(stLen,totLen))
+    # newSet = dict()
+    # newSet['name'] = setName
+    # newSet['labels'] = list(range(stLen,totLen))
+    newSet = {setName: list(range(stLen,totLen))}
     meshData['nodes'] = newNds
-    try:
-        meshData['sets']['node'].append(newSet)
-    except:
-        try:
-            meshData['sets']['node'] = [newSet]
-        except:
-            sets = dict()
-            sets['node'] = [newSet]
-            meshData['sets'] = sets
+    # try:
+    #     meshData['sets']['node'].append(newSet)
+    # except:
+    #     try:
+    #         meshData['sets']['node'] = [newSet]
+    #     except:
+    #         sets = dict()
+    #         sets['node'] = [newSet]
+    #         meshData['sets'] = sets
+    meshData = addNodeSet(meshData,newSet)
     return meshData
 
 def addMassElements(meshData,nodeSet,elSetName):
@@ -421,8 +448,8 @@ def addForceElements(meshData,nodeSet1,nodeSet2,elSetName):
     return meshData
 
 def getNearestNodes(meshData,pt,numNds,setName):
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     ptAr = np.array(pt)
     nearLst = list()
     for i, nd in enumerate(meshData['nodes']):
@@ -445,12 +472,13 @@ def getNearestNodes(meshData,pt,numNds,setName):
     for nd in nearLst:
         minLab.append(nd[0])
         
-    newSet['labels'] = minLab
+    # newSet['labels'] = minLab
+    newSet = {setName: minLab}
     return addNodeSet(meshData,newSet)
 
 def getNodeSetInRadius(meshData,pt,rad,setName):
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     ptAr = np.array(pt)
     for i, nd in enumerate(meshData['nodes']):
@@ -458,15 +486,16 @@ def getNodeSetInRadius(meshData,pt,rad,setName):
         dist = np.linalg.norm(vec)
         if(dist < rad):
             labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addNodeSet(meshData,newSet)
 
 def getNodeSetNearLine(meshData,pt,dirVec,rad,setName):
     mag = np.linalg.norm(dirVec)
     unitDir = (1.0/mag)*dirVec
     ptAr = np.array(pt)
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     for i, nd in enumerate(meshData['nodes']):
         ptond = nd - ptAr
@@ -475,7 +504,8 @@ def getNodeSetNearLine(meshData,pt,dirVec,rad,setName):
         dist = np.linalg.norm(normVec)
         if(dist < rad):
             labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addNodeSet(meshData,newSet)
 
 def getNodeSetNearPlane(meshData,pt,normDir,dist,setName):
@@ -483,15 +513,16 @@ def getNodeSetNearPlane(meshData,pt,normDir,dist,setName):
     nAr = np.array(normDir)
     mag = np.linalg.norm(nAr)
     unitNorm = (1.0/mag)*nAr
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     for i, nd in enumerate(meshData['nodes']):
         ptond = nd - ptAr
         dp = np.dot(ptond,unitNorm)
         if(abs(dp) < dist):
             labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addNodeSet(meshData,newSet)
 
 def getNodeSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
@@ -507,15 +538,16 @@ def getNodeSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
         zRng = [-1.0e+100,1.0e+100]
     else:
         zRng = zRange
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     for i, nd in enumerate(meshData['nodes']):
         if(nd[0] >= xRng[0] and nd[0] <= xRng[1]):
             if(nd[1] >= yRng[0] and nd[1] <= yRng[1]):
                 if(nd[2] >= zRng[0] and nd[2] <= zRng[1]):
                     labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addNodeSet(meshData,newSet)
 
 def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
@@ -586,18 +618,18 @@ def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
             if(dist < srcTol):
                 zMinSet.append(i)
                 zMaxSet.append(nrNd)
-    meshData = addNodeSet(meshData,{'name': sN[0], 'labels': xMinSet})
-    meshData = addNodeSet(meshData,{'name': sN[1], 'labels': xMaxSet})
-    meshData = addNodeSet(meshData,{'name': sN[2], 'labels': yMinSet})
-    meshData = addNodeSet(meshData,{'name': sN[3], 'labels': yMaxSet})
-    meshData = addNodeSet(meshData,{'name': sN[4], 'labels': zMinSet})
-    meshData = addNodeSet(meshData,{'name': sN[5], 'labels': zMaxSet})
+    meshData = addNodeSet(meshData,{sN[0]: xMinSet})
+    meshData = addNodeSet(meshData,{sN[1]: xMaxSet})
+    meshData = addNodeSet(meshData,{sN[2]: yMinSet})
+    meshData = addNodeSet(meshData,{sN[3]: yMaxSet})
+    meshData = addNodeSet(meshData,{sN[4]: zMinSet})
+    meshData = addNodeSet(meshData,{sN[5]: zMaxSet})
     return meshData
 
 def getNearestElements(meshData,pt,numEls,setName):
     nodes = meshData['nodes']
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     ptAr = np.array(pt)
     nearLst = list()
     for i, el in enumerate(meshData['elements']):
@@ -622,7 +654,8 @@ def getNearestElements(meshData,pt,numEls,setName):
     for el in nearLst:
         minLab.append(el[0])
         
-    newSet['labels'] = minLab
+    # newSet['labels'] = minLab
+    newSet = {setName: minLab}
     return addNodeSet(meshData,newSet)
 
 def getElementSetInRadius(meshData,pt,rad,setName):
@@ -631,8 +664,8 @@ def getElementSetInRadius(meshData,pt,rad,setName):
     ## optn='centroid': elements with centroid in range
     allNds = meshData['nodes']
     ptAr = np.array(pt)
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     # if(optn == 'allNodes'):
     #     for i, eRow in enumerate(meshData['elements']):
@@ -671,7 +704,8 @@ def getElementSetInRadius(meshData,pt,rad,setName):
         dist = np.linalg.norm(distVec)
         if(dist < rad):
             labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addElementSet(meshData,newSet)
 
 def getElementSetNearLine(meshData,pt,dirVec,rad,setName):
@@ -679,8 +713,8 @@ def getElementSetNearLine(meshData,pt,dirVec,rad,setName):
     mag = np.linalg.norm(dirVec)
     unitDir = (1.0/mag)*dirVec
     ptAr = np.array(pt)
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     for i, el in enumerate(meshData['elements']):
         eCrd = getElCoord(el,nodes)
@@ -691,7 +725,8 @@ def getElementSetNearLine(meshData,pt,dirVec,rad,setName):
         dist = np.linalg.norm(normVec)
         if(dist < rad):
             labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addElementSet(meshData,newSet)
 
 def getElementSetNearPlane(meshData,pt,normDir,dist,setName):
@@ -699,8 +734,8 @@ def getElementSetNearPlane(meshData,pt,normDir,dist,setName):
     mag = np.linalg.norm(normDir)
     unitNorm = (1.0/mag)*normDir
     ptAr = np.array(pt)
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     for i, el in enumerate(meshData['elements']):
         eCrd = getElCoord(el,nodes)
@@ -709,7 +744,8 @@ def getElementSetNearPlane(meshData,pt,normDir,dist,setName):
         dp = np.dot(ptoel,unitNorm)
         if(abs(dp) < dist):
             labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addElementSet(meshData,newSet)
 
 def getElementSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
@@ -726,8 +762,8 @@ def getElementSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None
     else:
         zRng = zRange
     nodes = meshData['nodes']
-    newSet = dict()
-    newSet['name'] = setName
+    # newSet = dict()
+    # newSet['name'] = setName
     labs = list()
     for i, el in enumerate(meshData['elements']):
         eCrd = getElCoord(el,nodes)
@@ -736,20 +772,23 @@ def getElementSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None
             if(cent[1] >= yRng[0] and cent[1] <= yRng[1]):
                 if(cent[2] >= zRng[0] and cent[2] <= zRng[1]):
                     labs.append(i)
-    newSet['labels'] = labs
+    # newSet['labels'] = labs
+    newSet = {setName: labs}
     return addElementSet(meshData,newSet)
 
 def getSetInterfaceNodes(meshData,nodeSet1,nodeSet2,newSet1Name,newSet2Name,maxDist):
     nds = meshData['nodes']
-    set1Labs = []
-    set2Labs = []
+    # set1Labs = []
+    # set2Labs = []
+    set1Labs = meshData['sets']['node'][nodeSet1]
+    set2Labs = meshData['sets']['node'][nodeSet2]
     newLabs1 = set()
     newLabs2 = set()
-    for ns in meshData['sets']['node']:
-        if(ns['name'] == nodeSet1):
-            set1Labs = ns['labels']
-        if(ns['name'] == nodeSet2):
-            set2Labs = ns['labels']
+    # for ns in meshData['sets']['node']:
+    #     if(ns['name'] == nodeSet1):
+    #         set1Labs = ns['labels']
+    #     if(ns['name'] == nodeSet2):
+    #         set2Labs = ns['labels']
     for s1 in set1Labs:
         crd1 = nds[s1]
         for s2 in set2Labs:
@@ -759,29 +798,33 @@ def getSetInterfaceNodes(meshData,nodeSet1,nodeSet2,newSet1Name,newSet2Name,maxD
             if(dist < maxDist):
                 newLabs1.add(s1)
                 newLabs2.add(s2)
-    newSet = dict()
-    newSet['name'] = newSet1Name
-    newSet['labels'] = list(newLabs1)
-    meshData['sets']['node'].append(newSet)
-    newSet = dict()
-    newSet['name'] = newSet2Name
-    newSet['labels'] = list(newLabs2)
-    meshData['sets']['node'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSet1Name
+    # newSet['labels'] = list(newLabs1)
+    # meshData['sets']['node'].append(newSet)
+    meshData['sets']['node'][newSet1Name] = list(newLabs1)
+    # newSet = dict()
+    # newSet['name'] = newSet2Name
+    # newSet['labels'] = list(newLabs2)
+    # meshData['sets']['node'].append(newSet)
+    meshData['sets']['node'][newSet2Name] = list(newLabs2)
     return meshData
 
 def getMeshInterfaceNodes(mesh1Data,mesh2Data,nodeSet1,nodeSet2,newSet1Name,newSet2Name,maxDist):
     nds1 = mesh1Data['nodes']
     nds2 = mesh2Data['nodes']
-    set1Labs = []
-    set2Labs = []
+    # set1Labs = []
+    # set2Labs = []
+    set1Labs = mesh1Data['sets']['node'][nodeSet1]
+    set2Labs = mesh2Data['sets']['node'][nodeSet2]
     newLabs1 = set()
     newLabs2 = set()
-    for ns in mesh1Data['sets']['node']:
-        if(ns['name'] == nodeSet1):
-            set1Labs = ns['labels']
-    for ns in mesh2Data['sets']['node']:
-        if(ns['name'] == nodeSet2):
-            set2Labs = ns['labels']
+    # for ns in mesh1Data['sets']['node']:
+    #     if(ns['name'] == nodeSet1):
+    #         set1Labs = ns['labels']
+    # for ns in mesh2Data['sets']['node']:
+    #     if(ns['name'] == nodeSet2):
+    #         set2Labs = ns['labels']
     for s1 in set1Labs:
         crd1 = nds1[s1]
         for s2 in set2Labs:
@@ -791,14 +834,16 @@ def getMeshInterfaceNodes(mesh1Data,mesh2Data,nodeSet1,nodeSet2,newSet1Name,newS
             if(dist < maxDist):
                 newLabs1.add(s1)
                 newLabs2.add(s2)
-    newSet = dict()
-    newSet['name'] = newSet1Name
-    newSet['labels'] = list(newLabs1)
-    mesh1Data['sets']['node'].append(newSet)
-    newSet = dict()
-    newSet['name'] = newSet2Name
-    newSet['labels'] = list(newLabs2)
-    mesh2Data['sets']['node'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSet1Name
+    # newSet['labels'] = list(newLabs1)
+    # mesh1Data['sets']['node'].append(newSet)
+    mesh1Data['sets']['node'][newSet1Name] = list(newLabs1)
+    # newSet = dict()
+    # newSet['name'] = newSet2Name
+    # newSet['labels'] = list(newLabs2)
+    # mesh2Data['sets']['node'].append(newSet)
+    mesh2Data['sets']['node'][newSet2Name] = list(newLabs2)
     return [mesh1Data,mesh2Data]
 
 def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
@@ -808,16 +853,16 @@ def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
     unitNorm = (1.0/mag)*normDir
     cosTol = np.cos(normTol*np.pi/180.0)
     faceDic = dict()
-    for es in meshData['sets']['element']:
-        if(es['name'] == elSet):
-            for ei in es['labels']:
-                fcStr, globFc = getSortedFaceStrings(els[ei])
-                for fi, fk in enumerate(fcStr):
-                    try:
-                        curr = faceDic[fk]
-                        faceDic[fk] = None
-                    except:
-                        faceDic[fk] = globFc[fi]
+    # for es in meshData['sets']['element']:
+    #     if(es['name'] == elSet):
+    for ei in meshData['sets']['element'][elSet]:
+        fcStr, globFc = getSortedFaceStrings(els[ei])
+        for fi, fk in enumerate(fcStr):
+            try:
+                curr = faceDic[fk]
+                faceDic[fk] = None
+            except:
+                faceDic[fk] = globFc[fi]
     surfSet = set()
     for fk in faceDic:
         glob = faceDic[fk]
@@ -836,32 +881,35 @@ def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
             if(dp >= cosTol):
                 for nd in glob:
                     surfSet.add(nd)
-    newSet = dict()
-    newSet['name'] = newSetName
-    newSet['labels'] = list(surfSet)
+    # newSet = dict()
+    # newSet['name'] = newSetName
+    # newSet['labels'] = list(surfSet)
+    newSet = {newSetName: list(surfSet)}
     return addNodeSet(meshData,newSet)
                 
 def getForceElementCloud(meshData,nodeSet1,nodeSet2,elSetName,maxDist):
     nds = meshData['nodes']
     gL = getMeshSpatialList(nds)
-    for ns in meshData['sets']['node']:
-        if(ns['name'] == nodeSet2):
-            for s2 in ns['labels']:
-                crds = nds[s2]
-                gL.addEntry(s2,crds)
+    # for ns in meshData['sets']['node']:
+    #     if(ns['name'] == nodeSet2):
+    #         for s2 in ns['labels']:
+    for s2 in meshData['sets']['node'][nodeSet2]:
+        crds = nds[s2]
+        gL.addEntry(s2,crds)
     frcEls = list()
-    for ns in meshData['sets']['node']:
-        if(ns['name'] == nodeSet1):
-            for s1 in ns['labels']:
-                crd1 = nds[s1]
-                nearNds = gL.findInRadius(crd1,maxDist)
-                for nrNd in nearNds:
-                    if(nrNd != s1):
-                        crd2 = nds[nrNd]
-                        dVec = crd2 - crd1
-                        dist = np.linalg.norm(dVec)
-                        if(dist < maxDist):
-                            frcEls.append([s1,nrNd])
+    # for ns in meshData['sets']['node']:
+    #     if(ns['name'] == nodeSet1):
+    #         for s1 in ns['labels']:
+    for s1 in meshData['sets']['node'][nodeSet1]:
+        crd1 = nds[s1]
+        nearNds = gL.findInRadius(crd1,maxDist)
+        for nrNd in nearNds:
+            if(nrNd != s1):
+                crd2 = nds[nrNd]
+                dVec = crd2 - crd1
+                dist = np.linalg.norm(dVec)
+                if(dist < maxDist):
+                    frcEls.append([s1,nrNd])
     try:
         stLen = len(meshData['elements'])
         newLen = stLen + len(frcEls)
@@ -869,72 +917,80 @@ def getForceElementCloud(meshData,nodeSet1,nodeSet2,elSetName,maxDist):
         newEls[0:stLen] = meshData['elements']
         newEls[stLen:newLen] = np.array(frcEls)
         meshData['elements'] = newEls
-        newSet = dict()
-        newSet['name'] = elSetName
-        newSet['labels'] = list(range(stLen,newLen))
+        # newSet = dict()
+        # newSet['name'] = elSetName
+        # newSet['labels'] = list(range(stLen,newLen))
+        newSet = {elSetName: list(range(stLen,newLen))}
         return addElementSet(meshData,newSet)
     except:
         newLen = len(frcEls)
         meshData['elements'] = np.array(frcEls)
-        newSet = dict()
-        newSet['name'] = elSetName
-        newSet['labels'] = list(range(0,newLen))
+        # newSet = dict()
+        # newSet['name'] = elSetName
+        # newSet['labels'] = list(range(0,newLen))
+        newSet = {elSetName: list(range(0,newLen))}
         return addElementSet(meshData,newSet)
 
 def getMatchingNodeSet(meshData,elSet,ndSetName):
     elements = meshData['elements']
     elSets = meshData['sets']['element']
-    for es in elSets:
-        if(es['name'] == elSet):
-            ns = set()
-            for ei in es['labels']:
-                for elnd in elements[ei]:
-                    if(elnd > -1):
-                        ns.add(elnd)
-            newSet = dict()
-            newSet['name'] = ndSetName
-            newSet['labels'] = list(ns)
-            return addNodeSet(meshData,newSet)
-    return meshData
+    # for es in elSets:
+    #     if(es['name'] == elSet):
+    ns = set()
+    for ei in elSets[elSet]:
+        for elnd in elements[ei]:
+            if(elnd > -1):
+                ns.add(elnd)
+    # newSet = dict()
+    # newSet['name'] = ndSetName
+    # newSet['labels'] = list(ns)
+    newSet = {ndSetName: list(ns)}
+    return addNodeSet(meshData,newSet)
+    # return meshData
 
 def getMatchingElementSet(meshData,nodeSet,elSetName,optn='allNodes'):
     ## optn = 'allNodes' or 'anyNode'
-    for ns in meshData['sets']['node']:
-        if(ns['name'] == nodeSet):
-            es = list()
-            nsLabs = set(ns['labels'])
-            for eli, el in enumerate(meshData['elements']):
-                hit = 0
-                ct = 0
-                for elNd in el:
-                    if(elNd != -1):
-                        if(elNd in nsLabs):
-                            hit += 1
-                        ct += 1
-                if((optn == 'allNodes' and hit == ct) or (optn == 'anyNode' and hit > 0)):
-                    es.append(eli)
-            newSet = dict()
-            newSet['name'] = elSetName
-            newSet['labels'] = es
-            return addElementSet(meshData,newSet)
-    return meshData
+    # for ns in meshData['sets']['node']:
+    #     if(ns['name'] == nodeSet):
+    es = list()
+    nsLabs = set(meshData['sets']['node'][nodeSet])
+    for eli, el in enumerate(meshData['elements']):
+        hit = 0
+        ct = 0
+        for elNd in el:
+            if(elNd != -1):
+                if(elNd in nsLabs):
+                    hit += 1
+                ct += 1
+        if((optn == 'allNodes' and hit == ct) or (optn == 'anyNode' and hit > 0)):
+            es.append(eli)
+    # newSet = dict()
+    # newSet['name'] = elSetName
+    # newSet['labels'] = es
+    newSet = {elSetName: es}
+    return addElementSet(meshData,newSet)
+    # return meshData
 
 def getAllMatchingNodeSets(meshData): ## Name changed from getMatchingNodeSets
     elements = meshData['elements']
     elSets = meshData['sets']['element']
-    nodeSets = list()
+    # nodeSets = list()
+    nodeSets = dict()
     for es in elSets:
         ns = set()
-        for ei in es['labels']:
+        for ei in elSets[es]:
             for elnd in elements[ei]:
                 if(elnd > -1):
                     ns.add(elnd)
-        newSet = dict()
-        newSet['name'] = es['name']
-        newSet['labels'] = list(ns)
-        nodeSets.append(newSet)
+        # newSet = dict()
+        # newSet['name'] = es['name']
+        # newSet['labels'] = list(ns)
+        # nodeSets.append(newSet)
+        nodeSets[es] = list(ns)
     try:
-        meshData['sets']['node'].extend(nodeSets)
+        # meshData['sets']['node'].extend(nodeSets)
+        for ns in nodeSets:
+            meshData['sets']['node'][ns] = nodeSets[ns]
     except:
         meshData['sets']['node'] = nodeSets
         
@@ -946,118 +1002,134 @@ def getExtrudedSets(meshData,numLayers):
     extSets = dict()
     try:
         elSets = meshData['sets']['element']
-        extES = list()
+        extES = dict()
         for es in elSets:
             labels = list()
             for lay in range(0,numLayers):
-                for ei in es['labels']:
+                for ei in elSets[es]:
                     newLab = ei + numEls*lay
                     labels.append(newLab)
-            newSet = dict()
-            newSet['name'] = es['name']
-            newSet['labels'] = labels
-            extES.append(newSet)
+            # newSet = dict()
+            # newSet['name'] = es['name']
+            # newSet['labels'] = labels
+            # extES.append(newSet)
+            extES[es] = labels
         extSets['element'] = extES
     except:
         pass
     
     try:
         ndSets = meshData['sets']['node']
-        extNS = list()
+        extNS = dict()
         for ns in ndSets:
             labels = list()
             for lay in range(0,(numLayers + 1)):
-                for ni in ns['labels']:
+                for ni in ndSets[ns]:
                     newLab = ni + numNds*lay
                     labels.append(newLab)
-            newSet = dict()
-            newSet['name'] = ns['name']
-            newSet['labels'] = labels
-            extNS.append(newSet)
+            # newSet = dict()
+            # newSet['name'] = ns['name']
+            # newSet['labels'] = labels
+            # extNS.append(newSet)
+            extNS[ns] = labels
         extSets['node'] = extNS
     except:
-        pass        
+        pass
         
     return extSets
 
 def getNodeSetUnion(meshData,setList,newSetName):
     un = set()
-    for ns in meshData['sets']['node']:
-        if(ns['name'] in setList):
-            thisSet = set(ns['labels'])
+    ndSets = meshData['sets']['node']
+    for ns in ndSets:
+        if(ns in setList):
+            thisSet = set(ndSets[ns])
             un = un.union(thisSet)
-    newSet = dict()
-    newSet['name'] = newSetName
-    newSet['labels'] = list(un)
-    meshData['sets']['node'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSetName
+    # newSet['labels'] = list(un)
+    # meshData['sets']['node'].append(newSet)
+    meshData['sets']['node'][newSetName] = list(un)
     return meshData
 
 def getNodeSetIntersection(meshData,setList,newSetName):
     intsct = set(range(0,len(meshData['nodes'])))
-    for ns in meshData['sets']['node']:
-        if(ns['name'] in setList):
-            thisSet = set(ns['labels'])
+    ndSets = meshData['sets']['node']
+    for ns in ndSets:
+        if(ns in setList):
+            thisSet = set(ndSets[ns])
             intsct = intsct.intersection(thisSet)
-    newSet = dict()
-    newSet['name'] = newSetName
-    newSet['labels'] = list(intsct)
-    meshData['sets']['node'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSetName
+    # newSet['labels'] = list(intsct)
+    # meshData['sets']['node'].append(newSet)
+    meshData['sets']['node'][newSetName] = list(intsct)
     return meshData
 
 def subtractNodeSet(meshData,set1,set2,newSetName):
     labs = list()
-    for ns in meshData['sets']['node']:
-        if(ns['name'] == set1):
-            s1 = ns
-        if(ns['name'] == set2):
-            s2 = set(ns['labels'])
-    for nd in s1['labels']:
+    # for ns in meshData['sets']['node']:
+    #     if(ns['name'] == set1):
+    #         s1 = ns
+    #     if(ns['name'] == set2):
+    #         s2 = set(ns['labels'])
+    s1 = meshData['sets']['node'][set1]
+    s2 = set(meshData['sets']['node'][set2])
+    for nd in s1:
         if(nd not in s2):
             labs.append(nd)
-    newSet = dict()
-    newSet['name'] = newSetName
-    newSet['labels'] = labs
-    meshData['sets']['node'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSetName
+    # newSet['labels'] = labs
+    # meshData['sets']['node'].append(newSet)
+    meshData['sets']['node'][newSetName] = labs
     return meshData
 
 def getElementSetUnion(meshData,setList,newSetName):
     un = set()
-    for es in meshData['sets']['element']:
-        if(es['name'] in setList):
-            thisSet = set(es['labels'])
+    elSets = meshData['sets']['element']
+    for es in elSets:
+        if(es in setList):
+            thisSet = set(elSets[es])
             un = un.union(thisSet)
-    newSet = dict()
-    newSet['name'] = newSetName
-    newSet['labels'] = list(un)
-    meshData['sets']['element'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSetName
+    # newSet['labels'] = list(un)
+    # meshData['sets']['element'].append(newSet)
+    meshData['sets']['element'][newSetName] = list(un)
     return meshData
 
 def getElementSetIntersection(meshData,setList,newSetName):
     intsct = set(range(0,len(meshData['elements'])))
-    for es in meshData['sets']['element']:
-        if(es['name'] in setList):
-            thisSet = set(es['labels'])
+    elSets = meshData['sets']['element']
+    for es in elSets:
+        if(es in setList):
+            thisSet = set(elSets[es])
             intsct = intsct.intersection(thisSet)
-    newSet = dict()
-    newSet['name'] = newSetName
-    newSet['labels'] = list(intsct)
-    meshData['sets']['element'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSetName
+    # newSet['labels'] = list(intsct)
+    # meshData['sets']['element'].append(newSet)
+    mestData['sets']['element'][newSetName] = list(intsct)
     return meshData
 
 def subtractElementSet(meshData,set1,set2,newSetName):
     labs = list()
-    for ns in meshData['sets']['element']:
-        if(ns['name'] == set1):
-            s1 = ns
-        if(ns['name'] == set2):
-            s2 = set(ns['labels'])
-    for nd in s1['labels']:
+    s1 = meshData['sets']['element'][set1]
+    s2 = set(meshData['sets']['element'][set2])
+    # for ns in meshData['sets']['element']:
+    #     if(ns['name'] == set1):
+    #         s1 = ns
+    #     if(ns['name'] == set2):
+    #         s2 = set(ns['labels'])
+    for nd in s1:
         if(nd not in s2):
             labs.append(nd)
-    newSet = dict()
-    newSet['name'] = newSetName
-    newSet['labels'] = labs
-    meshData['sets']['element'].append(newSet)
+    # newSet = dict()
+    # newSet['name'] = newSetName
+    # newSet['labels'] = labs
+    # meshData['sets']['element'].append(newSet)
+    meshData['sets']['element'][newSetName] = labs
     return meshData
     
 def make3D(meshData):
@@ -1166,14 +1238,17 @@ def tie2SetsConstraints(mesh,tiedSetName,tgtSetName,maxDist):
         nodes = mesh['nodes']
         elSets = mesh['sets']['element']
         ndSets = mesh['sets']['node']
-        for es in elSets:
-            if(es['name'] == tgtSetName):
-                tgtSet = es['labels']
-        for ns in ndSets:
-            if(ns['name'] == tiedSetName):
-                tiedSet = ns['labels']
-            if(ns['name'] == tgtSetName):
-                tgtNdSet = ns['labels']
+        # for es in elSets:
+        #     if(es['name'] == tgtSetName):
+        #         tgtSet = es['labels']
+        tgtSet = elSets[tgtSetName]
+        # for ns in ndSets:
+        #     if(ns['name'] == tiedSetName):
+        #         tiedSet = ns['labels']
+        #     if(ns['name'] == tgtSetName):
+        #         tgtNdSet = ns['labels']
+        tiedSet = ndSets[tiedSetName]
+        tgtNdSet = ndSet[tgtSetName]
         fstEl = tgtSet[0]
         fstNd = tgtSet[0]
         fstTgtNd = tgtNdSet[0]
@@ -1271,16 +1346,18 @@ def tie2SetsConstraints(mesh,tiedSetName,tgtSetName,maxDist):
 def getNodeFieldFunction(meshData,funType,params,nodeSet=None):
     nodes = meshData['nodes']
     if(nodeSet == None):
-        ns = dict()
-        ns['name'] = 'all'
-        nLen = len(nodes)
-        ns['labels'] = list(range(0,nLen))
+        # ns = dict()
+        # ns['name'] = 'all'
+        # nLen = len(nodes)
+        # ns['labels'] = list(range(0,nLen))
+        ns = list(range(0,len(nodes)))
     else:
-        ns = dict()
-        ns['labels'] = list()
-        for ndset in meshData['sets']['node']:
-            if(ndset['name'] == nodeSet):
-                ns = ndset
+        # ns = dict()
+        # ns['labels'] = list()
+        # for ndset in meshData['sets']['node']:
+        #     if(ndset['name'] == nodeSet):
+        #         ns = ndset
+        ns = meshData['sets']['node'][nodeSet]
     if(funType == 'radialShift'):
         pt = np.array(params['pt'])
         maxR = params['radius']
@@ -1315,7 +1392,7 @@ def getNodeFieldFunction(meshData,funType,params,nodeSet=None):
         maxR = params['radius']
         coef = 3.4938562148434
     fVals = list()
-    for ndi in ns['labels']:
+    for ndi in ns:
         nCrd = nodes[ndi]
         if(funType == 'radialShift'):
             dVec = nCrd - pt
@@ -1371,16 +1448,18 @@ def getElementFieldFunction(meshData,funType,params,elementSet=None):
     nodes = meshData['nodes']
     elements = meshData['elements']
     if(elementSet == None):
-        es = dict()
-        es['name'] = 'all'
-        eLen = len(elements)
-        es['labels'] = list(range(0,eLen))
+        # es = dict()
+        # es['name'] = 'all'
+        # eLen = len(elements)
+        # es['labels'] = list(range(0,eLen))
+        es = list(range(0,len(elements)))
     else:
-        es = dict()
-        es['labels'] = list()
-        for elset in meshData['sets']['element']:
-            if(elset['name'] == elementSet):
-                es = elset
+        # es = dict()
+        # es['labels'] = list()
+        # for elset in meshData['sets']['element']:
+        #     if(elset['name'] == elementSet):
+        #         es = elset
+        es = meshData['sets']['element'][elementSet]
     if(funType == 'radialShift'):
         pt = np.array(params['pt'])
         maxR = params['radius']
@@ -1415,7 +1494,7 @@ def getElementFieldFunction(meshData,funType,params,elementSet=None):
         maxR = params['radius']
         coef = 3.4938562148434
     fVals = list()
-    for eli in es['labels']:
+    for eli in es:
         eCrd = getElCoord(elements[eli],nodes)
         eCent = getElCentroid(eCrd)
         if(funType == 'radialShift'):

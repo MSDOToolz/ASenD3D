@@ -154,7 +154,7 @@ impl Model {
                     for i1 in 0..self.el_mat_dim {
                         self.elastic_ld_vec[i1] = 0.0;
                     }
-                    self.build_elastic_soln_load(false,  false);
+                    self.build_elastic_soln_load(false);
                     let nd_pt = &self.nodes[*nd_label];
                     for i1 in 0..6 {
                         glob_ind = nd_pt.dof_index[i1];
@@ -212,6 +212,7 @@ impl Model {
         let mut int_pts : [f64; 24] = [0f64; 24];
         let mut strain = [DiffDoub0::new(); 6];
         let mut stress = [DiffDoub0::new(); 6];
+        let mut t_strain = [DiffDoub0::new(); 6];
         let mut seden : f64;
         let mut def = [DiffDoub0::new(); 9];
         let mut frc_mom = [DiffDoub0::new(); 9];
@@ -301,6 +302,9 @@ impl Model {
             else if this_field.s == "tempGradient" {
                 let _ = out_file.write(b"TGRAD1,TGRAD2,TGRAD3,");
             }
+            else if this_field.s == "isActive" {
+                let _ = out_file.write(b"ACTIVE,");
+            }
             else if this_field.s == "userStatus" {
                 let _ = out_file.write(b"USTAT,");
             }
@@ -338,7 +342,7 @@ impl Model {
                         field_list = CppStr::from("stress strain strainEnergyDen");
                         str_ind = field_list.find(&this_field.s.as_str());
                         if str_ind < MAX_INT {
-                            el_pt.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut int_pts[(3*i1)..],  i2,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
+                            el_pt.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut int_pts[(3*i1)..],  i2,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
                             if this_field.s == "strain" {
                                 for i3 in 0..6 {
                                     let _ = out_file.write(format!("{0:.12e},", strain[i3].val).as_bytes());
@@ -391,6 +395,10 @@ impl Model {
                             else if this_field.s == "heatFlux" {
                                 let _ = out_file.write(format!("{0:.12e},{1:.12e},{2:.12e},", flux[0].val, flux[1].val, flux[2].val).as_bytes());
                             }
+                        }
+
+                        if this_field.s.contains("isActive") {
+                            let _ = out_file.write(format!("{},", el_pt.is_active).as_bytes());
                         }
 
                         if this_field.s.contains("userStatus") {

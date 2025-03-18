@@ -1562,7 +1562,7 @@ impl Element {
         return;
     }
 
-    pub fn get_stress_strain_dfd0(&mut self, stress : &mut [DiffDoub0], strain : &mut [DiffDoub0], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
+    pub fn get_stress_strain_dfd0(&mut self, stress : &mut [DiffDoub0], strain : &mut [DiffDoub0], t_strain : &mut [DiffDoub0], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
         let mut i2 : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
         let mut d_ndx = [DiffDoub0::new(); 33];
@@ -1574,6 +1574,12 @@ impl Element {
         let mut tmp = DiffDoub0::new();
         let mut ip_temp = DiffDoub0::new();
         let mut tmp_ar = [DiffDoub0::new(); 60];
+
+        for i in 0..6 {
+            stress[i].set_val(0f64);
+            strain[i].set_val(0f64);
+            t_strain[i].set_val(0f64);
+        }
         
         self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
         
@@ -1613,6 +1619,7 @@ impl Element {
             for i1 in 0..3 {
                 tmp.set_val_dfd0(& pre.layer_te[i2]);
                 tmp.mult(& ip_temp);
+                t_strain[i1].set_val_dfd0(&tmp);
                 adj_stn[i1].set_val_dfd0(& strain[i1]);
                 adj_stn[i1].sub(& tmp);
                 adj_stn[i1].sub(& pre.layer_e0[i2]);
@@ -1623,14 +1630,14 @@ impl Element {
             tmp.set_val_dfd0(& strain[2]);
             strain[3].set_val_dfd0(& tmp);
             strain[2].set_val(0.0);
-            strain[4].set_val(0.0);
-            strain[5].set_val(0.0);
+
+            tmp.set_val_dfd0(& t_strain[2]);
+            t_strain[3].set_val_dfd0(&tmp);
+            t_strain[2].set_val(0.0);
             
             tmp.set_val_dfd0(& stress[2]);
             stress[3].set_val_dfd0(& tmp);
             stress[2].set_val(0.0);
-            stress[4].set_val(0.0);
-            stress[5].set_val(0.0);
             
         } else if self.this_type != 2 {
             vec_to_ar_dfd0(&mut tmp_ar, &mut  pre.glob_disp,  0,  60);
@@ -1639,6 +1646,7 @@ impl Element {
             for i1 in 0..6 {
                 tmp.set_val_dfd0(& pre.therm_exp[i1]);
                 tmp.mult(& ip_temp);
+                t_strain[i1].set_val_dfd0(&tmp);
                 adj_stn[i1].set_val_dfd0(& strain[i1]);
                 adj_stn[i1].sub(& tmp);
                 adj_stn[i1].sub(& pre.einit[i1]);
@@ -3473,7 +3481,7 @@ impl Element {
         return;
     }
 
-    pub fn get_stress_strain_dfd1(&mut self, stress : &mut [DiffDoub1], strain : &mut [DiffDoub1], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
+    pub fn get_stress_strain_dfd1(&mut self, stress : &mut [DiffDoub1], strain : &mut [DiffDoub1], t_strain : &mut [DiffDoub1], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
         let mut i2 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
@@ -3485,6 +3493,12 @@ impl Element {
         let mut tmp = DiffDoub1::new();
         let mut ip_temp = DiffDoub1::new();
         let mut tmp_ar = [DiffDoub1::new(); 60];
+
+        for i in 0..6 {
+            stress[i].set_val(0f64);
+            strain[i].set_val(0f64);
+            t_strain[i].set_val(0f64);
+        }
         
         self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
         
@@ -3524,6 +3538,7 @@ impl Element {
             for i1 in 0..3 {
                 tmp.set_val_dfd1(& pre.layer_te[i2]);
                 tmp.mult(& ip_temp);
+                t_strain[i1].set_val_dfd1(&tmp);
                 adj_stn[i1].set_val_dfd1(& strain[i1]);
                 adj_stn[i1].sub(& tmp);
                 adj_stn[i1].sub(& pre.layer_e0[i2]);
@@ -3534,14 +3549,14 @@ impl Element {
             tmp.set_val_dfd1(& strain[2]);
             strain[3].set_val_dfd1(& tmp);
             strain[2].set_val(0.0);
-            strain[4].set_val(0.0);
-            strain[5].set_val(0.0);
+
+            tmp.set_val_dfd1(& t_strain[2]);
+            t_strain[3].set_val_dfd1(&tmp);
+            t_strain[2].set_val(0.0);
             
             tmp.set_val_dfd1(& stress[2]);
             stress[3].set_val_dfd1(& tmp);
             stress[2].set_val(0.0);
-            stress[4].set_val(0.0);
-            stress[5].set_val(0.0);
             
         } else if self.this_type != 2 {
             vec_to_ar_dfd1(&mut tmp_ar, &mut  pre.glob_disp,  0,  60);
@@ -3550,6 +3565,7 @@ impl Element {
             for i1 in 0..6 {
                 tmp.set_val_dfd1(& pre.therm_exp[i1]);
                 tmp.mult(& ip_temp);
+                t_strain[i1].set_val_dfd1(&tmp);
                 adj_stn[i1].set_val_dfd1(& strain[i1]);
                 adj_stn[i1].sub(& tmp);
                 adj_stn[i1].sub(& pre.einit[i1]);
@@ -3831,6 +3847,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
     pub fn get_el_vec(&mut self, el_vec : &mut Vec<f64>, glob_vec : &mut Vec<f64>, for_therm : bool, intnl : bool, nd_ar : &mut Vec<Node>) {

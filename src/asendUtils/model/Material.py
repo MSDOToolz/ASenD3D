@@ -8,8 +8,8 @@ Created on Fri Nov 10 11:43:42 2023
 class Material:
     
     def __init__(self,name):
+        self.name = name
         self.matData = dict()
-        self.matData['name'] = name
         
     def setDensity(self,density):
         self.matData['density'] = density
@@ -48,3 +48,9 @@ class Material:
             thermal = dict()
             thermal['specHeat'] = specHeat
             self.matData['thermal'] = thermal
+            
+    def addCustomProperty(self,propName,propVal):
+        try:
+            self.matData['custom'][propName] = propVal
+        except:
+            self.matData['custom'] = {propName: propVal}

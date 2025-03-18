@@ -266,6 +266,7 @@ impl ObjectiveTerm {
         self.allocate_obj(nd_sets, el_sets);
         let mut q_ind : usize;
         let mut strain = [DiffDoub0::new(); 6];
+        let mut t_strain = [DiffDoub0::new(); 6];
         let mut stress = [DiffDoub0::new(); 6];
         let mut se_den : f64;
         let mut def = [DiffDoub0::new(); 9];
@@ -356,27 +357,29 @@ impl ObjectiveTerm {
             let mut this_el : &mut Element;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar,  dv_ar);
-                this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
-                if self.category.s == "stress" {
-                    self.q_vec[q_ind] = stress[self.component - 1].val;
-                } else if self.category.s == "strain" {
-                    self.q_vec[q_ind] = strain[self.component - 1].val;
-                } else {
-                    se_den = 0.0;
-                    for i1 in 0..6 {
-                        se_den  +=  stress[i1].val * strain[i1].val;
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
                     }
-                    se_den  *=  0.5;
-                    self.q_vec[q_ind] = se_den;
-                }
-                if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                    this_el.get_volume_dfd0(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
-                    self.el_vol_vec[q_ind] = e_vol.val;
+                    this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar,  dv_ar);
+                    this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                    if self.category.s == "stress" {
+                        self.q_vec[q_ind] = stress[self.component - 1].val;
+                    } else if self.category.s == "strain" {
+                        self.q_vec[q_ind] = strain[self.component - 1].val;
+                    } else {
+                        se_den = 0.0;
+                        for i1 in 0..6 {
+                            se_den  +=  stress[i1].val * strain[i1].val;
+                        }
+                        se_den  *=  0.5;
+                        self.q_vec[q_ind] = se_den;
+                    }
+                    if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                        this_el.get_volume_dfd0(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
+                        self.el_vol_vec[q_ind] = e_vol.val;
+                    }
                 }
                 q_ind += 1usize;
             }
@@ -437,32 +440,34 @@ impl ObjectiveTerm {
             let mut this_el : &mut Element;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
-                //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
-                this_el.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut s_cent,  n_lgeom, st_pre);
-                if self.category.s == "sectionDef" {
-                    self.q_vec[q_ind] = def[self.component - 1].val;
-                }
-                else if self.category.s == "sectionFrcMom" {
-                    self.q_vec[q_ind] = frc_mom[self.component - 1].val;
-                }
-                if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                    num_lay = sec_ar[this_el.sect_ptr].layers.len();
-                    if num_lay > 1 {
-                        e_vol.set_val(0.0);
-                        for i1 in 0..num_lay {
-                            this_el.get_volume_dfd0(&mut tmp, st_pre,  i1,  sec_ar, dv_ar);
-                            e_vol.add(& tmp);
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
+                    }
+                    this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
+                    //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
+                    this_el.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut s_cent,  n_lgeom, st_pre);
+                    if self.category.s == "sectionDef" {
+                        self.q_vec[q_ind] = def[self.component - 1].val;
+                    }
+                    else if self.category.s == "sectionFrcMom" {
+                        self.q_vec[q_ind] = frc_mom[self.component - 1].val;
+                    }
+                    if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                        num_lay = sec_ar[this_el.sect_ptr].layers.len();
+                        if num_lay > 1 {
+                            e_vol.set_val(0.0);
+                            for i1 in 0..num_lay {
+                                this_el.get_volume_dfd0(&mut tmp, st_pre,  i1,  sec_ar, dv_ar);
+                                e_vol.add(& tmp);
+                            }
                         }
+                        else {
+                            this_el.get_volume_dfd0(&mut e_vol, st_pre,  0, sec_ar, dv_ar);
+                        }
+                        self.el_vol_vec[q_ind] = e_vol.val;
                     }
-                    else {
-                        this_el.get_volume_dfd0(&mut e_vol, st_pre,  0, sec_ar, dv_ar);
-                    }
-                    self.el_vol_vec[q_ind] = e_vol.val;
                 }
                 q_ind += 1usize;
             }
@@ -525,21 +530,23 @@ impl ObjectiveTerm {
             let mut this_el : &mut Element;
             let mut s_cent : [f64; 3] = [0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
-                this_el.get_flux_tgrad_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
-                if self.category.s == "flux" {
-                    self.q_vec[q_ind] = flux[self.component - 1].val;
-                }
-                else if self.category.s == "tempGradient" {
-                    self.q_vec[q_ind] = t_grad[self.component - 1].val;
-                }
-                if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                    this_el.get_volume_dfd0(&mut e_vol, st_pre, self.layer, sec_ar, dv_ar);
-                    self.el_vol_vec[q_ind] = e_vol.val;
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
+                    }
+                    this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
+                    this_el.get_flux_tgrad_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
+                    if self.category.s == "flux" {
+                        self.q_vec[q_ind] = flux[self.component - 1].val;
+                    }
+                    else if self.category.s == "tempGradient" {
+                        self.q_vec[q_ind] = t_grad[self.component - 1].val;
+                    }
+                    if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                        this_el.get_volume_dfd0(&mut e_vol, st_pre, self.layer, sec_ar, dv_ar);
+                        self.el_vol_vec[q_ind] = e_vol.val;
+                    }
                 }
                 q_ind += 1usize;
             }
@@ -601,15 +608,17 @@ impl ObjectiveTerm {
             q_ind = 0;
             let mut this_el : &Element;
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &el_ar[*eli];
-                this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                this_el.get_volume_dfd0(&mut e_vol, st_pre, self.layer, sec_ar, dv_ar);
-                self.el_vol_vec[q_ind] = e_vol.val;
-                if self.category.s == "volume" {
-                    self.q_vec[q_ind] = 1.0;
-                } else {
-                    this_el.get_density_dfd0(&mut e_den,  self.layer,  sec_ar,  mat_ar, dv_ar);
-                    self.q_vec[q_ind] = e_den.val;
+                if el_ar[*eli].is_active {
+                    this_el = &el_ar[*eli];
+                    this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                    this_el.get_volume_dfd0(&mut e_vol, st_pre, self.layer, sec_ar, dv_ar);
+                    self.el_vol_vec[q_ind] = e_vol.val;
+                    if self.category.s == "volume" {
+                        self.q_vec[q_ind] = 1.0;
+                    } else {
+                        this_el.get_density_dfd0(&mut e_den,  self.layer,  sec_ar,  mat_ar, dv_ar);
+                        self.q_vec[q_ind] = e_den.val;
+                    }
                 }
                 q_ind += 1usize;
             }
@@ -644,6 +653,7 @@ impl ObjectiveTerm {
         let mut dof_ind : usize;
         let mut curr_rank : usize;
         let mut strain = [DiffDoub0::new(); 6];
+        let mut t_strain = [DiffDoub0::new(); 6];
         let mut stress = [DiffDoub0::new(); 6];
         let mut dsd_u = vec![DiffDoub0::new(); 288];
         let mut ded_u = vec![DiffDoub0::new(); 288];
@@ -726,52 +736,54 @@ impl ObjectiveTerm {
             let mut this_el : &mut Element;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
-                this_el.d_stress_straind_u_dfd0(&mut dsd_u, &mut  ded_u, &mut  dsd_t, &mut s_cent,  self.layer,  n_lgeom, st_pre);
-                el_num_nds = this_el.num_nds;
-                el_dof_per_nd = this_el.dof_per_nd;
-                el_num_int_dof = this_el.num_int_dof;
-                el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
-                i1 = el_tot_dof * (self.component - 1);
-                i2 = el_num_nds * (self.component - 1);
-                if self.category.s == "stress" {
-                    sub_vec_dfd0(&mut scr_v1, &mut  dsd_u,  i1,  i1 + el_tot_dof);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
-                    sub_vec_dfd0(&mut scr_v1, &mut  dsd_t,  i2,  i2 + el_num_nds);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
-                }
-                else if self.category.s == "strain" {
-                    sub_vec_dfd0(&mut scr_v1, &mut  ded_u,  i1,  i1 + el_tot_dof);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
-                }
-                else {
-                    for i2 in 0..el_tot_dof {
-                        dse_dend_u[i2].set_val(0.0);
-                        i3 = i2;
-                        for i1 in 0..6 {
-                            dse_dend_u[i2].val  +=  stress[i1].val * ded_u[i3].val + dsd_u[i3].val * strain[i1].val;
-                            i3  +=  el_tot_dof;
-                        }
-                        dse_dend_u[i2].val  *=  0.5;
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
                     }
-                    for i2 in 0..el_num_nds {
-                        dse_dend_t[i2].set_val(0.0);
-                        i3 = i2;
-                        for i1 in 0..6 {
-                            dse_dend_t[i2].val  +=  dsd_t[i3].val * strain[i1].val;
-                            i3  +=  el_num_nds;
-                        }
-                        dse_dend_t[i2].val  *=  0.5;
+                    this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                    this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                    this_el.d_stress_straind_u_dfd0(&mut dsd_u, &mut  ded_u, &mut  dsd_t, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                    el_num_nds = this_el.num_nds;
+                    el_dof_per_nd = this_el.dof_per_nd;
+                    el_num_int_dof = this_el.num_int_dof;
+                    el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
+                    i1 = el_tot_dof * (self.component - 1);
+                    i2 = el_num_nds * (self.component - 1);
+                    if self.category.s == "stress" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  dsd_u,  i1,  i1 + el_tot_dof);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                        sub_vec_dfd0(&mut scr_v1, &mut  dsd_t,  i2,  i2 + el_num_nds);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
                     }
-                    ar_to_vec_dfd0(&mut dse_dend_u, &mut  scr_v1,  0,  33);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
-                    ar_to_vec_dfd0(&mut dse_dend_t, &mut  scr_v1,  0,  10);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    else if self.category.s == "strain" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  ded_u,  i1,  i1 + el_tot_dof);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                    }
+                    else {
+                        for i2 in 0..el_tot_dof {
+                            dse_dend_u[i2].set_val(0.0);
+                            i3 = i2;
+                            for i1 in 0..6 {
+                                dse_dend_u[i2].val  +=  stress[i1].val * ded_u[i3].val + dsd_u[i3].val * strain[i1].val;
+                                i3  +=  el_tot_dof;
+                            }
+                            dse_dend_u[i2].val  *=  0.5;
+                        }
+                        for i2 in 0..el_num_nds {
+                            dse_dend_t[i2].set_val(0.0);
+                            i3 = i2;
+                            for i1 in 0..6 {
+                                dse_dend_t[i2].val  +=  dsd_t[i3].val * strain[i1].val;
+                                i3  +=  el_num_nds;
+                            }
+                            dse_dend_t[i2].val  *=  0.5;
+                        }
+                        ar_to_vec_dfd0(&mut dse_dend_u, &mut  scr_v1,  0,  33);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                        ar_to_vec_dfd0(&mut dse_dend_t, &mut  scr_v1,  0,  10);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
                 }
                 q_ind += 1usize;
             }
@@ -806,30 +818,32 @@ impl ObjectiveTerm {
             let mut this_el : &mut Element;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
-                //this_el->d_stress_straind_u_dfd0(dsd_u, ded_u, dsd_t, spt, self.layer, n_lgeom, st_pre);
-                this_el.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut s_cent,  n_lgeom, st_pre);
-                this_el.d_def_frc_momd_u_dfd0(&mut ded_u, &mut  dsd_u, &mut  dsd_t, &mut s_cent,  n_lgeom, st_pre);
-                el_num_nds = this_el.num_nds;
-                el_dof_per_nd = this_el.dof_per_nd;
-                el_num_int_dof = this_el.num_int_dof;
-                el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
-                i1 = el_tot_dof * (self.component - 1);
-                i2 = el_num_nds * (self.component - 1);
-                if self.category.s == "sectionFrcMom" {
-                    sub_vec_dfd0(&mut scr_v1, &mut  dsd_u,  i1,  i1 + el_tot_dof);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
-                    sub_vec_dfd0(&mut scr_v1, &mut  dsd_t,  i2,  i2 + el_num_nds);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
-                }
-                else if self.category.s == "sectionDef" {
-                    sub_vec_dfd0(&mut scr_v1, &mut  ded_u,  i1,  i1 + el_tot_dof);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
+                    }
+                    this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                    //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
+                    //this_el->d_stress_straind_u_dfd0(dsd_u, ded_u, dsd_t, spt, self.layer, n_lgeom, st_pre);
+                    this_el.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut s_cent,  n_lgeom, st_pre);
+                    this_el.d_def_frc_momd_u_dfd0(&mut ded_u, &mut  dsd_u, &mut  dsd_t, &mut s_cent,  n_lgeom, st_pre);
+                    el_num_nds = this_el.num_nds;
+                    el_dof_per_nd = this_el.dof_per_nd;
+                    el_num_int_dof = this_el.num_int_dof;
+                    el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
+                    i1 = el_tot_dof * (self.component - 1);
+                    i2 = el_num_nds * (self.component - 1);
+                    if self.category.s == "sectionFrcMom" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  dsd_u,  i1,  i1 + el_tot_dof);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                        sub_vec_dfd0(&mut scr_v1, &mut  dsd_t,  i2,  i2 + el_num_nds);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
+                    else if self.category.s == "sectionDef" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  ded_u,  i1,  i1 + el_tot_dof);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                    }
                 }
                 q_ind += 1usize;
             }
@@ -864,22 +878,24 @@ impl ObjectiveTerm {
             let mut this_el : &mut Element;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                this_el.get_flux_tgrad_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
-                this_el.d_flux_tgradd_t_dfd0(&mut d_fd_t, &mut  d_tgd_t, &mut s_cent,  self.layer, st_pre);
-                el_num_nds = this_el.num_nds;
-                i1 = el_num_nds * (self.component - 1);
-                if self.category.s == "flux" {
-                    sub_vec_dfd0(&mut scr_v1, &mut  d_fd_t,  i1,  i1 + el_num_nds);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
-                }
-                else if self.category.s == "tempGradient" {
-                    sub_vec_dfd0(&mut scr_v1, &mut  d_tgd_t,  i1,  i1 + el_num_nds);
-                    this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
+                    }
+                    this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                    this_el.get_flux_tgrad_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
+                    this_el.d_flux_tgradd_t_dfd0(&mut d_fd_t, &mut  d_tgd_t, &mut s_cent,  self.layer, st_pre);
+                    el_num_nds = this_el.num_nds;
+                    i1 = el_num_nds * (self.component - 1);
+                    if self.category.s == "flux" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  d_fd_t,  i1,  i1 + el_num_nds);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
+                    else if self.category.s == "tempGradient" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  d_tgd_t,  i1,  i1 + el_num_nds);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
                 }
                 q_ind += 1usize;
             }
@@ -915,6 +931,7 @@ impl ObjectiveTerm {
         let mut q_ind : usize;
         let mut dv_val = DiffDoub0::new();
         let mut strain = [DiffDoub1::new(); 6];
+        let mut t_strain = [DiffDoub1::new(); 6];
         let mut stress = [DiffDoub1::new(); 6];
         let mut se_den : f64;
         let mut def = [DiffDoub1::new(); 9];
@@ -940,42 +957,44 @@ impl ObjectiveTerm {
             let mut dvi : usize;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                dv_len = 0;
-                for cdv in this_el.comp_dvars.iter() {
-                    tmp_dvi[dv_len] = *cdv;
-                    dv_len += 1usize;
-                }
-                //for dvi in this_el.comp_dvars.iter_mut() {
-                for i in 0..dv_len {
-                    dvi = tmp_dvi[i];
-                    //this_dv = &mut dv_ar[dvi];
-                    dv_ar[dvi].get_value_dfd0(&mut dv_val);
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
-                    this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                    this_el.get_stress_strain_dfd1(&mut stress, &mut  strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
-                    if self.category.s == "stress" {
-                        self.d_qd_d.add_entry(q_ind,  dvi,   stress[self.component - 1].dval);
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
                     }
-                    else if self.category.s == "strain" {
-                        self.d_qd_d.add_entry(q_ind,  dvi,   strain[self.component - 1].dval);
+                    dv_len = 0;
+                    for cdv in this_el.comp_dvars.iter() {
+                        tmp_dvi[dv_len] = *cdv;
+                        dv_len += 1usize;
                     }
-                    else {
-                        se_den = 0.0;
-                        for i1 in 0..6 {
-                            se_den  +=  stress[i1].val * strain[i1].dval + stress[i1].dval * strain[i1].val;
+                    //for dvi in this_el.comp_dvars.iter_mut() {
+                    for i in 0..dv_len {
+                        dvi = tmp_dvi[i];
+                        //this_dv = &mut dv_ar[dvi];
+                        dv_ar[dvi].get_value_dfd0(&mut dv_val);
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
+                        this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                        this_el.get_stress_strain_dfd1(&mut stress, &mut  strain, &mut t_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                        if self.category.s == "stress" {
+                            self.d_qd_d.add_entry(q_ind,  dvi,   stress[self.component - 1].dval);
                         }
-                        se_den  *=  0.5;
-                        self.d_qd_d.add_entry(q_ind, dvi, se_den);
+                        else if self.category.s == "strain" {
+                            self.d_qd_d.add_entry(q_ind,  dvi,   strain[self.component - 1].dval);
+                        }
+                        else {
+                            se_den = 0.0;
+                            for i1 in 0..6 {
+                                se_den  +=  stress[i1].val * strain[i1].dval + stress[i1].dval * strain[i1].val;
+                            }
+                            se_den  *=  0.5;
+                            self.d_qd_d.add_entry(q_ind, dvi, se_den);
+                        }
+                        if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                            this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
+                            self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
+                        }
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
                     }
-                    if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                        this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
-                        self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
-                    }
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
                 }
                 q_ind += 1usize;
             }
@@ -1013,45 +1032,47 @@ impl ObjectiveTerm {
             let mut dvi : usize;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                dv_len = 0usize;
-                for cdv in this_el.comp_dvars.iter() {
-                    tmp_dv[dv_len] = *cdv;
-                    dv_len += 1usize;
-                }
-                //for dvi in this_el.comp_dvars.iter_mut() {
-                for i in 0..dv_len {
-                    dvi = tmp_dv[i];
-                    //this_dv = &mut dv_ar[*dvi];
-                    dv_ar[dvi].get_value_dfd0(&mut dv_val);
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
-                    this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                    //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
-                    this_el.get_def_frc_mom_dfd1(&mut def, &mut  frc_mom, &mut s_cent, n_lgeom, st_pre);
-                    if self.category.s == "sectionFrcMom" {
-                        self.d_qd_d.add_entry(q_ind, dvi,   frc_mom[self.component - 1].dval);
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
                     }
-                    else if self.category.s == "sectionDef" {
-                        self.d_qd_d.add_entry(q_ind, dvi,   def[self.component - 1].dval);
+                    dv_len = 0usize;
+                    for cdv in this_el.comp_dvars.iter() {
+                        tmp_dv[dv_len] = *cdv;
+                        dv_len += 1usize;
                     }
-                    if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                        num_lay = sec_ar[this_el.sect_ptr].layers.len();
-                        if num_lay > 1 {
-                            e_vol.set_val(0.0);
-                            for i1 in 0..num_lay {
-                                this_el.get_volume_dfd1(&mut tmp, st_pre,  i1, sec_ar, dv_ar);
-                                e_vol.add(& tmp);
+                    //for dvi in this_el.comp_dvars.iter_mut() {
+                    for i in 0..dv_len {
+                        dvi = tmp_dv[i];
+                        //this_dv = &mut dv_ar[*dvi];
+                        dv_ar[dvi].get_value_dfd0(&mut dv_val);
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
+                        this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                        //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
+                        this_el.get_def_frc_mom_dfd1(&mut def, &mut  frc_mom, &mut s_cent, n_lgeom, st_pre);
+                        if self.category.s == "sectionFrcMom" {
+                            self.d_qd_d.add_entry(q_ind, dvi,   frc_mom[self.component - 1].dval);
+                        }
+                        else if self.category.s == "sectionDef" {
+                            self.d_qd_d.add_entry(q_ind, dvi,   def[self.component - 1].dval);
+                        }
+                        if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                            num_lay = sec_ar[this_el.sect_ptr].layers.len();
+                            if num_lay > 1 {
+                                e_vol.set_val(0.0);
+                                for i1 in 0..num_lay {
+                                    this_el.get_volume_dfd1(&mut tmp, st_pre,  i1, sec_ar, dv_ar);
+                                    e_vol.add(& tmp);
+                                }
                             }
+                            else {
+                                this_el.get_volume_dfd1(&mut e_vol, st_pre,  0, sec_ar, dv_ar);
+                            }
+                            self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
                         }
-                        else {
-                            this_el.get_volume_dfd1(&mut e_vol, st_pre,  0, sec_ar, dv_ar);
-                        }
-                        self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
                     }
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
                 }
                 q_ind += 1usize;
             }
@@ -1089,34 +1110,36 @@ impl ObjectiveTerm {
             let mut dvi : usize;
             let mut s_cent : [f64; 3] = [0.0f64; 3];
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &mut el_ar[*eli];
-                for i in 0..3 {
-                    s_cent[i] = this_el.s_cent[i];
-                }
-                dv_len = 0usize;
-                for cdv in this_el.comp_dvars.iter() {
-                    tmp_dv[dv_len] = *cdv;
-                    dv_len += 1usize;
-                }
-                //for dvi in this_el.comp_dvars.iter_mut() {
-                for i in 0..dv_len {
-                    dvi = tmp_dv[i];
-                    //this_dv = &mut dv_ar[*dvi];
-                    dv_ar[dvi].get_value_dfd0(&mut dv_val);
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val,    1.0);
-                    this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                    this_el.get_flux_tgrad_dfd1(&mut flux, &mut  t_grad, &mut s_cent, self.layer, st_pre);
-                    if self.category.s == "flux" {
-                        self.d_qd_d.add_entry(q_ind, dvi,   flux[self.component - 1].dval);
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
                     }
-                    else if self.category.s == "tempGradient" {
-                        self.d_qd_d.add_entry(q_ind, dvi,   t_grad[self.component - 1].dval);
+                    dv_len = 0usize;
+                    for cdv in this_el.comp_dvars.iter() {
+                        tmp_dv[dv_len] = *cdv;
+                        dv_len += 1usize;
                     }
-                    if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                        this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
-                        self.d_vd_d.add_entry(q_ind, dvi,  e_vol.dval);
+                    //for dvi in this_el.comp_dvars.iter_mut() {
+                    for i in 0..dv_len {
+                        dvi = tmp_dv[i];
+                        //this_dv = &mut dv_ar[*dvi];
+                        dv_ar[dvi].get_value_dfd0(&mut dv_val);
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val,    1.0);
+                        this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                        this_el.get_flux_tgrad_dfd1(&mut flux, &mut  t_grad, &mut s_cent, self.layer, st_pre);
+                        if self.category.s == "flux" {
+                            self.d_qd_d.add_entry(q_ind, dvi,   flux[self.component - 1].dval);
+                        }
+                        else if self.category.s == "tempGradient" {
+                            self.d_qd_d.add_entry(q_ind, dvi,   t_grad[self.component - 1].dval);
+                        }
+                        if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                            this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
+                            self.d_vd_d.add_entry(q_ind, dvi,  e_vol.dval);
+                        }
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val,    0.0);
                     }
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val,    0.0);
                 }
                 q_ind += 1usize;
             }
@@ -1153,26 +1176,28 @@ impl ObjectiveTerm {
             let mut dv_len : usize;
             let mut dvi : usize;
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
-                this_el = &el_ar[*eli];
-                dv_len = 0usize;
-                for cdv in this_el.comp_dvars.iter() {
-                    tmp_dv[dv_len] = *cdv;
-                    dv_len += 1usize;
-                }
-                //for dvi in this_el.comp_dvars.iter_mut() {
-                for i in 0..dv_len {
-                    dvi = tmp_dv[i];
-                    //this_dv = &mut dv_ar[*dvi];
-                    dv_ar[dvi].get_value_dfd0(&mut dv_val);
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
-                    this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                    this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
-                    self.d_vd_d.add_entry(q_ind, dvi,   e_vol.dval);
-                    if self.category.s == "mass" {
-                        this_el.get_density_dfd1(&mut e_den,  self.layer, sec_ar, mat_ar, dv_ar);
-                        self.d_qd_d.add_entry(q_ind, dvi,   e_den.dval);
+                if el_ar[*eli].is_active {
+                    this_el = &el_ar[*eli];
+                    dv_len = 0usize;
+                    for cdv in this_el.comp_dvars.iter() {
+                        tmp_dv[dv_len] = *cdv;
+                        dv_len += 1usize;
                     }
-                    dv_ar[dvi].diff_val.set_val_2(dv_val.val,  0.0);
+                    //for dvi in this_el.comp_dvars.iter_mut() {
+                    for i in 0..dv_len {
+                        dvi = tmp_dv[i];
+                        //this_dv = &mut dv_ar[*dvi];
+                        dv_ar[dvi].get_value_dfd0(&mut dv_val);
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
+                        this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                        this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
+                        self.d_vd_d.add_entry(q_ind, dvi,   e_vol.dval);
+                        if self.category.s == "mass" {
+                            this_el.get_density_dfd1(&mut e_den,  self.layer, sec_ar, mat_ar, dv_ar);
+                            self.d_qd_d.add_entry(q_ind, dvi,   e_den.dval);
+                        }
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val,  0.0);
+                    }
                 }
                 q_ind += 1usize;
             }

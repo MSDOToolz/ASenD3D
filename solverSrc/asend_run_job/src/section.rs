@@ -2,6 +2,7 @@ use crate::constants::*;
 use crate::cpp_str::CppStr;
 
 use std::collections::LinkedList;
+use std::collections::BTreeMap;
 
 #[derive(Clone)]
 pub struct Material {
@@ -15,14 +16,7 @@ pub struct Material {
     pub expansion : [f64; 6],
     pub spec_heat : f64,
     pub damping : [f64; 36],
-    pub max_ten_stress : [f64; 3],
-    pub max_comp_stress : [f64; 3],
-    pub max_shear_stress : [f64; 3],
-    pub max_ten_strain : [f64; 3],
-    pub max_comp_strain : [f64; 3],
-    pub max_shear_strain : [f64; 3],
-    pub max_str_eng : f64,
-    pub max_mises : f64,
+    pub custom : BTreeMap<String, Vec<f64>>,
 }
 
 impl Material {
@@ -38,14 +32,7 @@ impl Material {
             expansion : [0f64; 6],
             spec_heat : 0f64,
             damping : [0f64; 36],
-            max_ten_stress : [0f64; 3],
-            max_comp_stress : [0f64; 3],
-            max_shear_stress : [0f64; 3],
-            max_ten_strain : [0f64; 3],
-            max_comp_strain : [0f64; 3],
-            max_shear_strain : [0f64; 3],
-            max_str_eng : 0f64,
-            max_mises : 0f64,
+            custom : BTreeMap::new(),
         }
     }
 }
