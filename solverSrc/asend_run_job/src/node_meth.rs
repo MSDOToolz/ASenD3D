@@ -318,12 +318,21 @@ impl Node {
         return;
     }
 
+    pub fn add_element(&mut self, el_index : usize, nd_in_el : usize) {
+        for e in self.el_lst.iter() {
+            if e.i1 == el_index {
+                return;
+            }
+        }
+        self.el_lst.push_back(DualInt {i1 : el_index, i2 : nd_in_el});
+    }
+
     //dup1
 
-    pub fn get_crd_dfd0(&self, crd_out : &mut [DiffDoub0], dv_ar : & Vec<DesignVariable>) {
-        crd_out[0].set_val(self.coord[0]);
-        crd_out[1].set_val(self.coord[1]);
-        crd_out[2].set_val(self.coord[2]);
+    pub fn calc_crd_dfd0(&mut self, dv_ar : & Vec<DesignVariable>) {
+        self.coord_dfd0[0].set_val(self.coord[0]);
+        self.coord_dfd0[1].set_val(self.coord[1]);
+        self.coord_dfd0[2].set_val(self.coord[2]);
         let mut d_index : usize;
         let mut d_val = DiffDoub0::new();
         let mut comp : usize;
@@ -339,10 +348,40 @@ impl Node {
             if cat.s == "nodeCoord" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
-                crd_out[comp].add(& coef);
+                self.coord_dfd0[comp].add(& coef);
             }
         }
-        return;
+    }
+
+    pub fn get_crd_dfd0(&self, crd_out : &mut [DiffDoub0], dv_ar : & Vec<DesignVariable>) {
+        crd_out[0].set_val_dfd0(&self.coord_dfd0[0]);
+        crd_out[1].set_val_dfd0(&self.coord_dfd0[1]);
+        crd_out[2].set_val_dfd0(&self.coord_dfd0[2]);
+        // let mut d_index : usize;
+        // let mut d_val = DiffDoub0::new();
+        // let mut comp : usize;
+        // let mut cat : CppStr;
+        // let mut coef = DiffDoub0::new();
+        // let mut this_dv : &DesignVariable;
+        // for dv in self.d_var_lst.iter() {
+        //     d_index = dv.int_dat;
+        //     this_dv = &dv_ar[d_index];
+        //     this_dv.get_value_dfd0(&mut d_val);
+        //     cat = this_dv.category.clone();
+        //     comp = this_dv.component - 1;
+        //     if cat.s == "nodeCoord" {
+        //         coef.set_val(dv.doub_dat);
+        //         coef.mult(& d_val);
+        //         crd_out[comp].add(& coef);
+        //     }
+        // }
+    }
+
+    pub fn get_def_crd_dfd0(&self, crd_out : &mut [DiffDoub0]) {
+        for i in 0..3 {
+            crd_out[i].set_val(self.displacement[i]);
+            crd_out[i].add(&self.coord_dfd0[i]);
+        }
     }
 
     pub fn get_disp_dfd0(&mut self, disp : &mut [DiffDoub0]) {
@@ -407,10 +446,10 @@ impl Node {
 //DiffDoub1 versions: 
     //dup1
 
-    pub fn get_crd_dfd1(&self, crd_out : &mut [DiffDoub1], dv_ar : & Vec<DesignVariable>) {
-        crd_out[0].set_val(self.coord[0]);
-        crd_out[1].set_val(self.coord[1]);
-        crd_out[2].set_val(self.coord[2]);
+    pub fn calc_crd_dfd1(&mut self, dv_ar : & Vec<DesignVariable>) {
+        self.coord_dfd1[0].set_val(self.coord[0]);
+        self.coord_dfd1[1].set_val(self.coord[1]);
+        self.coord_dfd1[2].set_val(self.coord[2]);
         let mut d_index : usize;
         let mut d_val = DiffDoub1::new();
         let mut comp : usize;
@@ -426,10 +465,40 @@ impl Node {
             if cat.s == "nodeCoord" {
                 coef.set_val(dv.doub_dat);
                 coef.mult(& d_val);
-                crd_out[comp].add(& coef);
+                self.coord_dfd1[comp].add(& coef);
             }
         }
-        return;
+    }
+
+    pub fn get_crd_dfd1(&self, crd_out : &mut [DiffDoub1], dv_ar : & Vec<DesignVariable>) {
+        crd_out[0].set_val_dfd1(&self.coord_dfd1[0]);
+        crd_out[1].set_val_dfd1(&self.coord_dfd1[1]);
+        crd_out[2].set_val_dfd1(&self.coord_dfd1[2]);
+        // let mut d_index : usize;
+        // let mut d_val = DiffDoub1::new();
+        // let mut comp : usize;
+        // let mut cat : CppStr;
+        // let mut coef = DiffDoub1::new();
+        // let mut this_dv : &DesignVariable;
+        // for dv in self.d_var_lst.iter() {
+        //     d_index = dv.int_dat;
+        //     this_dv = &dv_ar[d_index];
+        //     this_dv.get_value_dfd1(&mut d_val);
+        //     cat = this_dv.category.clone();
+        //     comp = this_dv.component - 1;
+        //     if cat.s == "nodeCoord" {
+        //         coef.set_val(dv.doub_dat);
+        //         coef.mult(& d_val);
+        //         crd_out[comp].add(& coef);
+        //     }
+        // }
+    }
+
+    pub fn get_def_crd_dfd1(&self, crd_out : &mut [DiffDoub1]) {
+        for i in 0..3 {
+            crd_out[i].set_val(self.displacement[i]);
+            crd_out[i].add(&self.coord_dfd1[i]);
+        }
     }
 
     pub fn get_disp_dfd1(&mut self, disp : &mut [DiffDoub1]) {
@@ -490,6 +559,8 @@ impl Node {
     //end dup
  
 //end skip 
+ 
+ 
  
  
  

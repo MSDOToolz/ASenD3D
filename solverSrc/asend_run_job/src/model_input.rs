@@ -618,47 +618,6 @@ impl Model {
                     else if headings[1].s == "specHeat" && data_len == 1 {
                         self.sections[sec_ct].spec_heat = CppStr::stod(&mut data[0]);
                     }
-                    else if headings[1].s == "fluidParams" {
-                        if headings[2].s == "denVisCoef" && data_len == 1 {
-                            self.sections[sec_ct].den_vis_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "tempVisCoef" && data_len == 1 {
-                            self.sections[sec_ct].temp_vis_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "turbVisCoef" && data_len == 1 {
-                            self.sections[sec_ct].turb_vis_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "gradVTurbCoef" && data_len == 1 {
-                            self.sections[sec_ct].grad_vturb_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "dissTurbCoef" && data_len == 1 {
-                            self.sections[sec_ct].diss_turb_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "enthCoef" && data_len == 1 {
-                            self.sections[sec_ct].enth_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "enthExp" && data_len == 1 {
-                            self.sections[sec_ct].enth_exp = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "presCoef" && data_len == 1 {
-                            self.sections[sec_ct].pres_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "presExp" && data_len == 1 {
-                            self.sections[sec_ct].pres_exp = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "refTemp" && data_len == 1 {
-                            self.sections[sec_ct].ref_temp = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "refDen" && data_len == 1 {
-                            self.sections[sec_ct].ref_den = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "refTurbE" && data_len == 1 {
-                            self.sections[sec_ct].ref_turb_e = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "refEnth" && data_len == 1 {
-                            self.sections[sec_ct].ref_enth = CppStr::stod(&mut data[0]);
-                        }
-                    }
                     else if headings[1].s == "elementSet" && data_len == 1 {
                         self.sections[sec_ct].el_set_name = data[0].clone();
                     }
@@ -767,12 +726,45 @@ impl Model {
                             if headings[3].s == "conductivity" && data_len == 1 {
                                 self.fluids[fl_ct].therm_cond = CppStr::stod(&mut data[0]);
                             }
+                            else if headings[2].s == "expansion" && data_len == 1 {
+                                self.fluids[fl_ct].expansion = CppStr::stod(&mut data[0]);
+                            }
                             else if headings[3].s == "specHeat" && data_len == 1 {
                                 self.fluids[fl_ct].spec_heat = CppStr::stod(&mut data[0]);
                             }
                         }
                         else if headings[2].s == "idealGasConst" && data_len == 1 {
                             self.fluids[fl_ct].ideal_gas = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "bulkModulus" && data_len == 1 {
+                            self.fluids[fl_ct].bulk_modulus = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "compressible" && data_len == 1 {
+                            self.fluids[fl_ct].compressible = data[0].s.contains("yes");
+                        }
+                        else if headings[2].s == "refTemp" && data_len == 1 {
+                            self.fluids[fl_ct].ref_temp = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "refPres" && data_len == 1 {
+                            self.fluids[fl_ct].ref_pres = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "refDen" && data_len == 1 {
+                            self.fluids[fl_ct].ref_den = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "refEnth" && data_len == 1 {
+                            self.fluids[fl_ct].ref_enth = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "tempVisCoef" && data_len == 1 {
+                            self.fluids[fl_ct].temp_vis_coef = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "turbVisCoef" && data_len == 1 {
+                            self.fluids[fl_ct].turb_vis_coef = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "gradVTurbCoef" && data_len == 1 {
+                            self.fluids[fl_ct].grad_turb_coef = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "dissTurbCoef" && data_len == 1 {
+                            self.fluids[fl_ct].diss_turb_coef = CppStr::stod(&mut data[0]);
                         }
                     }
                     

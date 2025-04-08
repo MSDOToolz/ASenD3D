@@ -558,6 +558,7 @@ impl Model {
         let num_nds : usize;
         let block_dim : usize;
         
+        //check options for solve command
         if self.solve_cmd < MAX_INT {
             let scmd = &mut self.job[self.solve_cmd];
             if scmd.solver_method.s == "direct" {
@@ -583,6 +584,7 @@ impl Model {
             block_dim = 2000000000;
         }
         
+        //allocate layers in stress prerequisite objects
         i1 = 0;
         for sec in self.sections.iter_mut() {
             i2 = sec.layers.len();
@@ -594,7 +596,14 @@ impl Model {
             self.d0_pre.allocate_layers_dfd0(i1);
             self.d1_pre.allocate_layers_dfd1(i1);
         }
+
+        //calculate initial values for nodal coordinates as a function of design variables
+
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd0(&self.design_vars);
+        }
         
+        //additional preparatory functions
         self.update_reference();
         self.reorder_nodes(block_dim);
         self.build_constraint_mats();
@@ -928,6 +937,10 @@ impl Model {
         }
         
         self.user_update_time_step(time);
+
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd0(&self.design_vars);
+        }
         
         return;
     }
@@ -1529,6 +1542,9 @@ impl Model {
         //let mut this_dv : &mut DesignVariable = &mut self.design_vars[d_var_num];
         self.design_vars[d_var_num].get_value_dfd0(&mut dv_val);
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 1.0);
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd1(&self.design_vars);
+        }
         
         tot_nodes = self.nodes.len();
         for i1 in 0..tot_nodes {
@@ -1584,6 +1600,9 @@ impl Model {
         }
         
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 0.0);
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd1(&self.design_vars);
+        }
         
         return;
     }
@@ -1597,6 +1616,9 @@ impl Model {
         //let mut this_dv : &mut DesignVariable = &mut self.design_vars[d_var_num];
         self.design_vars[d_var_num].get_value_dfd0(&mut dv_val);
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 1.0);
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd1(&self.design_vars);
+        }
         
         for i1 in 0..self.el_mat_dim {
             self.d_rud_d[i1].set_val(0.0);
@@ -1658,6 +1680,9 @@ impl Model {
         }
         
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val,    0.0);
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd1(&self.design_vars);
+        }
         
         return;
     }
@@ -1695,6 +1720,10 @@ impl Model {
                     }
                 }
                 self.read_time_step_soln(i1);
+                self.user_update_adjoint_step(time);
+                for nd in self.nodes.iter_mut() {
+                    nd.calc_crd_dfd0(&self.design_vars);
+                }
                 self.obj.calculate_terms(time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
                 time  -=  self.job[sci].time_step;
             }
@@ -1725,6 +1754,10 @@ impl Model {
                     for this_el in self.elements.iter_mut() {
                         this_el.backstep_int_disp();
                     }
+                }
+                self.user_update_adjoint_step(this_ld_tm);
+                for nd in self.nodes.iter_mut() {
+                    nd.calc_crd_dfd0(&self.design_vars);
                 }
                 self.obj.calculate_terms(this_ld_tm,  self.job[sci].nonlinear_geom, &mut self.nodes, &mut self.elements, &mut self.node_sets, &mut self.element_sets, &mut self.sections, &mut self.materials, &mut self.design_vars, &mut  self.d0_pre);
                 //i1 += 1usize;
@@ -1783,6 +1816,10 @@ impl Model {
                     this_el.backstep_int_disp();
                 }
                 self.read_time_step_soln(i1 - 1);
+                self.user_update_adjoint_step(time);
+                for nd in self.nodes.iter_mut() {
+                    nd.calc_crd_dfd0(&self.design_vars);
+                }
                 self.obj.calculate_terms(time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
                 self.solve_for_adjoint(time);
                 self.obj.calculated_ld_d(&mut self.d_ld_d,  time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  &mut  self.element_sets, &mut  self.sections, &mut  self.materials, &mut self.design_vars, &mut  self.d1_pre);
@@ -1829,6 +1866,10 @@ impl Model {
                 }
                 for this_el in self.elements.iter_mut() {
                     this_el.backstep_int_disp();
+                }
+                self.user_update_adjoint_step(this_ld);
+                for nd in self.nodes.iter_mut() {
+                    nd.calc_crd_dfd0(&self.design_vars);
                 }
                 self.obj.calculate_terms(this_ld,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
                 for i2 in 0..self.nodes.len() {

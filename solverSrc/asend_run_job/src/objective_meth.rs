@@ -973,6 +973,9 @@ impl ObjectiveTerm {
                         //this_dv = &mut dv_ar[dvi];
                         dv_ar[dvi].get_value_dfd0(&mut dv_val);
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                         this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                         this_el.get_stress_strain_dfd1(&mut stress, &mut  strain, &mut t_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
                         if self.category.s == "stress" {
@@ -994,6 +997,9 @@ impl ObjectiveTerm {
                             self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
                         }
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                     }
                 }
                 q_ind += 1usize;
@@ -1048,6 +1054,9 @@ impl ObjectiveTerm {
                         //this_dv = &mut dv_ar[*dvi];
                         dv_ar[dvi].get_value_dfd0(&mut dv_val);
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                         this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                         //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
                         this_el.get_def_frc_mom_dfd1(&mut def, &mut  frc_mom, &mut s_cent, n_lgeom, st_pre);
@@ -1072,6 +1081,9 @@ impl ObjectiveTerm {
                             self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
                         }
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                     }
                 }
                 q_ind += 1usize;
@@ -1126,6 +1138,9 @@ impl ObjectiveTerm {
                         //this_dv = &mut dv_ar[*dvi];
                         dv_ar[dvi].get_value_dfd0(&mut dv_val);
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val,    1.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                         this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                         this_el.get_flux_tgrad_dfd1(&mut flux, &mut  t_grad, &mut s_cent, self.layer, st_pre);
                         if self.category.s == "flux" {
@@ -1139,6 +1154,9 @@ impl ObjectiveTerm {
                             self.d_vd_d.add_entry(q_ind, dvi,  e_vol.dval);
                         }
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val,    0.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                     }
                 }
                 q_ind += 1usize;
@@ -1189,6 +1207,9 @@ impl ObjectiveTerm {
                         //this_dv = &mut dv_ar[*dvi];
                         dv_ar[dvi].get_value_dfd0(&mut dv_val);
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val, 1.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                         this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                         this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
                         self.d_vd_d.add_entry(q_ind, dvi,   e_vol.dval);
@@ -1197,6 +1218,9 @@ impl ObjectiveTerm {
                             self.d_qd_d.add_entry(q_ind, dvi,   e_den.dval);
                         }
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val,  0.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
                     }
                 }
                 q_ind += 1usize;

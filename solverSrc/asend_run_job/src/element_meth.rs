@@ -60,6 +60,8 @@ impl DiffDoub1StressPrereq {
  
  
  
+ 
+ 
 impl Element {
     pub fn initialize_type(&mut self, new_type : usize) {
         self.this_type = new_type;
@@ -453,6 +455,7 @@ impl Element {
             new_fc.set_node(0, 0, self.nodes[0]);
             new_fc.set_node(1, 2, self.nodes[2]);
             new_fc.set_node(2, 1, self.nodes[1]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 3;
@@ -460,6 +463,7 @@ impl Element {
             new_fc.set_node(0, 0, self.nodes[0]);
             new_fc.set_node(1, 1, self.nodes[1]);
             new_fc.set_node(2, 3, self.nodes[3]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 3;
@@ -467,6 +471,7 @@ impl Element {
             new_fc.set_node(0, 1, self.nodes[1]);
             new_fc.set_node(1, 2, self.nodes[2]);
             new_fc.set_node(2, 3, self.nodes[3]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 3;
@@ -474,6 +479,7 @@ impl Element {
             new_fc.set_node(0, 0, self.nodes[0]);
             new_fc.set_node(1, 3, self.nodes[3]);
             new_fc.set_node(2, 2, self.nodes[2]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
         } else if self.this_type == 6 || self.this_type == 600 {
@@ -482,6 +488,7 @@ impl Element {
             new_fc.set_node(0, 0, self.nodes[0]);
             new_fc.set_node(1, 2, self.nodes[2]);
             new_fc.set_node(2, 1, self.nodes[1]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 3;
@@ -489,6 +496,7 @@ impl Element {
             new_fc.set_node(0, 3, self.nodes[3]);
             new_fc.set_node(1, 4, self.nodes[4]);
             new_fc.set_node(2, 5, self.nodes[5]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -497,6 +505,7 @@ impl Element {
             new_fc.set_node(1, 1, self.nodes[1]);
             new_fc.set_node(2, 4, self.nodes[4]);
             new_fc.set_node(3, 3, self.nodes[3]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -505,6 +514,7 @@ impl Element {
             new_fc.set_node(1, 2, self.nodes[2]);
             new_fc.set_node(2, 5, self.nodes[5]);
             new_fc.set_node(3, 4, self.nodes[4]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -513,6 +523,7 @@ impl Element {
             new_fc.set_node(1, 3, self.nodes[3]);
             new_fc.set_node(2, 5, self.nodes[5]);
             new_fc.set_node(3, 2, self.nodes[2]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
         } else if self.this_type == 8 || self.this_type == 81 || self.this_type == 800 {
@@ -522,6 +533,7 @@ impl Element {
             new_fc.set_node(1, 2, self.nodes[2]);
             new_fc.set_node(2, 1, self.nodes[1]);
             new_fc.set_node(3, 0, self.nodes[0]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -530,6 +542,7 @@ impl Element {
             new_fc.set_node(1, 5, self.nodes[5]);
             new_fc.set_node(2, 6, self.nodes[6]);
             new_fc.set_node(3, 7, self.nodes[7]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -538,6 +551,7 @@ impl Element {
             new_fc.set_node(1, 1, self.nodes[1]);
             new_fc.set_node(2, 5, self.nodes[5]);
             new_fc.set_node(3, 4, self.nodes[4]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -546,6 +560,7 @@ impl Element {
             new_fc.set_node(1, 2, self.nodes[2]);
             new_fc.set_node(2, 6, self.nodes[6]);
             new_fc.set_node(3, 5, self.nodes[5]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -554,6 +569,7 @@ impl Element {
             new_fc.set_node(1, 3, self.nodes[3]);
             new_fc.set_node(2, 7, self.nodes[7]);
             new_fc.set_node(3, 6, self.nodes[6]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -562,6 +578,7 @@ impl Element {
             new_fc.set_node(1, 0, self.nodes[0]);
             new_fc.set_node(2, 4, self.nodes[4]);
             new_fc.set_node(3, 7, self.nodes[7]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
         }
@@ -574,6 +591,7 @@ impl Element {
             new_fc.set_node(3,  6,  self.nodes[6]);
             new_fc.set_node(4,  5,  self.nodes[5]);
             new_fc.set_node(5,  4,  self.nodes[4]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 6;
@@ -584,6 +602,7 @@ impl Element {
             new_fc.set_node(3,  4,  self.nodes[4]);
             new_fc.set_node(4,  8,  self.nodes[8]);
             new_fc.set_node(5,  7,  self.nodes[7]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 6;
@@ -594,6 +613,7 @@ impl Element {
             new_fc.set_node(3,  5,  self.nodes[5]);
             new_fc.set_node(4,  9,  self.nodes[9]);
             new_fc.set_node(5,  8,  self.nodes[8]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 6;
@@ -604,6 +624,7 @@ impl Element {
             new_fc.set_node(3,  7,  self.nodes[7]);
             new_fc.set_node(4,  9,  self.nodes[9]);
             new_fc.set_node(5,  6,  self.nodes[6]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
         }
@@ -613,6 +634,7 @@ impl Element {
             new_fc.set_node(0, 0, self.nodes[0]);
             new_fc.set_node(1, 1, self.nodes[1]);
             new_fc.set_node(2, 2, self.nodes[2]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 3;
@@ -620,6 +642,7 @@ impl Element {
             new_fc.set_node(0, 2, self.nodes[2]);
             new_fc.set_node(1, 1, self.nodes[1]);
             new_fc.set_node(2, 0, self.nodes[0]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
         } else if self.this_type == 41 {
@@ -629,6 +652,7 @@ impl Element {
             new_fc.set_node(1, 1, self.nodes[1]);
             new_fc.set_node(2, 2, self.nodes[2]);
             new_fc.set_node(3, 3, self.nodes[3]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
             glob_fc_lst[*fi].num_nds = 4;
@@ -637,6 +661,7 @@ impl Element {
             new_fc.set_node(1, 2, self.nodes[2]);
             new_fc.set_node(2, 1, self.nodes[1]);
             new_fc.set_node(3, 0, self.nodes[0]);
+            new_fc.host_el = self.label;
             self.faces.push_back(*fi);
             *fi += 1usize;
         }

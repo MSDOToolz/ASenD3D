@@ -17,6 +17,21 @@ impl IDCapsule {
 }
 
 #[derive(Clone)]
+pub struct DualInt {
+    pub i1 : usize,
+    pub i2 : usize,
+}
+
+impl DualInt {
+    pub fn new() -> DualInt {
+        DualInt {
+            i1 : 0,
+            i2 : 0, 
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct MatrixEnt {
     pub row : usize,
     pub col : usize,

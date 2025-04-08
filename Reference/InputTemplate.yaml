@@ -72,23 +72,9 @@ sections:
           refTemp: 
       massPerEl:
       specHeat:
-      fluidParams:
-          denVisCoef:
-          tempVisCoef:
-          turbVisCoef:
-          gradVTurbCoef:
-          dissTurbCoef:
-          enthCoef:
-          enthExp:
-          presCoef:
-          presExp:
-          refTemp:
-          refDen:
-          refTurbE:
-          refEnth:
       elementSet: setName
 materials:
-    - name:
+    name:
       density:
       elastic:
           E: [E11,E22,E33]
@@ -106,24 +92,27 @@ materials:
           expansion: [e11,e22,e33,e12,e13,e23]
           specHeat:
       damping:
-      failure:
-          maxStress:
-              tensile: [s11,s22,s33]
-              compressive: [s11,s22,s33]
-              shear: [s12,s13,s23]
-          maxStrain:
-              tensile:
-              compressive:
-              shear:
-          maxStrainEnergy: (value)
-          maxMises: (value)
+      custom:
+          prop1: value
+          prop2: [v1, v2, v3]
 fluids:
-    - name:
+    name:
       viscosity:
       thermal:
           conductivity:
+          expansion:
           specHeat:
       idealGasConst:
+      bulkModulus:
+      compressible: yes/no
+      refTemp:
+      refPres:
+      refDen:
+      refEnth:
+      tempVisCoef:
+      turbVisCoef:
+      gradVTurbCoef:
+      dissTurbCoef:
 constraints:
     - type: displacement, temperature
       terms:

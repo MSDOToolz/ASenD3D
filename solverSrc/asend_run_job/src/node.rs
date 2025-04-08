@@ -1,5 +1,6 @@
 use crate::constants::*;
 use crate::list_ent::*;
+use crate::diff_doub::*;
 
 use std::collections::LinkedList;
 
@@ -11,6 +12,8 @@ pub struct Node {
     pub dof_index : [usize; 6],
     pub sorted_rank : usize,
     pub coord : [f64; 3],
+    pub coord_dfd0 : [DiffDoub0; 3],
+    pub coord_dfd1 : [DiffDoub1; 3],
     pub displacement : [f64; 6],
     pub velocity : [f64; 6],
     pub fl_vel : [f64; 3],
@@ -49,6 +52,7 @@ pub struct Node {
     pub initial_turb_e : f64,
     pub initial_turb_edot : f64,
     pub d_var_lst : LinkedList<IDCapsule>,
+    pub el_lst : LinkedList<DualInt>,
 }
 
 impl Node {
@@ -60,6 +64,8 @@ impl Node {
             dof_index : [MAX_INT; 6],
             sorted_rank : MAX_INT,
             coord : [0f64; 3],
+            coord_dfd0 : [DiffDoub0::new(); 3],
+            coord_dfd1 : [DiffDoub1::new(); 3],
             displacement : [0f64; 6],
             velocity : [0f64; 6],
             fl_vel : [0f64; 3],
@@ -98,6 +104,7 @@ impl Node {
             initial_turb_e : 0f64,
             initial_turb_edot : 0f64,
             d_var_lst : LinkedList::new(),
+            el_lst : LinkedList::new(),
         }
     }
 }

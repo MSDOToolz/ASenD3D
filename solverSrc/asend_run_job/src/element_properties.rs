@@ -31,6 +31,27 @@ impl Element {
         return;
     }
 
+    pub fn get_f_per_mass_dfd0(&self, f_vec : &mut Vec<DiffDoub0>, dv_ar : &Vec<DesignVariable>) {
+        let mut d_vind : usize;
+        let mut dv_val = DiffDoub0::new();
+        let mut tmp = DiffDoub0::new();
+        let mut this_dv : & DesignVariable;
+        let mut comp : usize;
+        
+        for dv in self.design_vars.iter() {
+            d_vind = dv.int_dat;
+            this_dv = & dv_ar[d_vind];
+            if this_dv.category.s == "bodyForce" {
+                this_dv.get_value_dfd0(&mut dv_val);
+                comp = this_dv.component - 1;
+                tmp.set_val(dv.doub_dat);
+                dv_val.mult(& tmp);
+                //prop.add(& dv_val);
+                f_vec[comp].add(&dv_val);
+            }
+        }
+    }
+
     pub fn get_layer_thk_z_dfd0(&self, lay_thk : &mut Vec<DiffDoub0>, lay_z : &mut Vec<DiffDoub0>, z_offset : &mut DiffDoub0, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         //z_offset = 1: upper z surface is reference plane
         //z_offset = -1: lower z surface is reference plane
@@ -2079,6 +2100,27 @@ impl Element {
         return;
     }
 
+    pub fn get_f_per_mass_dfd1(&self, f_vec : &mut Vec<DiffDoub1>, dv_ar : &Vec<DesignVariable>) {
+        let mut d_vind : usize;
+        let mut dv_val = DiffDoub1::new();
+        let mut tmp = DiffDoub1::new();
+        let mut this_dv : & DesignVariable;
+        let mut comp : usize;
+        
+        for dv in self.design_vars.iter() {
+            d_vind = dv.int_dat;
+            this_dv = & dv_ar[d_vind];
+            if this_dv.category.s == "bodyForce" {
+                this_dv.get_value_dfd1(&mut dv_val);
+                comp = this_dv.component - 1;
+                tmp.set_val(dv.doub_dat);
+                dv_val.mult(& tmp);
+                //prop.add(& dv_val);
+                f_vec[comp].add(&dv_val);
+            }
+        }
+    }
+
     pub fn get_layer_thk_z_dfd1(&self, lay_thk : &mut Vec<DiffDoub1>, lay_z : &mut Vec<DiffDoub1>, z_offset : &mut DiffDoub1, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         //z_offset = 1: upper z surface is reference plane
         //z_offset = -1: lower z surface is reference plane
@@ -4104,6 +4146,8 @@ impl Element {
     //end dup
  
 //end skip 
+ 
+ 
  
  
  
