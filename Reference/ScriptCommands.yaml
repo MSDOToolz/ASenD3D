@@ -23,6 +23,7 @@ jobCommands:
   - command: solve X
     elastic: yes
     thermal: no
+    fluid: no
     nonlinearGeom: no
     staticLoadTime:
     loadRampSteps:
@@ -39,12 +40,17 @@ jobCommands:
     solverBlockDim:
     maxIterations:
     convergenceTol:
+    dissipationLevel: 0.25
+    modelTurbulence: yes
+    fluidSolver: iterative
+    fluidBlockDim: 20
+    maxFSIGap: 
     
   - command: zeroSolution
     fields: 
 
   - command: modalAnalysis X
-    type: buckling , frequency, dynSoln
+    type: buckling , frequency
     numModes: 10
     targetEigenvalue: 0.0, hilo
     solverMethod: 

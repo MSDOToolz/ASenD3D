@@ -293,7 +293,10 @@ def mergeMeshes(mData1,mData2,tolerance=None):
                 labs.append(nd+nLen1)
             # newSet['labels'] = labs
             # mergedData['sets']['node'].append(newSet)
-            mergedData['sets']['node'][ns] = labs
+            try:
+                mergedData['sets']['node'][ns].extend(labs)
+            except:
+                mergedData['sets']['node'][ns] = labs
     except:
         pass
     try:
@@ -306,7 +309,10 @@ def mergeMeshes(mData1,mData2,tolerance=None):
                 labs.append(el+eLen1)
             # newSet['labels'] = labs
             # mergedData['sets']['element'].append(newSet)
-            mergedData['sets']['element'][es] = labs
+            try:
+                mergedData['sets']['element'][es].extend(labs)
+            except:
+                mergedData['sets']['element'][es] = labs
     except:
         pass
     return mergeDuplicateNodes(mergedData,tolerance)

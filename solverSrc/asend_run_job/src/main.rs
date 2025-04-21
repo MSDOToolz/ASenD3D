@@ -25,6 +25,8 @@ pub mod element_soln_fields;
 pub mod face_meth;
 pub mod job_meth;
 pub mod list_ent_meth;
+pub mod spatial_grid;
+pub mod grid_meth;
 pub mod load_meth;
 pub mod lower_tri_mat_meth;
 pub mod lu_mat_meth;

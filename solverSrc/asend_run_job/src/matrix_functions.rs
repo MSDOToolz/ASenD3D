@@ -47,6 +47,123 @@ pub fn cross_prod(prod : &mut [f64], v1 : & [f64], v2 : & [f64]) {
     return;
 }
 
+pub fn q_rfactor_ar(mat : &mut [f64], col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
+    let mut i2_min : usize;
+    let mut i2_max : usize;
+    let mut i3_min : usize;
+    let mut i3_max : usize;
+    let mut k11 : usize;
+    let mut k12 : usize;
+    let mut k22 : usize;
+    let mut k23 : usize;
+    let mut theta : f64;
+    let mut sth : f64;
+    let mut cth : f64;
+    let mut p1 : f64;
+    let mut p2 : f64;
+    
+    for i1 in st_col..=end_col {
+        i2_min = st_row + (i1 - st_col) + 1;
+        if tri_diag == 0 {
+            i2_max = end_row;
+        } else {
+            i2_max = st_row + (i1 - st_col) + 1;
+            if i2_max > end_row {
+                i2_max = end_row;
+            }
+        }
+        for i2 in i2_min..=i2_max {
+            k11 = (i2_min-1)*col_dim + i1;
+            k12 = i2*col_dim + i1;
+            if fabs(mat[k11]) < TOL {
+                mat[k11] = TOL;
+            }
+            theta = atan(mat[k12]/mat[k11]);
+            sth = sin(theta);
+            cth = cos(theta);
+            i3_min = i1;
+            if tri_diag == 2 {
+                i3_max = i1 + 2;
+                if i3_max > end_col {
+                    i3_max = end_col;
+                }
+            } else {
+                i3_max = end_col;
+            }
+            for i3 in i3_min..=i3_max {
+                k22 = (i2_min-1)*col_dim + i3;
+                k23 = i2*col_dim + i3;
+                p1 = cth*mat[k22] + sth*mat[k23];
+                p2 = -sth*mat[k22] + cth*mat[k23];
+                mat[k22] = p1;
+                mat[k23] = p2;
+            }
+            mat[k12] = theta;
+        }
+    }
+
+}
+
+pub fn solveq_rx_eqb_ar(x_vec : &mut [f64], mat : &mut [f64], b_vec : &mut [f64], col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
+    let mut i3 : usize;
+    let mut i2_min : usize;
+    let mut i2_max : usize;
+    let mut k11 : usize;
+    let mut k12 : usize;
+    let mut theta : f64;
+    let mut sth : f64;
+    let mut cth : f64;
+    let mut p1 : f64;
+    let mut p2 : f64;
+    let mut row_sum : f64;
+    
+    for i1 in st_col..=end_col {
+        i2_min = st_row + (i1 - st_col) + 1;
+        if tri_diag == 0 {
+            i2_max = end_row;
+        } else {
+            i2_max = st_row + (i1 - st_col) + 1;
+            if i2_max > end_row {
+                i2_max = end_row;
+            }
+        }
+        i3 = i2_min - 1;
+        for i2 in i2_min..=i2_max {
+            k12 = i2*col_dim + i1;
+            theta = mat[k12];
+            sth = sin(theta);
+            cth = cos(theta);
+            p1 = cth*b_vec[i3] + sth*b_vec[i2];
+            p2 = -sth*b_vec[i3] + cth*b_vec[i2];
+            b_vec[i3] = p1;
+            b_vec[i2] = p2;
+        }
+        x_vec[i1] = 0.0;
+    }
+    
+    for i1 in (st_col..(end_col+1)).rev() {
+        i3 = st_row + (i1 - st_col);
+        i2_min = i1 + 1;
+        if tri_diag == 2 {
+            i2_max = i1 + 2;
+            if i2_max > end_col {
+                i2_max = end_col;
+            }
+        } else {
+            i2_max = end_col;
+        }
+        row_sum = 0.0;
+        k11 = i3*col_dim + i2_min;
+        for i2 in i2_min..=i2_max {
+            row_sum +=  mat[k11]*x_vec[i2];
+            k11 += 1usize;
+        }
+        k11 = i3*col_dim + i1;
+        x_vec[i1] = (b_vec[i3] - row_sum)/mat[k11];
+    }
+    
+}
+
 pub fn q_rfactor(mat : &mut Vec<f64>, col_dim : usize, st_row : usize, end_row : usize, st_col : usize, end_col : usize, tri_diag : usize) {
     let mut i2_min : usize;
     let mut i2_max : usize;

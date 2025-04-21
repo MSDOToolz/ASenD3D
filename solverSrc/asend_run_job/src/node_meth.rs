@@ -327,6 +327,15 @@ impl Node {
         self.el_lst.push_back(DualInt {i1 : el_index, i2 : nd_in_el});
     }
 
+    pub fn add_conn_nd(&mut self, nd_index : usize) {
+        for nd in self.conn_nds.iter() {
+            if *nd == nd_index {
+                return;
+            }
+        }
+        self.conn_nds.push_back(nd_index);
+    }
+
     //dup1
 
     pub fn calc_crd_dfd0(&mut self, dv_ar : & Vec<DesignVariable>) {

@@ -17,6 +17,17 @@ impl MatrixRow {
         self.row_vec.push_back(new_ent);
     }
 
+    pub fn scale_to_sum(&mut self, new_sum : f64) {
+        let mut curr_sum = 0.0f64;
+        for i in self.row_vec.iter() {
+            curr_sum += i.value;
+        }
+        let scale_fact = new_sum/curr_sum;
+        for i in self.row_vec.iter_mut() {
+            i.value *= scale_fact;
+        }
+    }
+
 }
 
 impl SparseMat {
@@ -80,6 +91,10 @@ impl SparseMat {
         }
         
         return  max_val;
+    }
+
+    pub fn scale_row_to_sum(&mut self, row : usize, new_sum : f64) {
+        self.matrix[row].scale_to_sum(new_sum);
     }
 
     // pub fn write_to_file(&mut self) {

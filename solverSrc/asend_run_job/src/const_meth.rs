@@ -37,6 +37,10 @@ impl Constraint {
         let mut coef : f64;
         let mut this_set : usize;
         let mut set_labs : &LinkedList<usize>;
+
+        if self.terms.is_empty() {
+            return;
+        }
         
         for tm in self.terms.iter_mut() {
             this_set = tm.ns_ptr;
@@ -81,11 +85,12 @@ impl Constraint {
                 }
             }
         }
-        return;
+
+        self.rhs_vec = vec![self.rhs; set_len];
     }
 
     pub fn full_vec_multiply(&mut self, prod : &mut Vec<f64>, vec : &mut Vec<f64>, tmp_v : &mut Vec<f64>) {
-        // compute self.scale_fact*[self.mat]^t*([self.mat]*vec + q_vec)
+        // compute self.scale_fact*[self.mat]^t*([self.mat]*vec)
         for tv in tmp_v.iter_mut() {
             *tv = 0.0;
         }
@@ -98,9 +103,11 @@ impl Constraint {
     }
 
     pub fn get_load(&mut self, c_ld : &mut Vec<f64>, u_vec : &mut Vec<f64>, q_vec : &mut Vec<f64>) {
+        // r = mu*ct(cu - q)
+        // l = -mu*ct(cu - q)
         let dim : usize = self.mat.dim;
         for i1 in 0..dim {
-            q_vec[i1] = -self.rhs;
+            q_vec[i1] = -self.rhs_vec[i1];
         }
         self.mat.vector_multiply(q_vec, u_vec, false);
         for i1 in 0..dim {

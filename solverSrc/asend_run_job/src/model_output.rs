@@ -8,7 +8,7 @@ use crate::cpp_map::CppMap;
 
 use std::collections::LinkedList;
 use std::fs::File;
-use std::io::Write;
+use std::io::{self, Write};
 
 impl Model {
     pub fn write_time_step_soln(&mut self, t_step : usize) {
@@ -19,22 +19,24 @@ impl Model {
             Ok(file) => file,
         };
 
+        let mut writer = io::BufWriter::new(out_file);
+
         for nd in self.nodes.iter() {
             if self.job[self.solve_cmd].thermal {
-                let _ = out_file.write(&nd.prev_temp.to_be_bytes());
-                let _ = out_file.write(&nd.prev_tdot.to_be_bytes());
+                let _ = writer.write(&nd.prev_temp.to_be_bytes());
+                let _ = writer.write(&nd.prev_tdot.to_be_bytes());
             }
             if self.job[self.solve_cmd].elastic {
                 for i in 0..nd.num_dof {
-                    let _ = out_file.write(&nd.prev_disp[i].to_be_bytes());
+                    let _ = writer.write(&nd.prev_disp[i].to_be_bytes());
                 }
 
                 for i in 0..nd.num_dof {
-                    let _ = out_file.write(&nd.prev_vel[i].to_be_bytes());
+                    let _ = writer.write(&nd.prev_vel[i].to_be_bytes());
                 }
 
                 for i in 0..nd.num_dof {
-                    let _ = out_file.write(&nd.prev_acc[i].to_be_bytes());
+                    let _ = writer.write(&nd.prev_acc[i].to_be_bytes());
                 }
 
             }
@@ -44,7 +46,7 @@ impl Model {
             for el in self.elements.iter() {
                 if el.num_int_dof > 0 {
                     for i in 0..el.num_int_dof {
-                        let _ = out_file.write(&el.int_prev_disp[i].to_be_bytes());
+                        let _ = writer.write(&el.int_prev_disp[i].to_be_bytes());
                     }
                 }
             }

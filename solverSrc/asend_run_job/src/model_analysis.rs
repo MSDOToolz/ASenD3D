@@ -1,6 +1,8 @@
 use crate::model::*;
 use crate::constants::*;
+use crate::constraint::*;
 use crate::list_ent::*;
+use crate::spatial_grid::*;
 use crate::nd_el_set::*;
 use crate::node::*;
 use crate::element::*;
@@ -20,6 +22,7 @@ impl Model {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
+        let mut i4 : usize;
         let mut nd1 : usize;
         let mut nd2 : usize;
         let mut min_ct : usize;
@@ -47,6 +50,12 @@ impl Model {
                     nd2 = el.nodes[i2];
                     nodal_conn[nd1].add_if_absent(nd2);
                     nodal_conn[nd2].add_if_absent(nd1);
+                    self.nodes[nd1].add_conn_nd(nd2);
+                    self.nodes[nd2].add_conn_nd(nd1);
+                }
+                self.nodes[nd1].add_element(el.label, i1);
+                if el.this_type > 100 {
+                    self.nodes[nd1].fluid = true;
                 }
             }
         }
@@ -190,11 +199,16 @@ impl Model {
         // update the global degree of freedom indexes for the self.nodes
         
         i2 = 0;// index in elastic matrix
-        i3 = 0;// sorted rank for solid self.nodes
+        i3 = 0;// sorted rank for solid nodes
+        i4 = 0;// sorted rank for fluid nodes
         let mut this_nd : &mut Node;
         for ndi in ordered_nds.iter_mut() {
             this_nd = &mut self.nodes[*ndi];
-            if !this_nd.fluid {
+            if this_nd.fluid {
+                this_nd.sorted_rank = i4;
+                i4 += 1;
+            }
+            else {
                 this_nd.sorted_rank = i3;
                 i3 += 1usize;
                 this_nd.dof_index[0] = i2;
@@ -216,10 +230,23 @@ impl Model {
         self.el_mat_dim = i2;
         self.elastic_mat.set_dim(self.el_mat_dim);
         self.therm_mat.set_dim(self.nodes.len());
+        self.fl_mat_dim = 6*i4;
+        self.fluid_mat.set_dim(self.fl_mat_dim);
+        self.fluid_lf.set_dim(self.fl_mat_dim);
         
         let scmd = &mut self.job[self.solve_cmd];
         if scmd.solver_method.s == "iterative" && scmd.max_it == 0 {
-            scmd.max_it = self.el_mat_dim;
+            if self.fl_mat_dim > self.el_mat_dim {
+                scmd.max_it = self.fl_mat_dim;
+            }
+            else {
+                scmd.max_it = self.el_mat_dim;
+            }
+        }
+        if scmd.fluid && scmd.elastic {
+            self.fsi_disp_map.set_dim(3*i4);
+            self.fsi_temp_map.set_dim(self.fl_mat_dim);
+            self.fluid_mesh_def.set_dim(3*i4);
         }
         
         for this_el in self.elements.iter_mut() {
@@ -496,11 +523,26 @@ impl Model {
         
         let num_nodes : usize =  self.nodes.len();
         let mut f_larray = vec![FacePtList::new(); num_nodes];
+        let mut proceed : bool;
         for this_el in self.elements.iter_mut() {
-            if this_el.dof_per_nd == 3 {
+            proceed = match this_el.this_type {
+                3 => false,
+                41 => false,
+                _ => true,
+            };
+            if proceed {
                 for this_fc in this_el.faces.iter_mut() {
                     low_nd = self.faces[*this_fc].get_low_nd();
                     _added = f_larray[low_nd].add_if_absent(*this_fc, &mut self.faces);
+                }
+            }
+        }
+
+        for this_face in self.faces.iter() {
+            if this_face.on_surf {
+                for ndi in 0..this_face.num_nds {
+                    i1 = this_face.glob_nodes[ndi];
+                    self.nodes[i1].on_surf = true;
                 }
             }
         }
@@ -550,6 +592,263 @@ impl Model {
         }
         
         return;
+    }
+
+    pub fn build_lf_mat(&mut self) {
+        let mut dist : f64;
+        let mut coef : f64;
+        let mut row : usize;
+        let mut col : usize;
+        self.fluid_lf.zero_all();
+        let diss_lev = self.job[self.solve_cmd].dissipation;
+        let diag_coef = 1.0 - diss_lev;
+        for nd in self.nodes.iter() {
+            if nd.fluid {
+                row = 6*nd.sorted_rank;
+                for ni in nd.conn_nds.iter() {
+                    col = 6*self.nodes[*ni].sorted_rank;
+                    dist = get_dist(&nd.coord, &self.nodes[*ni].coord);
+                    coef = 1.0/dist;
+                    for i in 0..6 {
+                        self.fluid_lf.add_entry(row+i,col+i,coef);
+                    }
+                }
+                for i in 0..6 {
+                    self.fluid_lf.scale_row_to_sum(row+i, diss_lev);
+                    self.fluid_lf.add_entry(row+i, row+1, diag_coef);
+                }
+            }
+        }
+    }
+
+    pub fn build_mesh_def_mat(&mut self) {
+        self.fluid_mesh_def.zero_all();
+
+        let mut el10 = Element::new();
+        el10.initialize_type(10);
+        let mut el8 = Element::new();
+        el8.initialize_type(8);
+        let mut el6 = Element::new();
+        el6.initialize_type(6);
+        let mut el4 = Element::new();
+        el4.initialize_type(4);
+
+        let r_vec = match self.d0_scratch.front_mut() {
+            None => panic!("Error: no scratch vector, build_mesh_def_mat()"),
+            Some(x) => &mut x.dat,
+        };
+        let mut dr_du : &mut Vec<f64> = &mut Vec::new();
+        let mut dr_dt : &mut Vec<f64> = &mut Vec::new();
+        let mut si = 0usize;
+        for s in self.scratch.iter_mut() {
+            if si == 0 {
+                dr_du = &mut s.dat;
+            }
+            else if si == 1 {
+                dr_dt = &mut s.dat;
+            }
+            si += 1;
+        }
+
+        let mut st_el : &mut Element;
+        let mut gr : usize;
+        let mut gc : usize;
+        let mut k : usize;
+        for el in self.elements.iter() {
+            if el.this_type > 100 {
+                el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut self.sections, &mut self.materials, &mut self.nodes, &self.design_vars);
+                st_el = match el.this_type {
+                    1000 => &mut el10,
+                    800 => &mut el8,
+                    600 => &mut el6,
+                    400 => &mut el4,
+                    _ => panic!("Error: unrecognized element type, build_mesh_def_mat"),
+                };
+                for i in 0..el.num_nds {
+                    st_el.nodes[i] = el.nodes[i];
+                }
+                st_el.get_ruk_dfd0(r_vec, dr_du, dr_dt, true, false, &mut self.d0_pre);
+                k = 0;
+                for i1 in el.nodes.iter() {
+                    gr = 3*self.nodes[*i1].sorted_rank;
+                    for _i2 in 0..3 {
+                        for j1 in el.nodes.iter() {
+                            gc = 3*self.nodes[*j1].sorted_rank;
+                            for _j2 in 0..3 {
+                                self.fluid_mesh_def.add_entry(gr,gc, dr_du[k]);
+                                k += 1;
+                                gc += 1;
+                            }
+                        }
+                        gr += 1;
+                    }
+                }
+            }
+        }
+
+        // build the surface constraints for the mesh deformation
+        self.mesh_def_const.const_vec = vec![Constraint::new()];
+        let new_const = &mut self.mesh_def_const.const_vec[0];
+        new_const.this_type = CppStr::from("displacement");
+        new_const.scale_fact = 10000f64*self.fluid_mesh_def.get_max_abs_val();
+        k = 0;
+        for nd in self.nodes.iter() {
+            if nd.fluid && nd.on_surf {
+                k += 3;
+            }
+        }
+        new_const.mat.set_dim(k);
+        k = 0;
+        for nd in self.nodes.iter() {
+            if nd.fluid && nd.on_surf {
+                gr = 3*nd.sorted_rank;
+                for _i in 0..3 {
+                    new_const.mat.add_entry(k,gr, 1.0);
+                    gr += 1;
+                    k += 1;
+                }
+            }
+        }
+
+        self.mesh_def_lt.allocate_from_sparse_mat(&mut self.fluid_mesh_def, &mut self.mesh_def_const, 3);
+        self.mesh_def_lt.populate_from_sparse_mat(&mut self.fluid_mesh_def, &mut self.mesh_def_const);
+        self.mesh_def_lt.ldl_factor();
+
+    }
+
+    pub fn build_fsi_map(&mut self) {
+
+        //put all the structrual surface faces into a spatial grid list
+        let mut x_rng = [1.0e+100f64, -1.0e+100];
+        let mut y_rng = [1.0e+100f64, -1.0e+100];
+        let mut z_rng = [1.0e+100f64, -1.0e+100];
+        let mut dist : f64;
+        let mut tot_dist = 0.0f64;
+        let mut hit_ct = 0usize;
+        for nd in self.nodes.iter() {
+            if !nd.fluid {
+                for ni in nd.conn_nds.iter() {
+                    dist = get_dist(&nd.coord, &self.nodes[*ni].coord);
+                    tot_dist += dist;
+                    hit_ct += 1;
+                }
+                if nd.coord[0] < x_rng[0] {
+                    x_rng[0] = nd.coord[0];
+                }
+                if nd.coord[0] > x_rng[1] {
+                    x_rng[1] = nd.coord[0];
+                }
+                if nd.coord[1] < y_rng[0] {
+                    y_rng[0] = nd.coord[1];
+                }
+                if nd.coord[1] > y_rng[1] {
+                    y_rng[1] = nd.coord[1];
+                }
+                if nd.coord[2] < z_rng[0] {
+                    z_rng[0] = nd.coord[2];
+                }
+                if nd.coord[2] > z_rng[1] {
+                    z_rng[1] = nd.coord[2];
+                }
+            }
+        }
+        let avg_dist = tot_dist/(hit_ct as f64);
+        let spacing = 2.0*avg_dist;
+
+        let mut fc_gd_lst = SpatialGrid::new();
+        fc_gd_lst.initialize(&mut x_rng, spacing, &mut y_rng, spacing, &mut z_rng, spacing);
+
+        let mut cent = [0f64; 3];
+        let mut fi = 0usize;
+        let mut sfct = 0usize;
+        for fc in self.faces.iter() {
+            if fc.on_surf && self.elements[fc.host_el].this_type < 100 {
+                fc.get_centroid(&mut cent, &self.nodes);
+                fc_gd_lst.add_ent(fi, &cent);
+                sfct += 1;
+            }
+            fi += 1;
+        }
+
+        // map the fluid surface points to structural faces, build fsi matrices
+        let mut max_gap = self.job[self.solve_cmd].max_fsi_gap;
+        if max_gap < 0.0 {
+            max_gap = avg_dist;
+        }
+        let mut near_fcs = vec![0usize; sfct];
+        let mut scrd = [0f64, 0f64];
+        let mut min_dist : f64;
+        let mut min_fc = 0usize;
+        let mut min_scrd = [0f64, 0f64];
+        let mut lst_ln : usize;
+        let mut fci : usize;
+        let mut n_vec = [DiffDoub0::new(); 8];
+        let mut this_fc : &Face;
+        let mut row : usize;
+        let mut col : usize;
+        let mut num_surf_nds = 0usize;
+        for nd in self.nodes.iter() {
+            if nd.on_surf && nd.fluid {
+                num_surf_nds += 1;
+                lst_ln = fc_gd_lst.get_in_radius(&mut near_fcs, sfct, &nd.coord, spacing);
+                min_dist = 1.0e+100;
+                for i in 0..lst_ln {
+                    fci = near_fcs[i];
+                    dist = self.faces[fci].get_proj_dist(&mut scrd, &nd.coord, &self.nodes);
+                    if dist < min_dist {
+                        min_dist = dist;
+                        min_fc = fci;
+                        min_scrd[0] = scrd[0];
+                        min_scrd[1] = scrd[1];
+                    }
+                }
+                if min_dist < max_gap {
+                    this_fc = &self.faces[min_fc];
+                    this_fc.get_basis_dfd0(&mut n_vec, &min_scrd);
+                    row = 3*nd.sorted_rank;
+                    for i in 0..3 {
+                        for j in 0..this_fc.num_nds {
+                            col = self.nodes[this_fc.glob_nodes[j]].dof_index[i];
+                            self.fsi_disp_map.add_entry(row, col, n_vec[j].val);
+                        }
+                        row += 1;
+                    }
+                    row = 6*nd.sorted_rank + 4; //temperature dof of nd in the fluid eqns
+                    for j in 0..this_fc.num_nds {
+                        col = self.nodes[this_fc.glob_nodes[j]].sorted_rank;
+                        self.fsi_temp_map.add_entry(row, col, n_vec[j].val);
+                    }
+                }
+            }
+        }
+
+        //Build the constraint matrices for velocity and temperature on the fluid surface nodes
+
+        let num_fl_cn = self.fluid_const.const_vec.len();
+        let mut this_con = &mut self.fluid_const.const_vec[num_fl_cn - 2];
+        this_con.mat.set_dim(3*num_surf_nds);
+        let mut veli = 0usize;
+        for nd in self.nodes.iter() {
+            if nd.on_surf && nd.fluid {
+                col = 6*nd.sorted_rank;
+                for i in 1..4 {
+                    this_con.mat.add_entry(veli, col+i, 1.0f64);
+                    veli += 1;
+                }
+            }
+        }
+
+        this_con = &mut self.fluid_const.const_vec[num_fl_cn - 1];
+        this_con.mat.set_dim(num_surf_nds);
+        let mut tempi = 0usize;
+        for nd in self.nodes.iter() {
+            if nd.on_surf && nd.fluid {
+                col = 6*nd.sorted_rank + 4;
+                this_con.mat.add_entry(tempi, col, 1.0f64);
+                tempi += 1;
+            }
+        }
+
     }
 
     pub fn analysis_prep(&mut self) {
@@ -609,6 +908,17 @@ impl Model {
         self.build_constraint_mats();
         self.prep_matrix_factorizations();
         self.find_surface_faces();
+        
+        if self.job[self.solve_cmd].fluid {
+            self.build_lf_mat();
+            if self.job[self.solve_cmd].elastic {
+                self.build_mesh_def_mat();
+                self.build_fsi_map();
+            }
+            else if self.job[self.solve_cmd].thermal {
+                self.build_fsi_map();
+            }
+        }
         
         self.an_prep_run = true;
         return;

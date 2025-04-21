@@ -8,6 +8,7 @@ use std::collections::LinkedList;
 pub struct Node {
     pub label : usize,
     pub fluid : bool,
+    pub on_surf : bool,
     pub num_dof : usize,
     pub dof_index : [usize; 6],
     pub sorted_rank : usize,
@@ -53,6 +54,7 @@ pub struct Node {
     pub initial_turb_edot : f64,
     pub d_var_lst : LinkedList<IDCapsule>,
     pub el_lst : LinkedList<DualInt>,
+    pub conn_nds : LinkedList<usize>,
 }
 
 impl Node {
@@ -60,6 +62,7 @@ impl Node {
         Node {
             label : MAX_INT,
             fluid : false,
+            on_surf : false,
             num_dof : 3usize,
             dof_index : [MAX_INT; 6],
             sorted_rank : MAX_INT,
@@ -105,6 +108,7 @@ impl Node {
             initial_turb_edot : 0f64,
             d_var_lst : LinkedList::new(),
             el_lst : LinkedList::new(),
+            conn_nds : LinkedList::new(),
         }
     }
 }

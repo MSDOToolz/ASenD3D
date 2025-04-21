@@ -1,4 +1,5 @@
 use crate::face::*;
+use crate::fmath::*;
 use crate::constants::*;
 use crate::diff_doub::*;
 use crate::element::{DiffDoub0FlPrereq, DiffDoub1FlPrereq};
@@ -55,6 +56,118 @@ impl Face {
             }
         }
         return  low_nd;
+    }
+
+    pub fn get_centroid(&self, cent : &mut [f64], nd_ar : &Vec<Node>) {
+        for j in 0..3 {
+            cent[j] = 0f64;
+        }
+
+        let mut crd : &[f64];
+        for i in 0..self.num_nds {
+            crd = &nd_ar[self.glob_nodes[i]].coord;
+            for j in 0..3 {
+                cent[j] += crd[j];
+            }
+        }
+        
+        let nn_inv = 1.0f64/(self.num_nds as f64);
+        for j in 0..3 {
+            cent[j] *= nn_inv;
+        }
+    }
+
+    pub fn spt_in_face(&self, pt : &[f64]) -> bool {
+        // pt = s coordinate vector from centroid of element
+        if self.num_nds == 4 || self.num_nds == 8 {
+            if fabs(pt[0]) > 1.0 {
+                return false;
+            }
+            if fabs(pt[1]) > 1.0 {
+                return false;
+            }
+            return true;
+        }
+        if pt[0] < -R_1O3 {
+            return false;
+        }
+        if pt[1] < -R_1O3 {
+            return false;
+        }
+        if pt[0] + pt[1] > R_1O3 {
+            return false;
+        }
+        return true;
+    }
+
+    pub fn get_proj_dist(&self, s_crd : &mut [f64], pt : &[f64], nd_ar : &Vec<Node>) -> f64 {
+        let mut i1 : usize;
+        let mut i2 : usize;
+        let mut i3 : usize;
+        let mut cent = [0f64; 3];
+        let mut dx_ds1 = [0f64; 3];
+        let mut dx_ds2 = [0f64; 3];
+        let mut dist = 0f64;
+
+        self.get_centroid(&mut cent, nd_ar);
+
+        if self.num_nds == 4 || self.num_nds == 8 {
+            let crd1 = &nd_ar[self.glob_nodes[1]].coord;
+            let crd2 = &nd_ar[self.glob_nodes[2]].coord;
+            let crd3 = &nd_ar[self.glob_nodes[3]].coord;
+            for i in 0..3 {
+                dx_ds1[i] = 0.5f64*(crd1[i] + crd2[i]) - cent[i];
+                dx_ds2[i] = 0.5f64*(crd2[i] + crd3[i]) - cent[i];
+            }
+        }
+        else {
+            let crd0 = &nd_ar[self.glob_nodes[0]].coord;
+            let crd1 = &nd_ar[self.glob_nodes[1]].coord;
+            let crd2 = &nd_ar[self.glob_nodes[2]].coord;
+            for i in 0..3 {
+                dx_ds1[i] = crd1[i] - crd0[i];
+                dx_ds2[i] = crd2[i] - crd0[i];
+            }
+        }
+        
+        let mut mat = [dx_ds1[0], dx_ds2[0], dx_ds1[1], dx_ds2[1], dx_ds1[2], dx_ds2[2]];
+        let mut bvec = [pt[0] - cent[0], pt[1] - cent[1], pt[2] - cent[2]];
+        let mut soln = [0.0f64; 2];
+
+        q_rfactor_ar(&mut mat,2, 0, 2, 0, 1, 0);
+        solveq_rx_eqb_ar(&mut soln, &mut mat, &mut bvec, 2, 0, 2, 0, 1, 0);
+
+        if !self.spt_in_face(&soln) {
+            let mut mul_fac = 0.5f64;
+            while mul_fac < 0.98 {
+                while !self.spt_in_face(&soln) {
+                    soln[0] *= mul_fac;
+                    soln[1] *= mul_fac;
+                }
+                soln[0] /= mul_fac;
+                soln[1] /= mul_fac;
+                mul_fac = mul_fac.sqrt();
+            }
+        }
+        
+        if self.num_nds == 4 || self.num_nds ==8 {
+            s_crd[0] = soln[0];
+            s_crd[1] = soln[1];
+        }
+        else {
+            s_crd[0] = soln[0] + R_1O3;
+            s_crd[1] = soln[1] + R_1O3;
+        }
+        
+        
+        let mut proj : f64;
+        let mut dp = 0.0f64;
+        for i in 0..3 {
+            proj = (cent[i] + soln[0]*dx_ds1[i] + soln[1]*dx_ds2[i]) - pt[i];
+            dp += proj*proj;
+        }
+
+        dp.sqrt()
     }
 
     //dup1

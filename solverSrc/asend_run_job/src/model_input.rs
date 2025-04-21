@@ -23,6 +23,13 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
+fn increment_ct(ct : usize) -> usize {
+    match ct {
+        MAX_INT => 0,
+        _ => ct + 1,
+    }
+}
+
 impl Model {
     pub fn read_input_line(& self, file_line : &mut CppStr, headings : &mut Vec<CppStr>, hd_ld_space : &mut [usize], data : &mut Vec<CppStr>, data_len : &mut usize) -> bool {
         let mut i1 : usize;
@@ -152,18 +159,10 @@ impl Model {
                 } else if headings[1].s == "fileName" && data_len == 1 {
                     self.job[cmd_ct].file_name = data[0].clone();
                 } else if headings[1].s == "dynamic" && data_len == 1 {
-                    if data[0].s == "yes" {
-                        self.job[cmd_ct].dynamic = true;
-                    } else {
-                        self.job[cmd_ct].dynamic = false;
-                    }
+                    self.job[cmd_ct].dynamic = data[0].s.contains("yes");
                 }
                 else if headings[1].s == "elastic" && data_len == 1 {
-                    if data[0].s == "yes" {
-                        self.job[cmd_ct].elastic = true;
-                    } else {
-                        self.job[cmd_ct].elastic = false;
-                    }
+                    self.job[cmd_ct].elastic = data[0].s.contains("yes");
                 } else if headings[1].s == "loadRampSteps" && data_len == 1 {
                     self.job[cmd_ct].load_ramp_steps = CppStr::stoi(&mut data[0]);
                 } else if headings[1].s == "newmarkBeta" && data_len == 1 {
@@ -171,28 +170,15 @@ impl Model {
                 } else if headings[1].s == "newmarkGamma" && data_len == 1 {
                     self.job[cmd_ct].newmark_gamma = CppStr::stod(&mut data[0]);
                 } else if headings[1].s == "nonlinearGeom" && data_len == 1 {
-                    if data[0].s == "yes" {
-                        self.job[cmd_ct].nonlinear_geom = true;
-                    } else {
-                        self.job[cmd_ct].nonlinear_geom = false;
-                    }
+                    self.job[cmd_ct].nonlinear_geom = data[0].s.contains("yes");
                 } else if headings[1].s == "saveSolnHist" && data_len == 1 {
-                    if data[0].s == "yes" {
-                        self.job[cmd_ct].save_soln_hist = true;
-                    } else {
-                        self.job[cmd_ct].save_soln_hist = false;
-                    }
+                    self.job[cmd_ct].save_soln_hist = data[0].s.contains("yes");
                 }
                 else if headings[1].s == "solnHistDir" && data_len == 1 {
                     self.job[cmd_ct].file_name = data[0].clone();
                 }
                 else if headings[1].s == "lumpMass" && data_len == 1 {
-                    if data[0].s == "yes" {
-                        self.job[cmd_ct].lump_mass = true;
-                    }
-                    else {
-                        self.job[cmd_ct].lump_mass = false;
-                    }
+                    self.job[cmd_ct].lump_mass = data[0].s.contains("yes");
                 }
                 else if headings[1].s == "simPeriod" && data_len == 1 {
                     self.job[cmd_ct].sim_period = CppStr::stod(&mut data[0]);
@@ -213,14 +199,29 @@ impl Model {
                     self.job[cmd_ct].static_load_time.push_back(CppStr::stod(&mut data[0]));
                     //new_cmd->static_load_time = stod(data[0]);
                 } else if headings[1].s == "thermal" && data_len == 1 {
-                    if data[0].s == "yes" {
-                        self.job[cmd_ct].thermal = true;
-                    } else {
-                        self.job[cmd_ct].thermal = false;
-                    }
+                    self.job[cmd_ct].thermal = data[0].s.contains("yes");
                 } else if headings[1].s == "timeStep" && data_len == 1 {
                     self.job[cmd_ct].time_step = CppStr::stod(&mut data[0]);
-                } else if headings[1].s == "type" && data_len == 1 {
+                }
+                else if headings[1].s == "fluid" && data_len == 1 {
+                    self.job[cmd_ct].fluid = data[0].s.contains("yes");
+                }
+                else if headings[1].s == "dissipationLevel" && data_len == 1 {
+                    self.job[cmd_ct].dissipation = CppStr::stod(&mut data[0]);
+                }
+                else if headings[1].s == "modelTurbulence" && data_len == 1 {
+                    self.job[cmd_ct].mod_turb = data[0].s.contains("yes");
+                }
+                else if headings[1].s == "fluidSolver" && data_len == 1 {
+                    self.job[cmd_ct].fluid_solver = data[0].clone();
+                }
+                else if headings[1].s == "fluidBlockDim" && data_len == 1 {
+                    self.job[cmd_ct].fluid_block_dim = CppStr::stoi(&mut data[0]);
+                }
+                else if headings[1].s == "maxFSIGap" && data_len == 1 {
+                    self.job[cmd_ct].max_fsi_gap = CppStr::stod(&mut data[0]);
+                }
+                else if headings[1].s == "type" && data_len == 1 {
                     self.job[cmd_ct].this_type = data[0].clone();
                 } else if headings[1].s == "numModes" && data_len == 1 {
                     self.job[cmd_ct].num_modes = CppStr::stoi(&mut data[0]);
@@ -832,10 +833,12 @@ impl Model {
     }
 
     pub fn get_curr_constraint(&mut self, curr_type : &CppStr, curr_ct : usize) -> &mut Constraint {
-        if curr_type.s == "displacement" {
-            return &mut self.elastic_const.const_vec[curr_ct];
+        match curr_type.s.as_str() {
+            "displacement" => &mut self.elastic_const.const_vec[curr_ct],
+            "temperature" => &mut self.thermal_const.const_vec[curr_ct],
+            "fluid" => &mut self.fluid_const.const_vec[curr_ct],
+            &_ => panic!("Error, unrecognized constraint type, {}", curr_type.s),
         }
-        &mut self.thermal_const.const_vec[curr_ct]
     }
 
     pub fn read_constraint_input(&mut self, file_name : &mut CppStr) {
@@ -847,9 +850,10 @@ impl Model {
         
         let all_types = CppStr::from("displacement temperature");
         
-        let mut ec_ct : usize =  0;
-        let mut tc_ct : usize =  0;
-        let mut curr_ct : usize = 0;
+        let mut ec_ct : usize = 0;
+        let mut tc_ct : usize = 0;
+        let mut fc_ct : usize = 0;
+        let mut curr_ct : &mut usize = &mut 0usize;
         let mut curr_type : CppStr = CppStr::new();
         let mut flt_in : [f64; 2] = [0.0, 0.0];
         
@@ -859,11 +863,11 @@ impl Model {
                 self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 if headings[0].s == "constraints" {
                     if headings[1].s == "type" && data_len == 1 {
-                        if data[0].s == "displacement" {
-                            ec_ct += 1usize;
-                        }
-                        else if data[0].s == "temperature" {
-                            tc_ct += 1usize;
+                        match headings[1].s.as_str() {
+                            "displacement" => ec_ct += 1,
+                            "temperature" => tc_ct += 1,
+                            "fluid" => fc_ct += 1,
+                            &_ => (),
                         }
                     }
                 }
@@ -876,65 +880,51 @@ impl Model {
         
         self.elastic_const.const_vec = vec![Constraint::new(); ec_ct];
         self.thermal_const.const_vec = vec![Constraint::new(); tc_ct];
+        self.fluid_const.const_vec = vec![Constraint::new(); fc_ct+2];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             ec_ct = MAX_INT;
             tc_ct = MAX_INT;
+            fc_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[0].s == "constraints" {
                     if headings[1].s == "type" && data_len == 1 {
-                        if data[0].s == "displacement" {
-                            if ec_ct == MAX_INT {
-                                ec_ct = 0;
-                            }
-                            else {
-                                ec_ct += 1usize;
-                            }
-                            curr_ct = ec_ct;
-                            curr_type = CppStr::from("displacement");
-                            self.get_curr_constraint(&mut curr_type, curr_ct).this_type = CppStr::from("displacement");
-                        }
-                        else if data[0].s == "temperature" {
-                            if tc_ct == MAX_INT {
-                                tc_ct = 0;
-                            }
-                            else {
-                                tc_ct += 1usize;
-                            }
-                            curr_ct = tc_ct;
-                            curr_type = CppStr::from("temperature");
-                            self.get_curr_constraint(&curr_type, curr_ct).this_type = CppStr::from("temperature");
-                        }
-                        else {
-                            panic!("Error: {} is not a valid constraint type. Allowable values are {}", data[0].s, all_types.s);
-                        }
+                        curr_ct = match data[0].s.as_str() {
+                            "displacement" => &mut ec_ct,
+                            "temperature" => &mut tc_ct,
+                            "fluid" => &mut fc_ct,
+                            &_ => panic!("Error: {} is not a valid constraint type. Allowable values are {}", data[0].s, all_types.s),
+                        };
+                        *curr_ct = increment_ct(*curr_ct);
+                        curr_type.s = data[0].s.clone();
+                        self.get_curr_constraint(&mut curr_type, *curr_ct).this_type = curr_type.clone();
                     }
                     else if headings[1].s == "terms" {
                         if headings[2].s == "nodeSet" && data_len == 1 {
                             let mut new_cn = ConstraintTerm::new();
                             new_cn.node_set = data[0].clone();
-                            self.get_curr_constraint(&curr_type, curr_ct).terms.push_back(new_cn);
+                            self.get_curr_constraint(&curr_type, *curr_ct).terms.push_back(new_cn);
                         } else if headings[2].s == "dof" && data_len == 1 {
-                            match self.get_curr_constraint(&curr_type, curr_ct).terms.back_mut() {
+                            match self.get_curr_constraint(&curr_type, *curr_ct).terms.back_mut() {
                                 None => {panic!("failed to access back of constraint terms list");},
                                 Some(x) => {x.dof = CppStr::stoi(&mut data[0]);},
                             }
                         } else if headings[2].s == "coef" && data_len == 1 {
-                            match self.get_curr_constraint(&curr_type, curr_ct).terms.back_mut() {
+                            match self.get_curr_constraint(&curr_type, *curr_ct).terms.back_mut() {
                                 None => {panic!("failed to access back of constraint terms list");},
                                 Some(x) => {x.coef = CppStr::stod(&mut data[0]);},
                             }
                         }
                     } 
                     else if headings[1].s == "rhs" && data_len == 1 {
-                        self.get_curr_constraint(&curr_type, curr_ct).rhs = CppStr::stod(&mut data[0])
+                        self.get_curr_constraint(&curr_type, *curr_ct).rhs = CppStr::stod(&mut data[0])
                     }
                     else if headings[1].s == "active_time" && data_len == 2 {
                         flt_in[0] = data[0].stod();
                         flt_in[1] = data[1].stod();
-                        self.get_curr_constraint(&curr_type, curr_ct).set_act_time(&flt_in);
+                        self.get_curr_constraint(&curr_type, *curr_ct).set_act_time(&flt_in);
                     }
                 }
             }
@@ -1383,22 +1373,24 @@ impl Model {
         let full_file = format!("{}{}{}{}",self.job[self.solve_cmd].file_name.s, "/solnTStep", t_step, ".out");
         let path = Path::new(full_file.as_str());
 
-        let mut in_file = match File::open(&path) {
+        let in_file = match File::open(&path) {
             Err(why) => panic!("couldn't open file, {}, {}", full_file, why),
             Ok(file) => file,
         };
+
+        let mut reader = io::BufReader::new(in_file);
 
         let mut buf8 = [0u8; 8];
         let mut _b_read = 0usize;
 
         for nd in self.nodes.iter_mut() {
             if self.job[self.solve_cmd].thermal {
-                _b_read = match in_file.read(&mut buf8) {
+                _b_read = match reader.read(&mut buf8) {
                     Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                     Ok(n) => n,
                 };
                 nd.prev_temp = f64::from_be_bytes(buf8);
-                _b_read = match in_file.read(&mut buf8) {
+                _b_read = match reader.read(&mut buf8) {
                     Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                     Ok(n) => n,
                 };
@@ -1406,7 +1398,7 @@ impl Model {
             }
             if self.job[self.solve_cmd].elastic {
                 for i in 0..nd.num_dof {
-                    _b_read = match in_file.read(&mut buf8) {
+                    _b_read = match reader.read(&mut buf8) {
                         Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                         Ok(n) => n,
                     };
@@ -1414,7 +1406,7 @@ impl Model {
                 }
 
                 for i in 0..nd.num_dof {
-                    _b_read = match in_file.read(&mut buf8) {
+                    _b_read = match reader.read(&mut buf8) {
                         Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                         Ok(n) => n,
                     };
@@ -1422,7 +1414,7 @@ impl Model {
                 }
 
                 for i in 0..nd.num_dof {
-                    _b_read = match in_file.read(&mut buf8) {
+                    _b_read = match reader.read(&mut buf8) {
                         Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                         Ok(n) => n,
                     };
@@ -1436,7 +1428,7 @@ impl Model {
             for el in self.elements.iter_mut() {
                 if el.num_int_dof > 0 {
                     for i in 0..el.num_int_dof {
-                        _b_read = match in_file.read(&mut buf8) {
+                        _b_read = match reader.read(&mut buf8) {
                             Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                             Ok(n) => n,
                         };

@@ -58,25 +58,25 @@ def plotShellMesh(meshData):
         )
     ])
     
-    xMax = np.max(xLst)
-    xMin = np.min(xLst)
-    xLen = xMax - xMin
-    xMid = 0.5*(xMax+xMin)
-    yMax = np.max(yLst)
-    yMin = np.min(yLst)
-    yLen = yMax - yMin
-    yMid = 0.5*(yMax+yMin)
-    zMax = np.max(zLst)
-    zMin = np.min(zLst)
-    zLen = zMax - zMin
-    zMid = 0.5*(zMax+zMin)
+    # xMax = np.max(xLst)
+    # xMin = np.min(xLst)
+    # xLen = xMax - xMin
+    # xMid = 0.5*(xMax+xMin)
+    # yMax = np.max(yLst)
+    # yMin = np.min(yLst)
+    # yLen = yMax - yMin
+    # yMid = 0.5*(yMax+yMin)
+    # zMax = np.max(zLst)
+    # zMin = np.min(zLst)
+    # zLen = zMax - zMin
+    # zMid = 0.5*(zMax+zMin)
     
-    maxLen = np.max([xLen,yLen,zLen])
-    hL = 0.5*maxLen
-    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
-            'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
-            'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
-    fig.update_layout(scene=scn)
+    # maxLen = np.max([xLen,yLen,zLen])
+    # hL = 0.5*maxLen
+    # scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
+    #         'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
+    #         'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
+    # fig.update_layout(scene=scn)
 
     fig.show()
     
@@ -227,8 +227,8 @@ def plotSolidMesh(meshData):
     maxLen = np.max([xLen,yLen,zLen])
     hL = 0.5*maxLen
     scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)]},
-           'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
-           'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
+            'yaxis': {'range': [(yMid-hL), (yMid+hL)]},
+            'zaxis': {'range': [(zMid-hL), (zMid+hL)]}}
     fig.update_layout(scene=scn)
 
     fig.show()

@@ -88,11 +88,11 @@ class Mesh2D():
             if(sweepMethod == 'inDirection'):
                 mag = np.linalg.norm(axis)
                 unitAxis = (1.0/mag)*np.array(axis)
-                for i in range(0,self.numNodes):
+                for nd in self.nodes:
                     ndDir.append(unitAxis)
             else:
                 pAr = np.array(point)
-                for i in range(0,self.numNodes):
+                for nd in self.nodes:
                     if(sweepMethod == 'toPoint'):
                         vec = pAr - nd
                     else:
@@ -100,6 +100,24 @@ class Mesh2D():
                     mag = np.linalg.norm(vec)
                     unitVec = (1.0/mag)*vec
                     ndDir.append(unitVec)
+            
+            if followNormal:
+                adjDir = np.zeros((len(ndDir),2))
+                for e in self.edgeNodes:
+                    n1 = e[0]
+                    n2 = e[1]
+                    vec = self.nodes[n1] - self.nodes[n2]
+                    nv = np.array([-vec[1], vec[0]])
+                    if np.dot(nv,ndDir[n1]) < 0.0:
+                        nv = -1.0*nv
+                    mag = np.linalg.norm(nv)
+                    nv = (1.0/mag)*nv
+                    adjDir[n1] += nv
+                    adjDir[n2] += nv
+                for i, ad in enumerate(adjDir):
+                    mag = np.linalg.norm(ad)
+                    ndDir[i] = (1.0/mag)*ad
+                
             rowNds = self.numNodes
             rowEls = self.numEdges
             stepLen = sweepDistance/sweepElements
