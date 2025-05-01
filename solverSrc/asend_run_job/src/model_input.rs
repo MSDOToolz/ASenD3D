@@ -171,7 +171,11 @@ impl Model {
                     self.job[cmd_ct].newmark_gamma = CppStr::stod(&mut data[0]);
                 } else if headings[1].s == "nonlinearGeom" && data_len == 1 {
                     self.job[cmd_ct].nonlinear_geom = data[0].s.contains("yes");
-                } else if headings[1].s == "saveSolnHist" && data_len == 1 {
+                }
+                else if headings[1].s == "enforceMaxCon" && data_len == 1 {
+                    self.job[cmd_ct].enforce_max_c = data[0].s.contains("yes");
+                }
+                else if headings[1].s == "saveSolnHist" && data_len == 1 {
                     self.job[cmd_ct].save_soln_hist = data[0].s.contains("yes");
                 }
                 else if headings[1].s == "solnHistDir" && data_len == 1 {
@@ -200,26 +204,14 @@ impl Model {
                     //new_cmd->static_load_time = stod(data[0]);
                 } else if headings[1].s == "thermal" && data_len == 1 {
                     self.job[cmd_ct].thermal = data[0].s.contains("yes");
+                }
+                else if headings[1].s == "diffusion" && data_len == 1 {
+                    self.job[cmd_ct].thermal = data[0].s.contains("yes");
                 } else if headings[1].s == "timeStep" && data_len == 1 {
                     self.job[cmd_ct].time_step = CppStr::stod(&mut data[0]);
                 }
-                else if headings[1].s == "fluid" && data_len == 1 {
-                    self.job[cmd_ct].fluid = data[0].s.contains("yes");
-                }
-                else if headings[1].s == "dissipationLevel" && data_len == 1 {
-                    self.job[cmd_ct].dissipation = CppStr::stod(&mut data[0]);
-                }
-                else if headings[1].s == "modelTurbulence" && data_len == 1 {
-                    self.job[cmd_ct].mod_turb = data[0].s.contains("yes");
-                }
-                else if headings[1].s == "fluidSolver" && data_len == 1 {
-                    self.job[cmd_ct].fluid_solver = data[0].clone();
-                }
-                else if headings[1].s == "fluidBlockDim" && data_len == 1 {
-                    self.job[cmd_ct].fluid_block_dim = CppStr::stoi(&mut data[0]);
-                }
-                else if headings[1].s == "maxFSIGap" && data_len == 1 {
-                    self.job[cmd_ct].max_fsi_gap = CppStr::stod(&mut data[0]);
+                else if headings[1].s == "userUpdate" && data_len == 1 {
+                    self.job[cmd_ct].run_user_update = data[0].s.contains("yes");
                 }
                 else if headings[1].s == "type" && data_len == 1 {
                     self.job[cmd_ct].this_type = data[0].clone();
@@ -416,18 +408,6 @@ impl Model {
                         }
                         else if data[0].s == "mass" {
                             el_type = 1;
-                        }
-                        else if data[0].s == "fl4" {
-                            el_type = 400;
-                        }
-                        else if data[0].s == "fl6" {
-                            el_type = 600;
-                        }
-                        else if data[0].s == "fl8" {
-                            el_type = 800;
-                        }
-                        else if data[0].s == "fl10" {
-                            el_type = 1000;
                         }
                         else {
                             panic!("Error: unrecognized element type: {}", data[0].s);
@@ -689,6 +669,23 @@ impl Model {
                                 self.materials[mat_ct].spec_heat = CppStr::stod(&mut data[0]);
                             }
                         }
+                        else if headings[2].s == "diffusion" {
+                            if headings[3].s == "diffusivity" && data_len == 6 {
+                                let this_mat = &mut self.materials[mat_ct];
+                                for i1 in 0..6 {
+                                    this_mat.diffusivity[i1] = data[i1].stod();
+                                }
+                            }
+                            else if headings[3].s == "expansion" && data_len == 6 {
+                                let this_mat = &mut self.materials[mat_ct];
+                                for i1 in 0..6 {
+                                    this_mat.diff_exp[i1] = data[i1].stod();
+                                }
+                            }
+                            else if headings[3].s == "maxConcentration" && data_len == 1 {
+                                self.materials[mat_ct].max_concentration = data[0].stod();
+                            }
+                        }
                         else if headings[2].s == "damping" && data_len == 3 {
                             int_inp[0] = CppStr::stoi(&mut data[0]) - 1;
                             int_inp[1] = CppStr::stoi(&mut data[1]) - 1;
@@ -754,18 +751,6 @@ impl Model {
                         }
                         else if headings[2].s == "refEnth" && data_len == 1 {
                             self.fluids[fl_ct].ref_enth = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "tempVisCoef" && data_len == 1 {
-                            self.fluids[fl_ct].temp_vis_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "turbVisCoef" && data_len == 1 {
-                            self.fluids[fl_ct].turb_vis_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "gradVTurbCoef" && data_len == 1 {
-                            self.fluids[fl_ct].grad_turb_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "dissTurbCoef" && data_len == 1 {
-                            self.fluids[fl_ct].diss_turb_coef = CppStr::stod(&mut data[0]);
                         }
                     }
                     
@@ -836,7 +821,7 @@ impl Model {
         match curr_type.s.as_str() {
             "displacement" => &mut self.elastic_const.const_vec[curr_ct],
             "temperature" => &mut self.thermal_const.const_vec[curr_ct],
-            "fluid" => &mut self.fluid_const.const_vec[curr_ct],
+            "concentration" => &mut self.diff_const.const_vec[curr_ct],
             &_ => panic!("Error, unrecognized constraint type, {}", curr_type.s),
         }
     }
@@ -848,11 +833,11 @@ impl Model {
         let mut data = vec![CppStr::new(); 11];
         let mut data_len : usize = 0usize;
         
-        let all_types = CppStr::from("displacement temperature");
+        let all_types = CppStr::from("displacement temperature concentration");
         
         let mut ec_ct : usize = 0;
         let mut tc_ct : usize = 0;
-        let mut fc_ct : usize = 0;
+        let mut cc_ct : usize = 0;
         let mut curr_ct : &mut usize = &mut 0usize;
         let mut curr_type : CppStr = CppStr::new();
         let mut flt_in : [f64; 2] = [0.0, 0.0];
@@ -863,10 +848,10 @@ impl Model {
                 self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 if headings[0].s == "constraints" {
                     if headings[1].s == "type" && data_len == 1 {
-                        match headings[1].s.as_str() {
+                        match data[0].s.as_str() {
                             "displacement" => ec_ct += 1,
                             "temperature" => tc_ct += 1,
-                            "fluid" => fc_ct += 1,
+                            "concentration" => cc_ct += 1,
                             &_ => (),
                         }
                     }
@@ -874,18 +859,18 @@ impl Model {
             }
         }
 
-        if ec_ct == 0 && tc_ct == 0 {
+        if ec_ct == 0 && tc_ct == 0 && cc_ct == 0 {
             return;
         }
         
         self.elastic_const.const_vec = vec![Constraint::new(); ec_ct];
         self.thermal_const.const_vec = vec![Constraint::new(); tc_ct];
-        self.fluid_const.const_vec = vec![Constraint::new(); fc_ct+2];
+        self.diff_const.const_vec = vec![Constraint::new(); cc_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             ec_ct = MAX_INT;
             tc_ct = MAX_INT;
-            fc_ct = MAX_INT;
+            cc_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
@@ -894,7 +879,7 @@ impl Model {
                         curr_ct = match data[0].s.as_str() {
                             "displacement" => &mut ec_ct,
                             "temperature" => &mut tc_ct,
-                            "fluid" => &mut fc_ct,
+                            "concentration" => &mut cc_ct,
                             &_ => panic!("Error: {} is not a valid constraint type. Allowable values are {}", data[0].s, all_types.s),
                         };
                         *curr_ct = increment_ct(*curr_ct);
@@ -936,10 +921,12 @@ impl Model {
     }
 
     pub fn get_curr_ld(&mut self, curr_type : &CppStr, curr_ct : usize) -> &mut Load {
-        if curr_type.s == "elastic" {
-            return &mut self.elastic_loads[curr_ct];
+        match curr_type.s.as_str() {
+            "elastic" => &mut self.elastic_loads[curr_ct],
+            "thermal" => &mut self.thermal_loads[curr_ct],
+            "diffusion" => &mut self.diff_loads[curr_ct],
+            &_ => panic!("Error: unrecognized load type '{}' in get_curr_ld()", curr_type.s),
         }
-        &mut self.thermal_loads[curr_ct]
     }
 
     pub fn read_load_input(&mut self, file_name : &mut CppStr) {
@@ -953,9 +940,11 @@ impl Model {
         let mut doub_inp : [f64; 10] = [0.0; 10 ];
         let mut elastic_list = CppStr::from("nodalForce bodyForce gravitational centrifugal surfacePressure surfaceTraction");
         let mut thermal_list = CppStr::from("bodyHeadGen surfaceFlux");
+        let mut diff_list = CppStr::from("massGen massFlux");
         
         let mut e_ld_ct : usize = 0;
         let mut t_ld_ct : usize = 0;
+        let mut d_ld_ct : usize = 0;
         let mut curr_ld : usize = 0;
         let mut curr_type : CppStr = CppStr::new();
         
@@ -973,21 +962,27 @@ impl Model {
                         if i1 < MAX_INT {
                             t_ld_ct += 1usize;
                         }
+                        i1 = diff_list.find(data[0].s.as_str());
+                        if i1 < MAX_INT {
+                            d_ld_ct += 1usize;
+                        }
                     }
                 }
             }
         }
 
-        if e_ld_ct == 0 && t_ld_ct == 0 {
+        if e_ld_ct == 0 && t_ld_ct == 0 && d_ld_ct == 0 {
             return;
         }
         
         self.elastic_loads = vec![Load::new(); e_ld_ct];
         self.thermal_loads = vec![Load::new(); t_ld_ct];
+        self.diff_loads = vec![Load::new(); d_ld_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             e_ld_ct = MAX_INT;
             t_ld_ct = MAX_INT;
+            d_ld_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
@@ -995,27 +990,24 @@ impl Model {
                     if headings[1].s == "type" && data_len == 1 {
                         i1 = elastic_list.find(data[0].s.as_str());
                         if i1 < MAX_INT {
-                            if e_ld_ct == MAX_INT {
-                                e_ld_ct = 0;
-                            }
-                            else {
-                                e_ld_ct += 1usize;
-                            }
+                            e_ld_ct = increment_ct(e_ld_ct);
                             curr_type = CppStr::from("elastic");
                             curr_ld = e_ld_ct;
                             self.get_curr_ld(&curr_type,curr_ld).this_type = data[0].clone();
                         }
                         i1 = thermal_list.find(data[0].s.as_str());
                         if i1 < MAX_INT {
-                            if t_ld_ct == MAX_INT {
-                                t_ld_ct = 0;
-                            }
-                            else {
-                                t_ld_ct += 1usize;
-                            }
+                            t_ld_ct = increment_ct(t_ld_ct);
                             curr_type = CppStr::from("thermal");
                             curr_ld = t_ld_ct;
                             self.get_curr_ld(&curr_type,curr_ld).this_type = data[0].clone();
+                        }
+                        i1 = diff_list.find(data[0].s.as_str());
+                        if i1 < MAX_INT {
+                            d_ld_ct = increment_ct(d_ld_ct);
+                            curr_type = CppStr::from("diffusion");
+                            curr_ld = d_ld_ct;
+                            self.get_curr_ld(&curr_type, curr_ld).this_type = data[0].clone();
                         }
                     } else if headings[1].s == "activeTime" && data_len > 0 {
                         doub_inp[0] = CppStr::stod(&mut data[0]);

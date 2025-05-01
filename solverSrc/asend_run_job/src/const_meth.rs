@@ -27,7 +27,7 @@ impl Constraint {
         false
     }
 
-    pub fn build_mat(&mut self, nd_ar : &mut Vec<Node>, set_ar : &mut Vec<Set>) {
+    pub fn build_mat(&mut self, nd_ar : &Vec<Node>, set_ar : &Vec<Set>) {
         let mut set_len : usize =  1;
         let mut seti_len : usize;
         let mut nd_index : usize;
@@ -135,6 +135,12 @@ impl ConstraintList {
             cnst.scale_fact = new_sf;
         }
         return;
+    }
+
+    pub fn build_all_mats(&mut self, nd_ar : &Vec<Node>, set_ar : &Vec<Set>) {
+        for this_con in self.const_vec.iter_mut() {
+            this_con.build_mat(nd_ar, set_ar);
+        }
     }
 
     pub fn update_active_status(&mut self, time : f64) {

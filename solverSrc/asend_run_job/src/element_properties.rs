@@ -299,10 +299,11 @@ impl Element {
         return;
     }
 
-    pub fn get_layer_th_exp_dfd0(&self, lay_th_exp : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_layer_th_exp_dfd0(&self, lay_th_exp : &mut Vec<DiffDoub0>, lay_diff_exp : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
         let mut layi : usize;
         let mut t_exp_dv = [DiffDoub0::new(); 6];
+        let mut d_exp_dv = [DiffDoub0::new(); 6];
         let mut dv_comp : usize;
         let mut tmp = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
@@ -316,6 +317,7 @@ impl Element {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..6 {
                 t_exp_dv[i1].set_val(this_mat.expansion[i1]);
+                d_exp_dv[i1].set_val(this_mat.diff_exp[i1]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
@@ -326,12 +328,22 @@ impl Element {
                     dv_val.mult(& tmp);
                     t_exp_dv[dv_comp].add(& dv_val);
                 }
+                else if this_dv.category.s == "diffExp" && this_dv.layer == layi {
+                    dv_comp = this_dv.component - 1;
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd0(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    d_exp_dv[dv_comp].add(& dv_val);
+                }
             }
             lay_th_exp[i2].set_val_dfd0(& t_exp_dv[0]);
+            lay_diff_exp[i2].set_val_dfd0(& d_exp_dv[0]);
             i2 += 1usize;
             lay_th_exp[i2].set_val_dfd0(& t_exp_dv[1]);
+            lay_diff_exp[i2].set_val_dfd0(& d_exp_dv[1]);
             i2 += 1usize;
             lay_th_exp[i2].set_val_dfd0(& t_exp_dv[3]);
+            lay_diff_exp[i2].set_val_dfd0(& d_exp_dv[3]);
             i2 += 1usize;
             layi += 1usize;
         }
@@ -404,10 +416,11 @@ impl Element {
         return;
     }
 
-    pub fn get_layer_cond_dfd0(&self, lay_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_layer_cond_dfd0(&self, lay_cond : &mut Vec<DiffDoub0>, lay_diff : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut i1 : usize;
         let mut layi : usize;
         let mut cond_dv = [DiffDoub0::new(); 6];
+        let mut diff_dv = [DiffDoub0::new(); 6];
         let mut tmp = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
         let mut dv_comp : usize;
@@ -421,6 +434,7 @@ impl Element {
             this_mat = &mat_ar[lay.mat_ptr];
             for i2 in 0..6 {
                 cond_dv[i2].set_val(this_mat.conductivity[i2]);
+                diff_dv[i2].set_val(this_mat.diffusivity[i2]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
@@ -430,6 +444,13 @@ impl Element {
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
                     cond_dv[dv_comp].add(& dv_val);
+                }
+                else if this_dv.category.s == "diffusivity" && this_dv.layer == layi {
+                    dv_comp = this_dv.component - 1;
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd0(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_dv[dv_comp].add(& dv_val);
                 }
             }
             lay_cond[i1].set_val_dfd0(& cond_dv[0]);
@@ -441,6 +462,17 @@ impl Element {
             lay_cond[i1 + 6].set_val_dfd0(& cond_dv[4]);
             lay_cond[i1 + 7].set_val_dfd0(& cond_dv[5]);
             lay_cond[i1 + 8].set_val_dfd0(& cond_dv[2]);
+
+            lay_diff[i1].set_val_dfd0(& diff_dv[0]);
+            lay_diff[i1 + 1].set_val_dfd0(& diff_dv[3]);
+            lay_diff[i1 + 2].set_val_dfd0(& diff_dv[4]);
+            lay_diff[i1 + 3].set_val_dfd0(& diff_dv[3]);
+            lay_diff[i1 + 4].set_val_dfd0(& diff_dv[1]);
+            lay_diff[i1 + 5].set_val_dfd0(& diff_dv[5]);
+            lay_diff[i1 + 6].set_val_dfd0(& diff_dv[4]);
+            lay_diff[i1 + 7].set_val_dfd0(& diff_dv[5]);
+            lay_diff[i1 + 8].set_val_dfd0(& diff_dv[2]);
+
             i1  +=  9;
             layi += 1usize;
         }
@@ -964,7 +996,7 @@ impl Element {
         return;
     }
 
-    pub fn get_thermal_exp_dfd0(&self, th_exp : &mut Vec<DiffDoub0>, einit : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_thermal_exp_dfd0(&self, th_exp : &mut Vec<DiffDoub0>, diff_exp : &mut Vec<DiffDoub0>, einit : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_comp : usize;
         let mut dv_val = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
@@ -974,6 +1006,7 @@ impl Element {
         let this_mat = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             th_exp[i1].set_val(this_mat.expansion[i1]);
+            diff_exp[i1].set_val(this_mat.diff_exp[i1]);
             einit[i1].set_val(0.0);
         }
         
@@ -985,6 +1018,13 @@ impl Element {
                 this_dv.get_value_dfd0(&mut dv_val);
                 dv_val.mult(& tmp);
                 th_exp[dv_comp].add(& dv_val);
+            }
+            else if this_dv.category.s == "diffExp" {
+                dv_comp = this_dv.component - 1;
+                tmp.set_val(dv.doub_dat);
+                this_dv.get_value_dfd0(&mut dv_val);
+                dv_val.mult(& tmp);
+                diff_exp[dv_comp].add(& dv_val);
             }
             else if this_dv.category.s == "initialStrain" {
                 dv_comp = this_dv.component - 1;
@@ -998,17 +1038,23 @@ impl Element {
         return;
     }
 
-    pub fn get_shell_exp_load_dfd0(&self, exp_ld : &mut Vec<DiffDoub0>, e0_ld : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_z : &mut Vec<DiffDoub0>, lay_q : &mut Vec<DiffDoub0>, lay_th_exp : &mut Vec<DiffDoub0>, lay_einit : &mut Vec<DiffDoub0>, lay_ang : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
+    pub fn get_shell_exp_load_dfd0(&self, exp_ld : &mut Vec<DiffDoub0>, diff_ld : &mut Vec<DiffDoub0>, e0_ld : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_z : &mut Vec<DiffDoub0>, 
+        lay_q : &mut Vec<DiffDoub0>, lay_th_exp : &mut Vec<DiffDoub0>, lay_diff_exp : &mut Vec<DiffDoub0>, lay_einit : &mut Vec<DiffDoub0>, 
+        lay_ang : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
+
         let num_lay : usize;
         let mut qi : usize;
         let mut exi : usize;
         let mut sect_q = [DiffDoub0::new(); 9];
         let mut sect_te = [DiffDoub0::new(); 3];
+        let mut sect_de = [DiffDoub0::new(); 3];
         let mut sect_e0 = [DiffDoub0::new(); 3];
         let mut qte_prod = [DiffDoub0::new(); 3];
+        let mut qde_prod = [DiffDoub0::new(); 3];
         let mut qe0_prod = [DiffDoub0::new(); 3];
         let mut this_q = [DiffDoub0::new(); 9];
         let mut this_te = [DiffDoub0::new(); 3];
+        let mut this_de = [DiffDoub0::new(); 3];
         let mut this_e0 = [DiffDoub0::new(); 3];
         let mut z_min = DiffDoub0::new();
         let mut z_max = DiffDoub0::new();
@@ -1026,17 +1072,29 @@ impl Element {
         for layi in 0..num_lay {
             vec_to_ar_dfd0(&mut this_q, lay_q,  qi,  qi + 9);
             self.transform_q_dfd0(&mut sect_q, &mut  this_q, &mut lay_ang[layi]);
+            
             vec_to_ar_dfd0(&mut this_te, lay_th_exp,  exi,  exi + 3);
             self.transform_strain_dfd0(&mut sect_te, &mut  this_te, &mut lay_ang[layi]);
+
+            vec_to_ar_dfd0(&mut this_de, lay_diff_exp, exi, exi + 3);
+            self.transform_strain_dfd0(&mut sect_de, &mut this_de, &mut lay_ang[layi]);
+            
             vec_to_ar_dfd0(&mut this_e0, lay_einit,  exi,  exi + 3);
             self.transform_strain_dfd0(&mut sect_e0, &mut  this_e0, &mut  lay_ang[layi]);
+            
             mat_mul_ar_dfd0(&mut qte_prod, &mut  sect_q, &mut  sect_te,  3,  3,  1);
+            mat_mul_ar_dfd0(&mut qde_prod, &mut sect_q, &mut sect_de, 3, 3, 1);
             mat_mul_ar_dfd0(&mut qe0_prod, &mut  sect_q, &mut  sect_e0,  3,  3,  1);
             
             for i1 in 0..3 {
                 tmp.set_val_dfd0(& qte_prod[i1]);
                 tmp.mult(& lay_thk[layi]);
                 exp_ld[i1].add(& tmp);
+
+                tmp.set_val_dfd0(& qde_prod[i1]);
+                tmp.mult(& lay_thk[layi]);
+                diff_ld[i1].add(& tmp);
+
                 tmp.set_val_dfd0(& qe0_prod[i1]);
                 tmp.mult(& lay_thk[layi]);
                 e0_ld[i1].add(& tmp);
@@ -1058,6 +1116,11 @@ impl Element {
                 tmp2.set_val_dfd0(& qte_prod[i1]);
                 tmp2.mult(& tmp);
                 exp_ld[i1 + 3].add(& tmp2);
+
+                tmp2.set_val_dfd0(& qde_prod[i1]);
+                tmp2.mult(& tmp);
+                diff_ld[i1 + 3].add(& tmp2);
+
                 tmp2.set_val_dfd0(& qe0_prod[i1]);
                 tmp2.mult(& tmp);
                 e0_ld[i1 + 3].add(& tmp2);
@@ -1069,7 +1132,9 @@ impl Element {
         return;
     }
 
-    pub fn get_beam_exp_load_dfd0(&self, exp_ld : &mut Vec<DiffDoub0>, e0_ld : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_beam_exp_load_dfd0(&self, exp_ld : &mut Vec<DiffDoub0>, diff_ld : &mut Vec<DiffDoub0>, e0_ld : &mut Vec<DiffDoub0>,
+         sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+
         let mut i2 : usize;
         let mut dv_val = DiffDoub0::new();
         let mut cat : CppStr;
@@ -1078,11 +1143,13 @@ impl Element {
         let mut mod_dv = [DiffDoub0::new(); 3];
         let mut shr_mod_dv = [DiffDoub0::new(); 3];
         let mut te_coef_dv = [DiffDoub0::new(); 6];
+        let mut de_coef_dv = [DiffDoub0::new(); 6];
         let mut e0_dv = [DiffDoub0::new(); 6];
         let mut area_dv = DiffDoub0::new();
         let mut idv = [DiffDoub0::new(); 5];
         let mut qmat = [DiffDoub0::new(); 9];
         let mut qte = [DiffDoub0::new(); 3];
+        let mut qde = [DiffDoub0::new(); 3];
         let mut qe0 = [DiffDoub0::new(); 3];
         let mut dedgu = [DiffDoub0::new(); 18];
         let mut tmp_exp = [DiffDoub0::new(); 6];
@@ -1091,9 +1158,11 @@ impl Element {
         
         let this_sec : &Section = &sec_ar[self.sect_ptr];
         let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if this_sec.exp_load_coef[0] > 0.0 {
+
+        if this_sec.exp_load_coef[0] > 0.0 || this_sec.exp_load_coef[0] > 0.0 {
             for i1 in 0..6 {
                 exp_ld[i1].set_val(this_sec.exp_load_coef[i1]);
+                diff_ld[i1].set_val(this_sec.diff_load_coef[i1]);
                 e0_ld[i1].set_val(0.0);
             }
             for dv in self.design_vars.iter() {
@@ -1105,6 +1174,13 @@ impl Element {
                     this_dv.get_value_dfd0(&mut dv_val);
                     dv_val.mult(& tmp);
                     exp_ld[dv_comp].add(& dv_val);
+                }
+                else if cat.s == "diffExp" {
+                    dv_comp = this_dv.component - 1;
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd0(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_ld[dv_comp].add(& dv_val);
                 }
                 else if cat.s == "initialStrain" {
                     dv_comp = this_dv.component - 1;
@@ -1121,6 +1197,8 @@ impl Element {
                 shr_mod_dv[i1].set_val(this_mat.shear_mod[i1]);
                 te_coef_dv[i1].set_val(this_mat.expansion[i1]);
                 te_coef_dv[i1 + 3].set_val(this_mat.expansion[i1]);
+                de_coef_dv[i1].set_val(this_mat.diff_exp[i1]);
+                de_coef_dv[i1 + 3].set_val(this_mat.diff_exp[i1]);
                 e0_dv[i1].set_val(0.0);
                 e0_dv[i1 + 3].set_val(0.0);
             }
@@ -1128,7 +1206,7 @@ impl Element {
             for i1 in 0..5 {
                 idv[i1].set_val(this_sec.area_moment[i1]);
             }
-            cat_list = CppStr::from("modulus shearModulus thermalExp initialStrain area areaMoment");
+            cat_list = CppStr::from("modulus shearModulus thermalExp diffExp initialStrain area areaMoment");
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
@@ -1147,6 +1225,9 @@ impl Element {
                     else if cat.s == "thermalExp" {
                         te_coef_dv[dv_comp].add(& dv_val);
                     }
+                    else if cat.s == "diffExp" {
+                        de_coef_dv[dv_comp].add( & dv_val);
+                    }
                     else if cat.s == "initialStrain" {
                         e0_dv[dv_comp].add(& dv_val);
                     }
@@ -1164,16 +1245,25 @@ impl Element {
             qmat[0].set_val_dfd0(& mod_dv[0]);
             qmat[4].set_val_dfd0(& shr_mod_dv[0]);
             qmat[8].set_val_dfd0(& shr_mod_dv[1]);
+            
             tmp.set_val_dfd0(& te_coef_dv[3]);
             te_coef_dv[1].set_val_dfd0(& tmp);
             tmp.set_val_dfd0(& te_coef_dv[4]);
             te_coef_dv[2].set_val_dfd0(& tmp);
             mat_mul_ar_dfd0(&mut qte, &mut  qmat, &mut  te_coef_dv,  3,  3,  1);
+
+            tmp.set_val_dfd0(& de_coef_dv[3]);
+            de_coef_dv[1].set_val_dfd0(& tmp);
+            tmp.set_val_dfd0(& de_coef_dv[4]);
+            de_coef_dv[2].set_val_dfd0(& tmp);
+            mat_mul_ar_dfd0(&mut qde, &mut  qmat, &mut  de_coef_dv,  3,  3,  1);
+            
             tmp.set_val_dfd0(& e0_dv[3]);
             e0_dv[1].set_val_dfd0(& tmp);
             tmp.set_val_dfd0(& e0_dv[4]);
             e0_dv[2].set_val_dfd0(& tmp);
             mat_mul_ar_dfd0(&mut qe0, &mut  qmat, &mut  e0_dv,  3,  3,  1);
+            
             for i1 in 0..18 {
                 dedgu[i1].set_val(0.0);
             }
@@ -1189,6 +1279,10 @@ impl Element {
             
             mat_mul_ar_dfd0(&mut tmp_exp, &mut  dedgu, &mut  qte,  6,  3,  1);
             ar_to_vec_dfd0(&mut tmp_exp, exp_ld,  0,  6);
+
+            mat_mul_ar_dfd0(&mut tmp_exp, &mut  dedgu, &mut  qde,  6,  3,  1);
+            ar_to_vec_dfd0(&mut tmp_exp, diff_ld,  0,  6);
+            
             mat_mul_ar_dfd0(&mut tmp_exp, &mut  dedgu, &mut  qe0,  6,  3,  1);
             ar_to_vec_dfd0(&mut tmp_exp,  e0_ld,  0,  6);
         }
@@ -1598,8 +1692,9 @@ impl Element {
         return;
     }
 
-    pub fn get_conductivity_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_conductivity_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, diff : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut cond_dv = [DiffDoub0::new(); 6];
+        let mut diff_dv = [DiffDoub0::new(); 6];
         
         let mut temp = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
@@ -1610,6 +1705,7 @@ impl Element {
         let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             cond_dv[i1].set_val(this_mat.conductivity[i1]);
+            diff_dv[i1].set_val(this_mat.diffusivity[i1]);
         }
         
         for dv in self.design_vars.iter() {
@@ -1620,6 +1716,13 @@ impl Element {
                 this_dv.get_value_dfd0(&mut dv_val);
                 dv_val.mult(& temp);
                 cond_dv[dv_comp].add(& dv_val);
+            }
+            else if this_dv.category.s == "diffusivity" {
+                dv_comp = this_dv.component - 1;
+                temp.set_val(dv.doub_dat);
+                this_dv.get_value_dfd0(&mut dv_val);
+                dv_val.mult(& temp);
+                diff_dv[dv_comp].add(& dv_val);
             }
         }
         
@@ -1632,11 +1735,23 @@ impl Element {
         t_cond[6] = cond_dv[4];
         t_cond[7] = cond_dv[5];
         t_cond[8] = cond_dv[2];
+
+        diff[0] = diff_dv[0];
+        diff[1] = diff_dv[3];
+        diff[2] = diff_dv[4];
+        diff[3] = diff_dv[3];
+        diff[4] = diff_dv[1];
+        diff[5] = diff_dv[5];
+        diff[6] = diff_dv[4];
+        diff[7] = diff_dv[5];
+        diff[8] = diff_dv[2];
         
         return;
     }
 
-    pub fn get_shell_cond_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_ang : &mut Vec<DiffDoub0>, lay_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
+    pub fn get_shell_cond_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, diff : &mut Vec<DiffDoub0>, lay_thk : &mut Vec<DiffDoub0>, lay_ang : &mut Vec<DiffDoub0>, 
+        lay_cond : &mut Vec<DiffDoub0>, lay_diff : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>) {
+
         let mut i2 : usize;
         let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let mut layer_mat = [DiffDoub0::new(); 9];
@@ -1644,10 +1759,12 @@ impl Element {
         let mut al_t = [DiffDoub0::new(); 9];
         let mut tmp = [DiffDoub0::new(); 9];
         let mut this_cond = [DiffDoub0::new(); 9];
+        let mut this_diff = [DiffDoub0::new(); 9];
         let mut tmp2 = DiffDoub0::new();
         
         for i1 in 0..9 {
             t_cond[i1].set_val(0.0);
+            diff[i1].set_val(0.0);
             al_mat[i1].set_val(0.0);
         }
         al_mat[8].set_val(1.0);
@@ -1666,6 +1783,7 @@ impl Element {
             al_mat[1].neg();
             transpose_ar_dfd0(&mut al_t, &mut  al_mat,  3,  3);
             i2 = 9 * i1;
+            
             vec_to_ar_dfd0(&mut this_cond, lay_cond,  i2,  i2 + 9);
             mat_mul_ar_dfd0(&mut tmp, &mut  this_cond, &mut  al_t,  3,  3,  3);
             mat_mul_ar_dfd0(&mut layer_mat, &mut  al_mat, &mut  tmp,  3,  3,  3);
@@ -1673,14 +1791,23 @@ impl Element {
                 layer_mat[i2].mult(& lay_thk[i1]);
                 t_cond[i2].add(& layer_mat[i2]);
             }
+
+            vec_to_ar_dfd0(&mut this_diff, lay_diff, i2,  i2 + 9);
+            mat_mul_ar_dfd0(&mut tmp, &mut  this_diff, &mut  al_t,  3,  3,  3);
+            mat_mul_ar_dfd0(&mut layer_mat, &mut  al_mat, &mut  tmp,  3,  3,  3);
+            for i2 in 0..9 {
+                layer_mat[i2].mult(& lay_thk[i1]);
+                diff[i2].add(& layer_mat[i2]);
+            }
         }
         
         return;
     }
 
-    pub fn get_beam_cond_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_beam_cond_dfd0(&self, t_cond : &mut Vec<DiffDoub0>, diff : &mut Vec<DiffDoub0>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut cat : CppStr;
         let mut cond_dv = DiffDoub0::new();
+        let mut diff_dv = DiffDoub0::new();
         let mut area_dv = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
         let mut dv_val = DiffDoub0::new();
@@ -1688,8 +1815,10 @@ impl Element {
         
         let this_sec : &Section = &sec_ar[self.sect_ptr];
         let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if this_sec.conductivity > 0.0 {
+
+        if this_sec.conductivity > 0.0 || this_sec.diffusivity > 0.0 {
             cond_dv.set_val(this_sec.conductivity);
+            diff_dv.set_val(this_sec.diffusivity);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 if this_dv.category.s == "thermCond" {
@@ -1698,10 +1827,17 @@ impl Element {
                     dv_val.mult(& tmp);
                     cond_dv.add(& dv_val);
                 }
+                else if this_dv.category.s == "diffusivity" {
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd0(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_dv.add(& dv_val);
+                }
             }
         }
         else {
             cond_dv.set_val(this_mat.conductivity[0]);
+            diff_dv.set_val(this_mat.diffusivity[0]);
             area_dv.set_val(this_sec.area);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
@@ -1712,6 +1848,12 @@ impl Element {
                     dv_val.mult(& tmp);
                     cond_dv.add(& dv_val);
                 }
+                else if cat.s == "diffusivity" {
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd0(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_dv.add(& dv_val);
+                }
                 else if cat.s == "area" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd0(&mut dv_val);
@@ -1720,15 +1862,21 @@ impl Element {
                 }
             }
             cond_dv.mult(& area_dv);
+            diff_dv.mult(& area_dv);
         }
         
         for i1 in 1..8 {
             t_cond[i1].set_val(0.0);
+            diff[i1].set_val(0.0);
         }
         
         t_cond[0].set_val_dfd0(& cond_dv);
         t_cond[4].set_val_dfd0(& cond_dv);
         t_cond[8].set_val_dfd0(& cond_dv);
+
+        diff[0].set_val_dfd0(& diff_dv);
+        diff[4].set_val_dfd0(& diff_dv);
+        diff[8].set_val_dfd0(& diff_dv);
         
         return;
     }
@@ -2368,10 +2516,11 @@ impl Element {
         return;
     }
 
-    pub fn get_layer_th_exp_dfd1(&self, lay_th_exp : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_layer_th_exp_dfd1(&self, lay_th_exp : &mut Vec<DiffDoub1>, lay_diff_exp : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
         let mut layi : usize;
         let mut t_exp_dv = [DiffDoub1::new(); 6];
+        let mut d_exp_dv = [DiffDoub1::new(); 6];
         let mut dv_comp : usize;
         let mut tmp = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
@@ -2385,6 +2534,7 @@ impl Element {
             this_mat = &mat_ar[lay.mat_ptr];
             for i1 in 0..6 {
                 t_exp_dv[i1].set_val(this_mat.expansion[i1]);
+                d_exp_dv[i1].set_val(this_mat.diff_exp[i1]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
@@ -2395,12 +2545,22 @@ impl Element {
                     dv_val.mult(& tmp);
                     t_exp_dv[dv_comp].add(& dv_val);
                 }
+                else if this_dv.category.s == "diffExp" && this_dv.layer == layi {
+                    dv_comp = this_dv.component - 1;
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd1(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    d_exp_dv[dv_comp].add(& dv_val);
+                }
             }
             lay_th_exp[i2].set_val_dfd1(& t_exp_dv[0]);
+            lay_diff_exp[i2].set_val_dfd1(& d_exp_dv[0]);
             i2 += 1usize;
             lay_th_exp[i2].set_val_dfd1(& t_exp_dv[1]);
+            lay_diff_exp[i2].set_val_dfd1(& d_exp_dv[1]);
             i2 += 1usize;
             lay_th_exp[i2].set_val_dfd1(& t_exp_dv[3]);
+            lay_diff_exp[i2].set_val_dfd1(& d_exp_dv[3]);
             i2 += 1usize;
             layi += 1usize;
         }
@@ -2473,10 +2633,11 @@ impl Element {
         return;
     }
 
-    pub fn get_layer_cond_dfd1(&self, lay_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_layer_cond_dfd1(&self, lay_cond : &mut Vec<DiffDoub1>, lay_diff : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut i1 : usize;
         let mut layi : usize;
         let mut cond_dv = [DiffDoub1::new(); 6];
+        let mut diff_dv = [DiffDoub1::new(); 6];
         let mut tmp = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
         let mut dv_comp : usize;
@@ -2490,6 +2651,7 @@ impl Element {
             this_mat = &mat_ar[lay.mat_ptr];
             for i2 in 0..6 {
                 cond_dv[i2].set_val(this_mat.conductivity[i2]);
+                diff_dv[i2].set_val(this_mat.diffusivity[i2]);
             }
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
@@ -2499,6 +2661,13 @@ impl Element {
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
                     cond_dv[dv_comp].add(& dv_val);
+                }
+                else if this_dv.category.s == "diffusivity" && this_dv.layer == layi {
+                    dv_comp = this_dv.component - 1;
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd1(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_dv[dv_comp].add(& dv_val);
                 }
             }
             lay_cond[i1].set_val_dfd1(& cond_dv[0]);
@@ -2510,6 +2679,17 @@ impl Element {
             lay_cond[i1 + 6].set_val_dfd1(& cond_dv[4]);
             lay_cond[i1 + 7].set_val_dfd1(& cond_dv[5]);
             lay_cond[i1 + 8].set_val_dfd1(& cond_dv[2]);
+
+            lay_diff[i1].set_val_dfd1(& diff_dv[0]);
+            lay_diff[i1 + 1].set_val_dfd1(& diff_dv[3]);
+            lay_diff[i1 + 2].set_val_dfd1(& diff_dv[4]);
+            lay_diff[i1 + 3].set_val_dfd1(& diff_dv[3]);
+            lay_diff[i1 + 4].set_val_dfd1(& diff_dv[1]);
+            lay_diff[i1 + 5].set_val_dfd1(& diff_dv[5]);
+            lay_diff[i1 + 6].set_val_dfd1(& diff_dv[4]);
+            lay_diff[i1 + 7].set_val_dfd1(& diff_dv[5]);
+            lay_diff[i1 + 8].set_val_dfd1(& diff_dv[2]);
+
             i1  +=  9;
             layi += 1usize;
         }
@@ -3033,7 +3213,7 @@ impl Element {
         return;
     }
 
-    pub fn get_thermal_exp_dfd1(&self, th_exp : &mut Vec<DiffDoub1>, einit : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_thermal_exp_dfd1(&self, th_exp : &mut Vec<DiffDoub1>, diff_exp : &mut Vec<DiffDoub1>, einit : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_comp : usize;
         let mut dv_val = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
@@ -3043,6 +3223,7 @@ impl Element {
         let this_mat = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             th_exp[i1].set_val(this_mat.expansion[i1]);
+            diff_exp[i1].set_val(this_mat.diff_exp[i1]);
             einit[i1].set_val(0.0);
         }
         
@@ -3054,6 +3235,13 @@ impl Element {
                 this_dv.get_value_dfd1(&mut dv_val);
                 dv_val.mult(& tmp);
                 th_exp[dv_comp].add(& dv_val);
+            }
+            else if this_dv.category.s == "diffExp" {
+                dv_comp = this_dv.component - 1;
+                tmp.set_val(dv.doub_dat);
+                this_dv.get_value_dfd1(&mut dv_val);
+                dv_val.mult(& tmp);
+                diff_exp[dv_comp].add(& dv_val);
             }
             else if this_dv.category.s == "initialStrain" {
                 dv_comp = this_dv.component - 1;
@@ -3067,17 +3255,23 @@ impl Element {
         return;
     }
 
-    pub fn get_shell_exp_load_dfd1(&self, exp_ld : &mut Vec<DiffDoub1>, e0_ld : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_z : &mut Vec<DiffDoub1>, lay_q : &mut Vec<DiffDoub1>, lay_th_exp : &mut Vec<DiffDoub1>, lay_einit : &mut Vec<DiffDoub1>, lay_ang : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
+    pub fn get_shell_exp_load_dfd1(&self, exp_ld : &mut Vec<DiffDoub1>, diff_ld : &mut Vec<DiffDoub1>, e0_ld : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_z : &mut Vec<DiffDoub1>, 
+        lay_q : &mut Vec<DiffDoub1>, lay_th_exp : &mut Vec<DiffDoub1>, lay_diff_exp : &mut Vec<DiffDoub1>, lay_einit : &mut Vec<DiffDoub1>, 
+        lay_ang : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
+
         let num_lay : usize;
         let mut qi : usize;
         let mut exi : usize;
         let mut sect_q = [DiffDoub1::new(); 9];
         let mut sect_te = [DiffDoub1::new(); 3];
+        let mut sect_de = [DiffDoub1::new(); 3];
         let mut sect_e0 = [DiffDoub1::new(); 3];
         let mut qte_prod = [DiffDoub1::new(); 3];
+        let mut qde_prod = [DiffDoub1::new(); 3];
         let mut qe0_prod = [DiffDoub1::new(); 3];
         let mut this_q = [DiffDoub1::new(); 9];
         let mut this_te = [DiffDoub1::new(); 3];
+        let mut this_de = [DiffDoub1::new(); 3];
         let mut this_e0 = [DiffDoub1::new(); 3];
         let mut z_min = DiffDoub1::new();
         let mut z_max = DiffDoub1::new();
@@ -3095,17 +3289,29 @@ impl Element {
         for layi in 0..num_lay {
             vec_to_ar_dfd1(&mut this_q, lay_q,  qi,  qi + 9);
             self.transform_q_dfd1(&mut sect_q, &mut  this_q, &mut lay_ang[layi]);
+            
             vec_to_ar_dfd1(&mut this_te, lay_th_exp,  exi,  exi + 3);
             self.transform_strain_dfd1(&mut sect_te, &mut  this_te, &mut lay_ang[layi]);
+
+            vec_to_ar_dfd1(&mut this_de, lay_diff_exp, exi, exi + 3);
+            self.transform_strain_dfd1(&mut sect_de, &mut this_de, &mut lay_ang[layi]);
+            
             vec_to_ar_dfd1(&mut this_e0, lay_einit,  exi,  exi + 3);
             self.transform_strain_dfd1(&mut sect_e0, &mut  this_e0, &mut  lay_ang[layi]);
+            
             mat_mul_ar_dfd1(&mut qte_prod, &mut  sect_q, &mut  sect_te,  3,  3,  1);
+            mat_mul_ar_dfd1(&mut qde_prod, &mut sect_q, &mut sect_de, 3, 3, 1);
             mat_mul_ar_dfd1(&mut qe0_prod, &mut  sect_q, &mut  sect_e0,  3,  3,  1);
             
             for i1 in 0..3 {
                 tmp.set_val_dfd1(& qte_prod[i1]);
                 tmp.mult(& lay_thk[layi]);
                 exp_ld[i1].add(& tmp);
+
+                tmp.set_val_dfd1(& qde_prod[i1]);
+                tmp.mult(& lay_thk[layi]);
+                diff_ld[i1].add(& tmp);
+
                 tmp.set_val_dfd1(& qe0_prod[i1]);
                 tmp.mult(& lay_thk[layi]);
                 e0_ld[i1].add(& tmp);
@@ -3127,6 +3333,11 @@ impl Element {
                 tmp2.set_val_dfd1(& qte_prod[i1]);
                 tmp2.mult(& tmp);
                 exp_ld[i1 + 3].add(& tmp2);
+
+                tmp2.set_val_dfd1(& qde_prod[i1]);
+                tmp2.mult(& tmp);
+                diff_ld[i1 + 3].add(& tmp2);
+
                 tmp2.set_val_dfd1(& qe0_prod[i1]);
                 tmp2.mult(& tmp);
                 e0_ld[i1 + 3].add(& tmp2);
@@ -3138,7 +3349,9 @@ impl Element {
         return;
     }
 
-    pub fn get_beam_exp_load_dfd1(&self, exp_ld : &mut Vec<DiffDoub1>, e0_ld : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_beam_exp_load_dfd1(&self, exp_ld : &mut Vec<DiffDoub1>, diff_ld : &mut Vec<DiffDoub1>, e0_ld : &mut Vec<DiffDoub1>,
+         sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+
         let mut i2 : usize;
         let mut dv_val = DiffDoub1::new();
         let mut cat : CppStr;
@@ -3147,11 +3360,13 @@ impl Element {
         let mut mod_dv = [DiffDoub1::new(); 3];
         let mut shr_mod_dv = [DiffDoub1::new(); 3];
         let mut te_coef_dv = [DiffDoub1::new(); 6];
+        let mut de_coef_dv = [DiffDoub1::new(); 6];
         let mut e0_dv = [DiffDoub1::new(); 6];
         let mut area_dv = DiffDoub1::new();
         let mut idv = [DiffDoub1::new(); 5];
         let mut qmat = [DiffDoub1::new(); 9];
         let mut qte = [DiffDoub1::new(); 3];
+        let mut qde = [DiffDoub1::new(); 3];
         let mut qe0 = [DiffDoub1::new(); 3];
         let mut dedgu = [DiffDoub1::new(); 18];
         let mut tmp_exp = [DiffDoub1::new(); 6];
@@ -3160,9 +3375,11 @@ impl Element {
         
         let this_sec : &Section = &sec_ar[self.sect_ptr];
         let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if this_sec.exp_load_coef[0] > 0.0 {
+
+        if this_sec.exp_load_coef[0] > 0.0 || this_sec.exp_load_coef[0] > 0.0 {
             for i1 in 0..6 {
                 exp_ld[i1].set_val(this_sec.exp_load_coef[i1]);
+                diff_ld[i1].set_val(this_sec.diff_load_coef[i1]);
                 e0_ld[i1].set_val(0.0);
             }
             for dv in self.design_vars.iter() {
@@ -3174,6 +3391,13 @@ impl Element {
                     this_dv.get_value_dfd1(&mut dv_val);
                     dv_val.mult(& tmp);
                     exp_ld[dv_comp].add(& dv_val);
+                }
+                else if cat.s == "diffExp" {
+                    dv_comp = this_dv.component - 1;
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd1(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_ld[dv_comp].add(& dv_val);
                 }
                 else if cat.s == "initialStrain" {
                     dv_comp = this_dv.component - 1;
@@ -3190,6 +3414,8 @@ impl Element {
                 shr_mod_dv[i1].set_val(this_mat.shear_mod[i1]);
                 te_coef_dv[i1].set_val(this_mat.expansion[i1]);
                 te_coef_dv[i1 + 3].set_val(this_mat.expansion[i1]);
+                de_coef_dv[i1].set_val(this_mat.diff_exp[i1]);
+                de_coef_dv[i1 + 3].set_val(this_mat.diff_exp[i1]);
                 e0_dv[i1].set_val(0.0);
                 e0_dv[i1 + 3].set_val(0.0);
             }
@@ -3197,7 +3423,7 @@ impl Element {
             for i1 in 0..5 {
                 idv[i1].set_val(this_sec.area_moment[i1]);
             }
-            cat_list = CppStr::from("modulus shearModulus thermalExp initialStrain area areaMoment");
+            cat_list = CppStr::from("modulus shearModulus thermalExp diffExp initialStrain area areaMoment");
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 cat = this_dv.category.clone();
@@ -3216,6 +3442,9 @@ impl Element {
                     else if cat.s == "thermalExp" {
                         te_coef_dv[dv_comp].add(& dv_val);
                     }
+                    else if cat.s == "diffExp" {
+                        de_coef_dv[dv_comp].add( & dv_val);
+                    }
                     else if cat.s == "initialStrain" {
                         e0_dv[dv_comp].add(& dv_val);
                     }
@@ -3233,16 +3462,25 @@ impl Element {
             qmat[0].set_val_dfd1(& mod_dv[0]);
             qmat[4].set_val_dfd1(& shr_mod_dv[0]);
             qmat[8].set_val_dfd1(& shr_mod_dv[1]);
+            
             tmp.set_val_dfd1(& te_coef_dv[3]);
             te_coef_dv[1].set_val_dfd1(& tmp);
             tmp.set_val_dfd1(& te_coef_dv[4]);
             te_coef_dv[2].set_val_dfd1(& tmp);
             mat_mul_ar_dfd1(&mut qte, &mut  qmat, &mut  te_coef_dv,  3,  3,  1);
+
+            tmp.set_val_dfd1(& de_coef_dv[3]);
+            de_coef_dv[1].set_val_dfd1(& tmp);
+            tmp.set_val_dfd1(& de_coef_dv[4]);
+            de_coef_dv[2].set_val_dfd1(& tmp);
+            mat_mul_ar_dfd1(&mut qde, &mut  qmat, &mut  de_coef_dv,  3,  3,  1);
+            
             tmp.set_val_dfd1(& e0_dv[3]);
             e0_dv[1].set_val_dfd1(& tmp);
             tmp.set_val_dfd1(& e0_dv[4]);
             e0_dv[2].set_val_dfd1(& tmp);
             mat_mul_ar_dfd1(&mut qe0, &mut  qmat, &mut  e0_dv,  3,  3,  1);
+            
             for i1 in 0..18 {
                 dedgu[i1].set_val(0.0);
             }
@@ -3258,6 +3496,10 @@ impl Element {
             
             mat_mul_ar_dfd1(&mut tmp_exp, &mut  dedgu, &mut  qte,  6,  3,  1);
             ar_to_vec_dfd1(&mut tmp_exp, exp_ld,  0,  6);
+
+            mat_mul_ar_dfd1(&mut tmp_exp, &mut  dedgu, &mut  qde,  6,  3,  1);
+            ar_to_vec_dfd1(&mut tmp_exp, diff_ld,  0,  6);
+            
             mat_mul_ar_dfd1(&mut tmp_exp, &mut  dedgu, &mut  qe0,  6,  3,  1);
             ar_to_vec_dfd1(&mut tmp_exp,  e0_ld,  0,  6);
         }
@@ -3667,8 +3909,9 @@ impl Element {
         return;
     }
 
-    pub fn get_conductivity_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_conductivity_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, diff : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut cond_dv = [DiffDoub1::new(); 6];
+        let mut diff_dv = [DiffDoub1::new(); 6];
         
         let mut temp = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
@@ -3679,6 +3922,7 @@ impl Element {
         let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
         for i1 in 0..6 {
             cond_dv[i1].set_val(this_mat.conductivity[i1]);
+            diff_dv[i1].set_val(this_mat.diffusivity[i1]);
         }
         
         for dv in self.design_vars.iter() {
@@ -3689,6 +3933,13 @@ impl Element {
                 this_dv.get_value_dfd1(&mut dv_val);
                 dv_val.mult(& temp);
                 cond_dv[dv_comp].add(& dv_val);
+            }
+            else if this_dv.category.s == "diffusivity" {
+                dv_comp = this_dv.component - 1;
+                temp.set_val(dv.doub_dat);
+                this_dv.get_value_dfd1(&mut dv_val);
+                dv_val.mult(& temp);
+                diff_dv[dv_comp].add(& dv_val);
             }
         }
         
@@ -3701,11 +3952,23 @@ impl Element {
         t_cond[6] = cond_dv[4];
         t_cond[7] = cond_dv[5];
         t_cond[8] = cond_dv[2];
+
+        diff[0] = diff_dv[0];
+        diff[1] = diff_dv[3];
+        diff[2] = diff_dv[4];
+        diff[3] = diff_dv[3];
+        diff[4] = diff_dv[1];
+        diff[5] = diff_dv[5];
+        diff[6] = diff_dv[4];
+        diff[7] = diff_dv[5];
+        diff[8] = diff_dv[2];
         
         return;
     }
 
-    pub fn get_shell_cond_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_ang : &mut Vec<DiffDoub1>, lay_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
+    pub fn get_shell_cond_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, diff : &mut Vec<DiffDoub1>, lay_thk : &mut Vec<DiffDoub1>, lay_ang : &mut Vec<DiffDoub1>, 
+        lay_cond : &mut Vec<DiffDoub1>, lay_diff : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>) {
+
         let mut i2 : usize;
         let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let mut layer_mat = [DiffDoub1::new(); 9];
@@ -3713,10 +3976,12 @@ impl Element {
         let mut al_t = [DiffDoub1::new(); 9];
         let mut tmp = [DiffDoub1::new(); 9];
         let mut this_cond = [DiffDoub1::new(); 9];
+        let mut this_diff = [DiffDoub1::new(); 9];
         let mut tmp2 = DiffDoub1::new();
         
         for i1 in 0..9 {
             t_cond[i1].set_val(0.0);
+            diff[i1].set_val(0.0);
             al_mat[i1].set_val(0.0);
         }
         al_mat[8].set_val(1.0);
@@ -3735,6 +4000,7 @@ impl Element {
             al_mat[1].neg();
             transpose_ar_dfd1(&mut al_t, &mut  al_mat,  3,  3);
             i2 = 9 * i1;
+            
             vec_to_ar_dfd1(&mut this_cond, lay_cond,  i2,  i2 + 9);
             mat_mul_ar_dfd1(&mut tmp, &mut  this_cond, &mut  al_t,  3,  3,  3);
             mat_mul_ar_dfd1(&mut layer_mat, &mut  al_mat, &mut  tmp,  3,  3,  3);
@@ -3742,14 +4008,23 @@ impl Element {
                 layer_mat[i2].mult(& lay_thk[i1]);
                 t_cond[i2].add(& layer_mat[i2]);
             }
+
+            vec_to_ar_dfd1(&mut this_diff, lay_diff, i2,  i2 + 9);
+            mat_mul_ar_dfd1(&mut tmp, &mut  this_diff, &mut  al_t,  3,  3,  3);
+            mat_mul_ar_dfd1(&mut layer_mat, &mut  al_mat, &mut  tmp,  3,  3,  3);
+            for i2 in 0..9 {
+                layer_mat[i2].mult(& lay_thk[i1]);
+                diff[i2].add(& layer_mat[i2]);
+            }
         }
         
         return;
     }
 
-    pub fn get_beam_cond_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_beam_cond_dfd1(&self, t_cond : &mut Vec<DiffDoub1>, diff : &mut Vec<DiffDoub1>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>) {
         let mut cat : CppStr;
         let mut cond_dv = DiffDoub1::new();
+        let mut diff_dv = DiffDoub1::new();
         let mut area_dv = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
         let mut dv_val = DiffDoub1::new();
@@ -3757,8 +4032,10 @@ impl Element {
         
         let this_sec : &Section = &sec_ar[self.sect_ptr];
         let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        if this_sec.conductivity > 0.0 {
+
+        if this_sec.conductivity > 0.0 || this_sec.diffusivity > 0.0 {
             cond_dv.set_val(this_sec.conductivity);
+            diff_dv.set_val(this_sec.diffusivity);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
                 if this_dv.category.s == "thermCond" {
@@ -3767,10 +4044,17 @@ impl Element {
                     dv_val.mult(& tmp);
                     cond_dv.add(& dv_val);
                 }
+                else if this_dv.category.s == "diffusivity" {
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd1(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_dv.add(& dv_val);
+                }
             }
         }
         else {
             cond_dv.set_val(this_mat.conductivity[0]);
+            diff_dv.set_val(this_mat.diffusivity[0]);
             area_dv.set_val(this_sec.area);
             for dv in self.design_vars.iter() {
                 this_dv = &dv_ar[dv.int_dat];
@@ -3781,6 +4065,12 @@ impl Element {
                     dv_val.mult(& tmp);
                     cond_dv.add(& dv_val);
                 }
+                else if cat.s == "diffusivity" {
+                    tmp.set_val(dv.doub_dat);
+                    this_dv.get_value_dfd1(&mut dv_val);
+                    dv_val.mult(& tmp);
+                    diff_dv.add(& dv_val);
+                }
                 else if cat.s == "area" {
                     tmp.set_val(dv.doub_dat);
                     this_dv.get_value_dfd1(&mut dv_val);
@@ -3789,15 +4079,21 @@ impl Element {
                 }
             }
             cond_dv.mult(& area_dv);
+            diff_dv.mult(& area_dv);
         }
         
         for i1 in 1..8 {
             t_cond[i1].set_val(0.0);
+            diff[i1].set_val(0.0);
         }
         
         t_cond[0].set_val_dfd1(& cond_dv);
         t_cond[4].set_val_dfd1(& cond_dv);
         t_cond[8].set_val_dfd1(& cond_dv);
+
+        diff[0].set_val_dfd1(& diff_dv);
+        diff[4].set_val_dfd1(& diff_dv);
+        diff[8].set_val_dfd1(& diff_dv);
         
         return;
     }
@@ -4146,6 +4442,9 @@ impl Element {
     //end dup
  
 //end skip 
+ 
+ 
+ 
  
  
  

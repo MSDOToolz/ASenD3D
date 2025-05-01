@@ -1,9 +1,8 @@
 use crate::model::*;
 use crate::constants::*;
-use crate::constraint::*;
 use crate::list_ent::*;
-use crate::spatial_grid::*;
 use crate::nd_el_set::*;
+use crate::constraint::*;
 use crate::node::*;
 use crate::element::*;
 use crate::design_var::*;
@@ -18,11 +17,46 @@ use crate::fmath::*;
 use std::collections::LinkedList;
 
 impl Model {
+    pub fn add_constraint_conn(nd_con : &mut Vec<Set>, con_lst : &ConstraintList, nd_sets : &Vec<Set>) {
+        let mut i1 : usize;
+        let mut i2 : usize;
+
+        for this_const in con_lst.const_vec.iter() {
+            for term1 in this_const.terms.iter() {
+                let t1_labs = &nd_sets[term1.ns_ptr].labels;
+                i1 = t1_labs.len();
+                for term2 in this_const.terms.iter() {
+                    let t2_labs = &nd_sets[term2.ns_ptr].labels;
+                    i2 = t2_labs.len();
+                    if i1 > 1 && i2 > 1 {
+                        let mut iter2 = t2_labs.iter();
+                        let mut i2val : usize;
+                        for iter1 in t1_labs.iter() {
+                            i2val = match iter2.next() {
+                                None => panic!("Error: sets of mismatched size found in constraint definition"),
+                                Some(x) => *x,
+                            };
+                            nd_con[*iter1].add_if_absent(i2val);
+                            nd_con[i2val].add_if_absent(*iter1);
+                        }
+                    }
+                    else {
+                        for iter1 in t1_labs.iter() {
+                            for iter2 in t2_labs.iter() {
+                                nd_con[*iter1].add_if_absent(*iter2);
+                                nd_con[*iter2].add_if_absent(*iter1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     pub fn reorder_nodes(&mut self, block_dim : usize) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
-        let mut i4 : usize;
         let mut nd1 : usize;
         let mut nd2 : usize;
         let mut min_ct : usize;
@@ -54,57 +88,12 @@ impl Model {
                     self.nodes[nd2].add_conn_nd(nd1);
                 }
                 self.nodes[nd1].add_element(el.label, i1);
-                if el.this_type > 100 {
-                    self.nodes[nd1].fluid = true;
-                }
             }
         }
         
-        for this_const in self.elastic_const.const_vec.iter() {
-            for term1 in this_const.terms.iter() {
-                let t1_labs = &self.node_sets[term1.ns_ptr].labels;
-                i1 = t1_labs.len();
-                for term2 in this_const.terms.iter() {
-                    let t2_labs = &self.node_sets[term2.ns_ptr].labels;
-                    i2 = t2_labs.len();
-                    if i1 > 1 && i2 > 1 {
-                        let mut iter2 = t2_labs.iter();
-                        let mut i2val : usize;
-                        for iter1 in t1_labs.iter() {
-                            i2val = match iter2.next() {
-                                None => panic!("Error: sets of mismatched size found in constraint definition"),
-                                Some(x) => *x,
-                            };
-                            nodal_conn[*iter1].add_if_absent(i2val);
-                            nodal_conn[i2val].add_if_absent(*iter1);
-                        }
-                    }
-                    else {
-                        for iter1 in t1_labs.iter() {
-                            for iter2 in t2_labs.iter() {
-                                nodal_conn[*iter1].add_if_absent(*iter2);
-                                nodal_conn[*iter2].add_if_absent(*iter1);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        for this_const in self.thermal_const.const_vec.iter() {
-            for term1 in this_const.terms.iter() {
-                let t1_labs = &self.node_sets[term1.ns_ptr].labels;
-                for iter1 in t1_labs.iter() {
-                    for term2 in this_const.terms.iter() {
-                        let t2_labs = &self.node_sets[term2.ns_ptr].labels;
-                        for iter2 in t2_labs.iter() {
-                            nodal_conn[*iter1].add_if_absent(*iter2);
-                            nodal_conn[*iter2].add_if_absent(*iter1);
-                        }
-                    }
-                }
-            }
-        }
+        Model::add_constraint_conn(&mut nodal_conn, &self.elastic_const, &self.node_sets);
+        Model::add_constraint_conn(&mut nodal_conn, &self.thermal_const, &self.node_sets);
+        Model::add_constraint_conn(&mut nodal_conn, &self.diff_const, &self.node_sets);
         
         // find Node with least connectivity
         min_ct = num_nodes;
@@ -200,53 +189,34 @@ impl Model {
         
         i2 = 0;// index in elastic matrix
         i3 = 0;// sorted rank for solid nodes
-        i4 = 0;// sorted rank for fluid nodes
         let mut this_nd : &mut Node;
         for ndi in ordered_nds.iter_mut() {
             this_nd = &mut self.nodes[*ndi];
-            if this_nd.fluid {
-                this_nd.sorted_rank = i4;
-                i4 += 1;
-            }
-            else {
-                this_nd.sorted_rank = i3;
-                i3 += 1usize;
-                this_nd.dof_index[0] = i2;
+            this_nd.sorted_rank = i3;
+            i3 += 1usize;
+            this_nd.dof_index[0] = i2;
+            i2 += 1usize;
+            this_nd.dof_index[1] = i2;
+            i2 += 1usize;
+            this_nd.dof_index[2] = i2;
+            i2 += 1usize;
+            if this_nd.num_dof == 6 {
+                this_nd.dof_index[3] = i2;
                 i2 += 1usize;
-                this_nd.dof_index[1] = i2;
+                this_nd.dof_index[4] = i2;
                 i2 += 1usize;
-                this_nd.dof_index[2] = i2;
+                this_nd.dof_index[5] = i2;
                 i2 += 1usize;
-                if this_nd.num_dof == 6 {
-                    this_nd.dof_index[3] = i2;
-                    i2 += 1usize;
-                    this_nd.dof_index[4] = i2;
-                    i2 += 1usize;
-                    this_nd.dof_index[5] = i2;
-                    i2 += 1usize;
-                }
             }
         }
         self.el_mat_dim = i2;
         self.elastic_mat.set_dim(self.el_mat_dim);
-        self.therm_mat.set_dim(self.nodes.len());
-        self.fl_mat_dim = 6*i4;
-        self.fluid_mat.set_dim(self.fl_mat_dim);
-        self.fluid_lf.set_dim(self.fl_mat_dim);
+        self.therm_mat.set_dim(i3);
+        self.diff_mat.set_dim(i3);
         
         let scmd = &mut self.job[self.solve_cmd];
         if scmd.solver_method.s == "iterative" && scmd.max_it == 0 {
-            if self.fl_mat_dim > self.el_mat_dim {
-                scmd.max_it = self.fl_mat_dim;
-            }
-            else {
-                scmd.max_it = self.el_mat_dim;
-            }
-        }
-        if scmd.fluid && scmd.elastic {
-            self.fsi_disp_map.set_dim(3*i4);
-            self.fsi_temp_map.set_dim(self.fl_mat_dim);
-            self.fluid_mesh_def.set_dim(3*i4);
+            scmd.max_it = self.el_mat_dim;
         }
         
         for this_el in self.elements.iter_mut() {
@@ -263,13 +233,12 @@ impl Model {
         self.elastic_sol_vec = vec![0f64; self.el_mat_dim];
         self.therm_ld_vec = vec![0f64; i3];
         self.therm_sol_vec = vec![0f64; i3];
+        self.diff_ld_vec = vec![0f64; i3];
+        self.diff_sol_vec = vec![0f64; i3];
         
         self.temp_v1 = vec![0f64; self.el_mat_dim];
         self.temp_v2 = vec![0f64; self.el_mat_dim];
         self.temp_v3 = vec![0f64; self.el_mat_dim];
-        self.temp_v4 = vec![0f64; self.el_mat_dim];
-        self.temp_v5 = vec![0f64; self.el_mat_dim];
-        self.temp_v6 = vec![0f64; self.el_mat_dim];
         self.temp_d1 = vec![DiffDoub0::new(); self.el_mat_dim];
         
         self.d_ld_u = vec![0f64; self.tot_glob_dof];
@@ -277,14 +246,20 @@ impl Model {
         self.d_ld_a = vec![0f64; self.el_mat_dim];
         self.d_ld_t = vec![0f64; i3];
         self.d_ld_tdot = vec![0f64; i3];
+        self.d_ld_con = vec![0f64; i3];
+        self.d_ld_condot = vec![0f64; i3];
+
         self.u_adj = vec![0f64; self.el_mat_dim];
         self.v_adj = vec![0f64; self.el_mat_dim];
         self.a_adj = vec![0f64; self.el_mat_dim];
         self.t_adj = vec![0f64; i3];
         self.tdot_adj = vec![0f64; i3];
+        self.con_adj = vec![0f64; i3];
+        self.condot_adj = vec![0f64; i3];
         
         self.d_rud_d = vec![DiffDoub1::new(); self.el_mat_dim];
         self.d_rtd_d = vec![DiffDoub1::new(); i3];
+        self.d_rdd_d = vec![DiffDoub1::new(); i3];
         
         self.el_in_d = vec![0usize; self.elements.len()];
         
@@ -297,13 +272,9 @@ impl Model {
     }
 
     pub fn build_constraint_mats(&mut self) {
-        for this_const in self.elastic_const.const_vec.iter_mut() {
-            this_const.build_mat(&mut self.nodes, &mut self.node_sets);
-        }
-        for this_const in self.thermal_const.const_vec.iter_mut() {
-            this_const.build_mat(&mut self.nodes, &mut self.node_sets);
-        }
-        return;
+        self.elastic_const.build_all_mats(&self.nodes, &self.node_sets);
+        self.thermal_const.build_all_mats(&self.nodes, &self.node_sets);
+        self.diff_const.build_all_mats(&self.nodes, &self.node_sets);
     }
 
     pub fn update_reference(&mut self) {
@@ -555,6 +526,7 @@ impl Model {
         
         //let mut scmd = &mut self.job[self.solve_cmd];
         let sci = self.solve_cmd;
+        
         if self.job[sci].thermal {
             for this_nd in self.nodes.iter_mut() {
                 this_nd.initialize_temp();
@@ -568,7 +540,24 @@ impl Model {
                 self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat,  &mut  self.thermal_const,   self.job[sci].solver_block_dim);
             }
             if !self.therm_scaled {
-                self.scale_thermal_const();
+                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat);
+            }
+        }
+
+        if self.job[sci].diffusion {
+            for this_nd in self.nodes.iter_mut() {
+                this_nd.initialize_fl_den();
+                if self.job[sci].dynamic {
+                    this_nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step);
+                }
+            }
+            if !self.diff_lt.is_allocated() {
+                self.build_diff_soln_load(true);
+                self.diff_const.update_active_status(0.0);
+                self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const, self.job[sci].solver_block_dim);
+            }
+            if !self.diff_scaled {
+                self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat);
             }
         }
         
@@ -586,269 +575,14 @@ impl Model {
             if !self.elastic_lt.is_allocated() {
                 self.build_elastic_soln_load(true);
                 self.elastic_const.update_active_status(0.0);
-                self.scale_elastic_const();
-                self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const,   6 * self.job[sci].solver_block_dim);
+                self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const, 6 * self.job[sci].solver_block_dim);
+            }
+            if !self.elastic_scaled {
+                self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat);
             }
         }
         
         return;
-    }
-
-    pub fn build_lf_mat(&mut self) {
-        let mut dist : f64;
-        let mut coef : f64;
-        let mut row : usize;
-        let mut col : usize;
-        self.fluid_lf.zero_all();
-        let diss_lev = self.job[self.solve_cmd].dissipation;
-        let diag_coef = 1.0 - diss_lev;
-        for nd in self.nodes.iter() {
-            if nd.fluid {
-                row = 6*nd.sorted_rank;
-                for ni in nd.conn_nds.iter() {
-                    col = 6*self.nodes[*ni].sorted_rank;
-                    dist = get_dist(&nd.coord, &self.nodes[*ni].coord);
-                    coef = 1.0/dist;
-                    for i in 0..6 {
-                        self.fluid_lf.add_entry(row+i,col+i,coef);
-                    }
-                }
-                for i in 0..6 {
-                    self.fluid_lf.scale_row_to_sum(row+i, diss_lev);
-                    self.fluid_lf.add_entry(row+i, row+1, diag_coef);
-                }
-            }
-        }
-    }
-
-    pub fn build_mesh_def_mat(&mut self) {
-        self.fluid_mesh_def.zero_all();
-
-        let mut el10 = Element::new();
-        el10.initialize_type(10);
-        let mut el8 = Element::new();
-        el8.initialize_type(8);
-        let mut el6 = Element::new();
-        el6.initialize_type(6);
-        let mut el4 = Element::new();
-        el4.initialize_type(4);
-
-        let r_vec = match self.d0_scratch.front_mut() {
-            None => panic!("Error: no scratch vector, build_mesh_def_mat()"),
-            Some(x) => &mut x.dat,
-        };
-        let mut dr_du : &mut Vec<f64> = &mut Vec::new();
-        let mut dr_dt : &mut Vec<f64> = &mut Vec::new();
-        let mut si = 0usize;
-        for s in self.scratch.iter_mut() {
-            if si == 0 {
-                dr_du = &mut s.dat;
-            }
-            else if si == 1 {
-                dr_dt = &mut s.dat;
-            }
-            si += 1;
-        }
-
-        let mut st_el : &mut Element;
-        let mut gr : usize;
-        let mut gc : usize;
-        let mut k : usize;
-        for el in self.elements.iter() {
-            if el.this_type > 100 {
-                el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut self.sections, &mut self.materials, &mut self.nodes, &self.design_vars);
-                st_el = match el.this_type {
-                    1000 => &mut el10,
-                    800 => &mut el8,
-                    600 => &mut el6,
-                    400 => &mut el4,
-                    _ => panic!("Error: unrecognized element type, build_mesh_def_mat"),
-                };
-                for i in 0..el.num_nds {
-                    st_el.nodes[i] = el.nodes[i];
-                }
-                st_el.get_ruk_dfd0(r_vec, dr_du, dr_dt, true, false, &mut self.d0_pre);
-                k = 0;
-                for i1 in el.nodes.iter() {
-                    gr = 3*self.nodes[*i1].sorted_rank;
-                    for _i2 in 0..3 {
-                        for j1 in el.nodes.iter() {
-                            gc = 3*self.nodes[*j1].sorted_rank;
-                            for _j2 in 0..3 {
-                                self.fluid_mesh_def.add_entry(gr,gc, dr_du[k]);
-                                k += 1;
-                                gc += 1;
-                            }
-                        }
-                        gr += 1;
-                    }
-                }
-            }
-        }
-
-        // build the surface constraints for the mesh deformation
-        self.mesh_def_const.const_vec = vec![Constraint::new()];
-        let new_const = &mut self.mesh_def_const.const_vec[0];
-        new_const.this_type = CppStr::from("displacement");
-        new_const.scale_fact = 10000f64*self.fluid_mesh_def.get_max_abs_val();
-        k = 0;
-        for nd in self.nodes.iter() {
-            if nd.fluid && nd.on_surf {
-                k += 3;
-            }
-        }
-        new_const.mat.set_dim(k);
-        k = 0;
-        for nd in self.nodes.iter() {
-            if nd.fluid && nd.on_surf {
-                gr = 3*nd.sorted_rank;
-                for _i in 0..3 {
-                    new_const.mat.add_entry(k,gr, 1.0);
-                    gr += 1;
-                    k += 1;
-                }
-            }
-        }
-
-        self.mesh_def_lt.allocate_from_sparse_mat(&mut self.fluid_mesh_def, &mut self.mesh_def_const, 3);
-        self.mesh_def_lt.populate_from_sparse_mat(&mut self.fluid_mesh_def, &mut self.mesh_def_const);
-        self.mesh_def_lt.ldl_factor();
-
-    }
-
-    pub fn build_fsi_map(&mut self) {
-
-        //put all the structrual surface faces into a spatial grid list
-        let mut x_rng = [1.0e+100f64, -1.0e+100];
-        let mut y_rng = [1.0e+100f64, -1.0e+100];
-        let mut z_rng = [1.0e+100f64, -1.0e+100];
-        let mut dist : f64;
-        let mut tot_dist = 0.0f64;
-        let mut hit_ct = 0usize;
-        for nd in self.nodes.iter() {
-            if !nd.fluid {
-                for ni in nd.conn_nds.iter() {
-                    dist = get_dist(&nd.coord, &self.nodes[*ni].coord);
-                    tot_dist += dist;
-                    hit_ct += 1;
-                }
-                if nd.coord[0] < x_rng[0] {
-                    x_rng[0] = nd.coord[0];
-                }
-                if nd.coord[0] > x_rng[1] {
-                    x_rng[1] = nd.coord[0];
-                }
-                if nd.coord[1] < y_rng[0] {
-                    y_rng[0] = nd.coord[1];
-                }
-                if nd.coord[1] > y_rng[1] {
-                    y_rng[1] = nd.coord[1];
-                }
-                if nd.coord[2] < z_rng[0] {
-                    z_rng[0] = nd.coord[2];
-                }
-                if nd.coord[2] > z_rng[1] {
-                    z_rng[1] = nd.coord[2];
-                }
-            }
-        }
-        let avg_dist = tot_dist/(hit_ct as f64);
-        let spacing = 2.0*avg_dist;
-
-        let mut fc_gd_lst = SpatialGrid::new();
-        fc_gd_lst.initialize(&mut x_rng, spacing, &mut y_rng, spacing, &mut z_rng, spacing);
-
-        let mut cent = [0f64; 3];
-        let mut fi = 0usize;
-        let mut sfct = 0usize;
-        for fc in self.faces.iter() {
-            if fc.on_surf && self.elements[fc.host_el].this_type < 100 {
-                fc.get_centroid(&mut cent, &self.nodes);
-                fc_gd_lst.add_ent(fi, &cent);
-                sfct += 1;
-            }
-            fi += 1;
-        }
-
-        // map the fluid surface points to structural faces, build fsi matrices
-        let mut max_gap = self.job[self.solve_cmd].max_fsi_gap;
-        if max_gap < 0.0 {
-            max_gap = avg_dist;
-        }
-        let mut near_fcs = vec![0usize; sfct];
-        let mut scrd = [0f64, 0f64];
-        let mut min_dist : f64;
-        let mut min_fc = 0usize;
-        let mut min_scrd = [0f64, 0f64];
-        let mut lst_ln : usize;
-        let mut fci : usize;
-        let mut n_vec = [DiffDoub0::new(); 8];
-        let mut this_fc : &Face;
-        let mut row : usize;
-        let mut col : usize;
-        let mut num_surf_nds = 0usize;
-        for nd in self.nodes.iter() {
-            if nd.on_surf && nd.fluid {
-                num_surf_nds += 1;
-                lst_ln = fc_gd_lst.get_in_radius(&mut near_fcs, sfct, &nd.coord, spacing);
-                min_dist = 1.0e+100;
-                for i in 0..lst_ln {
-                    fci = near_fcs[i];
-                    dist = self.faces[fci].get_proj_dist(&mut scrd, &nd.coord, &self.nodes);
-                    if dist < min_dist {
-                        min_dist = dist;
-                        min_fc = fci;
-                        min_scrd[0] = scrd[0];
-                        min_scrd[1] = scrd[1];
-                    }
-                }
-                if min_dist < max_gap {
-                    this_fc = &self.faces[min_fc];
-                    this_fc.get_basis_dfd0(&mut n_vec, &min_scrd);
-                    row = 3*nd.sorted_rank;
-                    for i in 0..3 {
-                        for j in 0..this_fc.num_nds {
-                            col = self.nodes[this_fc.glob_nodes[j]].dof_index[i];
-                            self.fsi_disp_map.add_entry(row, col, n_vec[j].val);
-                        }
-                        row += 1;
-                    }
-                    row = 6*nd.sorted_rank + 4; //temperature dof of nd in the fluid eqns
-                    for j in 0..this_fc.num_nds {
-                        col = self.nodes[this_fc.glob_nodes[j]].sorted_rank;
-                        self.fsi_temp_map.add_entry(row, col, n_vec[j].val);
-                    }
-                }
-            }
-        }
-
-        //Build the constraint matrices for velocity and temperature on the fluid surface nodes
-
-        let num_fl_cn = self.fluid_const.const_vec.len();
-        let mut this_con = &mut self.fluid_const.const_vec[num_fl_cn - 2];
-        this_con.mat.set_dim(3*num_surf_nds);
-        let mut veli = 0usize;
-        for nd in self.nodes.iter() {
-            if nd.on_surf && nd.fluid {
-                col = 6*nd.sorted_rank;
-                for i in 1..4 {
-                    this_con.mat.add_entry(veli, col+i, 1.0f64);
-                    veli += 1;
-                }
-            }
-        }
-
-        this_con = &mut self.fluid_const.const_vec[num_fl_cn - 1];
-        this_con.mat.set_dim(num_surf_nds);
-        let mut tempi = 0usize;
-        for nd in self.nodes.iter() {
-            if nd.on_surf && nd.fluid {
-                col = 6*nd.sorted_rank + 4;
-                this_con.mat.add_entry(tempi, col, 1.0f64);
-                tempi += 1;
-            }
-        }
-
     }
 
     pub fn analysis_prep(&mut self) {
@@ -908,17 +642,6 @@ impl Model {
         self.build_constraint_mats();
         self.prep_matrix_factorizations();
         self.find_surface_faces();
-        
-        if self.job[self.solve_cmd].fluid {
-            self.build_lf_mat();
-            if self.job[self.solve_cmd].elastic {
-                self.build_mesh_def_mat();
-                self.build_fsi_map();
-            }
-            else if self.job[self.solve_cmd].thermal {
-                self.build_fsi_map();
-            }
-        }
         
         self.an_prep_run = true;
         return;
@@ -987,7 +710,6 @@ impl Model {
         
         
         let mut ld_type : CppStr;
-        let nd_load : [f64; 6] = [0f64; 6];
         let mut nd_dvld = DiffDoub0::new();
         
         let mut this_nd : &Node;
@@ -1006,7 +728,7 @@ impl Model {
                     for ndi in self.node_sets[this_load.nd_set_ptr].labels.iter_mut() {
                         this_nd = &self.nodes[*ndi];
                         dof_ind = this_nd.sorted_rank;
-                        self.therm_ld_vec[dof_ind]  +=  nd_load[0];
+                        self.therm_ld_vec[dof_ind] += this_load.load[0];
                     }
                 }
                 else {
@@ -1031,6 +753,56 @@ impl Model {
         }
         
         return;
+    }
+
+    pub fn build_diff_app_load(&mut self, time : f64) {
+        // construct loads from input file
+        let tot_nodes : usize;
+        let mut dof_ind : usize;
+        
+        
+        let mut ld_type : CppStr;
+        let mut nd_dvld = DiffDoub0::new();
+        
+        let mut this_nd : &Node;
+        let mut this_el : &Element;
+        
+        tot_nodes = self.nodes.len();
+        for i1 in 0..tot_nodes {
+            self.temp_d1[i1].set_val(0.0);
+        }
+        
+        //loads from Model input file
+        for this_load in self.thermal_loads.iter_mut() {
+            ld_type = this_load.this_type.clone();
+            if time >= this_load.active_time[0] && time <= this_load.active_time[1] {
+                if ld_type.s == "nodalMassGen" {
+                    for ndi in self.node_sets[this_load.nd_set_ptr].labels.iter_mut() {
+                        this_nd = &self.nodes[*ndi];
+                        dof_ind = this_nd.sorted_rank;
+                        self.therm_ld_vec[dof_ind] += this_load.load[0];
+                    }
+                }
+                else {
+                    for eli in self.element_sets[this_load.el_set_ptr].labels.iter_mut() {
+                        this_el = &self.elements[*eli];
+                        this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
+                        this_el.get_app_diff_load_dfd0(&mut self.temp_d1, this_load, &mut self.d0_pre, &mut self.scratch.iter_mut(), &mut self.d0_scratch.iter_mut(), &mut self.sections, &mut self.faces, &mut self.nodes, &self.design_vars);
+                    }
+                }
+            }
+        }
+        
+        for i1 in 0..tot_nodes {
+            self.diff_ld_vec[i1]  +=  self.temp_d1[i1].val;
+        }
+        
+        // design variable dependent loads.
+        for this_nd in self.nodes.iter_mut() {
+            this_nd.get_diff_dvload_dfd0(&mut nd_dvld, & self.design_vars);
+            dof_ind = this_nd.sorted_rank;
+            self.diff_ld_vec[dof_ind] += nd_dvld.val;
+        }
     }
 
     pub fn build_elastic_soln_load(&mut self, build_mat : bool) {
@@ -1084,19 +856,50 @@ impl Model {
         return;
     }
 
-    pub fn scale_elastic_const(&mut self) {
-        let scale_fact : f64 =  100000.0*self.elastic_mat.get_max_abs_val();
-        self.elastic_const.set_scale_fact(scale_fact);
-        self.elastic_scaled = true;
-        return;
+    pub fn build_diff_soln_load(&mut self, build_mat : bool) {
+        let num_nodes : usize;
+        
+        num_nodes = self.nodes.len();
+        for i1 in 0..num_nodes {
+            self.temp_d1[i1].set_val(0.0);
+        }
+        
+        if build_mat {
+            self.diff_mat.zero_all();
+        }
+        
+        let scmd = &self.job[self.solve_cmd];
+        for this_el in self.elements.iter_mut() {
+            if this_el.is_active {
+                this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
+                this_el.get_rd_dfd0(&mut self.temp_d1, &mut  self.diff_mat,  build_mat, scmd, &mut  self.d0_pre, &mut self.scratch.iter_mut(), &mut self.d0_scratch.iter_mut(), &mut  self.nodes);
+            }
+        }
+        
+        for i1 in 0..num_nodes {
+            self.diff_ld_vec[i1]  -=  self.temp_d1[i1].val;
+        }
     }
 
-    pub fn scale_thermal_const(&mut self) {
-        let scale_fact : f64 =  100000.0 * self.therm_mat.get_max_abs_val();
-        self.thermal_const.set_scale_fact(scale_fact);
-        self.therm_scaled = true;
-        return;
+    pub fn scale_const(c_lst : &mut ConstraintList, mat : &SparseMat) -> bool {
+        let scale_fact : f64 =  100000.0*mat.get_max_abs_val();
+        c_lst.set_scale_fact(scale_fact);
+        true
     }
+    
+    // pub fn scale_elastic_const(&mut self) {
+    //     let scale_fact : f64 =  100000.0*self.elastic_mat.get_max_abs_val();
+    //     self.elastic_const.set_scale_fact(scale_fact);
+    //     self.elastic_scaled = true;
+    //     return;
+    // }
+
+    // pub fn scale_thermal_const(&mut self) {
+    //     let scale_fact : f64 =  100000.0 * self.therm_mat.get_max_abs_val();
+    //     self.thermal_const.set_scale_fact(scale_fact);
+    //     self.therm_scaled = true;
+    //     return;
+    // }
 
     pub fn build_elastic_const_load(&mut self) {
         let mut nd_dof : usize;
@@ -1124,37 +927,63 @@ impl Model {
         return;
     }
 
+    pub fn build_diff_const_load(&mut self) {
+        let mut nd_con : f64;
+        let mut glob_ind : usize;
+        for this_nd in self.nodes.iter_mut() {
+            nd_con = this_nd.fl_den;
+            glob_ind = this_nd.sorted_rank;
+            self.temp_v2[glob_ind] = nd_con;
+        }
+        self.diff_const.get_total_load(&mut self.diff_ld_vec, &mut  self.temp_v2, &mut  self.temp_v3);
+    }
+
     pub fn solve_step(&mut self, time : f64, app_ld_fact : f64) {
         let mut i2 : usize;
         let num_nodes : usize;
-        let max_nlit : usize;
+        let mut max_nlit : usize;
         let mut d_unorm : f64;
-        let d_utol : f64;
+        let d_utol : f64 = 1.0e-12;
         let mut absd_u : f64;
         let mut ndof : usize;
         let mut dof_ind : usize;
         let mut nd_del_disp : [f64; 6] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        let mut this_max_c : f64;
+        let mut this_nd_max : &mut f64;
+        let mut exceed : f64;
+        let mut just_act : bool;
         
         //let mut cmd = &mut self.job[self.solve_cmd];
         let sci = self.solve_cmd;
         if self.job[sci].thermal {
+            self.thermal_const.update_active_status(time);
+            just_act = self.thermal_const.any_just_activated();
+
             num_nodes = self.nodes.len();
             for i1 in 0..num_nodes {
                 self.therm_ld_vec[i1] = 0.0;
                 self.therm_sol_vec[i1] = 0.0;
             }
+            
             self.build_thermal_app_load(time);
-            self.build_thermal_soln_load(false);
-            if !self.therm_scaled {
-                self.scale_thermal_const();
-            }
-            self.thermal_const.update_active_status(time);
-            self.build_thermal_const_load();
-            if self.thermal_const.any_just_activated() {
-                self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat,&mut self.thermal_const, self.job[sci].solver_block_dim);
+            
+            if self.job[sci].run_user_update || just_act {
+                self.build_thermal_soln_load(true);
+                if just_act {
+                    self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const, self.job[sci].solver_block_dim);
+                }
                 self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const);
                 self.therm_lt.ldl_factor();
             }
+            else {
+                self.build_thermal_soln_load(false);
+            }
+
+            if !self.therm_scaled {
+                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat);
+            }
+            self.build_thermal_const_load();
+            
             if self.job[sci].solver_method.s == "direct" {
                 self.therm_lt.ldl_solve(&mut self.therm_sol_vec, &mut  self.therm_ld_vec);
             }
@@ -1162,12 +991,88 @@ impl Model {
                 conj_grad_sparse(&mut self.therm_sol_vec, &mut  self.therm_mat, &mut  self.thermal_const, &mut  self.therm_lt, &mut  self.therm_ld_vec,  self.job[sci].conv_tol,  self.job[sci].max_it);
                 //g_mres_sparse(self.temp_v2, *self.therm_mat, *self.thermal_const, *self.therm_lt, self.temp_v1, cmd->conv_tol, cmd->max_it, cmd->solver_block_dim);
             }
+
             for this_nd in self.nodes.iter_mut() {
                 dof_ind = this_nd.sorted_rank;
                 this_nd.temperature  +=  self.therm_sol_vec[dof_ind];
                 if self.job[sci].dynamic {
                     this_nd.update_tdot(self.job[sci].newmark_gamma,  self.job[sci].time_step);
                 }
+            }
+        }
+
+        if self.job[sci].diffusion {
+            max_nlit = match self.job[sci].enforce_max_c {
+                true => 50,
+                false => 1,
+            };
+
+            self.diff_const.update_active_status(time);
+            just_act = self.diff_const.any_just_activated();
+            d_unorm = 1.0;
+            i2 = 0;
+            while i2 < max_nlit && d_unorm > d_utol {
+                for i1 in 0..self.nodes.len() {
+                    self.diff_ld_vec[i1] = 0.0;
+                    self.diff_sol_vec[i1] = 0.0;
+                }
+                
+                self.build_diff_app_load(time);
+                
+                if i2 == 0 && (self.job[sci].run_user_update || just_act) {
+                    self.build_diff_soln_load(true);
+                    if just_act {
+                        self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const, self.job[sci].solver_block_dim);
+                    }
+                    self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const);
+                    self.diff_lt.ldl_factor();
+                }
+                else {
+                    self.build_diff_soln_load(false);
+                }
+                
+                if !self.diff_scaled {
+                    self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat);
+                }
+                self.build_diff_const_load();
+
+                if self.job[sci].solver_method.s == "direct" {
+                    self.diff_lt.ldl_solve(&mut self.diff_sol_vec, &mut self.diff_ld_vec);
+                }
+                else {
+                    conj_grad_sparse(&mut self.diff_sol_vec, &mut self.diff_mat, &mut self.diff_const, &mut self.diff_lt,
+                         &mut self.diff_ld_vec, TOL, self.nodes.len());
+                }
+
+                if self.job[sci].enforce_max_c {
+                    for nd in self.nodes.iter() {
+                        exceed = nd.fl_den + self.diff_sol_vec[nd.sorted_rank] - nd.max_fl_den;
+                        if exceed > 0.0 {
+                            self.diff_sol_vec[nd.sorted_rank] -= exceed;
+                        }
+                    }
+                }
+
+                for nd in self.nodes.iter_mut() {
+                    nd.fl_den += self.diff_sol_vec[nd.sorted_rank];
+                    if self.job[sci].dynamic {
+                        nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step);
+                    }
+                }
+
+                d_unorm = 0.0;
+                for i1 in 0..self.nodes.len() {
+                    absd_u = fabs(self.diff_sol_vec[i1]);
+                    if absd_u > d_unorm {
+                        d_unorm = absd_u;
+                    }
+                }
+
+                if i2 > 0 {
+                    println!("{}{}{}{}", "Nonlinear iteration: " , i2 , ", max solution step: " , d_unorm );
+                }
+
+                i2 += 1;
             }
         }
         
@@ -1177,8 +1082,9 @@ impl Model {
             } else {
                 max_nlit = 1;
             }
+
             self.elastic_const.update_active_status(time);
-            d_utol = 1.0e-12;
+            just_act = self.elastic_const.any_just_activated();
             d_unorm = 1.0;
             i2 = 0;
             while i2 < max_nlit && d_unorm > d_utol {
@@ -1186,29 +1092,35 @@ impl Model {
                     self.elastic_ld_vec[i1] = 0.0;
                     self.elastic_sol_vec[i1] = 0.0;
                 }
+                
                 self.build_elastic_app_load(time);
                 for i1 in 0..self.el_mat_dim {
                     self.elastic_ld_vec[i1]  *=  app_ld_fact;
                 }
-                self.build_elastic_soln_load(self.job[sci].nonlinear_geom);
+
+                if self.job[sci].nonlinear_geom || (i2 == 0 && (self.job[sci].run_user_update || just_act)) {
+                    self.build_elastic_soln_load(true);
+                    if i2 == 0 && just_act {
+                        self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, 6*self.job[sci].solver_block_dim);
+                    }
+                    self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+                    self.elastic_lt.ldl_factor();
+                }
+                else {
+                    self.build_elastic_soln_load(false);
+                }
+
                 if !self.elastic_scaled {
-                    self.scale_elastic_const();
+                    self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat);
                 }
                 self.build_elastic_const_load();
+                
                 for this_el in self.elements.iter_mut() {
                     if this_el.num_int_dof > 0 {
                         this_el.update_external(&mut self.elastic_ld_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
                     }
                 }
-                if self.elastic_const.any_just_activated() {
-                    self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, self.job[sci].solver_block_dim);
-                    self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
-                    self.elastic_lt.ldl_factor();
-                }
-                else if self.job[sci].nonlinear_geom {
-                    self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
-                    self.elastic_lt.ldl_factor();
-                }
+                
                 if self.job[sci].solver_method.s == "direct" {
                     self.elastic_lt.ldl_solve(&mut self.elastic_sol_vec, &mut self.elastic_ld_vec);
                 }
@@ -1216,6 +1128,7 @@ impl Model {
                     conj_grad_sparse(&mut self.elastic_sol_vec, &mut  self.elastic_mat, &mut  self.elastic_const, &mut  self.elastic_lt, &mut  self.elastic_ld_vec,  self.job[sci].conv_tol,  self.job[sci].max_it);
                     //g_mres_sparse(self.temp_v2, *self.elastic_mat, *self.elastic_const, *self.elastic_lt, self.temp_v1, cmd->conv_tol, cmd->max_it, 6*cmd->solver_block_dim);
                 }
+
                 for this_nd in self.nodes.iter_mut() {
                     ndof = this_nd.num_dof;
                     for i1 in 0..ndof {
@@ -1227,11 +1140,13 @@ impl Model {
                         this_nd.update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, self.job[sci].time_step);
                     }
                 }
+                
                 for this_el in self.elements.iter_mut() {
                     if this_el.num_int_dof > 0 {
                         this_el.update_internal(&mut self.elastic_sol_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
                     }
                 }
+                
                 d_unorm = 0.0;
                 for i1 in 0..self.el_mat_dim {
                     absd_u = fabs(self.elastic_sol_vec[i1]);
@@ -1239,20 +1154,36 @@ impl Model {
                         d_unorm = absd_u;
                     }
                 }
-                if self.job[sci].nonlinear_geom {
+                
+                if i2 > 0 {
                     println!("{}{}{}{}", "Nonlinear iteration: " , i2 , ", max solution step: " , d_unorm );
                 }
                 i2 += 1usize;
             }
         }
         
-        self.user_update_time_step(time);
-
-        for nd in self.nodes.iter_mut() {
-            nd.calc_crd_dfd0(&self.design_vars);
+        if self.job[sci].run_user_update {
+            self.user_update_time_step(time);
+            for nd in self.nodes.iter_mut() {
+                nd.calc_crd_dfd0(&self.design_vars);
+            }
+            if self.job[sci].enforce_max_c {
+                for nd in self.nodes.iter_mut() {
+                    nd.max_fl_den = 1.0e+100f64;
+                }
+                for el in self.elements.iter() {
+                    el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut self.sections, &mut self.materials, &mut self.nodes, &self.design_vars);
+                    this_max_c = self.d0_pre.max_con.val;
+                    for ndi in el.nodes.iter() {
+                        this_nd_max = &mut self.nodes[*ndi].max_fl_den;
+                        if *this_nd_max > this_max_c {
+                            *this_nd_max = this_max_c;
+                        }
+                    }
+                }
+            }
         }
         
-        return;
     }
 
     pub fn solve(&mut self) {
@@ -1272,6 +1203,11 @@ impl Model {
         if self.job[ci].thermal {
             self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat,  &mut  self.thermal_const);
             self.therm_lt.ldl_factor();
+        }
+
+        if self.job[ci].diffusion {
+            self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const);
+            self.diff_lt.ldl_factor();
         }
         
         if self.job[ci].elastic && !self.job[ci].nonlinear_geom {
@@ -1293,6 +1229,10 @@ impl Model {
                     if self.job[ci].thermal {
                         this_nd.advance_temp();
                         this_nd.update_tdot(self.job[ci].newmark_gamma, self.job[ci].time_step);
+                    }
+                    if self.job[ci].diffusion {
+                        this_nd.advance_fl_den();
+                        this_nd.update_fl_den_dot(self.job[ci].newmark_gamma, self.job[ci].time_step);
                     }
                     if self.job[ci].elastic {
                         this_nd.advance_disp();
@@ -1339,6 +1279,9 @@ impl Model {
                         if self.job[ci].thermal {
                             this_nd.advance_temp();
                         }
+                        if self.job[ci].diffusion {
+                            this_nd.advance_fl_den();
+                        }
                         if self.job[ci].elastic {
                             this_nd.advance_disp();
                         }
@@ -1371,20 +1314,15 @@ impl Model {
         
         for this_nd in self.nodes.iter_mut() {
             for this_field in fields.iter_mut() {
-                if this_field.s == "temperature" {
-                    this_nd.temperature = 0.0;
-                }
-                else if this_field.s == "tdot" {
-                    this_nd.temp_change_rate = 0.0;
-                }
-                else if this_field.s == "displacement" {
-                    this_nd.set_displacement(&mut zero_ar);
-                }
-                else if this_field.s == "velocity" {
-                    this_nd.set_velocity(&mut zero_ar);
-                }
-                else if this_field.s == "acceleration" {
-                    this_nd.set_acceleration(&mut zero_ar);
+                match this_field.s.as_str() {
+                    "temperature" => this_nd.temperature = 0.0,
+                    "tdot" => this_nd.temp_change_rate = 0.0,
+                    "concentration" => this_nd.fl_den = 0.0,
+                    "cdot" => this_nd.fl_den_dot = 0.0,
+                    "displacement" => this_nd.set_displacement(&mut zero_ar),
+                    "velocity" => this_nd.set_velocity(&mut zero_ar),
+                    "acceleration" => this_nd.set_acceleration(&mut zero_ar),
+                    &_ => (),
                 }
             }
         }
@@ -1609,14 +1547,11 @@ impl Model {
                     glob_ind = this_nd.dof_index[i2];
                     nd_dat[i2] = scale_fact * self.eig_vecs[mode_st + glob_ind];
                 }
-                if field.s == "displacement" {
-                    this_nd.set_displacement(&mut nd_dat);
-                }
-                else if field.s == "velocity" {
-                    this_nd.set_velocity(&mut nd_dat);
-                }
-                else {
-                    this_nd.set_acceleration(&mut nd_dat);
+                match field.s.as_str() {
+                    "displacement" => this_nd.set_displacement(&mut nd_dat),
+                    "velocity" => this_nd.set_velocity(&mut nd_dat),
+                    "acceleration" => this_nd.set_acceleration(&mut nd_dat),
+                    &_ => (),
                 }
             }
         }
@@ -1628,7 +1563,7 @@ impl Model {
     }
 
     pub fn augmentd_ld_u(&mut self) {
-        let i2 : usize;
+        let mut i2 : usize;
         let mut i3 : usize;
         let mut num_nds : usize;
         let mut nd_dof : usize;
@@ -1639,6 +1574,8 @@ impl Model {
         let gam : f64 =  self.job[sci].newmark_gamma;
         let d_tdotd_tp : f64 =  -1.0 / (gam * dt);
         let d_tdotd_tdotp : f64 =  -(1.0 - gam) / gam;
+        let d_cdotd_cp = -1.0f64 / (gam *dt);
+        let d_cdotd_cdotp = -(1.0 - gam) / gam;
         let d_ad_up : f64 =  1.0 / (dt * dt * (bet - gam));
         let d_ad_vp : f64 =  d_ad_up * dt;
         let d_ad_ap : f64 =  d_ad_up * dt * dt * (0.5 + bet - gam);
@@ -1657,11 +1594,11 @@ impl Model {
         let mut el_adj = vec![0f64; 30];
         let mut eld_ld_t = vec![0f64; 10];
         let mut eld_ld_tdot = vec![0f64; 10];
+        let mut eld_ld_c = vec![0f64; 10];
+        let mut eld_ld_cdot = vec![0f64; 10];
         let mut eld_ld_u = vec![0f64; 30];
         let mut eld_ld_v = vec![0f64; 30];
         let mut eld_ld_a = vec![0f64; 30];
-        
-        
         
         if self.job[sci].thermal {
             for this_el in self.elements.iter_mut() {
@@ -1688,6 +1625,34 @@ impl Model {
             for i1 in 0..i2 {
                 self.d_ld_t[i1]  +=  self.tdot_adj[i1];
                 self.d_ld_tdot[i1]  +=  c3 * self.tdot_adj[i1];
+            }
+        }
+
+        if self.job[sci].diffusion {
+            for this_el in self.elements.iter_mut() {
+                if this_el.is_active {
+                    this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
+                    this_el.get_rdm_dfd0(&mut rvec, &mut  mmat,  true,  true, &mut  self.d0_pre);
+                    this_el.get_el_vec(&mut el_adj, &mut  self.con_adj,  true, false, &mut self.nodes);
+                    num_nds = this_el.num_nds;
+                    i3 = 0;
+                    for i1 in 0..num_nds {
+                        eld_ld_c[i1] = 0.0;
+                        eld_ld_cdot[i1] = 0.0;
+                        for i2 in 0..num_nds {
+                            eld_ld_c[i1]  -=  d_cdotd_cp * mmat[i3] * el_adj[i2];
+                            eld_ld_cdot[i1]  -=  d_cdotd_cdotp * mmat[i3] * el_adj[i2];
+                            i3 += 1usize;
+                        }
+                    }
+                    this_el.add_to_glob_vec(&mut eld_ld_c, &mut self.d_ld_con, true, false, &mut  self.nodes);
+                    this_el.add_to_glob_vec(&mut eld_ld_cdot, &mut self.d_ld_condot, true, false, &mut self.nodes);
+                }
+            }
+            i2 = self.nodes.len();
+            for i1 in 0..i2 {
+                self.d_ld_con[i1] += self.condot_adj[i1];
+                self.d_ld_condot[i1]  +=  c3 * self.condot_adj[i1];
             }
         }
         
@@ -1728,27 +1693,27 @@ impl Model {
 
     pub fn solve_for_adjoint(&mut self, time : f64) {
         let mut i3 : usize;
-        let tot_nodes : usize;
+        let mut tot_nodes : usize;
         let mut el_num_nds : usize;
         let mut el_dof_per_nd : usize;
         let mut el_nd_dof : usize;
         let mut el_int_dof : usize;
         let c1 : f64;
         let mut c2 : f64;
-        let c3 : f64;
+        let mut c3 : f64;
         
         let mut rvec = vec![DiffDoub0::new(); 33];
         let mut d_rd_u = vec![0f64; 1089];
         let mut d_rd_t = vec![0f64; 330];
+        let mut d_rd_c = vec![0f64; 330];
         let mut eld_ld_t = vec![0f64; 10];
+        let mut eld_ld_c = vec![0f64; 10];
         let mut el_adj = vec![0f64; 33];
         
         //let mut scmd = &self.job[self.solve_cmd];
         let sci = self.solve_cmd;
         
-        self.obj.calculated_ld_u(&mut self.d_ld_u, &mut  self.d_ld_v, &mut  self.d_ld_a, &mut  self.d_ld_t, &mut  self.d_ld_tdot,  time, 
-            self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars,
-            &mut self.d0_pre, &mut self.d0_scratch.iter_mut());
+        self.obj.calculated_ld_u(&mut self.d_ld_u, &mut  self.d_ld_v, &mut  self.d_ld_a, &mut self.d_ld_con, &mut self.d_ld_condot, &mut  self.d_ld_t, &mut  self.d_ld_tdot,  time, self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut self.d0_pre, &mut self.d0_scratch.iter_mut());
         
         if self.job[sci].elastic {
             self.elastic_const.update_active_status(time);
@@ -1788,13 +1753,64 @@ impl Model {
                 this_el.update_internal(&mut self.u_adj,  0, &mut  self.nodes, &mut self.scratch.iter_mut());
             }
         }
+
+        if self.job[sci].diffusion {
+            if self.job[sci].elastic {
+                for this_el in self.elements.iter_mut() {
+                    if this_el.is_active {
+                        this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
+                        this_el.get_ruk_dfd0(&mut rvec, &mut  d_rd_u, &mut  d_rd_t, &mut d_rd_c,  true,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
+                        this_el.get_el_vec(&mut el_adj, &mut  self.u_adj,  false,  false, &mut  self.nodes);
+                        el_num_nds = this_el.num_nds;
+                        el_dof_per_nd = this_el.dof_per_nd;
+                        el_int_dof = this_el.num_int_dof;
+                        el_nd_dof = el_num_nds * el_dof_per_nd;
+                        for i1 in 0..el_num_nds {
+                            eld_ld_c[i1] = 0.0;
+                            i3 = i1;
+                            for i2 in 0..el_nd_dof {
+                                //i3 = i2 * el_num_nds + i1;
+                                eld_ld_c[i1]  -=  d_rd_c[i3] * el_adj[i2];
+                                i3  +=  el_num_nds;
+                            }
+                            for i2 in 0..el_int_dof {
+                                eld_ld_c[i1]  -=  d_rd_c[i3] * el_adj[i2];
+                                i3  +=  el_num_nds;
+                            }
+                        }
+                        this_el.add_to_glob_vec(&mut eld_ld_c, &mut  self.d_ld_con,  true,  false, &mut self.nodes);
+                    }
+                }
+            }
+            tot_nodes = self.nodes.len();
+            self.diff_const.update_active_status(time);
+            if self.job[sci].dynamic {
+                c3 = -1.0 / (self.job[sci].time_step * self.job[sci].newmark_gamma);
+                for i1 in 0..tot_nodes {
+                    self.condot_adj[i1] = c3 * self.d_ld_condot[i1];
+                    self.d_ld_con[i1]  -=  self.condot_adj[i1];
+                }
+            }
+            if self.diff_const.any_just_activated() {
+                self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const, self.job[sci].solver_block_dim);
+                self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const);
+                self.diff_lt.ldl_factor();
+            }
+            if self.job[sci].solver_method.s == "direct" {
+                self.diff_lt.ldl_solve(&mut self.con_adj, &mut  self.d_ld_con);
+            }
+            else {
+                conj_grad_sparse(&mut self.con_adj, &mut  self.diff_mat, &mut self.diff_const, &mut  self.diff_lt, &mut self.d_ld_con, self.job[sci].conv_tol, self.job[sci].max_it);
+                //g_mres_sparse(self.t_adj, *self.therm_mat, *self.thermal_const, *self.therm_lt, self.d_ld_t, self.solve_cmd->conv_tol, self.solve_cmd->max_it, self.solve_cmd->solver_block_dim);
+            }
+        }
         
         if self.job[sci].thermal {
             if self.job[sci].elastic {
                 for this_el in self.elements.iter_mut() {
                     if this_el.is_active {
                         this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
-                        this_el.get_ruk_dfd0(&mut rvec, &mut  d_rd_u, &mut  d_rd_t,  true,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
+                        this_el.get_ruk_dfd0(&mut rvec, &mut  d_rd_u, &mut  d_rd_t, &mut d_rd_c,  true,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
                         this_el.get_el_vec(&mut el_adj, &mut  self.u_adj,  false,  false, &mut  self.nodes);
                         el_num_nds = this_el.num_nds;
                         el_dof_per_nd = this_el.dof_per_nd;
@@ -1917,6 +1933,78 @@ impl Model {
         return;
     }
 
+    pub fn d_rdiffusion_d(&mut self, d_var_num : usize) {
+        let tot_nodes : usize;
+        let mut glob_ind : usize;
+        let mut dv_val = DiffDoub0::new();
+        
+        let mut scmd : &JobCommand = &self.job[self.solve_cmd];
+        //let mut this_dv : &mut DesignVariable = &mut self.design_vars[d_var_num];
+        self.design_vars[d_var_num].get_value_dfd0(&mut dv_val);
+        self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 1.0);
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd1(&self.design_vars);
+        }
+        
+        tot_nodes = self.nodes.len();
+        for i1 in 0..tot_nodes {
+            self.d_rdd_d[i1].set_val(0.0);
+        }
+        
+        for i1 in 0..self.elements.len() {
+            self.el_in_d[i1] = 0;
+        }
+        
+        for eli in self.design_vars[d_var_num].comp_el_list.iter() {
+            self.el_in_d[*eli] = 1;
+        }
+        
+        // applied contribution
+        let mut this_el : &mut Element;
+        for this_ld in self.diff_loads.iter_mut() {
+            if this_ld.this_type.s != "nodalMassGen" {
+                for eli in self.element_sets[this_ld.el_set_ptr].labels.iter_mut() {
+                    if self.el_in_d[*eli] == 1 {
+                        this_el = &mut self.elements[*eli];
+                        this_el.get_stress_prereq_dfd1(&mut self.d1_pre, &mut self.sections, &mut self.materials, &mut self.nodes, & self.design_vars);
+                        this_el.get_app_diff_load_dfd1(&mut self.d_rdd_d, this_ld, &mut  self.d1_pre, &mut self.scratch.iter_mut(), &mut self.d1_scratch.iter_mut(), &mut self.sections, &mut  self.faces, &mut  self.nodes, & self.design_vars);
+                    }
+                }
+            }
+        }
+        
+        for i1 in 0..tot_nodes {
+            self.d_rdd_d[i1].neg();
+        }
+        
+        // solution-dependent contribution of load
+        for eli in self.design_vars[d_var_num].comp_el_list.iter() {
+            if self.elements[*eli].is_active {
+                this_el = &mut self.elements[*eli];
+                this_el.get_stress_prereq_dfd1(&mut self.d1_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
+                this_el.get_rd_dfd1(&mut self.d_rdd_d, &mut self.diff_mat, false, &mut scmd, &mut self.d1_pre, &mut self.scratch.iter_mut(), &mut self.d1_scratch.iter_mut(), &mut self.nodes);
+            }
+        }
+                
+        // design variable dependent contribution
+        if self.design_vars[d_var_num].nd_set_ptr < MAX_INT {
+            let mut nd_ld = DiffDoub1::new();
+            let mut this_nd : &mut Node;
+            for ndi in self.node_sets[self.design_vars[d_var_num].nd_set_ptr].labels.iter_mut() {
+                this_nd = &mut self.nodes[*ndi];
+                this_nd.get_diff_dvload_dfd1(&mut nd_ld, &self.design_vars);
+                glob_ind = this_nd.sorted_rank;
+                self.d_rdd_d[glob_ind].sub(& nd_ld);
+            }
+        }
+        
+        self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 0.0);
+        for nd in self.nodes.iter_mut() {
+            nd.calc_crd_dfd1(&self.design_vars);
+        }
+        
+    }
+
     pub fn d_relasticd_d(&mut self, d_var_num : usize) {
         let mut num_dof : usize;
         let mut glob_ind : usize;
@@ -2020,6 +2108,9 @@ impl Model {
                     if self.job[sci].elastic {
                         this_nd.backstep_disp();
                     }
+                    if self.job[sci].diffusion {
+                        this_nd.backstep_fl_den();
+                    }
                     if self.job[sci].thermal {
                         this_nd.backstep_temp();
                     }
@@ -2055,6 +2146,9 @@ impl Model {
                 for this_nd in self.nodes.iter_mut() {
                     if self.job[sci].elastic {
                         this_nd.backstep_disp();
+                    }
+                    if self.job[sci].diffusion {
+                        this_nd.backstep_fl_den();
                     }
                     if self.job[sci].thermal {
                         this_nd.backstep_temp();
@@ -2103,6 +2197,8 @@ impl Model {
                 for i2 in 0..self.nodes.len() {
                     self.d_ld_t[i2] = 0.0;
                     self.d_ld_tdot[i2] = 0.0;
+                    self.d_ld_con[i2] = 0.0;
+                    self.d_ld_condot[i2] = 0.0;
                 }
                 for i2 in 0..self.el_mat_dim {
                     self.d_ld_a[i2] = 0.0;
@@ -2117,6 +2213,9 @@ impl Model {
                 for this_nd in self.nodes.iter_mut() {
                     if self.job[sci].elastic {
                         this_nd.backstep_disp();
+                    }
+                    if self.job[sci].diffusion {
+                        this_nd.backstep_fl_den();
                     }
                     if self.job[sci].thermal {
                         this_nd.backstep_temp();
@@ -2138,6 +2237,12 @@ impl Model {
                         self.d_rthermald_d(i2);
                         for i3 in 0..self.nodes.len() {
                             self.d_ld_d[i2] -= self.t_adj[i3] * self.d_rtd_d[i3].dval;
+                        }
+                    }
+                    if self.job[sci].diffusion {
+                        self.d_rdiffusion_d(i2);
+                        for i3 in 0..self.nodes.len() {
+                            self.d_ld_d[i2] -= self.con_adj[i3] * self.d_rdd_d[i3].dval;
                         }
                     }
                     if self.job[sci].elastic {
@@ -2170,6 +2275,9 @@ impl Model {
                     if self.job[sci].elastic {
                         this_nd.backstep_disp();
                     }
+                    if self.job[sci].diffusion {
+                        this_nd.backstep_fl_den();
+                    }
                     if self.job[sci].thermal {
                         this_nd.backstep_temp();
                     }
@@ -2185,6 +2293,8 @@ impl Model {
                 for i2 in 0..self.nodes.len() {
                     self.d_ld_t[i2] = 0.0;
                     self.d_ld_tdot[i2] = 0.0;
+                    self.d_ld_con[i2] = 0.0;
+                    self.d_ld_condot[i2] = 0.0;
                 }
                 for i2 in 0..self.el_mat_dim {
                     self.d_ld_a[i2] = 0.0;
@@ -2200,6 +2310,12 @@ impl Model {
                         self.d_rthermald_d(i1);
                         for i3 in 0..self.nodes.len() {
                             self.d_ld_d[i1]  -=  self.t_adj[i3] * self.d_rtd_d[i3].dval;
+                        }
+                    }
+                    if self.job[sci].diffusion {
+                        self.d_rdiffusion_d(i1);
+                        for i3 in 0..self.nodes.len() {
+                            self.d_ld_d[i1] -= self.con_adj[i3] * self.d_rdd_d[i3].dval;
                         }
                     }
                     if self.job[sci].elastic {

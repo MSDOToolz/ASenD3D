@@ -51,6 +51,7 @@ use std::env;
 
 fn main() {
     let args : Vec<String> = env::args().collect();
+    
     // let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/ASenD3D/examples/testCases/singleHex/staticElastic/staticElasticJob.yaml".to_string()];
     
     let job_file = match args.get(1) {

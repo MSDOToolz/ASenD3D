@@ -23,7 +23,7 @@ jobCommands:
   - command: solve X
     elastic: yes
     thermal: no
-    fluid: no
+    diffusion: no
     nonlinearGeom: no
     staticLoadTime:
     loadRampSteps:
@@ -35,16 +35,12 @@ jobCommands:
     saveSolnHist: no
     solnHistDir:
     lumpMass: no
-    fullReformFreq: 1
     solverMethod:
     solverBlockDim:
     maxIterations:
     convergenceTol:
-    dissipationLevel: 0.25
-    modelTurbulence: yes
-    fluidSolver: iterative
-    fluidBlockDim: 20
-    maxFSIGap: 
+    enforceMaxCon:
+    userUpdate: no
     
   - command: zeroSolution
     fields: 

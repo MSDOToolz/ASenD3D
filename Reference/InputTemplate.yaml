@@ -58,8 +58,11 @@ sections:
              # - [i, j, val]
           damping:
           expLoadCoef: [eL1, ... eL6]
+          diffLoadCoef:
           conductivity: [k1]
+          diffusivity:
           specHeat:
+          maxConcentration:
       potField:
           coef:
           exp:
@@ -91,6 +94,10 @@ materials:
           conductivity: [k1,k2,k3,k12,k13,k23]
           expansion: [e11,e22,e33,e12,e13,e23]
           specHeat:
+      diffusion:
+          diffusivity:
+          expansion:
+          maxConcentration:
       damping:
       custom:
           prop1: value
@@ -108,13 +115,8 @@ fluids:
       refTemp:
       refPres:
       refDen:
-      refEnth:
-      tempVisCoef:
-      turbVisCoef:
-      gradVTurbCoef:
-      dissTurbCoef:
 constraints:
-    - type: displacement, temperature
+    - type: displacement, temperature, concentration
       terms:
           #- [ndSet,dof,coef]
           - nodeSet:

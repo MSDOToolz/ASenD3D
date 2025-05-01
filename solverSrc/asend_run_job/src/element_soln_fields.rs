@@ -1,5 +1,4 @@
 use crate::element::*;
-use crate::face::*;
 use crate::constants::*;
 use crate::diff_doub::*;
 use crate::list_ent::*;
@@ -7,8 +6,7 @@ use crate::design_var::*;
 use crate::node::*;
 use crate::section::*;
 use crate::matrix_functions::*;
-use crate::cpp_str::CppStr;
-
+use crate::cpp_str::*;
 
 impl Element {
 
@@ -77,38 +75,6 @@ impl Element {
         return;
     }
 
-    pub fn get_nd_fl_vel_dfd0(& self, fl_vel : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i3 : usize;
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            i3 = i1;
-            for i2 in 0..3 {
-                fl_vel[i3].set_val(this_nd.fl_vel[i2]);
-                i3  +=  self.num_nds;
-            }
-        }
-        
-        return;
-    }
-
-    pub fn get_nd_fl_vdot_dfd0(& self, fl_vdot : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut i3 : usize;
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            i3 = i1;
-            for i2 in 0..3 {
-                fl_vdot[i3].set_val(this_nd.fl_vel_dot[i2]);
-                i3  +=  self.num_nds;
-            }
-        }
-        
-        return;
-    }
-
     pub fn get_nd_temp_dfd0(& self, glob_temp : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
         let mut this_nd : &Node;
         
@@ -146,28 +112,6 @@ impl Element {
         for i1 in 0..self.num_nds {
             this_nd = &nd_ar[self.nodes[i1]];
             fl_den_dot[i1].set_val(this_nd.fl_den_dot);
-        }
-        
-        return;
-    }
-
-    pub fn get_nd_turb_e_dfd0(& self, turb_e : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            turb_e[i1].set_val(this_nd.turb_e);
-        }
-        
-        return;
-    }
-
-    pub fn get_nd_turb_edot_dfd0(& self, turb_edot : &mut Vec<DiffDoub0>, nd_ar : &mut Vec<Node>) {
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            turb_edot[i1].set_val(this_nd.turb_edot);
         }
         
         return;
@@ -1066,44 +1010,44 @@ impl Element {
     }
 
     pub fn get_stress_prereq_dfd0(& self, pre : &mut DiffDoub0StressPrereq, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        if self.this_type > 100 {
-            self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
-            let mut k = 0usize;
-            for i in 0..3 {
-                for j in 0..3 {
-                    match i == j {
-                        true => {pre.loc_ori[k].set_val(1.0);},
-                        false => {pre.loc_ori[k].set_val(0.0);},
-                    }
-                    k += 1;
-                }
-            }
-            for i in 0..3*self.num_nds {
-                pre.glob_disp[i].set_val(0.0);
-            }
-            for i in 0..self.num_nds {
-                pre.glob_temp[i].set_val(0.0);
-            }
-            k = 0;
-            for i in 0..6 {
-                for j in 0..6 {
-                    match i == j {
-                        true => {pre.cmat[k].set_val(1.0);},
-                        false => {pre.cmat[k].set_val(0.0);},
-                    }
-                    k += 1;
-                }
-            }
-            pre.cmat[21].set_val(0.5);
-            pre.cmat[28].set_val(0.5);
-            pre.cmat[35].set_val(0.5);
-            for i in 0..6 {
-                pre.therm_exp[i].set_val(0.0);
-                pre.einit[i].set_val(0.0);
-            }
-            mat_mul_dfd0(&mut pre.loc_nds, &mut pre.loc_ori, &mut pre.glob_nds,  3,  3,  self.num_nds);
-            return;
-        }
+        // if self.this_type > 100 {
+        //     self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
+        //     let mut k = 0usize;
+        //     for i in 0..3 {
+        //         for j in 0..3 {
+        //             match i == j {
+        //                 true => {pre.loc_ori[k].set_val(1.0);},
+        //                 false => {pre.loc_ori[k].set_val(0.0);},
+        //             }
+        //             k += 1;
+        //         }
+        //     }
+        //     for i in 0..3*self.num_nds {
+        //         pre.glob_disp[i].set_val(0.0);
+        //     }
+        //     for i in 0..self.num_nds {
+        //         pre.glob_temp[i].set_val(0.0);
+        //     }
+        //     k = 0;
+        //     for i in 0..6 {
+        //         for j in 0..6 {
+        //             match i == j {
+        //                 true => {pre.cmat[k].set_val(1.0);},
+        //                 false => {pre.cmat[k].set_val(0.0);},
+        //             }
+        //             k += 1;
+        //         }
+        //     }
+        //     pre.cmat[21].set_val(0.5);
+        //     pre.cmat[28].set_val(0.5);
+        //     pre.cmat[35].set_val(0.5);
+        //     for i in 0..6 {
+        //         pre.therm_exp[i].set_val(0.0);
+        //         pre.einit[i].set_val(0.0);
+        //     }
+        //     mat_mul_dfd0(&mut pre.loc_nds, &mut pre.loc_ori, &mut pre.glob_nds,  3,  3,  self.num_nds);
+        //     return;
+        // }
         let mut offset = DiffDoub0::new();
         self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
         self.get_loc_ori_dfd0(&mut pre.loc_ori, sec_ar, dv_ar);
@@ -1112,6 +1056,8 @@ impl Element {
         self.get_nd_acc_dfd0(&mut pre.glob_acc, nd_ar);
         self.get_nd_temp_dfd0(&mut pre.glob_temp, nd_ar);
         self.get_nd_tdot_dfd0(&mut pre.glob_tdot, nd_ar);
+        self.get_nd_fl_den_dfd0(&mut pre.glob_fl_den, nd_ar);
+        self.get_nd_fl_den_dot_dfd0(&mut pre.glob_fl_den_dot, nd_ar);
         if self.dof_per_nd == 6 {
             self.correct_orient_dfd0(&mut pre.loc_ori, &mut  pre.glob_nds);
             if self.this_type != 2 {
@@ -1119,25 +1065,28 @@ impl Element {
                 self.get_layer_angle_dfd0(&mut pre.layer_ang, sec_ar, dv_ar);
                 self.get_layer_q_dfd0(&mut pre.layer_q, sec_ar, mat_ar, dv_ar);
                 self.get_layer_d_dfd0(&mut pre.layer_d, sec_ar, mat_ar, dv_ar);
-                self.get_layer_th_exp_dfd0(&mut pre.layer_te, sec_ar, mat_ar, dv_ar);
+                self.get_layer_th_exp_dfd0(&mut pre.layer_te, &mut pre.layer_de, sec_ar, mat_ar, dv_ar);
                 self.get_layer_einit_dfd0(&mut pre.layer_e0, sec_ar, dv_ar);
                 self.get_layer_den_dfd0(&mut pre.layer_den, sec_ar, mat_ar, dv_ar);
-                self.get_layer_cond_dfd0(&mut pre.layer_tc, sec_ar, mat_ar, dv_ar);
+                self.get_layer_cond_dfd0(&mut pre.layer_tc, &mut pre.layer_diff, sec_ar, mat_ar, dv_ar);
                 self.get_layer_spec_heat_dfd0(&mut pre.layer_sh, sec_ar, mat_ar, dv_ar);
                 self.get_abd_dfd0(&mut pre.cmat, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_q, &mut  pre.layer_ang, sec_ar);
                 self.get_shell_damp_dfd0(&mut pre.dmat, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_d, &mut  pre.layer_ang, sec_ar);
-                self.get_shell_exp_load_dfd0(&mut pre.therm_exp, &mut  pre.einit, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_q, &mut  pre.layer_te, &mut  pre.layer_e0, &mut  pre.layer_ang, sec_ar);
+                self.get_shell_exp_load_dfd0(&mut pre.therm_exp, &mut pre.diff_exp, &mut  pre.einit, &mut  pre.layer_thk, &mut  pre.layer_z, &mut pre.layer_q, &mut  pre.layer_te, &mut pre.layer_de, &mut pre.layer_e0, &mut pre.layer_ang, sec_ar);
                 self.get_shell_mass_dfd0(&mut pre.mmat, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_den, sec_ar);
-                self.get_shell_cond_dfd0(&mut pre.tcmat, &mut  pre.layer_thk, &mut  pre.layer_ang, &mut  pre.layer_tc, sec_ar);
+                self.get_shell_cond_dfd0(&mut pre.tcmat, &mut pre.diff_mat, &mut  pre.layer_thk, &mut  pre.layer_ang, &mut  pre.layer_tc, &mut pre.layer_diff, sec_ar);
                 self.get_shell_spec_heat_dfd0(&mut pre.spec_heat, &mut  pre.layer_thk, &mut  pre.layer_sh, &mut  pre.layer_den, sec_ar);
             }
             else {
                 self.get_beam_stiff_dfd0(&mut pre.cmat, sec_ar, mat_ar, dv_ar);
                 self.get_beam_damp_dfd0(&mut pre.dmat, sec_ar, mat_ar, dv_ar);
-                self.get_beam_exp_load_dfd0(&mut pre.therm_exp, &mut  pre.einit, sec_ar, mat_ar, dv_ar);
+                self.get_beam_exp_load_dfd0(&mut pre.therm_exp, &mut pre.diff_exp, &mut  pre.einit, sec_ar, mat_ar, dv_ar);
                 self.get_beam_mass_dfd0(&mut pre.mmat, sec_ar, mat_ar, dv_ar);
-                self.get_beam_cond_dfd0(&mut pre.tcmat, sec_ar, mat_ar, dv_ar);
+                self.get_beam_cond_dfd0(&mut pre.tcmat, &mut pre.diff_mat, sec_ar, mat_ar, dv_ar);
                 self.get_beam_spec_heat_dfd0(&mut pre.spec_heat, sec_ar, mat_ar, dv_ar);
+                let seci = self.sect_ptr;
+                pre.max_con.set_val(sec_ar[seci].max_concentration);
+                self.get_gen_prop_dfd0(&mut pre.max_con, &mut CppStr::from("maxConcentration"), dv_ar);
             }
         }
         else if self.this_type == 21 {
@@ -1151,124 +1100,20 @@ impl Element {
         else {
             self.get_solid_stiff_dfd0(&mut pre.cmat, sec_ar, mat_ar, dv_ar);
             self.get_solid_damp_dfd0(&mut pre.dmat, sec_ar, mat_ar, dv_ar);
-            self.get_thermal_exp_dfd0(&mut pre.therm_exp, &mut  pre.einit, sec_ar, mat_ar, dv_ar);
-            self.get_density_dfd0(&mut pre.mmat[0],  0, sec_ar, mat_ar, dv_ar);
-            self.get_conductivity_dfd0(&mut pre.tcmat, sec_ar, mat_ar, dv_ar);
+            self.get_thermal_exp_dfd0(&mut pre.therm_exp, &mut pre.diff_exp, &mut pre.einit, sec_ar, mat_ar, dv_ar);
+            self.get_density_dfd0(&mut pre.mmat[0], 0, sec_ar, mat_ar, dv_ar);
+            self.get_conductivity_dfd0(&mut pre.tcmat, &mut pre.diff_mat, sec_ar, mat_ar, dv_ar);
             self.get_specific_heat_dfd0(&mut pre.spec_heat, sec_ar, mat_ar, dv_ar);
+            let seci = self.sect_ptr;
+            let mati = sec_ar[seci].mat_ptr;
+            pre.max_con.set_val(mat_ar[mati].max_concentration);
+            self.get_gen_prop_dfd0(&mut pre.max_con, &mut CppStr::from("maxConcentration"), dv_ar);
         }
         mat_mul_dfd0(&mut pre.loc_nds, &mut  pre.loc_ori, &mut  pre.glob_nds,  3,  3,  self.num_nds);
         
-        
         return;
     }
-
-    pub fn get_fluid_prereq_dfd0(&mut self, pre : &mut DiffDoub0FlPrereq, sec_ar : &mut Vec<Section>, fl_ar : &mut Vec<Fluid>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>, el_cent : & Vec<CentData>) {
-        let i2 : usize;
-        let mut sec_prop : f64;
-        
-        pre.num_nds = self.num_nds;
-        self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
-        self.get_nd_disp_dfd0(&mut pre.glob_disp, nd_ar);
-        i2 = 3 * self.num_nds;
-        for i1 in 0..i2 {
-            pre.glob_nds[i1].add(& pre.glob_disp[i1]);
-        }
-        self.get_nd_vel_dfd0(&mut pre.glob_vel, nd_ar);
-        self.get_nd_fl_den_dfd0(&mut pre.fl_den, nd_ar);
-        self.get_nd_fl_vel_dfd0(&mut pre.fl_vel, nd_ar);
-        self.get_nd_temp_dfd0(&mut pre.fl_temp, nd_ar);
-        self.get_nd_turb_e_dfd0(&mut pre.fl_turb_e, nd_ar);
-        self.get_nd_fl_den_dot_dfd0(&mut pre.fl_den_dot, nd_ar);
-        self.get_nd_fl_vdot_dfd0(&mut pre.fl_vel_dot, nd_ar);
-        self.get_nd_tdot_dfd0(&mut pre.fl_tdot, nd_ar);
-        self.get_nd_turb_edot_dfd0(&mut pre.fl_turb_edot, nd_ar);
-
-        let ec : &CentData = &el_cent[self.label];
-        for i in 0..3 {
-            pre.f_per_mass[i].set_val_dfd0(&ec.f_dfd0[i]);
-        }
-        self.get_f_per_mass_dfd0(&mut pre.f_per_mass, dv_ar);
-        pre.hg_per_vol.set_val_dfd0(&ec.hg_dfd0);
-        self.get_gen_prop_dfd0(&mut pre.hg_per_vol, &mut CppStr::from("bodyHeatGen"), dv_ar);
-        
-        let this_sec = &sec_ar[self.sect_ptr];
-        let this_fl = &fl_ar[this_sec.fl_ptr];
-
-        pre.compressible = this_fl.compressible;
-        
-        sec_prop = this_fl.grad_turb_coef;
-        pre.grad_turb_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.grad_turb_coef, &mut CppStr::from("gradVTurbCoef"), dv_ar);
-        
-        sec_prop = this_fl.diss_turb_coef;
-        pre.diss_turb_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.diss_turb_coef, &mut CppStr::from("dissTurbCoef"), dv_ar);
-        
-        sec_prop = this_fl.viscosity;
-        pre.ref_visc.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.ref_visc, &mut CppStr::from("viscosity"), dv_ar);
-        
-        sec_prop = this_fl.temp_vis_coef;
-        pre.temp_vis_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.temp_vis_coef, &mut CppStr::from("tempVisCoef"), dv_ar);
-        
-        sec_prop = this_fl.turb_vis_coef;
-        pre.turb_vis_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.turb_vis_coef, &mut CppStr::from("turbVisCoef"), dv_ar);
-        
-        sec_prop = this_fl.ref_enth;
-        pre.ref_enth.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.ref_enth, &mut CppStr::from("refEnth"), dv_ar);
-        
-        sec_prop = this_fl.ref_den;
-        pre.ref_den.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.ref_den, &mut CppStr::from("refDen"), dv_ar);
-        
-        sec_prop = this_fl.ref_temp;
-        pre.ref_temp.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.ref_temp, &mut CppStr::from("refTemp"), dv_ar);
-        
-        sec_prop = this_fl.therm_cond;
-        pre.therm_cond.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.therm_cond, &mut CppStr::from("thermCond"), dv_ar);
-
-        sec_prop = this_fl.expansion;
-        pre.expansion.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.expansion, &mut CppStr::from("thermExp"), dv_ar);
-        
-        sec_prop = this_fl.spec_heat;
-        pre.spec_heat.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.spec_heat, &mut CppStr::from("specHeat"), dv_ar);
-        
-        sec_prop = this_fl.ideal_gas;
-        pre.i_gconst.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.i_gconst, &mut CppStr::from("iGConst"), dv_ar);
-
-        sec_prop = this_fl.bulk_modulus;
-        pre.bulk_mod.set_val(sec_prop);
-        self.get_gen_prop_dfd0(&mut pre.bulk_mod, &mut CppStr::from("bulkModulus"), dv_ar);
-
-        if pre.compressible {
-            pre.den_vis_coef.set_val_dfd0(&pre.ref_visc);
-            pre.den_vis_coef.dvd(&pre.ref_den);
-            pre.den_vis_coef.dvd(&pre.ref_temp);
-            
-            pre.den_pres_coef.set_val_dfd0(&pre.bulk_mod);
-            pre.den_pres_coef.dvd(&pre.ref_den);
-            
-            pre.temp_pres_coef.set_val(3.0);
-            pre.temp_pres_coef.mult(&pre.bulk_mod);
-            pre.temp_pres_coef.mult(&pre.expansion);
-        }
-        else {
-            pre.den_vis_coef.set_val(0.0);
-            pre.den_pres_coef.set_val(0.0);
-            pre.temp_pres_coef.set_val(0.0);
-        }
-        
-        
-        return;
-    }
+ 
 
     pub fn get_volume_dfd0(& self, vol : &mut DiffDoub0, pre : &mut DiffDoub0StressPrereq, layer : usize, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
@@ -1615,7 +1460,7 @@ impl Element {
         return;
     }
 
-    pub fn get_stress_strain_dfd0(&mut self, stress : &mut [DiffDoub0], strain : &mut [DiffDoub0], t_strain : &mut [DiffDoub0], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
+    pub fn get_stress_strain_dfd0(&mut self, stress : &mut [DiffDoub0], strain : &mut [DiffDoub0], t_strain : &mut [DiffDoub0], d_strain : &mut [DiffDoub0], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
         let mut i2 : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
         let mut d_ndx = [DiffDoub0::new(); 33];
@@ -1626,12 +1471,14 @@ impl Element {
         let mut adj_stn = [DiffDoub0::new(); 6];
         let mut tmp = DiffDoub0::new();
         let mut ip_temp = DiffDoub0::new();
+        let mut ip_con = DiffDoub0::new();
         let mut tmp_ar = [DiffDoub0::new(); 60];
 
         for i in 0..6 {
             stress[i].set_val(0f64);
             strain[i].set_val(0f64);
             t_strain[i].set_val(0f64);
+            d_strain[i].set_val(0f64);
         }
         
         self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
@@ -1641,6 +1488,9 @@ impl Element {
             tmp.set_val_dfd0(& pre.glob_temp[i1]);
             tmp.mult(& n_vec[i1]);
             ip_temp.add(& tmp);
+            tmp.set_val_dfd0(&pre.glob_fl_den[i1]);
+            tmp.mult(&n_vec[i1]);
+            ip_con.add(&tmp);
         }
         
         if self.this_type == 41 || self.this_type == 3 {
@@ -1673,12 +1523,18 @@ impl Element {
                 tmp.set_val_dfd0(& pre.layer_te[i2]);
                 tmp.mult(& ip_temp);
                 t_strain[i1].set_val_dfd0(&tmp);
+
+                tmp.set_val_dfd0(& pre.layer_de[i2]);
+                tmp.mult(& ip_con);
+                d_strain[i1].set_val_dfd0(&tmp);
+                
                 adj_stn[i1].set_val_dfd0(& strain[i1]);
-                adj_stn[i1].sub(& tmp);
+                adj_stn[i1].sub(& t_strain[i1]);
+                adj_stn[i1].sub(& d_strain[i1]);
                 adj_stn[i1].sub(& pre.layer_e0[i2]);
                 i2 += 1usize;
             }
-            mat_mul_ar_dfd0(stress, &mut  pre.layer_q[(9*layer)..], &mut  adj_stn,  3,  3,  1);
+            mat_mul_ar_dfd0(stress, &mut pre.layer_q[(9*layer)..], &mut adj_stn,  3,  3,  1);
             
             tmp.set_val_dfd0(& strain[2]);
             strain[3].set_val_dfd0(& tmp);
@@ -1687,6 +1543,10 @@ impl Element {
             tmp.set_val_dfd0(& t_strain[2]);
             t_strain[3].set_val_dfd0(&tmp);
             t_strain[2].set_val(0.0);
+
+            tmp.set_val_dfd0(& d_strain[2]);
+            d_strain[3].set_val_dfd0(&tmp);
+            d_strain[2].set_val(0.0);
             
             tmp.set_val_dfd0(& stress[2]);
             stress[3].set_val_dfd0(& tmp);
@@ -1700,8 +1560,14 @@ impl Element {
                 tmp.set_val_dfd0(& pre.therm_exp[i1]);
                 tmp.mult(& ip_temp);
                 t_strain[i1].set_val_dfd0(&tmp);
+
+                tmp.set_val_dfd0(& pre.diff_exp[i1]);
+                tmp.mult(& ip_con);
+                d_strain[i1].set_val_dfd0(&tmp);
+                
                 adj_stn[i1].set_val_dfd0(& strain[i1]);
-                adj_stn[i1].sub(& tmp);
+                adj_stn[i1].sub(& t_strain[i1]);
+                adj_stn[i1].sub(& d_strain[i1]);
                 adj_stn[i1].sub(& pre.einit[i1]);
             }
             vec_to_ar_dfd0(&mut tmp_ar, &mut  pre.cmat,  0,  36);
@@ -1710,7 +1576,7 @@ impl Element {
         return;
     }
 
-    pub fn d_stress_straind_u_dfd0(&mut self, dsd_u : &mut Vec<DiffDoub0>, ded_u : &mut Vec<DiffDoub0>, dsd_t : &mut Vec<DiffDoub0>, spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
+    pub fn d_stress_straind_u_dfd0(&mut self, dsd_u : &mut Vec<DiffDoub0>, ded_u : &mut Vec<DiffDoub0>, dsd_t : &mut Vec<DiffDoub0>, dsd_c : &mut Vec<DiffDoub0>, spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
         let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
@@ -1723,6 +1589,8 @@ impl Element {
         let mut d_stress = [DiffDoub0::new(); 6];
         let mut cte = [DiffDoub0::new(); 6];
         let mut cten = [DiffDoub0::new(); 60];
+        let mut cde = [DiffDoub0::new(); 6];
+        let mut cden = [DiffDoub0::new(); 60];
         let mut tmp = DiffDoub0::new();
         let mut tmp_ar = [DiffDoub0::new(); 60];
         let mut tmp_ar2 = [DiffDoub0::new(); 6];
@@ -1736,6 +1604,7 @@ impl Element {
         i2 = 6 * self.num_nds;
         for i1 in 0..i2 {
             dsd_t[i1].set_val(0.0);
+            dsd_c[i1].set_val(0.0);
         }
         
         if self.this_type == 41 || self.this_type == 3 {
@@ -1743,9 +1612,9 @@ impl Element {
                 self.get_inst_ori_dfd0(&mut pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_disp,  2);
             }
             
-            self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
+            self.get_ip_data_dfd0(&mut n_vec, &mut d_ndx, &mut det_j, &mut pre.loc_nds, spt);
             for i1 in 0..tot_dof {
-                self.get_section_def_dfd0(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  MAX_INT);
+                self.get_section_def_dfd0(&mut sec_def, &mut pre.glob_disp, &mut pre.inst_ori, &mut pre.loc_ori, &mut pre.glob_nds, &mut d_ndx, &mut  n_vec, n_lgeom, i1, MAX_INT);
                 
                 sect_strn[0].set_val_dfd0(& sec_def[0]);
                 tmp.set_val_dfd0(& pre.layer_z[layer]);
@@ -1779,11 +1648,22 @@ impl Element {
             cte[0].neg();
             cte[1].neg();
             cte[2].neg();
-            mat_mul_ar_dfd0(&mut cten, &mut  cte, &mut  n_vec,  3,  1,  self.num_nds);
+            mat_mul_ar_dfd0(&mut cten, &mut  cte, &mut n_vec, 3, 1, self.num_nds);
+
+            mat_mul_ar_dfd0(&mut cde, &mut pre.layer_q[(9*layer)..], &mut pre.layer_de[(3*layer)..],  3,  3,  1);
+            cde[0].neg();
+            cde[1].neg();
+            cde[2].neg();
+            mat_mul_ar_dfd0(&mut cden, &mut cde, &mut n_vec, 3, 1, self.num_nds);
+
             for i1 in 0..self.num_nds {
                 dsd_t[i1].set_val_dfd0(& cten[i1]);
                 dsd_t[i1 + self.num_nds].set_val_dfd0(& cten[i1 + self.num_nds]);
                 dsd_t[i1 + 3 * self.num_nds].set_val_dfd0(& cten[i1 + 2 * self.num_nds]);
+
+                dsd_c[i1].set_val_dfd0(& cden[i1]);
+                dsd_c[i1 + self.num_nds].set_val_dfd0(& cden[i1 + self.num_nds]);
+                dsd_c[i1 + 3 * self.num_nds].set_val_dfd0(& cden[i1 + 2 * self.num_nds]);
             }
         }
         else if self.this_type != 2 {
@@ -1801,13 +1681,23 @@ impl Element {
                     i3  +=  tot_dof;
                 }
             }
+            
             vec_to_ar_dfd0(&mut tmp_ar2, &mut  pre.therm_exp,  0,  6);
             mat_mul_ar_dfd0(&mut cte, &mut  tmp_ar, &mut  tmp_ar2,  6,  6,  1);
+
+            vec_to_ar_dfd0(&mut tmp_ar2, &mut  pre.diff_exp,  0,  6);
+            mat_mul_ar_dfd0(&mut cde, &mut  tmp_ar, &mut  tmp_ar2,  6,  6,  1);
+            
             for i1 in 0..6 {
                 cte[i1].neg();
+                cde[i1].neg();
             }
-            mat_mul_ar_dfd0(&mut tmp_ar, &mut  cte, &mut  n_vec,  6,  1,  self.num_nds);
-            ar_to_vec_dfd0(&mut tmp_ar, dsd_t,  0,  60);
+            
+            mat_mul_ar_dfd0(&mut tmp_ar, &mut cte, &mut  n_vec,  6,  1,  self.num_nds);
+            ar_to_vec_dfd0(&mut tmp_ar, dsd_t, 0, 60);
+
+            mat_mul_ar_dfd0(&mut tmp_ar, &mut cde, &mut  n_vec,  6,  1,  self.num_nds);
+            ar_to_vec_dfd0(&mut tmp_ar, dsd_c, 0, 60);
         }
         
         return;
@@ -1818,6 +1708,7 @@ impl Element {
         let mut d_ndx = [DiffDoub0::new(); 33];
         let mut det_j = DiffDoub0::new();
         let mut pt_temp = DiffDoub0::new();
+        let mut pt_con = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
         let mut tmp_ar = [DiffDoub0::new(); 36];
         
@@ -1836,10 +1727,15 @@ impl Element {
         self.get_section_def_dfd0(def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  MAX_INT,  MAX_INT);
         
         pt_temp.set_val(0.0);
+        pt_con.set_val(0.0);
         for i1 in 0..self.num_nds {
             tmp.set_val_dfd0(& pre.glob_temp[i1]);
             tmp.mult(& n_vec[i1]);
             pt_temp.add(& tmp);
+
+            tmp.set_val_dfd0(& pre.glob_fl_den[i1]);
+            tmp.mult(& n_vec[i1]);
+            pt_con.add(& tmp);
         }
         
         vec_to_ar_dfd0(&mut tmp_ar, &mut  pre.cmat,  0,  36);
@@ -1847,15 +1743,20 @@ impl Element {
         
         for i1 in 0..6 {
             frc_mom[i1].sub(& pre.einit[i1]);
+            
             tmp.set_val_dfd0(& pt_temp);
             tmp.mult(& pre.therm_exp[i1]);
+            frc_mom[i1].sub(& tmp);
+
+            tmp.set_val_dfd0(& pt_con);
+            tmp.mult(& pre.diff_exp[i1]);
             frc_mom[i1].sub(& tmp);
         }
         
         return;
     }
 
-    pub fn d_def_frc_momd_u_dfd0(&mut self, d_defd_u : &mut Vec<DiffDoub0>, d_frc_momd_u : &mut Vec<DiffDoub0>, d_frc_momd_t : &mut Vec<DiffDoub0>, spt : &mut [f64], n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
+    pub fn d_def_frc_momd_u_dfd0(&mut self, d_defd_u : &mut Vec<DiffDoub0>, d_frc_momd_u : &mut Vec<DiffDoub0>, d_frc_momd_t : &mut Vec<DiffDoub0>, d_frc_momd_c : &mut Vec<DiffDoub0>, spt : &mut [f64], n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
         let mut i2 : usize;
         let tot_dof : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
@@ -1885,6 +1786,10 @@ impl Element {
         vec_to_ar_dfd0(&mut tmp_ar2, &mut  pre.therm_exp,  0,  6);
         mat_mul_ar_dfd0(&mut tmp_ar, &mut  tmp_ar2, &mut  n_vec,  6,  1,  self.num_nds);
         ar_to_vec_dfd0(&mut tmp_ar, d_frc_momd_t,  0,  60);
+
+        vec_to_ar_dfd0(&mut tmp_ar2, &mut  pre.diff_exp,  0,  6);
+        mat_mul_ar_dfd0(&mut tmp_ar, &mut  tmp_ar2, &mut n_vec, 6, 1, self.num_nds);
+        ar_to_vec_dfd0(&mut tmp_ar, d_frc_momd_c,  0,  60);
         
         return;
     }
@@ -1945,30 +1850,60 @@ impl Element {
         return;
     }
 
-    pub fn get_cent_v_grad_dfd0(&mut self, v_grad : &mut [DiffDoub0], t_grad : &mut [DiffDoub0], pre : &mut DiffDoub0FlPrereq, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable> ) {
-        // get fluid prerequisites before calling
+    pub fn get_mass_flux_dfd0(&mut self, flux : &mut [DiffDoub0], grad : &mut [DiffDoub0], spt : &mut [f64], layer : usize, pre : &mut DiffDoub0StressPrereq) {
+        let i1 : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
         let mut d_ndx = [DiffDoub0::new(); 33];
         let mut det_j = DiffDoub0::new();
-        let mut spt = [0f64; 3];
-       
-        for i in 0..3 {
-            spt[i] = self.s_cent[i];
-        }
-
-        // self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
-        // self.get_nd_disp_dfd0(&mut pre.glob_disp, nd_ar);
-        // let i2 = 3 * self.num_nds;
-        // for i1 in 0..i2 {
-        //     pre.glob_nds[i1].add(& pre.glob_disp[i1]);
-        // }
-        // self.get_nd_fl_vel_dfd0(&mut pre.fl_vel, nd_ar);
-        // self.get_nd_temp_dfd0(&mut pre.fl_temp, nd_ar);
-
-        self.get_ip_data_dfd0(&mut n_vec, &mut d_ndx, &mut det_j, &mut pre.glob_nds, &mut spt);
-        mat_mul_ar_dfd0(v_grad, &pre.fl_vel, &d_ndx, 3, self.num_nds, 3);
-        mat_mul_ar_dfd0(t_grad, &pre.fl_temp, &d_ndx, 1, self.num_nds, 3);
+        let mut tmp_ar = [DiffDoub0::new(); 10];
         
+        self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
+        vec_to_ar_dfd0(&mut tmp_ar, &mut  pre.glob_fl_den,  0,  10);
+        mat_mul_ar_dfd0(grad, &mut  tmp_ar, &mut d_ndx, 1,  self.num_nds,  3);
+        if self.this_type == 41 || self.this_type == 3 {
+            i1 = 9 * layer;
+            vec_to_ar_dfd0(&mut tmp_ar, &mut pre.layer_diff, i1, i1 + 9);
+            mat_mul_ar_dfd0(flux, &mut tmp_ar, grad,  3,  3,  1);
+        }
+        else {
+            vec_to_ar_dfd0(&mut tmp_ar, &mut  pre.diff_mat,  0,  9);
+            mat_mul_ar_dfd0(flux, &mut  tmp_ar, grad,  3,  3,  1);
+        }
+        flux[0].neg();
+        flux[1].neg();
+        flux[2].neg();
+        
+        return;
+    }
+
+    pub fn d_mass_flux_dt_dfd0(&mut self, d_fd_t : &mut Vec<DiffDoub0>, d_g : &mut Vec<DiffDoub0>, spt : &mut [f64], layer : usize, pre : &mut DiffDoub0StressPrereq) {
+        let i1 : usize;
+        let i2 : usize;
+        let mut n_vec = [DiffDoub0::new(); 11];
+        let mut d_ndx = [DiffDoub0::new(); 33];
+        let mut det_j = DiffDoub0::new();
+        let mut tmp_ar1 = [DiffDoub0::new(); 33];
+        let mut tmp_ar2 = [DiffDoub0::new(); 9];
+        let mut tmp_ar3 = [DiffDoub0::new(); 30];
+        
+        self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
+        transpose_ar_dfd0(&mut tmp_ar1, &mut d_ndx, self.num_nds, 3);
+        ar_to_vec_dfd0(&mut tmp_ar1, d_g,  0,  33);
+        if self.this_type == 41 || self.this_type == 3 {
+            i1 = 9 * layer;
+            vec_to_ar_dfd0(&mut tmp_ar2, &mut  pre.layer_diff,  i1,  i1 + 9);
+            mat_mul_ar_dfd0(&mut tmp_ar3, &mut  tmp_ar2, &mut  tmp_ar1,  3,  3,  self.num_nds);
+            ar_to_vec_dfd0(&mut tmp_ar3, d_fd_t,  0,  30);
+        }
+        else {
+            mat_mul_dfd0(d_fd_t, &mut  pre.diff_mat, d_g,  3,  3,  self.num_nds);
+        }
+        i2 = 3 * self.num_nds;
+        for i1 in 0..i2 {
+            d_fd_t[i1].neg();
+        }
+        
+        return;
     }
 
     pub fn put_vec_to_glob_mat_dfd0(&mut self, q_mat : &mut SparseMat, el_qvec : &mut Vec<DiffDoub0>, for_therm : bool, mat_row : usize, nd_ar : &mut Vec<Node>) {
@@ -2074,38 +2009,6 @@ impl Element {
         return;
     }
 
-    pub fn get_nd_fl_vel_dfd1(& self, fl_vel : &mut Vec<DiffDoub1>, nd_ar : &mut Vec<Node>) {
-        let mut i3 : usize;
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            i3 = i1;
-            for i2 in 0..3 {
-                fl_vel[i3].set_val(this_nd.fl_vel[i2]);
-                i3  +=  self.num_nds;
-            }
-        }
-        
-        return;
-    }
-
-    pub fn get_nd_fl_vdot_dfd1(& self, fl_vdot : &mut Vec<DiffDoub1>, nd_ar : &mut Vec<Node>) {
-        let mut i3 : usize;
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            i3 = i1;
-            for i2 in 0..3 {
-                fl_vdot[i3].set_val(this_nd.fl_vel_dot[i2]);
-                i3  +=  self.num_nds;
-            }
-        }
-        
-        return;
-    }
-
     pub fn get_nd_temp_dfd1(& self, glob_temp : &mut Vec<DiffDoub1>, nd_ar : &mut Vec<Node>) {
         let mut this_nd : &Node;
         
@@ -2143,28 +2046,6 @@ impl Element {
         for i1 in 0..self.num_nds {
             this_nd = &nd_ar[self.nodes[i1]];
             fl_den_dot[i1].set_val(this_nd.fl_den_dot);
-        }
-        
-        return;
-    }
-
-    pub fn get_nd_turb_e_dfd1(& self, turb_e : &mut Vec<DiffDoub1>, nd_ar : &mut Vec<Node>) {
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            turb_e[i1].set_val(this_nd.turb_e);
-        }
-        
-        return;
-    }
-
-    pub fn get_nd_turb_edot_dfd1(& self, turb_edot : &mut Vec<DiffDoub1>, nd_ar : &mut Vec<Node>) {
-        let mut this_nd : &Node;
-        
-        for i1 in 0..self.num_nds {
-            this_nd = &nd_ar[self.nodes[i1]];
-            turb_edot[i1].set_val(this_nd.turb_edot);
         }
         
         return;
@@ -3063,6 +2944,44 @@ impl Element {
     }
 
     pub fn get_stress_prereq_dfd1(& self, pre : &mut DiffDoub1StressPrereq, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
+        // if self.this_type > 100 {
+        //     self.get_nd_crds_dfd1(&mut pre.glob_nds, nd_ar, dv_ar);
+        //     let mut k = 0usize;
+        //     for i in 0..3 {
+        //         for j in 0..3 {
+        //             match i == j {
+        //                 true => {pre.loc_ori[k].set_val(1.0);},
+        //                 false => {pre.loc_ori[k].set_val(0.0);},
+        //             }
+        //             k += 1;
+        //         }
+        //     }
+        //     for i in 0..3*self.num_nds {
+        //         pre.glob_disp[i].set_val(0.0);
+        //     }
+        //     for i in 0..self.num_nds {
+        //         pre.glob_temp[i].set_val(0.0);
+        //     }
+        //     k = 0;
+        //     for i in 0..6 {
+        //         for j in 0..6 {
+        //             match i == j {
+        //                 true => {pre.cmat[k].set_val(1.0);},
+        //                 false => {pre.cmat[k].set_val(0.0);},
+        //             }
+        //             k += 1;
+        //         }
+        //     }
+        //     pre.cmat[21].set_val(0.5);
+        //     pre.cmat[28].set_val(0.5);
+        //     pre.cmat[35].set_val(0.5);
+        //     for i in 0..6 {
+        //         pre.therm_exp[i].set_val(0.0);
+        //         pre.einit[i].set_val(0.0);
+        //     }
+        //     mat_mul_dfd1(&mut pre.loc_nds, &mut pre.loc_ori, &mut pre.glob_nds,  3,  3,  self.num_nds);
+        //     return;
+        // }
         let mut offset = DiffDoub1::new();
         self.get_nd_crds_dfd1(&mut pre.glob_nds, nd_ar, dv_ar);
         self.get_loc_ori_dfd1(&mut pre.loc_ori, sec_ar, dv_ar);
@@ -3071,6 +2990,8 @@ impl Element {
         self.get_nd_acc_dfd1(&mut pre.glob_acc, nd_ar);
         self.get_nd_temp_dfd1(&mut pre.glob_temp, nd_ar);
         self.get_nd_tdot_dfd1(&mut pre.glob_tdot, nd_ar);
+        self.get_nd_fl_den_dfd1(&mut pre.glob_fl_den, nd_ar);
+        self.get_nd_fl_den_dot_dfd1(&mut pre.glob_fl_den_dot, nd_ar);
         if self.dof_per_nd == 6 {
             self.correct_orient_dfd1(&mut pre.loc_ori, &mut  pre.glob_nds);
             if self.this_type != 2 {
@@ -3078,25 +2999,28 @@ impl Element {
                 self.get_layer_angle_dfd1(&mut pre.layer_ang, sec_ar, dv_ar);
                 self.get_layer_q_dfd1(&mut pre.layer_q, sec_ar, mat_ar, dv_ar);
                 self.get_layer_d_dfd1(&mut pre.layer_d, sec_ar, mat_ar, dv_ar);
-                self.get_layer_th_exp_dfd1(&mut pre.layer_te, sec_ar, mat_ar, dv_ar);
+                self.get_layer_th_exp_dfd1(&mut pre.layer_te, &mut pre.layer_de, sec_ar, mat_ar, dv_ar);
                 self.get_layer_einit_dfd1(&mut pre.layer_e0, sec_ar, dv_ar);
                 self.get_layer_den_dfd1(&mut pre.layer_den, sec_ar, mat_ar, dv_ar);
-                self.get_layer_cond_dfd1(&mut pre.layer_tc, sec_ar, mat_ar, dv_ar);
+                self.get_layer_cond_dfd1(&mut pre.layer_tc, &mut pre.layer_diff, sec_ar, mat_ar, dv_ar);
                 self.get_layer_spec_heat_dfd1(&mut pre.layer_sh, sec_ar, mat_ar, dv_ar);
                 self.get_abd_dfd1(&mut pre.cmat, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_q, &mut  pre.layer_ang, sec_ar);
                 self.get_shell_damp_dfd1(&mut pre.dmat, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_d, &mut  pre.layer_ang, sec_ar);
-                self.get_shell_exp_load_dfd1(&mut pre.therm_exp, &mut  pre.einit, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_q, &mut  pre.layer_te, &mut  pre.layer_e0, &mut  pre.layer_ang, sec_ar);
+                self.get_shell_exp_load_dfd1(&mut pre.therm_exp, &mut pre.diff_exp, &mut  pre.einit, &mut  pre.layer_thk, &mut  pre.layer_z, &mut pre.layer_q, &mut  pre.layer_te, &mut pre.layer_de, &mut pre.layer_e0, &mut pre.layer_ang, sec_ar);
                 self.get_shell_mass_dfd1(&mut pre.mmat, &mut  pre.layer_thk, &mut  pre.layer_z, &mut  pre.layer_den, sec_ar);
-                self.get_shell_cond_dfd1(&mut pre.tcmat, &mut  pre.layer_thk, &mut  pre.layer_ang, &mut  pre.layer_tc, sec_ar);
+                self.get_shell_cond_dfd1(&mut pre.tcmat, &mut pre.diff_mat, &mut  pre.layer_thk, &mut  pre.layer_ang, &mut  pre.layer_tc, &mut pre.layer_diff, sec_ar);
                 self.get_shell_spec_heat_dfd1(&mut pre.spec_heat, &mut  pre.layer_thk, &mut  pre.layer_sh, &mut  pre.layer_den, sec_ar);
             }
             else {
                 self.get_beam_stiff_dfd1(&mut pre.cmat, sec_ar, mat_ar, dv_ar);
                 self.get_beam_damp_dfd1(&mut pre.dmat, sec_ar, mat_ar, dv_ar);
-                self.get_beam_exp_load_dfd1(&mut pre.therm_exp, &mut  pre.einit, sec_ar, mat_ar, dv_ar);
+                self.get_beam_exp_load_dfd1(&mut pre.therm_exp, &mut pre.diff_exp, &mut  pre.einit, sec_ar, mat_ar, dv_ar);
                 self.get_beam_mass_dfd1(&mut pre.mmat, sec_ar, mat_ar, dv_ar);
-                self.get_beam_cond_dfd1(&mut pre.tcmat, sec_ar, mat_ar, dv_ar);
+                self.get_beam_cond_dfd1(&mut pre.tcmat, &mut pre.diff_mat, sec_ar, mat_ar, dv_ar);
                 self.get_beam_spec_heat_dfd1(&mut pre.spec_heat, sec_ar, mat_ar, dv_ar);
+                let seci = self.sect_ptr;
+                pre.max_con.set_val(sec_ar[seci].max_concentration);
+                self.get_gen_prop_dfd1(&mut pre.max_con, &mut CppStr::from("maxConcentration"), dv_ar);
             }
         }
         else if self.this_type == 21 {
@@ -3110,124 +3034,20 @@ impl Element {
         else {
             self.get_solid_stiff_dfd1(&mut pre.cmat, sec_ar, mat_ar, dv_ar);
             self.get_solid_damp_dfd1(&mut pre.dmat, sec_ar, mat_ar, dv_ar);
-            self.get_thermal_exp_dfd1(&mut pre.therm_exp, &mut  pre.einit, sec_ar, mat_ar, dv_ar);
-            self.get_density_dfd1(&mut pre.mmat[0],  0, sec_ar, mat_ar, dv_ar);
-            self.get_conductivity_dfd1(&mut pre.tcmat, sec_ar, mat_ar, dv_ar);
+            self.get_thermal_exp_dfd1(&mut pre.therm_exp, &mut pre.diff_exp, &mut pre.einit, sec_ar, mat_ar, dv_ar);
+            self.get_density_dfd1(&mut pre.mmat[0], 0, sec_ar, mat_ar, dv_ar);
+            self.get_conductivity_dfd1(&mut pre.tcmat, &mut pre.diff_mat, sec_ar, mat_ar, dv_ar);
             self.get_specific_heat_dfd1(&mut pre.spec_heat, sec_ar, mat_ar, dv_ar);
+            let seci = self.sect_ptr;
+            let mati = sec_ar[seci].mat_ptr;
+            pre.max_con.set_val(mat_ar[mati].max_concentration);
+            self.get_gen_prop_dfd1(&mut pre.max_con, &mut CppStr::from("maxConcentration"), dv_ar);
         }
         mat_mul_dfd1(&mut pre.loc_nds, &mut  pre.loc_ori, &mut  pre.glob_nds,  3,  3,  self.num_nds);
         
-        
         return;
     }
-
-    pub fn get_fluid_prereq_dfd1(&mut self, pre : &mut DiffDoub1FlPrereq, sec_ar : &mut Vec<Section>, fl_ar : &mut Vec<Fluid>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>, el_cent : & Vec<CentData>) {
-        let i2 : usize;
-        let mut sec_prop : f64;
-        
-        pre.num_nds = self.num_nds;
-        self.get_nd_crds_dfd1(&mut pre.glob_nds, nd_ar, dv_ar);
-        self.get_nd_disp_dfd1(&mut pre.glob_disp, nd_ar);
-        i2 = 3 * self.num_nds;
-        for i1 in 0..i2 {
-            pre.glob_nds[i1].add(& pre.glob_disp[i1]);
-        }
-        self.get_nd_vel_dfd1(&mut pre.glob_vel, nd_ar);
-        self.get_nd_fl_den_dfd1(&mut pre.fl_den, nd_ar);
-        self.get_nd_fl_vel_dfd1(&mut pre.fl_vel, nd_ar);
-        self.get_nd_temp_dfd1(&mut pre.fl_temp, nd_ar);
-        self.get_nd_turb_e_dfd1(&mut pre.fl_turb_e, nd_ar);
-        self.get_nd_fl_den_dot_dfd1(&mut pre.fl_den_dot, nd_ar);
-        self.get_nd_fl_vdot_dfd1(&mut pre.fl_vel_dot, nd_ar);
-        self.get_nd_tdot_dfd1(&mut pre.fl_tdot, nd_ar);
-        self.get_nd_turb_edot_dfd1(&mut pre.fl_turb_edot, nd_ar);
-
-        let ec : &CentData = &el_cent[self.label];
-        for i in 0..3 {
-            pre.f_per_mass[i].set_val_dfd1(&ec.f_dfd1[i]);
-        }
-        self.get_f_per_mass_dfd1(&mut pre.f_per_mass, dv_ar);
-        pre.hg_per_vol.set_val_dfd1(&ec.hg_dfd1);
-        self.get_gen_prop_dfd1(&mut pre.hg_per_vol, &mut CppStr::from("bodyHeatGen"), dv_ar);
-        
-        let this_sec = &sec_ar[self.sect_ptr];
-        let this_fl = &fl_ar[this_sec.fl_ptr];
-
-        pre.compressible = this_fl.compressible;
-        
-        sec_prop = this_fl.grad_turb_coef;
-        pre.grad_turb_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.grad_turb_coef, &mut CppStr::from("gradVTurbCoef"), dv_ar);
-        
-        sec_prop = this_fl.diss_turb_coef;
-        pre.diss_turb_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.diss_turb_coef, &mut CppStr::from("dissTurbCoef"), dv_ar);
-        
-        sec_prop = this_fl.viscosity;
-        pre.ref_visc.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.ref_visc, &mut CppStr::from("viscosity"), dv_ar);
-        
-        sec_prop = this_fl.temp_vis_coef;
-        pre.temp_vis_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.temp_vis_coef, &mut CppStr::from("tempVisCoef"), dv_ar);
-        
-        sec_prop = this_fl.turb_vis_coef;
-        pre.turb_vis_coef.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.turb_vis_coef, &mut CppStr::from("turbVisCoef"), dv_ar);
-        
-        sec_prop = this_fl.ref_enth;
-        pre.ref_enth.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.ref_enth, &mut CppStr::from("refEnth"), dv_ar);
-        
-        sec_prop = this_fl.ref_den;
-        pre.ref_den.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.ref_den, &mut CppStr::from("refDen"), dv_ar);
-        
-        sec_prop = this_fl.ref_temp;
-        pre.ref_temp.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.ref_temp, &mut CppStr::from("refTemp"), dv_ar);
-        
-        sec_prop = this_fl.therm_cond;
-        pre.therm_cond.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.therm_cond, &mut CppStr::from("thermCond"), dv_ar);
-
-        sec_prop = this_fl.expansion;
-        pre.expansion.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.expansion, &mut CppStr::from("thermExp"), dv_ar);
-        
-        sec_prop = this_fl.spec_heat;
-        pre.spec_heat.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.spec_heat, &mut CppStr::from("specHeat"), dv_ar);
-        
-        sec_prop = this_fl.ideal_gas;
-        pre.i_gconst.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.i_gconst, &mut CppStr::from("iGConst"), dv_ar);
-
-        sec_prop = this_fl.bulk_modulus;
-        pre.bulk_mod.set_val(sec_prop);
-        self.get_gen_prop_dfd1(&mut pre.bulk_mod, &mut CppStr::from("bulkModulus"), dv_ar);
-
-        if pre.compressible {
-            pre.den_vis_coef.set_val_dfd1(&pre.ref_visc);
-            pre.den_vis_coef.dvd(&pre.ref_den);
-            pre.den_vis_coef.dvd(&pre.ref_temp);
-            
-            pre.den_pres_coef.set_val_dfd1(&pre.bulk_mod);
-            pre.den_pres_coef.dvd(&pre.ref_den);
-            
-            pre.temp_pres_coef.set_val(3.0);
-            pre.temp_pres_coef.mult(&pre.bulk_mod);
-            pre.temp_pres_coef.mult(&pre.expansion);
-        }
-        else {
-            pre.den_vis_coef.set_val(0.0);
-            pre.den_pres_coef.set_val(0.0);
-            pre.temp_pres_coef.set_val(0.0);
-        }
-        
-        
-        return;
-    }
+ 
 
     pub fn get_volume_dfd1(& self, vol : &mut DiffDoub1, pre : &mut DiffDoub1StressPrereq, layer : usize, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
@@ -3574,7 +3394,7 @@ impl Element {
         return;
     }
 
-    pub fn get_stress_strain_dfd1(&mut self, stress : &mut [DiffDoub1], strain : &mut [DiffDoub1], t_strain : &mut [DiffDoub1], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
+    pub fn get_stress_strain_dfd1(&mut self, stress : &mut [DiffDoub1], strain : &mut [DiffDoub1], t_strain : &mut [DiffDoub1], d_strain : &mut [DiffDoub1], spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
         let mut i2 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
@@ -3585,12 +3405,14 @@ impl Element {
         let mut adj_stn = [DiffDoub1::new(); 6];
         let mut tmp = DiffDoub1::new();
         let mut ip_temp = DiffDoub1::new();
+        let mut ip_con = DiffDoub1::new();
         let mut tmp_ar = [DiffDoub1::new(); 60];
 
         for i in 0..6 {
             stress[i].set_val(0f64);
             strain[i].set_val(0f64);
             t_strain[i].set_val(0f64);
+            d_strain[i].set_val(0f64);
         }
         
         self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
@@ -3600,6 +3422,9 @@ impl Element {
             tmp.set_val_dfd1(& pre.glob_temp[i1]);
             tmp.mult(& n_vec[i1]);
             ip_temp.add(& tmp);
+            tmp.set_val_dfd1(&pre.glob_fl_den[i1]);
+            tmp.mult(&n_vec[i1]);
+            ip_con.add(&tmp);
         }
         
         if self.this_type == 41 || self.this_type == 3 {
@@ -3632,12 +3457,18 @@ impl Element {
                 tmp.set_val_dfd1(& pre.layer_te[i2]);
                 tmp.mult(& ip_temp);
                 t_strain[i1].set_val_dfd1(&tmp);
+
+                tmp.set_val_dfd1(& pre.layer_de[i2]);
+                tmp.mult(& ip_con);
+                d_strain[i1].set_val_dfd1(&tmp);
+                
                 adj_stn[i1].set_val_dfd1(& strain[i1]);
-                adj_stn[i1].sub(& tmp);
+                adj_stn[i1].sub(& t_strain[i1]);
+                adj_stn[i1].sub(& d_strain[i1]);
                 adj_stn[i1].sub(& pre.layer_e0[i2]);
                 i2 += 1usize;
             }
-            mat_mul_ar_dfd1(stress, &mut  pre.layer_q[(9*layer)..], &mut  adj_stn,  3,  3,  1);
+            mat_mul_ar_dfd1(stress, &mut pre.layer_q[(9*layer)..], &mut adj_stn,  3,  3,  1);
             
             tmp.set_val_dfd1(& strain[2]);
             strain[3].set_val_dfd1(& tmp);
@@ -3646,6 +3477,10 @@ impl Element {
             tmp.set_val_dfd1(& t_strain[2]);
             t_strain[3].set_val_dfd1(&tmp);
             t_strain[2].set_val(0.0);
+
+            tmp.set_val_dfd1(& d_strain[2]);
+            d_strain[3].set_val_dfd1(&tmp);
+            d_strain[2].set_val(0.0);
             
             tmp.set_val_dfd1(& stress[2]);
             stress[3].set_val_dfd1(& tmp);
@@ -3659,8 +3494,14 @@ impl Element {
                 tmp.set_val_dfd1(& pre.therm_exp[i1]);
                 tmp.mult(& ip_temp);
                 t_strain[i1].set_val_dfd1(&tmp);
+
+                tmp.set_val_dfd1(& pre.diff_exp[i1]);
+                tmp.mult(& ip_con);
+                d_strain[i1].set_val_dfd1(&tmp);
+                
                 adj_stn[i1].set_val_dfd1(& strain[i1]);
-                adj_stn[i1].sub(& tmp);
+                adj_stn[i1].sub(& t_strain[i1]);
+                adj_stn[i1].sub(& d_strain[i1]);
                 adj_stn[i1].sub(& pre.einit[i1]);
             }
             vec_to_ar_dfd1(&mut tmp_ar, &mut  pre.cmat,  0,  36);
@@ -3669,7 +3510,7 @@ impl Element {
         return;
     }
 
-    pub fn d_stress_straind_u_dfd1(&mut self, dsd_u : &mut Vec<DiffDoub1>, ded_u : &mut Vec<DiffDoub1>, dsd_t : &mut Vec<DiffDoub1>, spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
+    pub fn d_stress_straind_u_dfd1(&mut self, dsd_u : &mut Vec<DiffDoub1>, ded_u : &mut Vec<DiffDoub1>, dsd_t : &mut Vec<DiffDoub1>, dsd_c : &mut Vec<DiffDoub1>, spt : &mut [f64], layer : usize, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
         let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
@@ -3682,6 +3523,8 @@ impl Element {
         let mut d_stress = [DiffDoub1::new(); 6];
         let mut cte = [DiffDoub1::new(); 6];
         let mut cten = [DiffDoub1::new(); 60];
+        let mut cde = [DiffDoub1::new(); 6];
+        let mut cden = [DiffDoub1::new(); 60];
         let mut tmp = DiffDoub1::new();
         let mut tmp_ar = [DiffDoub1::new(); 60];
         let mut tmp_ar2 = [DiffDoub1::new(); 6];
@@ -3695,6 +3538,7 @@ impl Element {
         i2 = 6 * self.num_nds;
         for i1 in 0..i2 {
             dsd_t[i1].set_val(0.0);
+            dsd_c[i1].set_val(0.0);
         }
         
         if self.this_type == 41 || self.this_type == 3 {
@@ -3702,9 +3546,9 @@ impl Element {
                 self.get_inst_ori_dfd1(&mut pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_disp,  2);
             }
             
-            self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
+            self.get_ip_data_dfd1(&mut n_vec, &mut d_ndx, &mut det_j, &mut pre.loc_nds, spt);
             for i1 in 0..tot_dof {
-                self.get_section_def_dfd1(&mut sec_def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  i1,  MAX_INT);
+                self.get_section_def_dfd1(&mut sec_def, &mut pre.glob_disp, &mut pre.inst_ori, &mut pre.loc_ori, &mut pre.glob_nds, &mut d_ndx, &mut  n_vec, n_lgeom, i1, MAX_INT);
                 
                 sect_strn[0].set_val_dfd1(& sec_def[0]);
                 tmp.set_val_dfd1(& pre.layer_z[layer]);
@@ -3738,11 +3582,22 @@ impl Element {
             cte[0].neg();
             cte[1].neg();
             cte[2].neg();
-            mat_mul_ar_dfd1(&mut cten, &mut  cte, &mut  n_vec,  3,  1,  self.num_nds);
+            mat_mul_ar_dfd1(&mut cten, &mut  cte, &mut n_vec, 3, 1, self.num_nds);
+
+            mat_mul_ar_dfd1(&mut cde, &mut pre.layer_q[(9*layer)..], &mut pre.layer_de[(3*layer)..],  3,  3,  1);
+            cde[0].neg();
+            cde[1].neg();
+            cde[2].neg();
+            mat_mul_ar_dfd1(&mut cden, &mut cde, &mut n_vec, 3, 1, self.num_nds);
+
             for i1 in 0..self.num_nds {
                 dsd_t[i1].set_val_dfd1(& cten[i1]);
                 dsd_t[i1 + self.num_nds].set_val_dfd1(& cten[i1 + self.num_nds]);
                 dsd_t[i1 + 3 * self.num_nds].set_val_dfd1(& cten[i1 + 2 * self.num_nds]);
+
+                dsd_c[i1].set_val_dfd1(& cden[i1]);
+                dsd_c[i1 + self.num_nds].set_val_dfd1(& cden[i1 + self.num_nds]);
+                dsd_c[i1 + 3 * self.num_nds].set_val_dfd1(& cden[i1 + 2 * self.num_nds]);
             }
         }
         else if self.this_type != 2 {
@@ -3760,13 +3615,23 @@ impl Element {
                     i3  +=  tot_dof;
                 }
             }
+            
             vec_to_ar_dfd1(&mut tmp_ar2, &mut  pre.therm_exp,  0,  6);
             mat_mul_ar_dfd1(&mut cte, &mut  tmp_ar, &mut  tmp_ar2,  6,  6,  1);
+
+            vec_to_ar_dfd1(&mut tmp_ar2, &mut  pre.diff_exp,  0,  6);
+            mat_mul_ar_dfd1(&mut cde, &mut  tmp_ar, &mut  tmp_ar2,  6,  6,  1);
+            
             for i1 in 0..6 {
                 cte[i1].neg();
+                cde[i1].neg();
             }
-            mat_mul_ar_dfd1(&mut tmp_ar, &mut  cte, &mut  n_vec,  6,  1,  self.num_nds);
-            ar_to_vec_dfd1(&mut tmp_ar, dsd_t,  0,  60);
+            
+            mat_mul_ar_dfd1(&mut tmp_ar, &mut cte, &mut  n_vec,  6,  1,  self.num_nds);
+            ar_to_vec_dfd1(&mut tmp_ar, dsd_t, 0, 60);
+
+            mat_mul_ar_dfd1(&mut tmp_ar, &mut cde, &mut  n_vec,  6,  1,  self.num_nds);
+            ar_to_vec_dfd1(&mut tmp_ar, dsd_c, 0, 60);
         }
         
         return;
@@ -3777,6 +3642,7 @@ impl Element {
         let mut d_ndx = [DiffDoub1::new(); 33];
         let mut det_j = DiffDoub1::new();
         let mut pt_temp = DiffDoub1::new();
+        let mut pt_con = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
         let mut tmp_ar = [DiffDoub1::new(); 36];
         
@@ -3795,10 +3661,15 @@ impl Element {
         self.get_section_def_dfd1(def, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds, &mut  d_ndx, &mut  n_vec,  n_lgeom,  MAX_INT,  MAX_INT);
         
         pt_temp.set_val(0.0);
+        pt_con.set_val(0.0);
         for i1 in 0..self.num_nds {
             tmp.set_val_dfd1(& pre.glob_temp[i1]);
             tmp.mult(& n_vec[i1]);
             pt_temp.add(& tmp);
+
+            tmp.set_val_dfd1(& pre.glob_fl_den[i1]);
+            tmp.mult(& n_vec[i1]);
+            pt_con.add(& tmp);
         }
         
         vec_to_ar_dfd1(&mut tmp_ar, &mut  pre.cmat,  0,  36);
@@ -3806,15 +3677,20 @@ impl Element {
         
         for i1 in 0..6 {
             frc_mom[i1].sub(& pre.einit[i1]);
+            
             tmp.set_val_dfd1(& pt_temp);
             tmp.mult(& pre.therm_exp[i1]);
+            frc_mom[i1].sub(& tmp);
+
+            tmp.set_val_dfd1(& pt_con);
+            tmp.mult(& pre.diff_exp[i1]);
             frc_mom[i1].sub(& tmp);
         }
         
         return;
     }
 
-    pub fn d_def_frc_momd_u_dfd1(&mut self, d_defd_u : &mut Vec<DiffDoub1>, d_frc_momd_u : &mut Vec<DiffDoub1>, d_frc_momd_t : &mut Vec<DiffDoub1>, spt : &mut [f64], n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
+    pub fn d_def_frc_momd_u_dfd1(&mut self, d_defd_u : &mut Vec<DiffDoub1>, d_frc_momd_u : &mut Vec<DiffDoub1>, d_frc_momd_t : &mut Vec<DiffDoub1>, d_frc_momd_c : &mut Vec<DiffDoub1>, spt : &mut [f64], n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
         let mut i2 : usize;
         let tot_dof : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
@@ -3844,6 +3720,10 @@ impl Element {
         vec_to_ar_dfd1(&mut tmp_ar2, &mut  pre.therm_exp,  0,  6);
         mat_mul_ar_dfd1(&mut tmp_ar, &mut  tmp_ar2, &mut  n_vec,  6,  1,  self.num_nds);
         ar_to_vec_dfd1(&mut tmp_ar, d_frc_momd_t,  0,  60);
+
+        vec_to_ar_dfd1(&mut tmp_ar2, &mut  pre.diff_exp,  0,  6);
+        mat_mul_ar_dfd1(&mut tmp_ar, &mut  tmp_ar2, &mut n_vec, 6, 1, self.num_nds);
+        ar_to_vec_dfd1(&mut tmp_ar, d_frc_momd_c,  0,  60);
         
         return;
     }
@@ -3904,30 +3784,60 @@ impl Element {
         return;
     }
 
-    pub fn get_cent_v_grad_dfd1(&mut self, v_grad : &mut [DiffDoub1], t_grad : &mut [DiffDoub1], pre : &mut DiffDoub1FlPrereq, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable> ) {
-        // get fluid prerequisites before calling
+    pub fn get_mass_flux_dfd1(&mut self, flux : &mut [DiffDoub1], grad : &mut [DiffDoub1], spt : &mut [f64], layer : usize, pre : &mut DiffDoub1StressPrereq) {
+        let i1 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
         let mut det_j = DiffDoub1::new();
-        let mut spt = [0f64; 3];
-       
-        for i in 0..3 {
-            spt[i] = self.s_cent[i];
-        }
-
-        // self.get_nd_crds_dfd1(&mut pre.glob_nds, nd_ar, dv_ar);
-        // self.get_nd_disp_dfd1(&mut pre.glob_disp, nd_ar);
-        // let i2 = 3 * self.num_nds;
-        // for i1 in 0..i2 {
-        //     pre.glob_nds[i1].add(& pre.glob_disp[i1]);
-        // }
-        // self.get_nd_fl_vel_dfd1(&mut pre.fl_vel, nd_ar);
-        // self.get_nd_temp_dfd1(&mut pre.fl_temp, nd_ar);
-
-        self.get_ip_data_dfd1(&mut n_vec, &mut d_ndx, &mut det_j, &mut pre.glob_nds, &mut spt);
-        mat_mul_ar_dfd1(v_grad, &pre.fl_vel, &d_ndx, 3, self.num_nds, 3);
-        mat_mul_ar_dfd1(t_grad, &pre.fl_temp, &d_ndx, 1, self.num_nds, 3);
+        let mut tmp_ar = [DiffDoub1::new(); 10];
         
+        self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
+        vec_to_ar_dfd1(&mut tmp_ar, &mut  pre.glob_fl_den,  0,  10);
+        mat_mul_ar_dfd1(grad, &mut  tmp_ar, &mut d_ndx, 1,  self.num_nds,  3);
+        if self.this_type == 41 || self.this_type == 3 {
+            i1 = 9 * layer;
+            vec_to_ar_dfd1(&mut tmp_ar, &mut pre.layer_diff, i1, i1 + 9);
+            mat_mul_ar_dfd1(flux, &mut tmp_ar, grad,  3,  3,  1);
+        }
+        else {
+            vec_to_ar_dfd1(&mut tmp_ar, &mut  pre.diff_mat,  0,  9);
+            mat_mul_ar_dfd1(flux, &mut  tmp_ar, grad,  3,  3,  1);
+        }
+        flux[0].neg();
+        flux[1].neg();
+        flux[2].neg();
+        
+        return;
+    }
+
+    pub fn d_mass_flux_dt_dfd1(&mut self, d_fd_t : &mut Vec<DiffDoub1>, d_g : &mut Vec<DiffDoub1>, spt : &mut [f64], layer : usize, pre : &mut DiffDoub1StressPrereq) {
+        let i1 : usize;
+        let i2 : usize;
+        let mut n_vec = [DiffDoub1::new(); 11];
+        let mut d_ndx = [DiffDoub1::new(); 33];
+        let mut det_j = DiffDoub1::new();
+        let mut tmp_ar1 = [DiffDoub1::new(); 33];
+        let mut tmp_ar2 = [DiffDoub1::new(); 9];
+        let mut tmp_ar3 = [DiffDoub1::new(); 30];
+        
+        self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, spt);
+        transpose_ar_dfd1(&mut tmp_ar1, &mut d_ndx, self.num_nds, 3);
+        ar_to_vec_dfd1(&mut tmp_ar1, d_g,  0,  33);
+        if self.this_type == 41 || self.this_type == 3 {
+            i1 = 9 * layer;
+            vec_to_ar_dfd1(&mut tmp_ar2, &mut  pre.layer_diff,  i1,  i1 + 9);
+            mat_mul_ar_dfd1(&mut tmp_ar3, &mut  tmp_ar2, &mut  tmp_ar1,  3,  3,  self.num_nds);
+            ar_to_vec_dfd1(&mut tmp_ar3, d_fd_t,  0,  30);
+        }
+        else {
+            mat_mul_dfd1(d_fd_t, &mut  pre.diff_mat, d_g,  3,  3,  self.num_nds);
+        }
+        i2 = 3 * self.num_nds;
+        for i1 in 0..i2 {
+            d_fd_t[i1].neg();
+        }
+        
+        return;
     }
 
     pub fn put_vec_to_glob_mat_dfd1(&mut self, q_mat : &mut SparseMat, el_qvec : &mut Vec<DiffDoub1>, for_therm : bool, mat_row : usize, nd_ar : &mut Vec<Node>) {
@@ -3969,8 +3879,7 @@ impl Element {
  
  
  
- 
- 
+  
     pub fn get_el_vec(&mut self, el_vec : &mut Vec<f64>, glob_vec : &mut Vec<f64>, for_therm : bool, intnl : bool, nd_ar : &mut Vec<Node>) {
         let mut i2 : usize;
         let mut nd : usize;

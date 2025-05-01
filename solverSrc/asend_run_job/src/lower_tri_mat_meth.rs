@@ -240,22 +240,6 @@ impl LowerTriMat {
         return  true;
     }
 
-    // pub fn write_to_file(&mut self) {
-    //     let mut i1 : usize;
-    //     let mut i2 : usize;
-    //     let mut col : usize;
-        
-    //     for i1 in 0..self.dim {
-    //         col = self.min_col[i1];
-    //         for i2 in self.range[i1]..self.range[i1 + 1] {
-    //             out_file.write(format!("{}{}{}{}{}{}{}", "    - [" , i1 , ", " , col , ", " , self.mat[i2] , "]\n").as_bytes());
-    //             col += 1usize;
-    //         }
-    //     }
-        
-    //     return;
-    // }
-
 }
 
 

@@ -60,6 +60,8 @@ impl ObjectiveTerm {
             self.d_qd_u.set_dim(self.q_len);
             self.d_qd_v.set_dim(self.q_len);
             self.d_qd_a.set_dim(self.q_len);
+            self.d_qd_c.set_dim(self.q_len);
+            self.d_qd_cdot.set_dim(self.q_len);
             self.d_qd_t.set_dim(self.q_len);
             self.d_qd_tdot.set_dim(self.q_len);
             self.d_qd_d.set_dim(self.q_len);
@@ -71,6 +73,8 @@ impl ObjectiveTerm {
         self.d_qd_u.zero_all();
         self.d_qd_v.zero_all();
         self.d_qd_a.zero_all();
+        self.d_qd_c.zero_all();
+        self.d_qd_cdot.zero_all();
         self.d_qd_t.zero_all();
         self.d_qd_tdot.zero_all();
         self.d_qd_d.zero_all();
@@ -78,7 +82,6 @@ impl ObjectiveTerm {
         for i1 in 0..self.q_len {
             self.err_norm_vec[i1] = 0.0;
         }
-        return;
     }
 
     pub fn get_power_norm(&mut self) -> f64 {
@@ -91,12 +94,14 @@ impl ObjectiveTerm {
         return  self.coef * p_sum;
     }
 
-    pub fn d_power_normd_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
-        self.d_qd_u.vector_multiply(d_ld_u, &mut  self.err_norm_vec,  true);
-        self.d_qd_v.vector_multiply(d_ld_v, &mut  self.err_norm_vec,  true);
-        self.d_qd_a.vector_multiply(d_ld_a, &mut  self.err_norm_vec,  true);
-        self.d_qd_t.vector_multiply(d_ld_t, &mut  self.err_norm_vec,  true);
-        self.d_qd_tdot.vector_multiply(d_ld_tdot, &mut  self.err_norm_vec,  true);
+    pub fn d_power_normd_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_c : &mut Vec<f64>, d_ld_cdot : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
+        self.d_qd_u.vector_multiply(d_ld_u, &mut self.err_norm_vec,  true);
+        self.d_qd_v.vector_multiply(d_ld_v, &mut self.err_norm_vec,  true);
+        self.d_qd_a.vector_multiply(d_ld_a, &mut self.err_norm_vec,  true);
+        self.d_qd_c.vector_multiply(d_ld_c, &mut self.err_norm_vec, true);
+        self.d_qd_cdot.vector_multiply(d_ld_cdot, &mut self.err_norm_vec, true);
+        self.d_qd_t.vector_multiply(d_ld_t, &mut self.err_norm_vec,  true);
+        self.d_qd_tdot.vector_multiply(d_ld_tdot, &mut self.err_norm_vec,  true);
         
         return;
     }
@@ -116,7 +121,7 @@ impl ObjectiveTerm {
         return  self.coef * powf(v_int, self.expnt);
     }
 
-    pub fn d_vol_integrald_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
+    pub fn d_vol_integrald_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_c : &mut Vec<f64>, d_ld_cdot : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
         let mut v_int : f64 =  0.0;
         for i1 in 0..self.q_len {
             v_int  +=  self.q_vec[i1] * self.el_vol_vec[i1];
@@ -131,6 +136,8 @@ impl ObjectiveTerm {
         self.d_qd_u.vector_multiply(d_ld_u, &mut  self.el_vol_vec,  true);
         self.d_qd_v.vector_multiply(d_ld_v, &mut  self.el_vol_vec,  true);
         self.d_qd_a.vector_multiply(d_ld_a, &mut  self.el_vol_vec,  true);
+        self.d_qd_c.vector_multiply(d_ld_c, &mut self.el_vol_vec, true);
+        self.d_qd_cdot.vector_multiply(d_ld_cdot, &mut self.el_vol_vec, true);
         self.d_qd_t.vector_multiply(d_ld_t, &mut  self.el_vol_vec,  true);
         self.d_qd_tdot.vector_multiply(d_ld_tdot, &mut  self.el_vol_vec,  true);
         
@@ -181,7 +188,7 @@ impl ObjectiveTerm {
         return  self.coef * powf(va_err, self.expnt);
     }
 
-    pub fn d_vol_averaged_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
+    pub fn d_vol_averaged_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_c : &mut Vec<f64>, d_ld_cdot : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
         let mut v_int : f64 =  0.0;
         let mut tot_vol : f64 =  0.0;
         let vol_avg : f64;
@@ -198,18 +205,19 @@ impl ObjectiveTerm {
             self.el_vol_vec[i1]  *=  va_err;
         }
         
-        self.d_qd_u.vector_multiply(d_ld_u, &mut  self.el_vol_vec,  true);
-        self.d_qd_v.vector_multiply(d_ld_v, &mut  self.el_vol_vec,  true);
-        self.d_qd_a.vector_multiply(d_ld_a, &mut  self.el_vol_vec,  true);
-        self.d_qd_t.vector_multiply(d_ld_t, &mut  self.el_vol_vec,  true);
-        self.d_qd_tdot.vector_multiply(d_ld_tdot, &mut  self.el_vol_vec,  true);
+        self.d_qd_u.vector_multiply(d_ld_u, &mut self.el_vol_vec,  true);
+        self.d_qd_v.vector_multiply(d_ld_v, &mut self.el_vol_vec,  true);
+        self.d_qd_a.vector_multiply(d_ld_a, &mut self.el_vol_vec,  true);
+        self.d_qd_c.vector_multiply(d_ld_c, &mut self.el_vol_vec, true);
+        self.d_qd_cdot.vector_multiply(d_ld_cdot, &mut self.el_vol_vec, true);
+        self.d_qd_t.vector_multiply(d_ld_t, &mut self.el_vol_vec,  true);
+        self.d_qd_tdot.vector_multiply(d_ld_tdot, &mut self.el_vol_vec,  true);
         
         va_err = 1.0 / va_err;
         for i1 in 0..self.q_len {
             self.el_vol_vec[i1]  *=  va_err;
         }
         
-        return;
     }
 
     pub fn d_vol_averaged_d(&mut self, d_ld_d : &mut Vec<f64>) {
@@ -267,6 +275,7 @@ impl ObjectiveTerm {
         let mut q_ind : usize;
         let mut strain = [DiffDoub0::new(); 6];
         let mut t_strain = [DiffDoub0::new(); 6];
+        let mut d_strain = [DiffDoub0::new(); 6];
         let mut stress = [DiffDoub0::new(); 6];
         let mut se_den : f64;
         let mut def = [DiffDoub0::new(); 9];
@@ -277,7 +286,7 @@ impl ObjectiveTerm {
         let mut e_den = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
         
-        let mut cat_list = CppStr::from("displacement velocity acceleration temperature tdot");
+        let mut cat_list = CppStr::from("displacement velocity acceleration concentration cdot temperature tdot");
         fi = cat_list.find(&self.category.s.as_str());
         if fi < MAX_INT {
             if self.nd_set_ptr == MAX_INT {
@@ -287,17 +296,17 @@ impl ObjectiveTerm {
             }
             q_ind = 0;
             for ndi in nd_sets[self.nd_set_ptr].labels.iter_mut() {
-                if self.category.s == "displacement" {
-                    self.q_vec[q_ind] = nd_ar[*ndi].displacement[self.component - 1];
-                } else if self.category.s == "velocity" {
-                    self.q_vec[q_ind] = nd_ar[*ndi].velocity[self.component - 1];
-                } else if self.category.s == "acceleration" {
-                    self.q_vec[q_ind] = nd_ar[*ndi].acceleration[self.component - 1];
-                } else if self.category.s == "temperature" {
-                    self.q_vec[q_ind] = nd_ar[*ndi].temperature;
-                } else if self.category.s == "tdot" {
-                    self.q_vec[q_ind] = nd_ar[*ndi].temp_change_rate;
-                }
+                self.q_vec[q_ind] = match self.category.s.as_str() {
+                    "displacement" => nd_ar[*ndi].displacement[self.component - 1],
+                    "velocity" => nd_ar[*ndi].velocity[self.component - 1],
+                    "acceleration" => nd_ar[*ndi].acceleration[self.component - 1],
+                    "concentration" => nd_ar[*ndi].fl_den,
+                    "cdot" => nd_ar[*ndi].fl_den_dot,
+                    "temperature" => nd_ar[*ndi].temperature,
+                    "tdot" => nd_ar[*ndi].temp_change_rate,
+                    &_ => 0.0,
+                };
+                
                 q_ind += 1usize;
             }
             if self.optr.s == "powerNorm" {
@@ -345,6 +354,7 @@ impl ObjectiveTerm {
                 }
             }
         }
+
         cat_list = CppStr::from("stress strain strainEnergyDen");
         fi = cat_list.find(&self.category.s.as_str());
         if fi < MAX_INT {
@@ -363,7 +373,7 @@ impl ObjectiveTerm {
                         s_cent[i] = this_el.s_cent[i];
                     }
                     this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar,  dv_ar);
-                    this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                    this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut d_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
                     if self.category.s == "stress" {
                         self.q_vec[q_ind] = stress[self.component - 1].val;
                     } else if self.category.s == "strain" {
@@ -517,6 +527,85 @@ impl ObjectiveTerm {
                 }
             }
         }
+
+        cat_list = CppStr::from("massFlux concGradient");
+        fi = cat_list.find(&self.category.s.as_str());
+        if fi < MAX_INT {
+            if self.el_set_ptr == MAX_INT {
+                let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
+                err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
+                panic!("{}", err_str);
+            }
+            q_ind = 0;
+            let mut this_el : &mut Element;
+            let mut s_cent : [f64; 3] = [0f64; 3];
+            for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
+                    }
+                    this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
+                    this_el.get_mass_flux_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
+                    if self.category.s == "massFlux" {
+                        self.q_vec[q_ind] = flux[self.component - 1].val;
+                    }
+                    else if self.category.s == "concGradient" {
+                        self.q_vec[q_ind] = t_grad[self.component - 1].val;
+                    }
+                    if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                        this_el.get_volume_dfd0(&mut e_vol, st_pre, self.layer, sec_ar, dv_ar);
+                        self.el_vol_vec[q_ind] = e_vol.val;
+                    }
+                }
+                q_ind += 1usize;
+            }
+            if self.optr.s == "powerNorm" {
+                tgt_len = self.tgt_vals.len();
+                if tgt_len == 0 {
+                    for i1 in 0..self.q_len {
+                        self.tgt_vec[i1] = 0.0;
+                    }
+                }
+                else if tgt_len == 1 {
+                    tgt_val = match self.tgt_vals.front() {
+                        None => 0.0f64,
+                        Some(x) => *x,
+                    };
+                    for i1 in 0..self.q_len {
+                        self.tgt_vec[i1] = tgt_val;
+                    }
+                }
+                else {
+                    q_ind = 0;
+                    for tv in self.tgt_vals.iter_mut() {
+                        self.tgt_vec[q_ind] = *tv;
+                        q_ind += 1usize;
+                    }
+                }
+                self.value  += self.get_power_norm();
+                return;
+            }
+            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                if self.tgt_vals.len() == 0 {
+                    self.tgt_vec[0] = 0.0;
+                }
+                else {
+                    self.tgt_vec[0] = match self.tgt_vals.front() {
+                        None => 0.0f64,
+                        Some(x) => *x,
+                    };
+                }
+                if self.optr.s == "volumeIntegral" {
+                    self.value += self.get_vol_integral();
+                    return;
+                }
+                else {
+                    self.value += self.get_vol_average();
+                    return;
+                }
+            }
+        }
         
         cat_list = CppStr::from("flux tempGradient");
         fi = cat_list.find(&self.category.s.as_str());
@@ -637,7 +726,7 @@ impl ObjectiveTerm {
         return;
     }
 
-    pub fn getd_ld_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>, time : f64, n_lgeom : bool,
+    pub fn getd_ld_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_c : &mut Vec<f64>, d_ld_cdot : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>, time : f64, n_lgeom : bool,
         nd_ar : &mut Vec<Node>, el_ar : &mut Vec<Element>, nd_sets : &mut Vec<Set>, el_sets : &mut Vec<Set>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>,
         st_pre : &mut DiffDoub0StressPrereq, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>) {
         if time < self.active_time[0] || time > self.active_time[1] {
@@ -654,10 +743,12 @@ impl ObjectiveTerm {
         let mut curr_rank : usize;
         let mut strain = [DiffDoub0::new(); 6];
         let mut t_strain = [DiffDoub0::new(); 6];
+        let mut d_strain = [DiffDoub0::new(); 6];
         let mut stress = [DiffDoub0::new(); 6];
         let mut dsd_u = vec![DiffDoub0::new(); 288];
         let mut ded_u = vec![DiffDoub0::new(); 288];
         let mut dsd_t = vec![DiffDoub0::new(); 90];
+        let mut dsd_c = vec![DiffDoub0::new(); 90];
         let mut dse_dend_u = [DiffDoub0::new(); 33];
         let mut dse_dend_t = [DiffDoub0::new(); 10];
         let mut def = [DiffDoub0::new(); 9];
@@ -676,7 +767,7 @@ impl ObjectiveTerm {
             Some(x) => &mut x.dat,
         };
         
-        let mut cat_list = CppStr::from("displacement velocity acceleration temperature tdot");
+        let mut cat_list = CppStr::from("displacement velocity acceleration concentration cdot temperature tdot");
         fi = cat_list.find(&self.category.s.as_str());
         if fi < MAX_INT {
             if self.nd_set_ptr == MAX_INT {
@@ -688,20 +779,15 @@ impl ObjectiveTerm {
             for ndi in nd_sets[self.nd_set_ptr].labels.iter_mut() {
                 dof_ind = nd_ar[*ndi].dof_index[self.component - 1];
                 curr_rank = nd_ar[*ndi].sorted_rank;
-                if self.category.s == "displacement" {
-                    self.d_qd_u.add_entry(q_ind, dof_ind, 1.0);
-                }
-                else if self.category.s == "velocity" {
-                    self.d_qd_v.add_entry(q_ind, dof_ind,  1.0);
-                }
-                else if self.category.s == "acceleration" {
-                    self.d_qd_a.add_entry(q_ind, dof_ind,  1.0);
-                }
-                else if self.category.s == "temperature" {
-                    self.d_qd_t.add_entry(q_ind, curr_rank, 1.0);
-                }
-                else if self.category.s == "tdot" {
-                    self.d_qd_tdot.add_entry(q_ind,   curr_rank,   1.0);
+                match self.category.s.as_str() {
+                    "displacement" => self.d_qd_u.add_entry(q_ind, dof_ind, 1.0),
+                    "velocity" => self.d_qd_v.add_entry(q_ind, dof_ind,  1.0),
+                    "acceleration" => self.d_qd_a.add_entry(q_ind, dof_ind,  1.0),
+                    "concentration" => self.d_qd_c.add_entry(q_ind, curr_rank, 1.0),
+                    "cdot" => self.d_qd_cdot.add_entry(q_ind, curr_rank, 1.0),
+                    "temperature" => self.d_qd_t.add_entry(q_ind, curr_rank, 1.0),
+                    "tdot" => self.d_qd_tdot.add_entry(q_ind,   curr_rank,   1.0),
+                    &_ => panic!("Error: unrecognized objective category '{}' in getd_ld_u()", self.category.s),
                 }
                 q_ind += 1usize;
             }
@@ -709,16 +795,16 @@ impl ObjectiveTerm {
                 for i1 in 0..self.q_len {
                     self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
-                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
             else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
-                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
                 else {
-                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
             }
@@ -742,8 +828,8 @@ impl ObjectiveTerm {
                         s_cent[i] = this_el.s_cent[i];
                     }
                     this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                    this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
-                    this_el.d_stress_straind_u_dfd0(&mut dsd_u, &mut  ded_u, &mut  dsd_t, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                    this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut d_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                    this_el.d_stress_straind_u_dfd0(&mut dsd_u, &mut  ded_u, &mut  dsd_t, &mut dsd_c, &mut s_cent,  self.layer,  n_lgeom, st_pre);
                     el_num_nds = this_el.num_nds;
                     el_dof_per_nd = this_el.dof_per_nd;
                     el_num_int_dof = this_el.num_int_dof;
@@ -791,16 +877,16 @@ impl ObjectiveTerm {
                 for i1 in 0..self.q_len {
                     self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
-                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
             if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
-                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
                 else {
-                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
             }
@@ -827,7 +913,7 @@ impl ObjectiveTerm {
                     //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
                     //this_el->d_stress_straind_u_dfd0(dsd_u, ded_u, dsd_t, spt, self.layer, n_lgeom, st_pre);
                     this_el.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut s_cent,  n_lgeom, st_pre);
-                    this_el.d_def_frc_momd_u_dfd0(&mut ded_u, &mut  dsd_u, &mut  dsd_t, &mut s_cent,  n_lgeom, st_pre);
+                    this_el.d_def_frc_momd_u_dfd0(&mut ded_u, &mut  dsd_u, &mut  dsd_t, &mut dsd_c, &mut s_cent,  n_lgeom, st_pre);
                     el_num_nds = this_el.num_nds;
                     el_dof_per_nd = this_el.dof_per_nd;
                     el_num_int_dof = this_el.num_int_dof;
@@ -851,16 +937,68 @@ impl ObjectiveTerm {
                 for i1 in 0..self.q_len {
                     self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
-                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
             if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
-                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
                 else {
-                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                    return;
+                }
+            }
+        }
+
+        cat_list = CppStr::from("massFlux concGradient");
+        fi = cat_list.find(&self.category.s.as_str());
+        if fi < MAX_INT {
+            if self.el_set_ptr == MAX_INT {
+                let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
+                err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
+                panic!("{}", err_str);
+            }
+            q_ind = 0;
+            let mut this_el : &mut Element;
+            let mut s_cent : [f64; 3] = [0.0f64; 3];
+            for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
+                    }
+                    this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                    this_el.get_mass_flux_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
+                    this_el.d_mass_flux_dt_dfd0(&mut d_fd_t, &mut  d_tgd_t, &mut s_cent,  self.layer, st_pre);
+                    el_num_nds = this_el.num_nds;
+                    i1 = el_num_nds * (self.component - 1);
+                    if self.category.s == "massFlux" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  d_fd_t,  i1,  i1 + el_num_nds);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_c, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
+                    else if self.category.s == "concGradient" {
+                        sub_vec_dfd0(&mut scr_v1, &mut  d_tgd_t,  i1,  i1 + el_num_nds);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_c, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
+                }
+                q_ind += 1usize;
+            }
+            if self.optr.s == "powerNorm" {
+                for i1 in 0..self.q_len {
+                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                }
+                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                return;
+            }
+            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                if self.optr.s == "volumeIntegral" {
+                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                    return;
+                }
+                else {
+                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
             }
@@ -903,16 +1041,16 @@ impl ObjectiveTerm {
                 for i1 in 0..self.q_len {
                     self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
-                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
             if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
-                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
                 else {
-                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot);
+                    self.d_vol_averaged_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
                 }
             }
@@ -932,6 +1070,7 @@ impl ObjectiveTerm {
         let mut dv_val = DiffDoub0::new();
         let mut strain = [DiffDoub1::new(); 6];
         let mut t_strain = [DiffDoub1::new(); 6];
+        let mut d_strain = [DiffDoub1::new(); 6];
         let mut stress = [DiffDoub1::new(); 6];
         let mut se_den : f64;
         let mut def = [DiffDoub1::new(); 9];
@@ -977,7 +1116,7 @@ impl ObjectiveTerm {
                             nd.calc_crd_dfd1(dv_ar);
                         }
                         this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
-                        this_el.get_stress_strain_dfd1(&mut stress, &mut  strain, &mut t_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
+                        this_el.get_stress_strain_dfd1(&mut stress, &mut  strain, &mut t_strain, &mut d_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
                         if self.category.s == "stress" {
                             self.d_qd_d.add_entry(q_ind,  dvi,   stress[self.component - 1].dval);
                         }
@@ -1081,6 +1220,79 @@ impl ObjectiveTerm {
                             self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
                         }
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
+                    }
+                }
+                q_ind += 1usize;
+            }
+            if self.optr.s == "powerNorm" {
+                for i1 in 0..self.q_len {
+                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                }
+                self.d_power_normd_d(d_ld_d);
+                return;
+            }
+            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                if self.optr.s == "volumeIntegral" {
+                    self.d_vol_integrald_d(d_ld_d);
+                    return;
+                }
+                else {
+                    self.d_vol_averaged_d(d_ld_d);
+                    return;
+                }
+            }
+        }
+
+        cat_list = CppStr::from("massFlux concGradient");
+        fi = cat_list.find(&self.category.s.as_str());
+        if fi < MAX_INT {
+            if self.el_set_ptr == MAX_INT {
+                let mut err_str = format!("Error: Objective terms of category '{}' must have a valid Element Set specified.\n", self.category.s);
+                err_str = format!("{} Check the Objective input file to make sure the Element Set name is correct and defined in the Model input file.", err_str);
+                panic!("{}", err_str);
+            }
+            q_ind = 0;
+            let mut this_el : &mut Element;
+            let mut tmp_dv = vec![0usize; dv_ar.len()];
+            let mut dv_len : usize;
+            let mut dvi : usize;
+            let mut s_cent : [f64; 3] = [0.0f64; 3];
+            for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
+                if el_ar[*eli].is_active {
+                    this_el = &mut el_ar[*eli];
+                    for i in 0..3 {
+                        s_cent[i] = this_el.s_cent[i];
+                    }
+                    dv_len = 0usize;
+                    for cdv in this_el.comp_dvars.iter() {
+                        tmp_dv[dv_len] = *cdv;
+                        dv_len += 1usize;
+                    }
+                    //for dvi in this_el.comp_dvars.iter_mut() {
+                    for i in 0..dv_len {
+                        dvi = tmp_dv[i];
+                        //this_dv = &mut dv_ar[*dvi];
+                        dv_ar[dvi].get_value_dfd0(&mut dv_val);
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val,    1.0);
+                        for nd in nd_ar.iter_mut() {
+                            nd.calc_crd_dfd1(dv_ar);
+                        }
+                        this_el.get_stress_prereq_dfd1(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
+                        this_el.get_mass_flux_dfd1(&mut flux, &mut  t_grad, &mut s_cent, self.layer, st_pre);
+                        if self.category.s == "massFlux" {
+                            self.d_qd_d.add_entry(q_ind, dvi, flux[self.component - 1].dval);
+                        }
+                        else if self.category.s == "concGradient" {
+                            self.d_qd_d.add_entry(q_ind, dvi, t_grad[self.component - 1].dval);
+                        }
+                        if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+                            this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
+                            self.d_vd_d.add_entry(q_ind, dvi,  e_vol.dval);
+                        }
+                        dv_ar[dvi].diff_val.set_val_2(dv_val.val,    0.0);
                         for nd in nd_ar.iter_mut() {
                             nd.calc_crd_dfd1(dv_ar);
                         }
@@ -1249,10 +1461,10 @@ impl Objective {
         return;
     }
 
-    pub fn calculated_ld_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>, time : f64, n_lgeom : bool, nd_ar : &mut Vec<Node>, el_ar : &mut Vec<Element>, nd_sets : &mut Vec<Set>, el_sets : &mut Vec<Set>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>,
+    pub fn calculated_ld_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_c : &mut Vec<f64>, d_ld_cdot : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>, time : f64, n_lgeom : bool, nd_ar : &mut Vec<Node>, el_ar : &mut Vec<Element>, nd_sets : &mut Vec<Set>, el_sets : &mut Vec<Set>, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, dv_ar : & Vec<DesignVariable>,
         st_pre : &mut DiffDoub0StressPrereq, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>) {
         for tm in self.terms.iter_mut() {
-            tm.getd_ld_u(d_ld_u, d_ld_v, d_ld_a, d_ld_t, d_ld_tdot,  time,  n_lgeom, nd_ar, el_ar, nd_sets, el_sets, sec_ar, mat_ar, dv_ar, st_pre, scr_dfd);
+            tm.getd_ld_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot, time, n_lgeom, nd_ar, el_ar, nd_sets, el_sets, sec_ar, mat_ar, dv_ar, st_pre, scr_dfd);
         }
         return;
     }

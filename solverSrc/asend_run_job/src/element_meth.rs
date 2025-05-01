@@ -20,6 +20,9 @@ impl DiffDoub0StressPrereq {
             self.layer_den = vec![DiffDoub0::new(); num_layers];
             self.layer_tc = vec![DiffDoub0::new(); 9 * num_layers];
             self.layer_sh = vec![DiffDoub0::new(); num_layers];
+            self.layer_de = vec![DiffDoub0::new(); 3 * num_layers];
+            self.layer_diff = vec![DiffDoub0::new(); 9 * num_layers];
+            self.layer_max_con = vec![DiffDoub0::new(); num_layers];
         }
         self.current_lay_len = num_layers;
         return;
@@ -47,6 +50,9 @@ impl DiffDoub1StressPrereq {
             self.layer_den = vec![DiffDoub1::new(); num_layers];
             self.layer_tc = vec![DiffDoub1::new(); 9 * num_layers];
             self.layer_sh = vec![DiffDoub1::new(); num_layers];
+            self.layer_de = vec![DiffDoub1::new(); 3 * num_layers];
+            self.layer_diff = vec![DiffDoub1::new(); 9 * num_layers];
+            self.layer_max_con = vec![DiffDoub1::new(); num_layers];
         }
         self.current_lay_len = num_layers;
         return;
@@ -57,8 +63,6 @@ impl DiffDoub1StressPrereq {
 //end dup
  
 //end skip 
- 
- 
  
  
  

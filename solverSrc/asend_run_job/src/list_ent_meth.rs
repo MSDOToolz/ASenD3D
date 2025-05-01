@@ -78,11 +78,11 @@ impl SparseMat {
         return;
     }
 
-    pub fn get_max_abs_val(&mut self) -> f64 {
+    pub fn get_max_abs_val(&self) -> f64 {
         let mut this_val : f64;
         let mut max_val : f64 =  0.0;
-        for i1 in self.matrix.iter_mut() {
-            for i2 in i1.row_vec.iter_mut() {
+        for i1 in self.matrix.iter() {
+            for i2 in i1.row_vec.iter() {
                 this_val = fabs(i2.value);
                 if this_val > max_val {
                     max_val = this_val;
@@ -96,15 +96,6 @@ impl SparseMat {
     pub fn scale_row_to_sum(&mut self, row : usize, new_sum : f64) {
         self.matrix[row].scale_to_sum(new_sum);
     }
-
-    // pub fn write_to_file(&mut self) {
-    //     for i1 in self.matrix.iter_mut() {
-    //         for i2 in i1.row_vec.iter_mut() {
-    //             out_file.write(format!("{}{}{}{}{}{}{}", "    - [" , i2.row , ", " , i2.col , ", " , i2.value , "]\n").as_bytes());
-    //         }
-    //     }
-    //     return;
-    // }
 
 }
 

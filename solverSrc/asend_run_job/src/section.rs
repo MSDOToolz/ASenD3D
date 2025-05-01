@@ -15,6 +15,9 @@ pub struct Material {
     pub conductivity : [f64; 6],
     pub expansion : [f64; 6],
     pub spec_heat : f64,
+    pub diffusivity : [f64; 6],
+    pub diff_exp : [f64; 6],
+    pub max_concentration : f64,
     pub damping : [f64; 36],
     pub custom : BTreeMap<String, Vec<f64>>,
 }
@@ -31,6 +34,9 @@ impl Material {
             conductivity : [0f64; 6],
             expansion : [0f64; 6],
             spec_heat : 0f64,
+            diffusivity : [0f64; 6],
+            diff_exp : [0f64; 6],
+            max_concentration : 1f64,
             damping : [0f64; 36],
             custom : BTreeMap::new(),
         }
@@ -51,10 +57,6 @@ pub struct Fluid {
     pub ref_pres : f64,
     pub ref_den : f64,
     pub ref_enth : f64,
-    pub temp_vis_coef : f64,
-    pub turb_vis_coef : f64,
-    pub grad_turb_coef : f64,
-    pub diss_turb_coef : f64,
 }
 
 impl Fluid {
@@ -72,10 +74,6 @@ impl Fluid {
             ref_pres : 0f64,
             ref_den : 0f64,
             ref_enth : 0f64,
-            temp_vis_coef : 0f64,
-            turb_vis_coef : 0f64,
-            grad_turb_coef : 0f64,
-            diss_turb_coef : 0f64,
         }
     }
 }
@@ -117,8 +115,11 @@ pub struct Section {
     pub mass : [f64; 36],
     pub damping : [f64; 36],
     pub exp_load_coef : [f64; 6],
+    pub diff_load_coef : [f64; 6],
     pub conductivity : f64,
+    pub diffusivity : f64,
     pub spec_heat : f64,
+    pub max_concentration : f64,
     pub mass_per_el : f64,
     pub pot_coef : f64,
     pub pot_exp : f64,
@@ -148,8 +149,11 @@ impl Section {
             mass : [0f64; 36],
             damping : [0f64; 36],
             exp_load_coef : [0f64; 6],
+            diff_load_coef : [0f64; 6],
             conductivity : 0f64,
+            diffusivity : 0f64,
             spec_heat : 0f64,
+            max_concentration : 1f64,
             mass_per_el : 0f64,
             pot_coef : 0f64,
             pot_exp : 0f64,

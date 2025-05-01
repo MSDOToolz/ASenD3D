@@ -10,6 +10,7 @@ impl Model {
         let mut dds = [DiffDoub0::new(); 6];
         let mut dde = [DiffDoub0::new(); 6];
         let mut dd_th_e = [DiffDoub0::new(); 6];
+        let mut dd_diff_e = [DiffDoub0::new(); 6];
         let mut dd_t_grad = [DiffDoub0::new(); 3];
         let mut dd_h_flux = [DiffDoub0::new(); 3];
         let mut spt = [0f64; 3];
@@ -28,7 +29,7 @@ impl Model {
         let nl_g = self.job[sci].nonlinear_geom;
         
         self.elements[el_i].get_stress_prereq_dfd0(&mut self.d0_pre, &mut self.sections, &mut self.materials, &mut self.nodes, &self.design_vars);
-        self.elements[el_i].get_stress_strain_dfd0(&mut dds, &mut dde, &mut dd_th_e, &mut spt, layer, nl_g, &mut self.d0_pre);
+        self.elements[el_i].get_stress_strain_dfd0(&mut dds, &mut dde, &mut dd_th_e, &mut dd_diff_e, &mut spt, layer, nl_g, &mut self.d0_pre);
         for i in 0..6 {
             res.tot_stress[i] = dds[i].val;
             res.tot_strain[i] = dde[i].val;
