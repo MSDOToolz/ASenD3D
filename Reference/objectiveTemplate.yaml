@@ -1,5 +1,5 @@
 objectiveTerms:
-    - category: ## displacement, velocity, acceleration, temperature, tdot, stress, strain, strainEnergy, sectionDef, sectionFrcMom, flux, tempGradient, mass, volume
+    - category: ## displacement, velocity, acceleration, temperature, tdot, stress, strain, strainEnergy, tsaiWu, mises, sectionDef, sectionFrcMom, flux, tempGradient, mass, volume
       operator: ## powerNorm, volumeIntegral, volumeAverage
       activeTime:
       component:

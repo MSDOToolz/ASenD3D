@@ -1010,44 +1010,44 @@ impl Element {
     }
 
     pub fn get_stress_prereq_dfd0(& self, pre : &mut DiffDoub0StressPrereq, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        // if self.this_type > 100 {
-        //     self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
-        //     let mut k = 0usize;
-        //     for i in 0..3 {
-        //         for j in 0..3 {
-        //             match i == j {
-        //                 true => {pre.loc_ori[k].set_val(1.0);},
-        //                 false => {pre.loc_ori[k].set_val(0.0);},
-        //             }
-        //             k += 1;
-        //         }
-        //     }
-        //     for i in 0..3*self.num_nds {
-        //         pre.glob_disp[i].set_val(0.0);
-        //     }
-        //     for i in 0..self.num_nds {
-        //         pre.glob_temp[i].set_val(0.0);
-        //     }
-        //     k = 0;
-        //     for i in 0..6 {
-        //         for j in 0..6 {
-        //             match i == j {
-        //                 true => {pre.cmat[k].set_val(1.0);},
-        //                 false => {pre.cmat[k].set_val(0.0);},
-        //             }
-        //             k += 1;
-        //         }
-        //     }
-        //     pre.cmat[21].set_val(0.5);
-        //     pre.cmat[28].set_val(0.5);
-        //     pre.cmat[35].set_val(0.5);
-        //     for i in 0..6 {
-        //         pre.therm_exp[i].set_val(0.0);
-        //         pre.einit[i].set_val(0.0);
-        //     }
-        //     mat_mul_dfd0(&mut pre.loc_nds, &mut pre.loc_ori, &mut pre.glob_nds,  3,  3,  self.num_nds);
-        //     return;
-        // }
+        if self.this_type > 100 {
+            self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
+            let mut k = 0usize;
+            for i in 0..3 {
+                for j in 0..3 {
+                    match i == j {
+                        true => {pre.loc_ori[k].set_val(1.0);},
+                        false => {pre.loc_ori[k].set_val(0.0);},
+                    }
+                    k += 1;
+                }
+            }
+            for i in 0..3*self.num_nds {
+                pre.glob_disp[i].set_val(0.0);
+            }
+            for i in 0..self.num_nds {
+                pre.glob_temp[i].set_val(0.0);
+            }
+            k = 0;
+            for i in 0..6 {
+                for j in 0..6 {
+                    match i == j {
+                        true => {pre.cmat[k].set_val(1.0);},
+                        false => {pre.cmat[k].set_val(0.0);},
+                    }
+                    k += 1;
+                }
+            }
+            pre.cmat[21].set_val(0.5);
+            pre.cmat[28].set_val(0.5);
+            pre.cmat[35].set_val(0.5);
+            for i in 0..6 {
+                pre.therm_exp[i].set_val(0.0);
+                pre.einit[i].set_val(0.0);
+            }
+            mat_mul_dfd0(&mut pre.loc_nds, &mut pre.loc_ori, &mut pre.glob_nds,  3,  3,  self.num_nds);
+            return;
+        }
         let mut offset = DiffDoub0::new();
         self.get_nd_crds_dfd0(&mut pre.glob_nds, nd_ar, dv_ar);
         self.get_loc_ori_dfd0(&mut pre.loc_ori, sec_ar, dv_ar);
@@ -2944,44 +2944,44 @@ impl Element {
     }
 
     pub fn get_stress_prereq_dfd1(& self, pre : &mut DiffDoub1StressPrereq, sec_ar : &mut Vec<Section>, mat_ar : &mut Vec<Material>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
-        // if self.this_type > 100 {
-        //     self.get_nd_crds_dfd1(&mut pre.glob_nds, nd_ar, dv_ar);
-        //     let mut k = 0usize;
-        //     for i in 0..3 {
-        //         for j in 0..3 {
-        //             match i == j {
-        //                 true => {pre.loc_ori[k].set_val(1.0);},
-        //                 false => {pre.loc_ori[k].set_val(0.0);},
-        //             }
-        //             k += 1;
-        //         }
-        //     }
-        //     for i in 0..3*self.num_nds {
-        //         pre.glob_disp[i].set_val(0.0);
-        //     }
-        //     for i in 0..self.num_nds {
-        //         pre.glob_temp[i].set_val(0.0);
-        //     }
-        //     k = 0;
-        //     for i in 0..6 {
-        //         for j in 0..6 {
-        //             match i == j {
-        //                 true => {pre.cmat[k].set_val(1.0);},
-        //                 false => {pre.cmat[k].set_val(0.0);},
-        //             }
-        //             k += 1;
-        //         }
-        //     }
-        //     pre.cmat[21].set_val(0.5);
-        //     pre.cmat[28].set_val(0.5);
-        //     pre.cmat[35].set_val(0.5);
-        //     for i in 0..6 {
-        //         pre.therm_exp[i].set_val(0.0);
-        //         pre.einit[i].set_val(0.0);
-        //     }
-        //     mat_mul_dfd1(&mut pre.loc_nds, &mut pre.loc_ori, &mut pre.glob_nds,  3,  3,  self.num_nds);
-        //     return;
-        // }
+        if self.this_type > 100 {
+            self.get_nd_crds_dfd1(&mut pre.glob_nds, nd_ar, dv_ar);
+            let mut k = 0usize;
+            for i in 0..3 {
+                for j in 0..3 {
+                    match i == j {
+                        true => {pre.loc_ori[k].set_val(1.0);},
+                        false => {pre.loc_ori[k].set_val(0.0);},
+                    }
+                    k += 1;
+                }
+            }
+            for i in 0..3*self.num_nds {
+                pre.glob_disp[i].set_val(0.0);
+            }
+            for i in 0..self.num_nds {
+                pre.glob_temp[i].set_val(0.0);
+            }
+            k = 0;
+            for i in 0..6 {
+                for j in 0..6 {
+                    match i == j {
+                        true => {pre.cmat[k].set_val(1.0);},
+                        false => {pre.cmat[k].set_val(0.0);},
+                    }
+                    k += 1;
+                }
+            }
+            pre.cmat[21].set_val(0.5);
+            pre.cmat[28].set_val(0.5);
+            pre.cmat[35].set_val(0.5);
+            for i in 0..6 {
+                pre.therm_exp[i].set_val(0.0);
+                pre.einit[i].set_val(0.0);
+            }
+            mat_mul_dfd1(&mut pre.loc_nds, &mut pre.loc_ori, &mut pre.glob_nds,  3,  3,  self.num_nds);
+            return;
+        }
         let mut offset = DiffDoub1::new();
         self.get_nd_crds_dfd1(&mut pre.glob_nds, nd_ar, dv_ar);
         self.get_loc_ori_dfd1(&mut pre.loc_ori, sec_ar, dv_ar);
@@ -3876,6 +3876,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
  

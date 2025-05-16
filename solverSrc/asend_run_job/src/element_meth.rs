@@ -66,6 +66,7 @@ impl DiffDoub1StressPrereq {
  
  
  
+ 
 impl Element {
     pub fn initialize_type(&mut self, new_type : usize) {
         self.this_type = new_type;

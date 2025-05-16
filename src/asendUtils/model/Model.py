@@ -3,7 +3,7 @@ import os
 import yaml
 from asendUtils.model.Section import Section
 from asendUtils.model.Material import Material
-from asendUitls.model.Fluid import Fluid
+from asendUtils.model.Fluid import Fluid
 from asendUtils.model.Constraint import Constraint
 from asendUtils.syst.pathTools import *
 
@@ -158,7 +158,9 @@ class Model():
                     # es['labels'] = newLabs
                     # newElSets.append(es)
                     newElSets[es] = newLabs
-                self.modelData['sets']['element'].extend(newElSets)
+                # self.modelData['sets']['element'].extend(newElSets)
+                for es in newElSets:
+                    self.modelData['sets']['element'][es] = newElSets[es]
             except:
                 pass
         except:

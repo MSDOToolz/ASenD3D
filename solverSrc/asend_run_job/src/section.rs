@@ -57,6 +57,10 @@ pub struct Fluid {
     pub ref_pres : f64,
     pub ref_den : f64,
     pub ref_enth : f64,
+    pub temp_vis_coef : f64,
+    pub turb_vis_coef : f64,
+    pub grad_turb_coef : f64,
+    pub diss_turb_coef : f64,
 }
 
 impl Fluid {
@@ -74,6 +78,10 @@ impl Fluid {
             ref_pres : 0f64,
             ref_den : 0f64,
             ref_enth : 0f64,
+            temp_vis_coef : 0f64,
+            turb_vis_coef : 0f64,
+            grad_turb_coef : 0f64,
+            diss_turb_coef : 0f64,
         }
     }
 }

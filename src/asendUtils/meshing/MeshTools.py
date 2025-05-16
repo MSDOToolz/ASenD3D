@@ -717,14 +717,14 @@ def getElementSetInRadius(meshData,pt,rad,setName):
 def getElementSetNearLine(meshData,pt,dirVec,rad,setName):
     nodes = meshData['nodes']
     mag = np.linalg.norm(dirVec)
-    unitDir = (1.0/mag)*dirVec
+    unitDir = (1.0/mag)*np.array(dirVec)
     ptAr = np.array(pt)
     # newSet = dict()
     # newSet['name'] = setName
     labs = list()
     for i, el in enumerate(meshData['elements']):
         eCrd = getElCoord(el,nodes)
-        cent = getElCent(eCrd)
+        cent = getElCentroid(eCrd)
         ptoel = cent - ptAr
         dp = np.dot(ptoel,unitDir)
         normVec = ptoel - dp*unitDir

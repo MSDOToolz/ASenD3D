@@ -62,6 +62,24 @@ impl Node {
         return;
     }
 
+    pub fn set_initial_flow(&mut self, new_flow : & [f64]) {
+        self.initial_fl_den = new_flow[0];
+        for i1 in 0..3 {
+            self.initial_fl_vel[i1] = new_flow[i1+1];
+        }
+        self.initial_temp = new_flow[4];
+        self.initial_turb_e = new_flow[5];
+    }
+
+    pub fn set_initial_flowdot(&mut self, new_fdot : &[f64]) {
+        self.initial_fl_den_dot = new_fdot[0];
+        for i1 in 0..3 {
+            self.initial_fl_vel_dot[i1] = new_fdot[i1+1];
+        }
+        self.initial_tdot = new_fdot[4];
+        self.initial_turb_edot = new_fdot[5];
+    }
+
     pub fn set_prev_disp(&mut self, new_disp : &mut [f64]) {
         for i1 in 0..6 {
             self.prev_disp[i1] = new_disp[i1];
@@ -158,6 +176,19 @@ impl Node {
         return;
     }
 
+    pub fn advance_flow(&mut self) {
+        self.prev_fl_den = self.fl_den;
+        self.prev_fl_den_dot = self.fl_den_dot;
+        for i in 0..3 {
+            self.prev_fl_vel[i] = self.fl_vel[i];
+            self.prev_fl_vel_dot[i] = self.fl_vel_dot[i];
+        }
+        self.prev_temp = self.temperature;
+        self.prev_tdot = self.temp_change_rate;
+        self.prev_turb_e = self.turb_e;
+        self.prev_turb_edot = self.turb_edot;
+    }
+
     pub fn backstep_disp(&mut self) {
         for i1 in 0..6 {
             self.displacement[i1] = self.prev_disp[i1];
@@ -177,6 +208,19 @@ impl Node {
         self.fl_den = self.prev_fl_den;
         self.fl_den_dot = self.prev_fl_den_dot;
         return;
+    }
+
+    pub fn backstep_flow(&mut self) {
+        self.fl_den = self.prev_fl_den;
+        self.fl_den_dot = self.prev_fl_den_dot;
+        for i in 0..3 {
+            self.fl_vel[i] = self.prev_fl_vel[i];
+            self.fl_vel_dot[i] = self.prev_fl_vel_dot[i];
+        }
+        self.temperature = self.prev_temp;
+        self.temp_change_rate = self.prev_tdot;
+        self.turb_e = self.prev_turb_e;
+        self.turb_edot = self.prev_turb_edot;
     }
 
     pub fn add_design_variable(&mut self, d_index : usize, coef : f64) {
@@ -443,6 +487,7 @@ impl Node {
     //end dup
  
 //end skip 
+ 
  
  
  

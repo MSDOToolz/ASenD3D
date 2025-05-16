@@ -98,7 +98,80 @@ impl DiffDoub0StressPrereq {
     }
 }
 
+#[derive(Clone)]
+pub struct DiffDoub0FlPrereq {
+    pub num_nds : usize,
+    pub compressible : bool,
+    pub glob_nds : Vec<DiffDoub0>,
+    pub glob_disp : Vec<DiffDoub0>,
+    pub glob_vel : Vec<DiffDoub0>,
+    pub fl_den : Vec<DiffDoub0>,
+    pub fl_vel : Vec<DiffDoub0>,
+    pub fl_temp : Vec<DiffDoub0>,
+    pub fl_turb_e : Vec<DiffDoub0>,
+    pub fl_den_dot : Vec<DiffDoub0>,
+    pub fl_vel_dot : Vec<DiffDoub0>,
+    pub fl_tdot : Vec<DiffDoub0>,
+    pub fl_turb_edot : Vec<DiffDoub0>,
+    pub f_per_mass : Vec<DiffDoub0>,
+    pub hg_per_vol : DiffDoub0,
+    pub grad_turb_coef : DiffDoub0,
+    pub diss_turb_coef : DiffDoub0,
+    pub ref_visc : DiffDoub0,
+    pub den_vis_coef : DiffDoub0,
+    pub temp_vis_coef : DiffDoub0,
+    pub turb_vis_coef : DiffDoub0,
+    pub den_pres_coef : DiffDoub0,
+    pub temp_pres_coef : DiffDoub0,
+    pub ref_enth : DiffDoub0,
+    pub ref_den : DiffDoub0,
+    pub ref_temp : DiffDoub0,
+    pub ref_pres : DiffDoub0,
+    pub therm_cond : DiffDoub0,
+    pub expansion : DiffDoub0,
+    pub spec_heat : DiffDoub0,
+    pub i_gconst : DiffDoub0,
+    pub bulk_mod : DiffDoub0,
+}
 
+impl DiffDoub0FlPrereq {
+    pub fn new() -> DiffDoub0FlPrereq {
+        DiffDoub0FlPrereq {
+            num_nds : 0,
+            compressible : true,
+            glob_nds : vec![DiffDoub0::new(); 30],
+            glob_disp : vec![DiffDoub0::new(); 30],
+            glob_vel : vec![DiffDoub0::new(); 30],
+            fl_den : vec![DiffDoub0::new(); 10],
+            fl_vel : vec![DiffDoub0::new(); 30],
+            fl_temp : vec![DiffDoub0::new(); 10],
+            fl_turb_e : vec![DiffDoub0::new(); 10],
+            fl_den_dot : vec![DiffDoub0::new(); 10],
+            fl_vel_dot : vec![DiffDoub0::new(); 30],
+            fl_tdot : vec![DiffDoub0::new(); 10],
+            fl_turb_edot : vec![DiffDoub0::new(); 10],
+            f_per_mass : vec![DiffDoub0::new(); 3],
+            hg_per_vol : DiffDoub0::new(),
+            grad_turb_coef : DiffDoub0::new(),
+            diss_turb_coef : DiffDoub0::new(),
+            ref_visc : DiffDoub0::new(),
+            den_vis_coef : DiffDoub0::new(),
+            temp_vis_coef : DiffDoub0::new(),
+            turb_vis_coef : DiffDoub0::new(),
+            den_pres_coef : DiffDoub0::new(),
+            temp_pres_coef : DiffDoub0::new(),
+            ref_enth : DiffDoub0::new(),
+            ref_den : DiffDoub0::new(),
+            ref_temp : DiffDoub0::new(),
+            ref_pres : DiffDoub0::new(),
+            therm_cond : DiffDoub0::new(),
+            expansion : DiffDoub0::new(),
+            spec_heat : DiffDoub0::new(),
+            i_gconst : DiffDoub0::new(),
+            bulk_mod : DiffDoub0::new(),
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct DiffDoub1StressPrereq {
@@ -195,6 +268,80 @@ impl DiffDoub1StressPrereq {
     }
 }
 
+#[derive(Clone)]
+pub struct DiffDoub1FlPrereq {
+    pub num_nds : usize,
+    pub compressible : bool,
+    pub glob_nds : Vec<DiffDoub1>,
+    pub glob_disp : Vec<DiffDoub1>,
+    pub glob_vel : Vec<DiffDoub1>,
+    pub fl_den : Vec<DiffDoub1>,
+    pub fl_vel : Vec<DiffDoub1>,
+    pub fl_temp : Vec<DiffDoub1>,
+    pub fl_turb_e : Vec<DiffDoub1>,
+    pub fl_den_dot : Vec<DiffDoub1>,
+    pub fl_vel_dot : Vec<DiffDoub1>,
+    pub fl_tdot : Vec<DiffDoub1>,
+    pub fl_turb_edot : Vec<DiffDoub1>,
+    pub f_per_mass : Vec<DiffDoub1>,
+    pub hg_per_vol : DiffDoub1,
+    pub grad_turb_coef : DiffDoub1,
+    pub diss_turb_coef : DiffDoub1,
+    pub ref_visc : DiffDoub1,
+    pub den_vis_coef : DiffDoub1,
+    pub temp_vis_coef : DiffDoub1,
+    pub turb_vis_coef : DiffDoub1,
+    pub den_pres_coef : DiffDoub1,
+    pub temp_pres_coef : DiffDoub1,
+    pub ref_enth : DiffDoub1,
+    pub ref_den : DiffDoub1,
+    pub ref_temp : DiffDoub1,
+    pub ref_pres : DiffDoub1,
+    pub therm_cond : DiffDoub1,
+    pub expansion : DiffDoub1,
+    pub spec_heat : DiffDoub1,
+    pub i_gconst : DiffDoub1,
+    pub bulk_mod : DiffDoub1,
+}
+
+impl DiffDoub1FlPrereq {
+    pub fn new() -> DiffDoub1FlPrereq {
+        DiffDoub1FlPrereq {
+            num_nds : 0,
+            compressible : true,
+            glob_nds : vec![DiffDoub1::new(); 30],
+            glob_disp : vec![DiffDoub1::new(); 30],
+            glob_vel : vec![DiffDoub1::new(); 30],
+            fl_den : vec![DiffDoub1::new(); 10],
+            fl_vel : vec![DiffDoub1::new(); 30],
+            fl_temp : vec![DiffDoub1::new(); 10],
+            fl_turb_e : vec![DiffDoub1::new(); 10],
+            fl_den_dot : vec![DiffDoub1::new(); 10],
+            fl_vel_dot : vec![DiffDoub1::new(); 30],
+            fl_tdot : vec![DiffDoub1::new(); 10],
+            fl_turb_edot : vec![DiffDoub1::new(); 10],
+            f_per_mass : vec![DiffDoub1::new(); 3],
+            hg_per_vol : DiffDoub1::new(),
+            grad_turb_coef : DiffDoub1::new(),
+            diss_turb_coef : DiffDoub1::new(),
+            ref_visc : DiffDoub1::new(),
+            den_vis_coef : DiffDoub1::new(),
+            temp_vis_coef : DiffDoub1::new(),
+            turb_vis_coef : DiffDoub1::new(),
+            den_pres_coef : DiffDoub1::new(),
+            temp_pres_coef : DiffDoub1::new(),
+            ref_enth : DiffDoub1::new(),
+            ref_den : DiffDoub1::new(),
+            ref_temp : DiffDoub1::new(),
+            ref_pres : DiffDoub1::new(),
+            therm_cond : DiffDoub1::new(),
+            expansion : DiffDoub1::new(),
+            spec_heat : DiffDoub1::new(),
+            i_gconst : DiffDoub1::new(),
+            bulk_mod : DiffDoub1::new(),
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Element {
@@ -221,6 +368,8 @@ pub struct Element {
     pub internal_adj : Vec<f64>,
     pub internal_ru : Vec<DiffDoub1>,
     pub internal_mat : Vec<f64>,
+    pub body_force : [f64; 3],
+    pub body_heat_gen : f64,
     pub design_vars : LinkedList<IDCapsule>,
     pub comp_dvars : LinkedList<usize>,
     pub sect_ptr : usize,
@@ -254,6 +403,8 @@ impl Element {
             internal_adj : Vec::new(),
             internal_ru : Vec::new(),
             internal_mat : Vec::new(),
+            body_force : [0f64; 3],
+            body_heat_gen : 0f64,
             design_vars : LinkedList::new(),
             comp_dvars : LinkedList::new(),
             sect_ptr : 0usize,
