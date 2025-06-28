@@ -31,6 +31,26 @@ impl Element {
         return;
     }
 
+    pub fn get_gen_pvec_dfd0(&self, prop : &mut Vec<DiffDoub0>, prop_key : &mut CppStr, dv_ar : &Vec<DesignVariable>) {
+        let mut d_vind : usize;
+        let mut dv_val = DiffDoub0::new();
+        let mut tmp = DiffDoub0::new();
+        let mut this_dv : & DesignVariable;
+        let mut comp : usize;
+        
+        for dv in self.design_vars.iter() {
+            d_vind = dv.int_dat;
+            this_dv = & dv_ar[d_vind];
+            if this_dv.category.s == prop_key.s {
+                this_dv.get_value_dfd0(&mut dv_val);
+                comp = this_dv.component - 1;
+                tmp.set_val(dv.doub_dat);
+                dv_val.mult(& tmp);
+                prop[comp].add(& dv_val);
+            }
+        }
+    }
+
     pub fn get_f_per_mass_dfd0(&self, f_vec : &mut Vec<DiffDoub0>, dv_ar : &Vec<DesignVariable>) {
         let mut d_vind : usize;
         let mut dv_val = DiffDoub0::new();
@@ -2248,6 +2268,26 @@ impl Element {
         return;
     }
 
+    pub fn get_gen_pvec_dfd1(&self, prop : &mut Vec<DiffDoub1>, prop_key : &mut CppStr, dv_ar : &Vec<DesignVariable>) {
+        let mut d_vind : usize;
+        let mut dv_val = DiffDoub1::new();
+        let mut tmp = DiffDoub1::new();
+        let mut this_dv : & DesignVariable;
+        let mut comp : usize;
+        
+        for dv in self.design_vars.iter() {
+            d_vind = dv.int_dat;
+            this_dv = & dv_ar[d_vind];
+            if this_dv.category.s == prop_key.s {
+                this_dv.get_value_dfd1(&mut dv_val);
+                comp = this_dv.component - 1;
+                tmp.set_val(dv.doub_dat);
+                dv_val.mult(& tmp);
+                prop[comp].add(& dv_val);
+            }
+        }
+    }
+
     pub fn get_f_per_mass_dfd1(&self, f_vec : &mut Vec<DiffDoub1>, dv_ar : &Vec<DesignVariable>) {
         let mut d_vind : usize;
         let mut dv_val = DiffDoub1::new();
@@ -4442,6 +4482,9 @@ impl Element {
     //end dup
  
 //end skip 
+ 
+ 
+ 
  
  
  

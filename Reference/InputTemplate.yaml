@@ -100,7 +100,7 @@ materials:
           maxConcentration:
       damping:
       custom:
-          prop1: value
+          prop1: value # tensileStrength, compressiveStrength, shearStrength
           prop2: [v1, v2, v3]
 fluids:
     name:

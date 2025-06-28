@@ -280,6 +280,7 @@ impl Model {
         let mut flux = [DiffDoub0::new(); 3];
         let mut field_list : CppStr;
         let time : f64;
+        let mut tmp = DiffDoub0::new();
         
         let sci = self.solve_cmd;
         
@@ -358,6 +359,7 @@ impl Model {
                 "stress" => writer.write(b"S11,S22,S33,S12,S13,S23,MISES,PS1,PS2,PS3,"),
                 "strain" => writer.write(b"E11,E22,E33,E12,E13,E23,PE1,PE2,PE3,"),
                 "strainEnergyDen" => writer.write(b"SE,"),
+                "tsaiWu" => writer.write(b"TSAIWU,"),
                 "sectionFrcMom" => writer.write(b"SECT_F1,SECT_F2,SECT_F3,SECT_M1,SECT_M2,SECT_M3,"),
                 "sectionDef" => writer.write(b"SECT_E1,SECT_E2,SECT_E3,SECT_K1,SECT_K2,SECT_K3,"),
                 "massFlux" => writer.write(b"MFLX1,MFLX2,MFLX3,"),
@@ -399,7 +401,7 @@ impl Model {
                     let _ = writer.write(format!("{},{},{},", *el_label, i1, i2).as_bytes());
                     for this_field in fields.iter_mut() {
                                                 
-                        field_list = CppStr::from("stress strain strainEnergyDen");
+                        field_list = CppStr::from("stress strain strainEnergyDen tsaiWu");
                         str_ind = field_list.find(&this_field.s.as_str());
                         if str_ind < MAX_INT {
                             el_pt.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut d_strain, &mut int_pts[(3*i1)..],  i2,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
@@ -410,7 +412,8 @@ impl Model {
                                 }
                                 Model::principal_strain(&mut princ, &mut p_dir, &ftens);
                                 let _ = writer.write(format!("{0:.12e},{1:.12e},{2:.12e},",princ[0],princ[1],princ[2]).as_bytes());
-                            } else if this_field.s == "stress" {
+                            } 
+                            else if this_field.s == "stress" {
                                 for i3 in 0..6 {
                                     let _ = writer.write(format!("{0:.12e},", stress[i3].val).as_bytes());
                                     ftens[i3] = stress[i3].val;
@@ -419,13 +422,18 @@ impl Model {
                                 let _ = writer.write(format!("{0:.12e},", mises).as_bytes());
                                 Model::principal_stress(&mut princ, &mut p_dir, &ftens);
                                 let _ = writer.write(format!("{0:.12e},{1:.12e},{2:.12e},",princ[0],princ[1],princ[2]).as_bytes());
-                            } else {
+                            } 
+                            else if this_field.s == "strainEnergyDen" {
                                 seden = 0.0;
                                 for i3 in 0..6 {
                                     seden  +=  stress[i3].val * strain[i3].val;
                                 }
                                 seden  *=  0.5;
                                 let _ = writer.write(format!("{0:.12e},", seden).as_bytes());
+                            }
+                            else {
+                                el_pt.get_tsai_wu_dfd0(&mut tmp, &stress, i2, &self.sections, &self.materials, &self.design_vars);
+                                let _ = writer.write(format!("{0:.12e},", tmp.val).as_bytes());
                             }
                         }
                         

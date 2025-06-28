@@ -1703,6 +1703,234 @@ impl Element {
         return;
     }
 
+    pub fn get_mises_dfd0(&self, mises : &mut DiffDoub0, stress : &[DiffDoub0]) {
+        let mut max_mises = DiffDoub0::new();
+        let mut a = [DiffDoub0::new(); 4];
+        let mut tmp = DiffDoub0::new();
+
+        a[0].set_val_dfd0(&stress[0]);
+        a[0].sub(&stress[1]);
+        a[1].set_val_dfd0(&stress[1]);
+        a[1].sub(&stress[2]);
+        a[2].set_val_dfd0(&stress[2]);
+        a[2].sub(&stress[0]);
+        for i in 0..3 {
+            tmp.set_val_dfd0(&stress[i+3]);
+            tmp.sqr();
+            a[3].add(&tmp);
+        }
+
+        for i in 0..3 {
+            tmp.set_val_dfd0(&a[i]);
+            tmp.sqr();
+            mises.add(&tmp);
+        }
+
+        tmp.set_val(6.0);
+        tmp.mult(&a[3]);
+        mises.add(&tmp);
+
+        tmp.set_val(0.5);
+        mises.mult(&tmp);
+        mises.sqt(); //mises stress
+
+    }
+
+    pub fn d_mises_du_dfd0(&self, d_m_du : &mut [DiffDoub0], d_m_dt : &mut [DiffDoub0], d_m_dc : &mut [DiffDoub0], stress : &[DiffDoub0], ds_du : &[DiffDoub0], ds_dt : &[DiffDoub0], ds_dc : &[DiffDoub0]) {
+        let mut mis = DiffDoub0::new();
+        let mut mul_fac = DiffDoub0::new();
+        let mut dgam_ds = [DiffDoub0::new(); 6];
+
+        self.get_mises_dfd0(&mut mis, stress);
+        
+        mul_fac.set_val(0.5);
+        mul_fac.dvd(&mis);
+
+        dgam_ds[0].set_val(2.0);
+        dgam_ds[0].mult(&stress[0]);
+        dgam_ds[0].sub(&stress[1]);
+        dgam_ds[0].sub(&stress[2]);
+
+        dgam_ds[1].set_val(2.0);
+        dgam_ds[1].mult(&stress[1]);
+        dgam_ds[1].sub(&stress[2]);
+        dgam_ds[1].sub(&stress[0]);
+        
+        dgam_ds[2].set_val(2.0);
+        dgam_ds[2].mult(&stress[2]);
+        dgam_ds[2].sub(&stress[0]);
+        dgam_ds[2].sub(&stress[1]);
+
+        for i in 3..6 {
+            dgam_ds[i].set_val(6.0);
+            dgam_ds[i].mult(&stress[i]);
+        }
+
+        for i in 0..6 {
+            dgam_ds[i].mult(&mul_fac);
+        }
+
+        let tot_dof = self.num_nds*self.dof_per_nd + self.num_int_dof;
+        mat_mul_ar_dfd0(d_m_du, &dgam_ds, ds_du, 1, 6, tot_dof);
+        mat_mul_ar_dfd0(d_m_dc, &dgam_ds, ds_dc, 1, 6, self.num_nds);
+        mat_mul_ar_dfd0(d_m_dt, &dgam_ds, ds_dt, 1, 6, self.num_nds);
+
+    }
+
+    pub fn get_tw_mat_dfd0(&self, tw_vec : &mut [DiffDoub0], tw_mat : &mut [DiffDoub0], layer : usize, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &Vec<DesignVariable>) {
+        let mut ten = [DiffDoub0::new(); 3];
+        let mut comp = [DiffDoub0::new(); 3];
+        let mut shear = [DiffDoub0::new(); 3];
+        let this_sec = self.sect_ptr;
+        let this_mat : usize;
+        let mut this_dv : &DesignVariable;
+        let mut dv_val = DiffDoub0::new();
+        let mut p_ref : &Vec<f64>;
+        let mut coef = DiffDoub0::new();
+
+        this_mat = match self.dof_per_nd == 3 {
+            true => sec_ar[this_sec].mat_ptr,
+            false => sec_ar[this_sec].get_layer_mat_ptr(layer),
+        };
+
+        p_ref = match mat_ar[this_mat].custom.get(&String::from("tensileStrength")) {
+            None => panic!("Error: Tsai Wu index requested, but 'tensileStrength' field is not defined in the material's custom properties"),
+            Some(x) => x,
+        };
+        for i in 0..3 {
+            ten[i].set_val(p_ref[i]);
+        }
+
+        p_ref = match mat_ar[this_mat].custom.get(&String::from("compressiveStrength")) {
+            None => panic!("Error: Tsai Wu index requested, but 'compressiveStrength' field is not defined in the material's custom properties"),
+            Some(x) => x,
+        };
+        for i in 0..3 {
+            comp[i].set_val(p_ref[i]);
+        }
+
+        p_ref = match mat_ar[this_mat].custom.get(&String::from("shearStrength")) {
+            None => panic!("Error: Tsai Wu index requested, but 'shearStrength' field is not defined in the material's custom properties"),
+            Some(x) => x,
+        };
+        for i in 0..3 {
+            shear[i].set_val(p_ref[i]);
+        }
+
+        for dvi in self.design_vars.iter() {
+            this_dv = &dv_ar[dvi.int_dat];
+            if this_dv.layer == layer {
+                coef.set_val(dvi.doub_dat);
+                this_dv.get_value_dfd0(&mut dv_val);
+                dv_val.mult(&coef);
+                match this_dv.category.s.as_str() {
+                    "tensileStrength" => ten[this_dv.component - 1].add(&dv_val),
+                    "compressiveStrength" => comp[this_dv.component - 1].add(&dv_val),
+                    "shearStrength" => shear[this_dv.component - 1].add(&dv_val),
+                    &_ => (),
+                }
+            }
+        }
+
+        for i in 0..6 {
+            tw_vec[i].set_val(0.0);
+        }
+
+        for i in 0..36 {
+            tw_mat[i].set_val(0.0);
+        }
+
+        for i in 0..3 {
+            tw_vec[i].set_val(1.0);
+            tw_vec[i].dvd(&ten[i]);
+            coef.set_val(1.0);
+            coef.dvd(&comp[i]);
+            tw_vec[i].sub(&coef);
+
+            coef.set_val(1.0);
+            coef.dvd(&ten[i]);
+            coef.dvd(&comp[i]);
+            tw_mat[i*7].set_val_dfd0(&coef);
+
+            coef.set_val(1.0);
+            coef.dvd(&shear[i]);
+            coef.dvd(&shear[i]);
+            tw_mat[(i+3)*7].set_val_dfd0(&coef);
+        }
+
+        // F12
+        coef.set_val(0.25);
+        coef.mult(&tw_mat[0]);
+        coef.mult(&tw_mat[7]);
+        coef.sqt();
+        coef.neg();
+        tw_mat[1].set_val_dfd0(&coef);
+        tw_mat[6].set_val_dfd0(&coef);
+
+        // F13
+        coef.set_val(0.25);
+        coef.mult(&tw_mat[0]);
+        coef.mult(&tw_mat[14]);
+        coef.sqt();
+        coef.neg();
+        tw_mat[2].set_val_dfd0(&coef);
+        tw_mat[12].set_val_dfd0(&coef);
+
+        // F23
+        coef.set_val(0.25);
+        coef.mult(&tw_mat[7]);
+        coef.mult(&tw_mat[14]);
+        coef.sqt();
+        coef.neg();
+        tw_mat[8].set_val_dfd0(&coef);
+        tw_mat[13].set_val_dfd0(&coef);
+
+    }
+
+    pub fn get_tsai_wu_dfd0(&self, tw_ind : &mut DiffDoub0, stress : &[DiffDoub0], layer : usize, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &Vec<DesignVariable>) {
+        let mut tw_vec = [DiffDoub0::new(); 6];
+        let mut tw_mat = [DiffDoub0::new(); 36];
+        let mut prod = [DiffDoub0::new(); 6];
+        let mut tmp = DiffDoub0::new();
+
+        self.get_tw_mat_dfd0(&mut tw_vec, &mut tw_mat, layer, sec_ar, mat_ar, dv_ar);
+        
+        tw_ind.set_val(0.0);
+        for i in 0..6 {
+            tmp.set_val_dfd0(&tw_vec[i]);
+            tmp.mult(&stress[i]);
+            tw_ind.add(&tmp);
+        }
+
+        mat_mul_ar_dfd0(&mut prod, &tw_mat, stress, 6, 6, 1);
+        for i in 0..6 {
+            tmp.set_val_dfd0(&prod[i]);
+            tmp.mult(&stress[i]);
+            tw_ind.add(&tmp);
+        }
+    }
+
+    pub fn d_tw_du_dfd0(&self, d_tw_du : &mut [DiffDoub0], d_tw_dt : &mut [DiffDoub0], d_tw_dc : &mut [DiffDoub0], stress : &[DiffDoub0], ds_du : &[DiffDoub0], ds_dt : &[DiffDoub0], ds_dc : &[DiffDoub0], layer : usize, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &Vec<DesignVariable>) {
+        let mut tw_vec = [DiffDoub0::new(); 6];
+        let mut tw_mat = [DiffDoub0::new(); 36];
+        let mut prod = [DiffDoub0::new(); 6];
+        let mut tmp = DiffDoub0::new();
+        let tot_dof = self.num_nds*self.dof_per_nd + self.num_int_dof;
+
+        self.get_tw_mat_dfd0(&mut tw_vec, &mut tw_mat, layer, sec_ar, mat_ar, dv_ar);
+
+        mat_mul_ar_dfd0(&mut prod, &tw_mat, stress, 6, 6, 1);
+        tmp.set_val(2.0);
+        for i in 0..6 {
+            prod[i].mult(&tmp);
+            prod[i].add(&tw_vec[i]);
+        }
+        mat_mul_ar_dfd0(d_tw_du, &prod, ds_du, 1, 6, tot_dof);
+        mat_mul_ar_dfd0(d_tw_dt, &prod, ds_dt, 1, 6, self.num_nds);
+        mat_mul_ar_dfd0(d_tw_dc, &prod, ds_dc, 1, 6, self.num_nds);
+
+    }
+
     pub fn get_def_frc_mom_dfd0(&mut self, def : &mut [DiffDoub0], frc_mom : &mut [DiffDoub0], spt : &mut [f64], n_lgeom : bool, pre : &mut DiffDoub0StressPrereq) {
         let mut n_vec = [DiffDoub0::new(); 11];
         let mut d_ndx = [DiffDoub0::new(); 33];
@@ -3637,6 +3865,234 @@ impl Element {
         return;
     }
 
+    pub fn get_mises_dfd1(&self, mises : &mut DiffDoub1, stress : &[DiffDoub1]) {
+        let mut max_mises = DiffDoub1::new();
+        let mut a = [DiffDoub1::new(); 4];
+        let mut tmp = DiffDoub1::new();
+
+        a[0].set_val_dfd1(&stress[0]);
+        a[0].sub(&stress[1]);
+        a[1].set_val_dfd1(&stress[1]);
+        a[1].sub(&stress[2]);
+        a[2].set_val_dfd1(&stress[2]);
+        a[2].sub(&stress[0]);
+        for i in 0..3 {
+            tmp.set_val_dfd1(&stress[i+3]);
+            tmp.sqr();
+            a[3].add(&tmp);
+        }
+
+        for i in 0..3 {
+            tmp.set_val_dfd1(&a[i]);
+            tmp.sqr();
+            mises.add(&tmp);
+        }
+
+        tmp.set_val(6.0);
+        tmp.mult(&a[3]);
+        mises.add(&tmp);
+
+        tmp.set_val(0.5);
+        mises.mult(&tmp);
+        mises.sqt(); //mises stress
+
+    }
+
+    pub fn d_mises_du_dfd1(&self, d_m_du : &mut [DiffDoub1], d_m_dt : &mut [DiffDoub1], d_m_dc : &mut [DiffDoub1], stress : &[DiffDoub1], ds_du : &[DiffDoub1], ds_dt : &[DiffDoub1], ds_dc : &[DiffDoub1]) {
+        let mut mis = DiffDoub1::new();
+        let mut mul_fac = DiffDoub1::new();
+        let mut dgam_ds = [DiffDoub1::new(); 6];
+
+        self.get_mises_dfd1(&mut mis, stress);
+        
+        mul_fac.set_val(0.5);
+        mul_fac.dvd(&mis);
+
+        dgam_ds[0].set_val(2.0);
+        dgam_ds[0].mult(&stress[0]);
+        dgam_ds[0].sub(&stress[1]);
+        dgam_ds[0].sub(&stress[2]);
+
+        dgam_ds[1].set_val(2.0);
+        dgam_ds[1].mult(&stress[1]);
+        dgam_ds[1].sub(&stress[2]);
+        dgam_ds[1].sub(&stress[0]);
+        
+        dgam_ds[2].set_val(2.0);
+        dgam_ds[2].mult(&stress[2]);
+        dgam_ds[2].sub(&stress[0]);
+        dgam_ds[2].sub(&stress[1]);
+
+        for i in 3..6 {
+            dgam_ds[i].set_val(6.0);
+            dgam_ds[i].mult(&stress[i]);
+        }
+
+        for i in 0..6 {
+            dgam_ds[i].mult(&mul_fac);
+        }
+
+        let tot_dof = self.num_nds*self.dof_per_nd + self.num_int_dof;
+        mat_mul_ar_dfd1(d_m_du, &dgam_ds, ds_du, 1, 6, tot_dof);
+        mat_mul_ar_dfd1(d_m_dc, &dgam_ds, ds_dc, 1, 6, self.num_nds);
+        mat_mul_ar_dfd1(d_m_dt, &dgam_ds, ds_dt, 1, 6, self.num_nds);
+
+    }
+
+    pub fn get_tw_mat_dfd1(&self, tw_vec : &mut [DiffDoub1], tw_mat : &mut [DiffDoub1], layer : usize, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &Vec<DesignVariable>) {
+        let mut ten = [DiffDoub1::new(); 3];
+        let mut comp = [DiffDoub1::new(); 3];
+        let mut shear = [DiffDoub1::new(); 3];
+        let this_sec = self.sect_ptr;
+        let this_mat : usize;
+        let mut this_dv : &DesignVariable;
+        let mut dv_val = DiffDoub1::new();
+        let mut p_ref : &Vec<f64>;
+        let mut coef = DiffDoub1::new();
+
+        this_mat = match self.dof_per_nd == 3 {
+            true => sec_ar[this_sec].mat_ptr,
+            false => sec_ar[this_sec].get_layer_mat_ptr(layer),
+        };
+
+        p_ref = match mat_ar[this_mat].custom.get(&String::from("tensileStrength")) {
+            None => panic!("Error: Tsai Wu index requested, but 'tensileStrength' field is not defined in the material's custom properties"),
+            Some(x) => x,
+        };
+        for i in 0..3 {
+            ten[i].set_val(p_ref[i]);
+        }
+
+        p_ref = match mat_ar[this_mat].custom.get(&String::from("compressiveStrength")) {
+            None => panic!("Error: Tsai Wu index requested, but 'compressiveStrength' field is not defined in the material's custom properties"),
+            Some(x) => x,
+        };
+        for i in 0..3 {
+            comp[i].set_val(p_ref[i]);
+        }
+
+        p_ref = match mat_ar[this_mat].custom.get(&String::from("shearStrength")) {
+            None => panic!("Error: Tsai Wu index requested, but 'shearStrength' field is not defined in the material's custom properties"),
+            Some(x) => x,
+        };
+        for i in 0..3 {
+            shear[i].set_val(p_ref[i]);
+        }
+
+        for dvi in self.design_vars.iter() {
+            this_dv = &dv_ar[dvi.int_dat];
+            if this_dv.layer == layer {
+                coef.set_val(dvi.doub_dat);
+                this_dv.get_value_dfd1(&mut dv_val);
+                dv_val.mult(&coef);
+                match this_dv.category.s.as_str() {
+                    "tensileStrength" => ten[this_dv.component - 1].add(&dv_val),
+                    "compressiveStrength" => comp[this_dv.component - 1].add(&dv_val),
+                    "shearStrength" => shear[this_dv.component - 1].add(&dv_val),
+                    &_ => (),
+                }
+            }
+        }
+
+        for i in 0..6 {
+            tw_vec[i].set_val(0.0);
+        }
+
+        for i in 0..36 {
+            tw_mat[i].set_val(0.0);
+        }
+
+        for i in 0..3 {
+            tw_vec[i].set_val(1.0);
+            tw_vec[i].dvd(&ten[i]);
+            coef.set_val(1.0);
+            coef.dvd(&comp[i]);
+            tw_vec[i].sub(&coef);
+
+            coef.set_val(1.0);
+            coef.dvd(&ten[i]);
+            coef.dvd(&comp[i]);
+            tw_mat[i*7].set_val_dfd1(&coef);
+
+            coef.set_val(1.0);
+            coef.dvd(&shear[i]);
+            coef.dvd(&shear[i]);
+            tw_mat[(i+3)*7].set_val_dfd1(&coef);
+        }
+
+        // F12
+        coef.set_val(0.25);
+        coef.mult(&tw_mat[0]);
+        coef.mult(&tw_mat[7]);
+        coef.sqt();
+        coef.neg();
+        tw_mat[1].set_val_dfd1(&coef);
+        tw_mat[6].set_val_dfd1(&coef);
+
+        // F13
+        coef.set_val(0.25);
+        coef.mult(&tw_mat[0]);
+        coef.mult(&tw_mat[14]);
+        coef.sqt();
+        coef.neg();
+        tw_mat[2].set_val_dfd1(&coef);
+        tw_mat[12].set_val_dfd1(&coef);
+
+        // F23
+        coef.set_val(0.25);
+        coef.mult(&tw_mat[7]);
+        coef.mult(&tw_mat[14]);
+        coef.sqt();
+        coef.neg();
+        tw_mat[8].set_val_dfd1(&coef);
+        tw_mat[13].set_val_dfd1(&coef);
+
+    }
+
+    pub fn get_tsai_wu_dfd1(&self, tw_ind : &mut DiffDoub1, stress : &[DiffDoub1], layer : usize, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &Vec<DesignVariable>) {
+        let mut tw_vec = [DiffDoub1::new(); 6];
+        let mut tw_mat = [DiffDoub1::new(); 36];
+        let mut prod = [DiffDoub1::new(); 6];
+        let mut tmp = DiffDoub1::new();
+
+        self.get_tw_mat_dfd1(&mut tw_vec, &mut tw_mat, layer, sec_ar, mat_ar, dv_ar);
+        
+        tw_ind.set_val(0.0);
+        for i in 0..6 {
+            tmp.set_val_dfd1(&tw_vec[i]);
+            tmp.mult(&stress[i]);
+            tw_ind.add(&tmp);
+        }
+
+        mat_mul_ar_dfd1(&mut prod, &tw_mat, stress, 6, 6, 1);
+        for i in 0..6 {
+            tmp.set_val_dfd1(&prod[i]);
+            tmp.mult(&stress[i]);
+            tw_ind.add(&tmp);
+        }
+    }
+
+    pub fn d_tw_du_dfd1(&self, d_tw_du : &mut [DiffDoub1], d_tw_dt : &mut [DiffDoub1], d_tw_dc : &mut [DiffDoub1], stress : &[DiffDoub1], ds_du : &[DiffDoub1], ds_dt : &[DiffDoub1], ds_dc : &[DiffDoub1], layer : usize, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &Vec<DesignVariable>) {
+        let mut tw_vec = [DiffDoub1::new(); 6];
+        let mut tw_mat = [DiffDoub1::new(); 36];
+        let mut prod = [DiffDoub1::new(); 6];
+        let mut tmp = DiffDoub1::new();
+        let tot_dof = self.num_nds*self.dof_per_nd + self.num_int_dof;
+
+        self.get_tw_mat_dfd1(&mut tw_vec, &mut tw_mat, layer, sec_ar, mat_ar, dv_ar);
+
+        mat_mul_ar_dfd1(&mut prod, &tw_mat, stress, 6, 6, 1);
+        tmp.set_val(2.0);
+        for i in 0..6 {
+            prod[i].mult(&tmp);
+            prod[i].add(&tw_vec[i]);
+        }
+        mat_mul_ar_dfd1(d_tw_du, &prod, ds_du, 1, 6, tot_dof);
+        mat_mul_ar_dfd1(d_tw_dt, &prod, ds_dt, 1, 6, self.num_nds);
+        mat_mul_ar_dfd1(d_tw_dc, &prod, ds_dc, 1, 6, self.num_nds);
+
+    }
+
     pub fn get_def_frc_mom_dfd1(&mut self, def : &mut [DiffDoub1], frc_mom : &mut [DiffDoub1], spt : &mut [f64], n_lgeom : bool, pre : &mut DiffDoub1StressPrereq) {
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
@@ -3876,6 +4332,9 @@ impl Element {
     //end dup
  
 //end skip 
+ 
+ 
+ 
  
  
  

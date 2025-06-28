@@ -146,8 +146,8 @@ impl Model {
                     since_restart += 1usize;
                 }
             }
-            on_i += 1usize;
-            nd1 = ordered_nds[on_i];
+            //on_i += 1usize;
+            //nd1 = ordered_nds[on_i];
             if on_len < num_nodes {
                 if since_restart >= block_dim || on_i == (on_len - 1) {
                     // nd1 = match ordered_nds.back() {
@@ -186,6 +186,10 @@ impl Model {
                     //     this_nd = ordered_nds.iter_mut();
                     //     end_this_nd = false;
                     // }
+                }
+                else {
+                    on_i += 1;
+                    nd1 = ordered_nds[on_i];
                 }
             }
         }

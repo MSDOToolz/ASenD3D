@@ -176,23 +176,24 @@ impl Face {
         let mut v2 = [DiffDoub0::new(); 3];
         let mut tmp = DiffDoub0::new();
         let mut shft : usize;
+        let lnd = &self.loc_nodes;
         
         if self.num_nds == 4 {
             for i in 0..3 {
                 shft = i*el_nn;
-                v1[i].set_val_dfd0(&nd_crd[2 + shft]);
-                v1[i].sub(&nd_crd[0 + shft]);
-                v2[i].set_val_dfd0(&nd_crd[3 + shft]);
-                v2[i].sub(&nd_crd[1 + shft]);   
+                v1[i].set_val_dfd0(&nd_crd[lnd[2] + shft]);
+                v1[i].sub(&nd_crd[lnd[0] + shft]);
+                v2[i].set_val_dfd0(&nd_crd[lnd[3] + shft]);
+                v2[i].sub(&nd_crd[lnd[1] + shft]);   
             }
         }
         else {
             for i in 0..3 {
                 shft = i*el_nn;
-                v1[i].set_val_dfd0(&nd_crd[1 + shft]);
-                v1[i].sub(&nd_crd[0 + shft]);
-                v2[i].set_val_dfd0(&nd_crd[2 + shft]);
-                v2[i].sub(&nd_crd[0 + shft]);
+                v1[i].set_val_dfd0(&nd_crd[lnd[1] + shft]);
+                v1[i].sub(&nd_crd[lnd[0] + shft]);
+                v2[i].set_val_dfd0(&nd_crd[lnd[2] + shft]);
+                v2[i].sub(&nd_crd[lnd[0] + shft]);
             }
         }
         
@@ -601,23 +602,24 @@ impl Face {
         let mut v2 = [DiffDoub1::new(); 3];
         let mut tmp = DiffDoub1::new();
         let mut shft : usize;
+        let lnd = &self.loc_nodes;
         
         if self.num_nds == 4 {
             for i in 0..3 {
                 shft = i*el_nn;
-                v1[i].set_val_dfd1(&nd_crd[2 + shft]);
-                v1[i].sub(&nd_crd[0 + shft]);
-                v2[i].set_val_dfd1(&nd_crd[3 + shft]);
-                v2[i].sub(&nd_crd[1 + shft]);   
+                v1[i].set_val_dfd1(&nd_crd[lnd[2] + shft]);
+                v1[i].sub(&nd_crd[lnd[0] + shft]);
+                v2[i].set_val_dfd1(&nd_crd[lnd[3] + shft]);
+                v2[i].sub(&nd_crd[lnd[1] + shft]);   
             }
         }
         else {
             for i in 0..3 {
                 shft = i*el_nn;
-                v1[i].set_val_dfd1(&nd_crd[1 + shft]);
-                v1[i].sub(&nd_crd[0 + shft]);
-                v2[i].set_val_dfd1(&nd_crd[2 + shft]);
-                v2[i].sub(&nd_crd[0 + shft]);
+                v1[i].set_val_dfd1(&nd_crd[lnd[1] + shft]);
+                v1[i].sub(&nd_crd[lnd[0] + shft]);
+                v2[i].set_val_dfd1(&nd_crd[lnd[2] + shft]);
+                v2[i].sub(&nd_crd[lnd[0] + shft]);
             }
         }
         
@@ -864,7 +866,7 @@ impl Face {
             for j in 0..3 {
                 td.set_val_dfd1(&vis);
                 td.mult(&gv_n_da[j]);
-                r_sum[j+1].add(&td);
+                r_sum[j+1].sub(&td);
             }
 
             // energy
@@ -875,7 +877,7 @@ impl Face {
                 td.add(&td2);
             }
             td.mult(&vis);
-            r_sum[4].add(&td);
+            r_sum[4].sub(&td);
 
             si += 2;
         }
@@ -1017,6 +1019,9 @@ impl Face {
     //end dup
  
 //end skip 
+ 
+ 
+ 
  
   
 }

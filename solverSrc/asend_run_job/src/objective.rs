@@ -34,6 +34,7 @@ pub struct ObjectiveTerm {
     pub d_qd_tdot : SparseMat,
     pub d_qd_d : SparseMat,
     pub d_vd_d : SparseMat,
+    pub d_tgtd_d : SparseMat,
 }
 
 impl ObjectiveTerm {
@@ -67,6 +68,7 @@ impl ObjectiveTerm {
             d_qd_tdot : SparseMat::new(),
             d_qd_d : SparseMat::new(),
             d_vd_d : SparseMat::new(),
+            d_tgtd_d : SparseMat::new(),
         }
     }
 }

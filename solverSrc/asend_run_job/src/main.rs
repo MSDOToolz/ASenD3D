@@ -55,7 +55,7 @@ use std::env;
 fn main() {
     let args : Vec<String> = env::args().collect();
     
-    // let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/ASenD3D/examples/testCases/singleHex/staticElastic/staticElasticJob.yaml".to_string()];
+    //let args = vec!["".to_string(),"C:/Users/evaande/BladeReliability/modeling/triax_coupon/x_compression/job.yaml".to_string()];
     
     let job_file = match args.get(1) {
         None => panic!("Error: job input file not specified in call to analysis solver."),

@@ -6,6 +6,7 @@ use crate::element::*;
 use crate::design_var::*;
 use crate::nd_el_set::*;
 use crate::section::*;
+use crate::list_ent::*;
 use crate::matrix_functions::*;
 use crate::cpp_str::CppStr;
 use crate::fmath::*;
@@ -30,7 +31,7 @@ impl ObjectiveTerm {
             }
             if self.q_len > 0 {
                 self.q_vec = vec![0f64; self.q_len];
-                if self.optr.s == "powerNorm" {
+                if self.optr.s == "powerNorm" || self.optr.s == "ks" {
                     self.tgt_vec = vec![0f64; self.q_len];
                 } else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                     self.el_vol_vec = vec![0f64; self.q_len];
@@ -66,22 +67,263 @@ impl ObjectiveTerm {
             self.d_qd_tdot.set_dim(self.q_len);
             self.d_qd_d.set_dim(self.q_len);
             self.d_vd_d.set_dim(self.q_len);
-            if self.optr.s == "powerNorm" {
+            if self.optr.s == "powerNorm" || self.optr.s == "ks" {
                 self.err_norm_vec = vec![0f64; self.q_len];
+                self.d_tgtd_d.set_dim(self.q_len);
             }
         }
         self.d_qd_u.zero_all();
         self.d_qd_v.zero_all();
         self.d_qd_a.zero_all();
+
         self.d_qd_c.zero_all();
         self.d_qd_cdot.zero_all();
         self.d_qd_t.zero_all();
         self.d_qd_tdot.zero_all();
         self.d_qd_d.zero_all();
         self.d_vd_d.zero_all();
-        for i1 in 0..self.q_len {
-            self.err_norm_vec[i1] = 0.0;
+        if self.optr.s == "powerNorm" || self.optr.s == "ks" {
+            for i1 in 0..self.q_len {
+                self.err_norm_vec[i1] = 0.0;
+            }
+            self.d_tgtd_d.zero_all();
         }
+        
+    }
+
+    pub fn get_tgt_vec(&mut self, el_ar : &Vec<Element>, el_sets : &Vec<Set>, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &Vec<DesignVariable>) {
+        let mut i1 : usize;
+        let frnt : f64;
+        let mut sec_i : usize;
+        let mut mat_i : usize;
+        let mut this_el : &Element;
+        let mut tmp = DiffDoub0::new();
+        let mut prop : &Vec<f64>;
+        let mut p_vec = vec![DiffDoub0::new(); 3];
+        let t_len = self.tgt_vals.len();
+
+        if t_len == self.q_len {
+            i1 = 0;
+            for t in self.tgt_vals.iter() {
+                self.tgt_vec[i1] = *t;
+                i1 += 1;
+            }
+        }
+        else if t_len == 1 {
+            frnt = match self.tgt_vals.front() {
+                None => 0f64,
+                Some(x) => *x,
+            };
+            for i in 0..self.q_len {
+                self.tgt_vec[i] = frnt;
+            }
+        }
+        else if self.tgt_tag.s.len() > 0 {
+            if self.el_set_ptr == MAX_INT {
+                panic!("Error: objectives with property name specified as a target must have a valid element set identified");
+            }
+            i1 = 0;
+            for ei in el_sets[self.el_set_ptr].labels.iter() {
+                this_el = &el_ar[*ei];
+                sec_i = this_el.sect_ptr;
+                if this_el.this_type == 41 || this_el.this_type == 3 {
+                    mat_i = sec_ar[sec_i].get_layer_mat_ptr(self.layer);
+                }
+                else {
+                    mat_i = sec_ar[sec_i].mat_ptr;
+                }
+                prop = match mat_ar[mat_i].custom.get(&self.tgt_tag.s) {
+                    None => panic!("Error: property '{}' identified in objective was not found in a corresponding material's custom property list.", self.tgt_tag.s),
+                    Some(x) => x,
+                };
+                tmp.set_val(prop[0]);
+                this_el.get_gen_prop_dfd0(&mut tmp, &mut self.tgt_tag, dv_ar);
+                self.tgt_vec[i1] = tmp.val;
+                i1 += 1;
+            }
+        }
+        else {
+            let prop_cats = String::from("stress strain strainEnergy mises");
+            if prop_cats.contains(&self.category.s) {
+                let mut def_prop = CppStr::new();
+                let p_i : usize; 
+                if self.category.s == "stress" {
+                    if self.component > 4 {
+                        def_prop.s = String::from("tensileStrength");
+                        p_i = self.component - 1;
+                    }
+                    else {
+                        def_prop.s = String::from("shearStrength");
+                        p_i = self.component - 3;
+                    }
+                }
+                else if self.category.s == "strain" {
+                    if self.component > 4 {
+                        def_prop.s = String::from("tensileStrain");
+                        p_i = self.component - 1;
+                    }
+                    else {
+                        def_prop.s = String::from("shearStrain");
+                        p_i = self.component - 3;
+                    }
+                }
+                else if self.category.s == "strainEnergy" {
+                    def_prop.s = String::from("maxStrainEnergy");
+                    p_i = 0;
+                }
+                else {
+                    def_prop.s = String::from("misesStrength");
+                    p_i = 0;
+                }
+                i1 = 0;
+                for ei in el_sets[self.el_set_ptr].labels.iter() {
+                    this_el = &el_ar[*ei];
+                    sec_i = this_el.sect_ptr;
+                    if this_el.this_type == 41 || this_el.this_type == 3 {
+                        mat_i = sec_ar[sec_i].get_layer_mat_ptr(self.layer);
+                    }
+                    else {
+                        mat_i = sec_ar[sec_i].mat_ptr;
+                    }
+                    if mat_ar[mat_i].custom.contains_key(&def_prop.s) {
+                        prop = match mat_ar[mat_i].custom.get(&def_prop.s) {
+                            None => panic!(""),
+                            Some(x) => x,
+                        };
+                        for i in 0..3 {
+                            p_vec[i].set_val(prop[i]);
+                        }
+                        this_el.get_gen_pvec_dfd0(&mut p_vec, &mut def_prop, dv_ar);
+                        self.tgt_vec[i1] = p_vec[p_i].val;
+                    }
+                    else {
+                        self.tgt_vec[i1] = match self.optr.s.as_str() {
+                            "ks" => 1.0,
+                            &_ => 0.0,
+                        };
+                    }
+                    i1 += 1;
+                }
+            }
+            else { 
+                let t_val = match self.optr.s.as_str() {
+                    "ks" => 1.0f64,
+                    &_ => 0.0f64,
+                };
+                for i in 0..self.q_len {
+                    self.tgt_vec[i] = t_val;
+                }
+            }
+        }
+    }
+
+    pub fn get_d_tgtd_d(&mut self, el_ar : &Vec<Element>, el_sets : &Vec<Set>, sec_ar : &Vec<Section>, mat_ar : &Vec<Material>, dv_ar : &mut Vec<DesignVariable>) {
+        let mut i1 : usize;
+        let frnt : f64;
+        let mut sec_i : usize;
+        let mut mat_i : usize;
+        let mut this_el : &Element;
+        let mut dv_val : f64;
+        let mut tmp = DiffDoub1::new();
+        let mut prop : &Vec<f64>;
+        let mut p_vec = vec![DiffDoub1::new(); 3];
+
+        self.d_tgtd_d.zero_all();
+
+        if self.tgt_tag.s.len() > 0 {
+            if self.el_set_ptr == MAX_INT {
+                panic!("Error: objectives with property name specified as a target must have a valid element set identified");
+            }
+            i1 = 0;
+            for ei in el_sets[self.el_set_ptr].labels.iter() {
+                this_el = &el_ar[*ei];
+                sec_i = this_el.sect_ptr;
+                if this_el.this_type == 41 || this_el.this_type == 3 {
+                    mat_i = sec_ar[sec_i].get_layer_mat_ptr(self.layer);
+                }
+                else {
+                    mat_i = sec_ar[sec_i].mat_ptr;
+                }
+                prop = match mat_ar[mat_i].custom.get(&self.tgt_tag.s) {
+                    None => panic!("Error: property '{}' identified in objective was not found in a corresponding material's custom property list.", self.tgt_tag.s),
+                    Some(x) => x,
+                };
+                for dv in this_el.comp_dvars.iter() {
+                    dv_val = dv_ar[*dv].value.val;
+                    dv_ar[*dv].diff_val.set_val_2(dv_val, 1.0);
+                    tmp.set_val(prop[0]);
+                    this_el.get_gen_prop_dfd1(&mut tmp, &mut self.tgt_tag, dv_ar);
+                    self.d_tgtd_d.add_entry(i1, *dv, tmp.dval);
+                    dv_ar[*dv].diff_val.set_val_2(dv_val, 0.0);
+                }
+                i1 += 1;
+            }
+        }
+        else if self.tgt_vals.len() == 0 {
+            let prop_cats = String::from("stress strain strainEnergy mises");
+            if prop_cats.contains(&self.category.s) {
+                let mut def_prop = CppStr::new();
+                let p_i : usize; 
+                if self.category.s == "stress" {
+                    if self.component > 4 {
+                        def_prop.s = String::from("tensileStrength");
+                        p_i = self.component - 1;
+                    }
+                    else {
+                        def_prop.s = String::from("shearStrength");
+                        p_i = self.component - 3;
+                    }
+                }
+                else if self.category.s == "strain" {
+                    if self.component > 4 {
+                        def_prop.s = String::from("tensileStrain");
+                        p_i = self.component - 1;
+                    }
+                    else {
+                        def_prop.s = String::from("shearStrain");
+                        p_i = self.component - 3;
+                    }
+                }
+                else if self.category.s == "strainEnergy" {
+                    def_prop.s = String::from("maxStrainEnergy");
+                    p_i = 0;
+                }
+                else {
+                    def_prop.s = String::from("misesStrength");
+                    p_i = 0;
+                }
+                i1 = 0;
+                for ei in el_sets[self.el_set_ptr].labels.iter() {
+                    this_el = &el_ar[*ei];
+                    sec_i = this_el.sect_ptr;
+                    if this_el.this_type == 41 || this_el.this_type == 3 {
+                        mat_i = sec_ar[sec_i].get_layer_mat_ptr(self.layer);
+                    }
+                    else {
+                        mat_i = sec_ar[sec_i].mat_ptr;
+                    }
+                    if mat_ar[mat_i].custom.contains_key(&def_prop.s) {
+                        prop = match mat_ar[mat_i].custom.get(&def_prop.s) {
+                            None => panic!(""),
+                            Some(x) => x,
+                        };
+                        for dv in this_el.comp_dvars.iter() {
+                            dv_val = dv_ar[*dv].value.val;
+                            dv_ar[*dv].diff_val.set_val_2(dv_val, 1.0);
+                            for i in 0..3 {
+                                p_vec[i].set_val(prop[i]);
+                            }
+                            this_el.get_gen_pvec_dfd1(&mut p_vec, &mut def_prop, dv_ar);
+                            self.d_tgtd_d.add_entry(i1, *dv, p_vec[p_i].dval);
+                            dv_ar[*dv].diff_val.set_val_2(dv_val, 0.0);
+                        }
+                    }
+                    i1 += 1;
+                }
+
+            }
+        }
+
     }
 
     pub fn get_power_norm(&mut self) -> f64 {
@@ -91,10 +333,23 @@ impl ObjectiveTerm {
             q_err = self.q_vec[i1] - self.tgt_vec[i1];
             p_sum  +=  powf(q_err, self.expnt);
         }
-        return  self.coef * p_sum;
+        return self.coef * powf(p_sum, 1f64/self.expnt);
     }
 
     pub fn d_power_normd_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_c : &mut Vec<f64>, d_ld_cdot : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
+        let mut q_err : f64;
+        let mut p_sum = 0.0f64;
+        for i1 in 0..self.q_len {
+            q_err = self.q_vec[i1] - self.tgt_vec[i1];
+            p_sum += powf(q_err, self.expnt);
+        }
+        p_sum = powf(p_sum, 1.0f64/self.expnt - 1.0f64);
+        p_sum *= self.coef;
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] *= p_sum;
+        }
+
         self.d_qd_u.vector_multiply(d_ld_u, &mut self.err_norm_vec,  true);
         self.d_qd_v.vector_multiply(d_ld_v, &mut self.err_norm_vec,  true);
         self.d_qd_a.vector_multiply(d_ld_a, &mut self.err_norm_vec,  true);
@@ -102,14 +357,86 @@ impl ObjectiveTerm {
         self.d_qd_cdot.vector_multiply(d_ld_cdot, &mut self.err_norm_vec, true);
         self.d_qd_t.vector_multiply(d_ld_t, &mut self.err_norm_vec,  true);
         self.d_qd_tdot.vector_multiply(d_ld_tdot, &mut self.err_norm_vec,  true);
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] /= p_sum;
+        }
         
         return;
     }
 
     pub fn d_power_normd_d(&mut self, d_ld_d : &mut Vec<f64>) {
+        let mut q_err : f64;
+        let mut p_sum = 0.0f64;
+        for i1 in 0..self.q_len {
+            q_err = self.q_vec[i1] - self.tgt_vec[i1];
+            p_sum += powf(q_err, self.expnt);
+        }
+        p_sum = powf(p_sum, 1.0f64/self.expnt - 1.0f64);
+        p_sum *= self.coef;
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] *= p_sum;
+        }
+
         self.d_qd_d.vector_multiply(d_ld_d, &mut self.err_norm_vec, true);
-        
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] /= p_sum;
+        }
         return;
+    }
+
+    pub fn get_ks(&mut self) -> f64 {
+        let mut p_sum = 0.0f64;
+        let mut exp : f64;
+        for i1 in 0..self.q_len {
+            exp = (self.expnt*self.q_vec[i1]).exp();
+            p_sum += exp;
+        }
+        (self.coef/self.expnt) * p_sum.ln()
+    }
+
+    pub fn d_ksd_u(&mut self, d_ld_u : &mut Vec<f64>, d_ld_v : &mut Vec<f64>, d_ld_a : &mut Vec<f64>, d_ld_c : &mut Vec<f64>, d_ld_cdot : &mut Vec<f64>, d_ld_t : &mut Vec<f64>, d_ld_tdot : &mut Vec<f64>) {
+        let mut p_sum = 0.0f64;
+        for i1 in 0..self.q_len {
+            p_sum += self.err_norm_vec[i1];
+        }
+        p_sum = self.coef/p_sum;
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] *= p_sum;
+        }
+
+        self.d_qd_u.vector_multiply(d_ld_u, &mut self.err_norm_vec,  true);
+        self.d_qd_v.vector_multiply(d_ld_v, &mut self.err_norm_vec,  true);
+        self.d_qd_a.vector_multiply(d_ld_a, &mut self.err_norm_vec,  true);
+        self.d_qd_c.vector_multiply(d_ld_c, &mut self.err_norm_vec, true);
+        self.d_qd_cdot.vector_multiply(d_ld_cdot, &mut self.err_norm_vec, true);
+        self.d_qd_t.vector_multiply(d_ld_t, &mut self.err_norm_vec,  true);
+        self.d_qd_tdot.vector_multiply(d_ld_tdot, &mut self.err_norm_vec,  true);
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] /= p_sum;
+        }
+    }
+
+    pub fn d_ksd_d(&mut self, d_ld_d : &mut Vec<f64>) {
+        let mut p_sum = 0.0f64;
+        for i1 in 0..self.q_len {
+            p_sum += self.err_norm_vec[i1];
+        }
+        p_sum = self.coef/p_sum;
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] *= p_sum;
+        }
+
+        self.d_qd_d.vector_multiply(d_ld_d, &mut self.err_norm_vec, true);
+
+        for i1 in 0..self.q_len {
+            self.err_norm_vec[i1] /= p_sum;
+        }        
     }
 
     pub fn get_vol_integral(&mut self) -> f64 {
@@ -272,6 +599,7 @@ impl ObjectiveTerm {
         let tgt_len : usize;
         let tgt_val : f64;
         self.allocate_obj(nd_sets, el_sets);
+        self.get_tgt_vec(el_ar, el_sets, sec_ar, mat_ar, dv_ar);
         let mut q_ind : usize;
         let mut strain = [DiffDoub0::new(); 6];
         let mut t_strain = [DiffDoub0::new(); 6];
@@ -285,6 +613,7 @@ impl ObjectiveTerm {
         let mut e_vol = DiffDoub0::new();
         let mut e_den = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
+        let mut tmp2 = DiffDoub0::new();
         
         let mut cat_list = CppStr::from("displacement velocity acceleration concentration cdot temperature tdot");
         fi = cat_list.find(&self.category.s.as_str());
@@ -310,40 +639,18 @@ impl ObjectiveTerm {
                 q_ind += 1usize;
             }
             if self.optr.s == "powerNorm" {
-                tgt_len = self.tgt_vals.len();
-                if tgt_len == 0 {
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = 0.0;
-                    }
-                } else if tgt_len == 1 {
-                    tgt_val = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = tgt_val;
-                    }
-                } else {
-                    q_ind = 0;
-                    for tv in self.tgt_vals.iter_mut() {
-                        self.tgt_vec[q_ind] = *tv;
-                        q_ind += 1usize;
-                    }
-                }
                 self.value += self.get_power_norm();
                 return;
-            } else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            }
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    self.q_vec[i1] /= self.tgt_vec[i1];
+                }
+                self.value += self.get_ks();
+            } 
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 for i1 in 0..self.q_len {
                     self.el_vol_vec[i1] = 1.0;
-                }
-                tgt_len = self.tgt_vals.len();
-                if tgt_len == 0 {
-                    self.tgt_vec[0] = 0.0;
-                } else {
-                    self.tgt_vec[0] = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
                 }
                 if self.optr.s == "volumeIntegral" {
                     self.value += self.get_vol_integral();
@@ -355,7 +662,7 @@ impl ObjectiveTerm {
             }
         }
 
-        cat_list = CppStr::from("stress strain strainEnergyDen");
+        cat_list = CppStr::from("stress strain strainEnergyDen mises tsaiWu");
         fi = cat_list.find(&self.category.s.as_str());
         if fi < MAX_INT {
             if self.el_set_ptr == MAX_INT {
@@ -376,9 +683,11 @@ impl ObjectiveTerm {
                     this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut d_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
                     if self.category.s == "stress" {
                         self.q_vec[q_ind] = stress[self.component - 1].val;
-                    } else if self.category.s == "strain" {
+                    } 
+                    else if self.category.s == "strain" {
                         self.q_vec[q_ind] = strain[self.component - 1].val;
-                    } else {
+                    } 
+                    else if self.category.s == "strainEnergy" {
                         se_den = 0.0;
                         for i1 in 0..6 {
                             se_den  +=  stress[i1].val * strain[i1].val;
@@ -386,6 +695,15 @@ impl ObjectiveTerm {
                         se_den  *=  0.5;
                         self.q_vec[q_ind] = se_den;
                     }
+                    else if self.category.s == "mises" {
+                        this_el.get_mises_dfd0(&mut tmp, &stress);
+                        self.q_vec[q_ind] = tmp.val; 
+                    }
+                    else if self.category.s == "tsaiWu" {
+                        this_el.get_tsai_wu_dfd0(&mut tmp, &stress, self.layer, sec_ar, mat_ar, dv_ar);
+                        self.q_vec[q_ind] = tmp.val;
+                    }
+
                     if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                         this_el.get_volume_dfd0(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
                         self.el_vol_vec[q_ind] = e_vol.val;
@@ -394,40 +712,17 @@ impl ObjectiveTerm {
                 q_ind += 1usize;
             }
             if self.optr.s == "powerNorm" {
-                tgt_len = self.tgt_vals.len();
-                if tgt_len == 0 {
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = 0.0;
-                    }
-                }
-                else if tgt_len == 1 {
-                    tgt_val = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = tgt_val;
-                    }
-                }
-                else {
-                    q_ind = 0;
-                    for tv in self.tgt_vals.iter_mut() {
-                        self.tgt_vec[q_ind] = *tv;
-                        q_ind += 1usize;
-                    }
-                }
                 self.value += self.get_power_norm();
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                if self.tgt_vals.len() == 0 {
-                    self.tgt_vec[0] = 0.0;
-                } else {
-                    self.tgt_vec[0] = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    self.q_vec[i1] /= self.tgt_vec[i1];
                 }
+                self.value += self.get_ks();
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.value += self.get_vol_integral();
                     return;
@@ -482,41 +777,17 @@ impl ObjectiveTerm {
                 q_ind += 1usize;
             }
             if self.optr.s == "powerNorm" {
-                tgt_len = self.tgt_vals.len();
-                if tgt_len == 0 {
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = 0.0;
-                    }
-                }
-                else if tgt_len == 1 {
-                    tgt_val = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = tgt_val;
-                    }
-                }
-                else {
-                    q_ind = 0;
-                    for tv in self.tgt_vals.iter_mut() {
-                        self.tgt_vec[q_ind] = *tv;
-                        q_ind += 1usize;
-                    }
-                }
                 self.value  += self.get_power_norm();
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                if self.tgt_vals.len() == 0 {
-                    self.tgt_vec[0] = 0.0;
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    self.q_vec[i1] /= self.tgt_vec[i1];
                 }
-                else {
-                    self.tgt_vec[0] = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                }
+                self.value += self.get_ks();
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.value  += self.get_vol_integral();
                     return;
@@ -561,41 +832,17 @@ impl ObjectiveTerm {
                 q_ind += 1usize;
             }
             if self.optr.s == "powerNorm" {
-                tgt_len = self.tgt_vals.len();
-                if tgt_len == 0 {
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = 0.0;
-                    }
-                }
-                else if tgt_len == 1 {
-                    tgt_val = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = tgt_val;
-                    }
-                }
-                else {
-                    q_ind = 0;
-                    for tv in self.tgt_vals.iter_mut() {
-                        self.tgt_vec[q_ind] = *tv;
-                        q_ind += 1usize;
-                    }
-                }
                 self.value  += self.get_power_norm();
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                if self.tgt_vals.len() == 0 {
-                    self.tgt_vec[0] = 0.0;
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    self.q_vec[i1] /= self.tgt_vec[i1];
                 }
-                else {
-                    self.tgt_vec[0] = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                }
+                self.value += self.get_ks();
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.value += self.get_vol_integral();
                     return;
@@ -640,41 +887,17 @@ impl ObjectiveTerm {
                 q_ind += 1usize;
             }
             if self.optr.s == "powerNorm" {
-                tgt_len = self.tgt_vals.len();
-                if tgt_len == 0 {
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = 0.0;
-                    }
-                }
-                else if tgt_len == 1 {
-                    tgt_val = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                    for i1 in 0..self.q_len {
-                        self.tgt_vec[i1] = tgt_val;
-                    }
-                }
-                else {
-                    q_ind = 0;
-                    for tv in self.tgt_vals.iter_mut() {
-                        self.tgt_vec[q_ind] = *tv;
-                        q_ind += 1usize;
-                    }
-                }
                 self.value  += self.get_power_norm();
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
-                if self.tgt_vals.len() == 0 {
-                    self.tgt_vec[0] = 0.0;
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    self.q_vec[i1] /= self.tgt_vec[i1];
                 }
-                else {
-                    self.tgt_vec[0] = match self.tgt_vals.front() {
-                        None => 0.0f64,
-                        Some(x) => *x,
-                    };
-                }
+                self.value += self.get_ks();
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.value += self.get_vol_integral();
                     return;
@@ -711,14 +934,6 @@ impl ObjectiveTerm {
                 }
                 q_ind += 1usize;
             }
-            if self.tgt_vals.len() == 0 {
-                self.tgt_vec[0] = 0.0;
-            } else {
-                self.tgt_vec[0] = match self.tgt_vals.front() {
-                    None => 0.0f64,
-                    Some(x) => *x,
-                };
-            }
             self.value += self.get_vol_integral();
             return;
         }
@@ -750,6 +965,7 @@ impl ObjectiveTerm {
         let mut dsd_t = vec![DiffDoub0::new(); 90];
         let mut dsd_c = vec![DiffDoub0::new(); 90];
         let mut dse_dend_u = [DiffDoub0::new(); 33];
+        let mut dse_dend_c = [DiffDoub0::new(); 10];
         let mut dse_dend_t = [DiffDoub0::new(); 10];
         let mut def = [DiffDoub0::new(); 9];
         let mut frc_mom = [DiffDoub0::new(); 9];
@@ -761,6 +977,8 @@ impl ObjectiveTerm {
         let mut el_dof_per_nd : usize;
         let mut el_num_int_dof : usize;
         let mut el_tot_dof : usize;
+        let mut dq_mat : &mut SparseMat;
+        let mut exp : f64;
 
         let mut scr_v1 = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch vectors"),
@@ -793,9 +1011,29 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                return;
+            }
+            else if self.optr.s == "ks" {
+                dq_mat = match self.category.s.as_str() {
+                    "displacement" => &mut self.d_qd_u,
+                    "velocity" => &mut self.d_qd_v,
+                    "acceleration" => &mut self.d_qd_a,
+                    "concentration" => &mut self.d_qd_c,
+                    "cdot" => &mut self.d_qd_cdot,
+                    "temperature" => &mut self.d_qd_t,
+                    "tdot" => &mut self.d_qd_tdot,
+                    &_ => panic!("Error: unrecognized objective category '{}' in getd_ld_u()", self.category.s),
+                };
+                for i1 in 0..self.q_len {
+                    for me in dq_mat.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_ksd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
             else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
@@ -810,7 +1048,7 @@ impl ObjectiveTerm {
             }
         }
         
-        cat_list = CppStr::from("stress strain strainEnergyDen");
+        cat_list = CppStr::from("stress strain strainEnergy mises tsaiWu");
         fi = cat_list.find(&self.category.s.as_str());
         if fi < MAX_INT {
             if self.el_set_ptr == MAX_INT {
@@ -846,7 +1084,7 @@ impl ObjectiveTerm {
                         sub_vec_dfd0(&mut scr_v1, &mut  ded_u,  i1,  i1 + el_tot_dof);
                         this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
                     }
-                    else {
+                    else if self.category.s == "strainEnergy" {
                         for i2 in 0..el_tot_dof {
                             dse_dend_u[i2].set_val(0.0);
                             i3 = i2;
@@ -870,17 +1108,53 @@ impl ObjectiveTerm {
                         ar_to_vec_dfd0(&mut dse_dend_t, &mut  scr_v1,  0,  10);
                         this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
                     }
+                    else if self.category.s == "mises" {
+                        this_el.d_mises_du_dfd0(&mut dse_dend_u, &mut dse_dend_t, &mut dse_dend_c, &stress, &dsd_u, &dsd_t, &dsd_c);
+
+                        ar_to_vec_dfd0(&mut dse_dend_u, &mut  scr_v1,  0,  33);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                        ar_to_vec_dfd0(&mut dse_dend_c, &mut  scr_v1,  0,  10);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_c, &mut  scr_v1,  true,  q_ind, nd_ar);
+                        ar_to_vec_dfd0(&mut dse_dend_t, &mut  scr_v1,  0,  10);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
+                    else if self.category.s == "tsaiWu" {
+                        this_el.d_tw_du_dfd0(&mut dse_dend_u, &mut dse_dend_t, &mut dse_dend_c, &stress, &dsd_u, &dsd_t, &dsd_c, self.layer, sec_ar, mat_ar, dv_ar);
+
+                        ar_to_vec_dfd0(&mut dse_dend_u, &mut  scr_v1,  0,  33);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_u, &mut  scr_v1,  false,  q_ind, nd_ar);
+                        ar_to_vec_dfd0(&mut dse_dend_c, &mut  scr_v1,  0,  10);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_c, &mut  scr_v1,  true,  q_ind, nd_ar);
+                        ar_to_vec_dfd0(&mut dse_dend_t, &mut  scr_v1,  0,  10);
+                        this_el.put_vec_to_glob_mat_dfd0(&mut self.d_qd_t, &mut  scr_v1,  true,  q_ind, nd_ar);
+                    }
                 }
                 q_ind += 1usize;
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    for me in self.d_qd_u.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    for me in self.d_qd_c.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    for me in self.d_qd_t.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_ksd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
@@ -935,12 +1209,28 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    for me in self.d_qd_u.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    for me in self.d_qd_c.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    for me in self.d_qd_t.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_ksd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
@@ -987,12 +1277,22 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    for me in self.d_qd_c.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_ksd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
@@ -1039,12 +1339,22 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    for me in self.d_qd_t.matrix[i1].row_vec.iter_mut() {
+                        me.value /= self.tgt_vec[i1];
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_ksd_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_u(d_ld_u, d_ld_v, d_ld_a, d_ld_c, d_ld_cdot, d_ld_t, d_ld_tdot);
                     return;
@@ -1080,8 +1390,12 @@ impl ObjectiveTerm {
         let mut e_vol = DiffDoub1::new();
         let mut e_den = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
+        let mut tmp2 = DiffDoub1::new();
+        let mut mul_fact : f64;
+
+        self.get_d_tgtd_d(el_ar, el_sets, sec_ar, mat_ar, dv_ar);
         
-        let mut cat_list = CppStr::from("stress strain strainEnergyDen");
+        let mut cat_list = CppStr::from("stress strain strainEnergy mises tsaiWu");
         fi = cat_list.find(&self.category.s.as_str());
         if fi < MAX_INT {
             if self.el_set_ptr == MAX_INT {
@@ -1123,7 +1437,7 @@ impl ObjectiveTerm {
                         else if self.category.s == "strain" {
                             self.d_qd_d.add_entry(q_ind,  dvi,   strain[self.component - 1].dval);
                         }
-                        else {
+                        else if self.category.s == "strainEnergy" {
                             se_den = 0.0;
                             for i1 in 0..6 {
                                 se_den  +=  stress[i1].val * strain[i1].dval + stress[i1].dval * strain[i1].val;
@@ -1131,10 +1445,20 @@ impl ObjectiveTerm {
                             se_den  *=  0.5;
                             self.d_qd_d.add_entry(q_ind, dvi, se_den);
                         }
+                        else if self.category.s == "mises" {
+                            this_el.get_mises_dfd1(&mut tmp, &stress);
+                            self.d_qd_d.add_entry(q_ind, dvi, tmp.dval);
+                        }
+                        else if self.category.s == "tsaiWu" {
+                            this_el.get_tsai_wu_dfd1(&mut tmp, &stress, self.layer, sec_ar, mat_ar, dv_ar);
+                            self.d_qd_d.add_entry(q_ind, dvi, tmp.dval);
+                        }
+
                         if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                             this_el.get_volume_dfd1(&mut e_vol, st_pre,  self.layer, sec_ar, dv_ar);
                             self.d_vd_d.add_entry(q_ind, dvi, e_vol.dval);
                         }
+
                         dv_ar[dvi].diff_val.set_val_2(dv_val.val, 0.0);
                         for nd in nd_ar.iter_mut() {
                             nd.calc_crd_dfd1(dv_ar);
@@ -1145,12 +1469,28 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_d(d_ld_d);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    mul_fact = 1.0/self.tgt_vec[i1];
+                    for me in self.d_qd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    mul_fact = -self.q_vec[i1]/(self.tgt_vec[i1]*self.tgt_vec[i1]);
+                    for me in self.d_tgtd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_qd_d.add_matrix(&mut self.d_tgtd_d);
+                self.d_ksd_d(d_ld_d);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_d(d_ld_d);
                     return;
@@ -1229,12 +1569,28 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_d(d_ld_d);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    mul_fact = 1.0/self.tgt_vec[i1];
+                    for me in self.d_qd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    mul_fact = -self.q_vec[i1]/(self.tgt_vec[i1]*self.tgt_vec[i1]);
+                    for me in self.d_tgtd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_qd_d.add_matrix(&mut self.d_tgtd_d);
+                self.d_ksd_d(d_ld_d);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_d(d_ld_d);
                     return;
@@ -1302,12 +1658,28 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_d(d_ld_d);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    mul_fact = 1.0/self.tgt_vec[i1];
+                    for me in self.d_qd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    mul_fact = -self.q_vec[i1]/(self.tgt_vec[i1]*self.tgt_vec[i1]);
+                    for me in self.d_tgtd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_qd_d.add_matrix(&mut self.d_tgtd_d);
+                self.d_ksd_d(d_ld_d);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_d(d_ld_d);
                     return;
@@ -1375,12 +1747,28 @@ impl ObjectiveTerm {
             }
             if self.optr.s == "powerNorm" {
                 for i1 in 0..self.q_len {
-                    self.err_norm_vec[i1] = self.coef * self.expnt * powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
+                    self.err_norm_vec[i1] = powf(self.q_vec[i1] - self.tgt_vec[i1], self.expnt - 1.0);
                 }
                 self.d_power_normd_d(d_ld_d);
                 return;
             }
-            if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
+            else if self.optr.s == "ks" {
+                for i1 in 0..self.q_len {
+                    mul_fact = 1.0/self.tgt_vec[i1];
+                    for me in self.d_qd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    mul_fact = -self.q_vec[i1]/(self.tgt_vec[i1]*self.tgt_vec[i1]);
+                    for me in self.d_tgtd_d.matrix[i1].row_vec.iter_mut() {
+                        me.value *= mul_fact;
+                    }
+                    self.err_norm_vec[i1] = (self.expnt*self.q_vec[i1]).exp();
+                }
+                self.d_qd_d.add_matrix(&mut self.d_tgtd_d);
+                self.d_ksd_d(d_ld_d);
+                return;
+            }
+            else if self.optr.s == "volumeIntegral" || self.optr.s == "volumeAverage" {
                 if self.optr.s == "volumeIntegral" {
                     self.d_vol_integrald_d(d_ld_d);
                     return;
