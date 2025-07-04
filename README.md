@@ -1,6 +1,6 @@
 # ASenD3D
 
-ASenD3D (Adjoint-based Sensitivity and Design in 3D) is a tool for performing finite element analysis of structural systems and computing sensitivities of structural objectives to design parameters/variables using the adjoint method.  High-efficiency, high-fidelity gradient-based optimization and uncertainty quantification in structural design are the primary intended applications, but the package functions as a general open-source finite element analysis tool.  Capabilities include analysis of elastic and thermal response of 3D solid, shell and beam structures under loading, as well as modal analysis for natural frequency and buckling problems.
+ASenD3D (Adjoint-based Sensitivity and Design in 3D) is a tool for performing finite element analysis of physical systems and computing sensitivities of objectives to design parameters/variables using the adjoint method.  High-efficiency, high-fidelity gradient-based optimization and uncertainty quantification in multidisciplinary design are the primary intended applications, but the package functions as a general open-source finite element analysis tool.  Capabilities include analysis of elastic, diffusive and thermal response of 3D solid, shell and beam structures under loading, as well as modal analysis for natural frequency and buckling problems.
 
 Originally created at the University of Wyoming under government-funded research projects and formerly known as AStrO (Adjoint-based Structural Optimizer), ASenD3D continues to expand, with recent efforts in improving efficiency and usability of interface.  A python-based interface provides easy-to-use tools for model/input generation, job submission to the core solver, post-processing and visualization.  It also facilitates integration with other packages such as optimizers.
 
@@ -10,15 +10,19 @@ Basic example scripts are provided in the examples directory.  Users are encoura
 
 ## Prerequisities
 
-Depending on their operating system and current setup, there are a few prerequisites that users may or may not need before setting up ASenD3D.
+Depending on their scope of use and current setup, there are a few prerequisites that users may or may not need before setting up ASenD3D.
 
 ### 1. Install Anaconda/Python Environment
 
 It is recommended to run ASenD3D within Anaconda, which provides all needed tools conveniently packaged and accessible, as well as support for creating specialized environments for different projects.  If not already installed, it can be downloaded for free from https://anaconda.org.
 
-### 2. Install C++ Compiler/IDE
+### 2. Install rustup to locally build the core analysis engine
 
-On MacOS or Linux, the core solver is compiled by default using g++, the GNU compiler for C++.  So users will need to make sure g++ is installed as a prerequisite.  Windows uses the included Visual Studio build by default, in which case this step is not needed.  As it is open source, the user is free to use any other build/compiler options they prefer.  If it is desired to edit the core solver source, users should set up an IDE of there choice to do so, such as Microsoft Visual Studio for Windows or Xcode for MacOS.
+The core analysis engine/solver of ASenD3D is written in the Rust programming language for speed, resource efficiency and robustness. To build locally, the offical package for build and compilation of rust projects, or rustup (www.rust-lang.org/tools/install), must be installed. On MacOS or Linux, it can be installed from the command line with
+
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+Windows users can visit the above url for a download, or use the included build, in which case installing rustup is not required. Building locally is generally recommended, but not necessarily required since most users would only need to modify the core solver's source code for user-defined, progressive analysis.
 
 ### 3. Install Git
 
@@ -52,7 +56,7 @@ To initialize the core solver to be invoked through the interface tools, run
 
         python solverSetup.py
 		
-from the root directory in the anaconda powershell prompt or the command line in Linux.  If a C++ compiler other than g++ is desired in MacOS or Linux, the solverSetup.py script will have to be edited, by redefining the CC variable.
+from the root directory in the anaconda powershell prompt or the command line in Linux.
         
 # Running ASenD3D
 
