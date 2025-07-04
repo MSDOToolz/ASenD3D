@@ -39,30 +39,32 @@ class Boundary2D():
     def getBoundaryMesh(self):
         allNds = list()
         allEds = list()
-        elSets = list()
+        elSets = dict()
         totNds = 0
         totEls = 0
         for i, seg in enumerate(self.segList):
             segMesh = seg.getNodesEdges()
             allNds.extend(segMesh['nodes'])
             allEds.extend(segMesh['edges'] + totNds)
-            newSet = dict()
-            newSet['name'] = self.segNames[i]
+            # newSet = dict()
+            # newSet['name'] = self.segNames[i]
             totElsNext = totEls + len(segMesh['edges'])
-            newSet['labels'] = list(range(totEls,totElsNext))
-            elSets.append(newSet)
+            # newSet['labels'] = list(range(totEls,totElsNext))
+            # elSets.append(newSet)
+            elSets[self.segNames[i]] = list(range(totEls,totElsNext))
             totNds = len(allNds)
             totEls = totElsNext
         for i, mesh in enumerate(self.meshList):
             allNds.extend(mesh['nodes'])
             allEds.extend(mesh['edges'] + totNds)
-            newSet = dict()
-            newSet['name'] = self.meshNames[i]
+            # newSet = dict()
+            # newSet['name'] = self.meshNames[i]
             totElsNext = totEls + len(mesh['edges'])
-            newSet['labels'] = list(range(totEls,totElsNext))
-            elSets.append(newSet)
+            # newSet['labels'] = list(range(totEls,totElsNext))
+            # elSets.append(newSet)
+            elSets[self.meshNames[i]] = list(range(totEls,totElsNext))
             totNds = len(allNds)
-            totEls = totElsNext   
+            totEls = totElsNext
         allNds = np.array(allNds)
         allEds = np.array(allEds)
         

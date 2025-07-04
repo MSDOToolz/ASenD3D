@@ -1,8 +1,10 @@
 ## AStrO Model Input File Template
 nodes:
     - [label, x, y, z]
+fluidNodes:
+    - [label, x, y, z]
 elements:
-    - type:
+    - type: ## tet4, wedge6, brick8, brickIM, tet10, fl4, fl6, fl8, fl10
       connectivity:
           - [label, n1, n2, n3]
 sets:
@@ -29,8 +31,9 @@ sets:
               - [1, 10] # one thru 10...
               - [20, 30] # 20 thru 30...
 sections:
-    - type: # solid, shell, beam, forceField, mass
+    - type: # solid, shell, beam, forceField, mass, fluid
       material: (material name)
+      fluid:
       orientation: [x1, x2, x3, xy1, xy2, xy3]
       layup:
           zOffset:
@@ -55,18 +58,26 @@ sections:
              # - [i, j, val]
           damping:
           expLoadCoef: [eL1, ... eL6]
+          diffLoadCoef:
           conductivity: [k1]
+          diffusivity:
           specHeat:
+          maxConcentration:
       potField:
           coef:
           exp:
       dampField:
           coef:
           exp:
+      thermField:
+          condCoef:
+          radCoef: 0
+          refTemp: 
       massPerEl:
+      specHeat:
       elementSet: setName
 materials:
-    - name:
+    name:
       density:
       elastic:
           E: [E11,E22,E33]
@@ -83,26 +94,36 @@ materials:
           conductivity: [k1,k2,k3,k12,k13,k23]
           expansion: [e11,e22,e33,e12,e13,e23]
           specHeat:
+      diffusion:
+          diffusivity:
+          expansion:
+          maxConcentration:
       damping:
-      failure:
-          maxStress:
-              tensile: [s11,s22,s33]
-              compressive: [s11,s22,s33]
-              shear: [s12,s13,s23]
-          maxStrain:
-              tensile:
-              compressive:
-              shear:
-          maxStrainEnergy: (value)
-          maxMises: (value)
+      custom:
+          prop1: value # tensileStrength, compressiveStrength, shearStrength
+          prop2: [v1, v2, v3]
+fluids:
+    name:
+      viscosity:
+      thermal:
+          conductivity:
+          expansion:
+          specHeat:
+      idealGasConst:
+      bulkModulus:
+      compressible: yes/no
+      refTemp:
+      refPres:
+      refDen:
 constraints:
-    - type: displacement, temperature
+    - type: displacement, temperature, concentration
       terms:
           #- [ndSet,dof,coef]
           - nodeSet:
             dof:
             coef:
       rhs:
+      activeTime: [start,end]
 
 ##
 

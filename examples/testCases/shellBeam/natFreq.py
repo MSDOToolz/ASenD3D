@@ -10,6 +10,7 @@ import sys
 from asendUtils.model.Model import *
 from asendUtils.objective.Objective import *
 from asendUtils.job.ASenDJob import *
+# from asendUtils.ResultsProcessor import *
 
 if(not os.path.exists('natFreq')):
     os.mkdir('natFreq')
@@ -25,8 +26,14 @@ myJob.readModelInput('shellBeam.yaml')
 myJob.solvePrep()
 myJob.modalAnalysis(analysisType='frequency')
 
-myJob.writeModalResults('natFreq/results/natFreqResults.yaml')
+myJob.writeModalResults('natFreq/results/natFreqResults.csv')
 
 myJob.writeJobInput('natFreq/job.yaml')
 
 myJob.executeJob()
+
+# rp = ResultsProcessor('shellBeam.yaml')
+# rp.loadModalVals('natFreq/results/natFreqResults.csv')
+# rp.loadModalVec('natFreq/results/natFreqResults.csv', mode=0)
+# rp.plotModalResults()
+# rp.animateModalSolution()

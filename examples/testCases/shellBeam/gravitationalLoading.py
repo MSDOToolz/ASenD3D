@@ -48,4 +48,4 @@ myJob.writeObjective('gravitationalLoading/results/objectiveResults.yaml')
 
 myJob.writeJobInput('gravitationalLoading/job.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()

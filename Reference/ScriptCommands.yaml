@@ -23,6 +23,7 @@ jobCommands:
   - command: solve X
     elastic: yes
     thermal: no
+    diffusion: no
     nonlinearGeom: no
     staticLoadTime:
     loadRampSteps:
@@ -34,19 +35,20 @@ jobCommands:
     saveSolnHist: no
     solnHistDir:
     lumpMass: no
-    fullReformFreq: 1
     solverMethod:
     solverBlockDim:
     maxIterations:
     convergenceTol:
+    enforceMaxCon:
+    userUpdate: no
     
   - command: zeroSolution
     fields: 
 
   - command: modalAnalysis X
-    type: buckling , frequency, dynSoln
+    type: buckling , frequency
     numModes: 10
-    targetEigenvalue: 0.0
+    targetEigenvalue: 0.0, hilo
     solverMethod: 
     maxIterations:
     

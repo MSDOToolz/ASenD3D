@@ -39,7 +39,7 @@ job = ASenDJob()
 job.readModelInput(modFile)
 job.readConstraints(constFile)
 job.readInitialState(initFile)
-job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.2,solnHistDir='shellDiskImpact/results/',lumpMass=True,solverMethod='iterative',solverBlockDim=10)
+job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.000625,simPeriod=0.2,solnHistDir='shellDiskImpact/results/',lumpMass=True,solverMethod='iterative',solverBlockDim=2)
 #job.solve(nonlinearGeom=True,dynamic=True,timeStep=0.005,simPeriod=0.5,saveSolnHist=True,solnHistDir='shellDiskImpact/results/')
 resFile = 'shellDiskImpact/results/nodeResults.yaml'
 ts = list(range(0,40))
@@ -50,5 +50,15 @@ job.executeJob()
 
 rp = ResultsProcessor(modFile)
 ndResFile = 'shellDiskImpact/results/nodeResults.yaml'
-rp.animateNodeResults(ndResFile,'displacement',ts,component=3,elementSet='allDiskEls',deformed=True,defScaleFact=50.0)
+#rp.animateNodeResults(ndResFile,'displacement',ts,component=3,elementSet='allDiskEls',deformed=True,defScaleFact=50.0)
 rp.plotNodeHistory(ndResFile,'displacement',ts,'projectileNode',component=3)
+
+inFile = open('shellDiskImpact/job.log')
+fileLine = inFile.readline()
+totIt = 0
+while(fileLine != ''):
+    if('Total CG iterations:' in fileLine):
+        lst = fileLine.split(':')
+        totIt += int(lst[1])
+    fileLine = inFile.readline()
+print('Total CG iterations: ' + str(totIt))

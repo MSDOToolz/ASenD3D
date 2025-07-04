@@ -39,7 +39,7 @@ class Surface():
     def getSurfaceMesh(self):
         allNds = list()
         allEls = list()
-        elSetList = list()
+        elSetList = dict()
         numNds = 0
         numEls = 0
         regi = 0
@@ -54,10 +54,11 @@ class Surface():
                 allEls.append(el)
                 setList.append((eli + numEls))
                 eli = eli + 1
-            thisSet = dict()
-            thisSet['name'] = self.regionNames[regi]
-            thisSet['labels'] = setList
-            elSetList.append(thisSet)
+            # thisSet = dict()
+            # thisSet['name'] = self.regionNames[regi]
+            # thisSet['labels'] = setList
+            # elSetList.append(thisSet)
+            elSetList[self.regionNames[regi]] = setList
             allNds.extend(regMesh['nodes'])
             numNds = len(allNds)
             numEls = len(allEls)
@@ -74,10 +75,11 @@ class Surface():
                 allEls.append(newEl)
                 setList.append((eli + numEls))
                 eli = eli + 1
-            thisSet = dict()
-            thisSet['name'] = self.meshNames[mshi]
-            thisSet['labels'] = setList
-            elSetList.append(thisSet)
+            # thisSet = dict()
+            # thisSet['name'] = self.meshNames[mshi]
+            # thisSet['labels'] = setList
+            # elSetList.append(thisSet)
+            elSetList[self.meshNames[mshi]] = setList
             allNds.extend(msh['nodes'])
             numNds = len(allNds)
             numEls = len(allEls)

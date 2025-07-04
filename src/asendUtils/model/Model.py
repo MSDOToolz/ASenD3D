@@ -3,6 +3,7 @@ import os
 import yaml
 from asendUtils.model.Section import Section
 from asendUtils.model.Material import Material
+from asendUtils.model.Fluid import Fluid
 from asendUtils.model.Constraint import Constraint
 from asendUtils.syst.pathTools import *
 
@@ -14,10 +15,10 @@ class Model():
         self.modelData['nodes'] = list()
         self.modelData['elements'] = list()
         self.modelData['sets'] = dict()
-        self.modelData['sets']['node'] = list()
-        self.modelData['sets']['element'] = list()
+        self.modelData['sets']['node'] = dict()
+        self.modelData['sets']['element'] = dict()
         self.modelData['sections'] = list()
-        self.modelData['materials'] = list()
+        self.modelData['materials'] = dict()
         self.massElements = list()
         self.forceElements = list()
         self.totNds = 0
@@ -134,26 +135,32 @@ class Model():
             inpSets = meshData['sets']
             try:
                 nodeSets = inpSets['node']
-                newNdSets = list()
+                newNdSets = dict()
                 for ns in nodeSets:
                     newLabs = list()
-                    for nd in ns['labels']:
+                    for nd in nodeSets[ns]:
                         newLabs.append(nd+nNds)
-                    ns['labels'] = newLabs
-                    newNdSets.append(ns)
-                self.modelData['sets']['node'].extend(newNdSets)
+                    # ns['labels'] = newLabs
+                    # newNdSets.append(ns)
+                    newNdSets[ns] = newLabs
+                # self.modelData['sets']['node'].extend(newNdSets)
+                for ns in newNdSets:
+                    self.modelData['sets']['node'][ns] = newNdSets[ns]
             except:
                 pass
             try:
                 elSets = inpSets['element']
-                newElSets = list()
+                newElSets = dict()
                 for es in elSets:
                     newLabs = list()
-                    for el in es['labels']:
+                    for el in elSets[es]:
                         newLabs.append(el+nEls)
-                    es['labels'] = newLabs
-                    newElSets.append(es)
-                self.modelData['sets']['element'].extend(newElSets)
+                    # es['labels'] = newLabs
+                    # newElSets.append(es)
+                    newElSets[es] = newLabs
+                # self.modelData['sets']['element'].extend(newElSets)
+                for es in newElSets:
+                    self.modelData['sets']['element'][es] = newElSets[es]
             except:
                 pass
         except:
@@ -170,22 +177,29 @@ class Model():
         self.totEls = nEls + nInpEls
         
     def addNodeSet(self,name,labelList):
-        newSet = dict()
-        newSet['name'] = name
-        newSet['labels'] = labelList
-        self.modelData['sets']['node'].append(newSet)
+        # newSet = dict()
+        # newSet['name'] = name
+        # newSet['labels'] = labelList
+        self.modelData['sets']['node'][name] = labelList
     
     def addElementSet(self,name,labelList):
-        newSet = dict()
-        newSet['name'] = name
-        newSet['labels'] = labelList
-        self.modelData['sets']['element'].append(newSet)
+        # newSet = dict()
+        # newSet['name'] = name
+        # newSet['labels'] = labelList
+        self.modelData['sets']['element'][name] = labelList
             
     def addSection(self,newSection):
         self.modelData['sections'].append(newSection.secData)
             
     def addMaterial(self,newMaterial):
-        self.modelData['materials'].append(newMaterial.matData)
+        # self.modelData['materials'].append(newMaterial.matData)
+        self.modelData['materials'][newMaterial.name] = newMaterial.matData
+        
+    def addFluid(self,newFluid):
+        try:
+            self.modelData['fluids'][newFluid.name] = newFluid.flData
+        except:
+            self.modelData['fluids'] = {newFluid.name: newFluid.flData}
         
     def addConstraint(self,newConstraint):
         try:
@@ -195,45 +209,52 @@ class Model():
             constraints.append(newConstraint.constData)
             self.modelData['constraints'] = constraints
             
-    def fixDisplacement(self,nodeSet,ux=None,uy=None,uz=None,rx=None,ry=None,rz=None):
+    def fixDisplacement(self,nodeSet,ux=None,uy=None,uz=None,rx=None,ry=None,rz=None,stTime=0.0,endTime=1e+100):
         if(ux != None):
             newConst = Constraint('displacement')
             newConst.addTerm(nodeSet,1,1.0)
             newConst.setRHS(ux)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
         if(uy != None):
             newConst = Constraint('displacement')
             newConst.addTerm(nodeSet,2,1.0)
             newConst.setRHS(uy)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
         if(uz != None):
             newConst = Constraint('displacement')
             newConst.addTerm(nodeSet,3,1.0)
             newConst.setRHS(uz)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
         if(rx != None):
             newConst = Constraint('displacement')
             newConst.addTerm(nodeSet,4,1.0)
             newConst.setRHS(rx)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
         if(ry != None):
             newConst = Constraint('displacement')
             newConst.addTerm(nodeSet,5,1.0)
             newConst.setRHS(ry)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
         if(rz != None):
             newConst = Constraint('displacement')
             newConst.addTerm(nodeSet,6,1.0)
             newConst.setRHS(rz)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
             
-    def fixTemperature(self,nodeSet,T):
+    def fixTemperature(self,nodeSet,T,stTime=0.0,endTime=1e+100):
         newConst = Constraint('temperature')
         newConst.addTerm(nodeSet,1,1.0)
         newConst.setRHS(T)
+        newConst.setActiveTime(stTime,endTime)
         self.addConstraint(newConst)
         
-    def periodicDisplacement(self,ndSets=None):
+    def periodicDisplacement(self,ndSets=None,stTime=0.0,endTime=1e+100):
         if(ndSets is None):
             sN = ['periodicXMin','periodicXMax',
                   'periodicYMin','periodicYMax',
@@ -252,6 +273,7 @@ class Model():
             newConst.addTerm(sN[0],dof,-1.0)
             newConst.addTerm(sN[7],dof,-1.0)
             newConst.setRHS(0.0)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
             # y periodic constraint
             newConst = Constraint('displacement')
@@ -260,6 +282,7 @@ class Model():
             newConst.addTerm(sN[2],dof,-1.0)
             newConst.addTerm(sN[9],dof,-1.0)
             newConst.setRHS(0.0)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
             # z periodic constraint
             newConst = Constraint('displacement')
@@ -268,6 +291,7 @@ class Model():
             newConst.addTerm(sN[4],dof,-1.0)
             newConst.addTerm(sN[11],dof,-1.0)
             newConst.setRHS(0.0)
+            newConst.setActiveTime(stTime,endTime)
             self.addConstraint(newConst)
             
             
@@ -382,10 +406,11 @@ class Model():
     
     def integrateMassElements(self):
         for me in self.massElements:
-            setLabs = list()
-            for ns in self.modelData['sets']['node']:
-                if(ns['name'] == me[0]):
-                    setLabs = ns['labels']
+            # setLabs = list()
+            # for ns in self.modelData['sets']['node']:
+            #     if(ns['name'] == me[0]):
+            #         setLabs = ns['labels']
+            setLabs = self.modelData['sets']['node'][me[0]]
             ei = self.totEls
             newESLabs = list()
             newEls = list()
@@ -398,22 +423,25 @@ class Model():
             eList['type'] = 'mass'
             eList['connectivity'] = newEls
             self.modelData['elements'].append(eList)
-            eSet = dict()
-            eSet['name'] = me[1]
-            eSet['labels'] = newESLabs
-            self.modelData['sets']['element'].append(eSet)
+            # eSet = dict()
+            # eSet['name'] = me[1]
+            # eSet['labels'] = newESLabs
+            # self.modelData['sets']['element'].append(eSet)
+            self.modelData['sets']['element'][me[1]] = newESLabs
             self.totEls = ei
         self.massElements = list()
 
     def integrateForceElements(self):
         for fe in self.forceElements:
-            set1Labs = list()
-            set2Labs = list()
-            for ns in self.modelData['sets']['node']:
-                if(ns['name'] == fe[0]):
-                    set1Labs = ns['labels']
-                if(ns['name'] == fe[1]):
-                    set2Labs = ns['labels']
+            # set1Labs = list()
+            # set2Labs = list()
+            # for ns in self.modelData['sets']['node']:
+            #     if(ns['name'] == fe[0]):
+            #         set1Labs = ns['labels']
+            #     if(ns['name'] == fe[1]):
+            #         set2Labs = ns['labels']
+            set1Labs = self.modelData['sets']['node'][fe[0]]
+            set2Labs = self.modelData['sets']['node'][fe[1]]
             ei = self.totEls
             newEls = list()
             newES = list()
@@ -428,10 +456,11 @@ class Model():
             eList['type'] = 'frcFld'
             eList['connectivity'] = newEls
             self.modelData['elements'].append(eList)
-            eSet = dict()
-            eSet['name'] = fe[2]
-            eSet['labels'] = newES
-            self.modelData['sets']['element'].append(eSet)
+            # eSet = dict()
+            # eSet['name'] = fe[2]
+            # eSet['labels'] = newES
+            # self.modelData['sets']['element'].append(eSet)
+            self.modelData['sets']['element'][fe[2]] = newES
             self.totEls = ei
         self.forceElements = list()
     

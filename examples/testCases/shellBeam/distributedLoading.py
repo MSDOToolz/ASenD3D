@@ -48,4 +48,4 @@ myJob.writeObjective('distributedLoading/results/objectiveResults.yaml')
 
 myJob.writeJobInput('distributedLoading/job.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()
