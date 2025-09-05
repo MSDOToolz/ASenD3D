@@ -1830,7 +1830,7 @@ impl Element {
         return;
     }
 
-    pub fn get_app_load_dfd0(& self, app_ld : &mut Vec<DiffDoub0>, ld_pt : & Load, n_lgeom : bool, pre : &mut DiffDoub0StressPrereq, 
+    pub fn get_app_load_dfd0(& self, app_ld : &mut Vec<DiffDoub0>, ld_pt : & Load, n_lgeom : bool, time : f64, pre : &mut DiffDoub0StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
         let mut i3 : usize;
@@ -1841,6 +1841,7 @@ impl Element {
         let nd_dof : usize =  self.num_nds*self.dof_per_nd;
         let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let ld_type : CppStr = ld_pt.this_type.clone();
+        let mut ld_at_t = [0.0f64; 6];
         //let mut d_rd_a = &mut scr.scr_m1;
         let mut d_rd_a = match scr.next() {
             None => panic!("Error: ran out of scratch matrices"),
@@ -1872,6 +1873,8 @@ impl Element {
         for i1 in 0..nd_dof {
             pre.glob_acc[i1].set_val(0.0);
         }
+
+        ld_pt.get_load(&mut ld_at_t, time);
         
         if ld_type.s == "bodyForce" {
             i2 = 0;
@@ -1879,7 +1882,7 @@ impl Element {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
-                pre.glob_acc[i3].set_val(ld_pt.load[dof]);
+                pre.glob_acc[i3].set_val(ld_at_t[dof]);
                 i2  +=  2;
             }
             self.get_rum_dfd0(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr_dfd);
@@ -1890,7 +1893,7 @@ impl Element {
                 i2  +=  2;
             }
             for i1 in 0..self.dof_per_nd {
-                tmp.set_val(ld_pt.load[i1]);
+                tmp.set_val(ld_at_t[i1]);
                 tmp.sqr();
                 inp_mag.add(& tmp);
                 tmp.set_val_dfd0(& tot_nd_f[i1]);
@@ -1923,7 +1926,7 @@ impl Element {
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
                 if dof < 3 {
-                    pre.glob_acc[i3].set_val(ld_pt.load[dof]);
+                    pre.glob_acc[i3].set_val(ld_at_t[dof]);
                 }
                 i2  +=  2;
             }
@@ -1984,14 +1987,14 @@ impl Element {
                     if dp.val > tmp.val {
                         if ld_type.s == "surfacePressure" {
                             for i1 in 0..3 {
-                                trac[i1].set_val(ld_pt.load[0]);
+                                trac[i1].set_val(ld_at_t[0]);
                                 trac[i1].mult(& fc_norm[i1]);
                                 trac[i1].neg();
                             }
                         }
                         else {
                             for i1 in 0..3 {
-                                trac[i1].set_val(ld_pt.load[i1]);
+                                trac[i1].set_val(ld_at_t[i1]);
                             }
                         }
                         fc_num_nds = this_fc.num_nds;
@@ -2055,12 +2058,13 @@ impl Element {
         return;
     }
 
-    pub fn get_app_therm_load_dfd0(& self, app_ld : &mut Vec<DiffDoub0>, ld_pt : & Load, pre : &mut DiffDoub0StressPrereq, 
+    pub fn get_app_therm_load_dfd0(& self, app_ld : &mut Vec<DiffDoub0>, ld_pt : & Load, time : f64, pre : &mut DiffDoub0StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
         let mut glob_ind : usize;
         let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let ld_type : CppStr = ld_pt.this_type.clone();
+        let mut ld_at_t = [0.0f64; 6];
         //let mut el_app_ld = &mut scr.scr_v1;
         let el_app_ld = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch matrices"),
@@ -2083,10 +2087,12 @@ impl Element {
         for i1 in 0..self.num_nds {
             pre.glob_tdot[i1].set_val(0.0);
         }
+
+        ld_pt.get_load(&mut ld_at_t, time);
         
         if ld_type.s == "bodyHeatGen" {
             for i1 in 0..self.num_nds {
-                pre.glob_tdot[i1].set_val(ld_pt.load[0]);
+                pre.glob_tdot[i1].set_val(ld_at_t[0]);
             }
             self.get_rtm_dfd0(el_app_ld, d_rd_t, false, false, pre);
             tot_hg.set_val(0.0);
@@ -2103,7 +2109,7 @@ impl Element {
             else {
                 self.get_volume_dfd0(&mut el_vol, pre,  0, sec_ar, dv_ar);
             }
-            tmp.set_val(ld_pt.load[0]);
+            tmp.set_val(ld_at_t[0]);
             tmp.mult(& el_vol);
             tmp.dvd(& tot_hg);
             for i1 in 0..self.num_nds {
@@ -2127,7 +2133,7 @@ impl Element {
                         fc_num_nds = this_fc.num_nds;
                         for i1 in 0..fc_num_nds {
                             i2 = this_fc.loc_nodes[i1];
-                            pre.glob_tdot[i2].set_val(ld_pt.load[0]);
+                            pre.glob_tdot[i2].set_val(ld_at_t[0]);
                         }
                         self.get_rtm_dfd0(el_app_ld, d_rd_t,  false,  false, pre);
                         tot_hg.set_val(0.0);
@@ -2143,7 +2149,7 @@ impl Element {
                             }
                             tot_hg.add(& el_app_ld[i1]);
                         }
-                        tmp.set_val(ld_pt.load[0]);
+                        tmp.set_val(ld_at_t[0]);
                         tmp.mult(& fc_area);
                         tmp.dvd(& tot_hg);
                         for i1 in 0..self.num_nds {
@@ -2162,7 +2168,7 @@ impl Element {
         return;
     }
 
-    pub fn get_app_diff_load_dfd0(&self, app_ld : &mut Vec<DiffDoub0>, ld_pt : &mut Load, pre : &mut DiffDoub0StressPrereq, 
+    pub fn get_app_diff_load_dfd0(&self, app_ld : &mut Vec<DiffDoub0>, ld_pt : &mut Load, time : f64, pre : &mut DiffDoub0StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : &Vec<DesignVariable>) {
         
         let type_copy = ld_pt.this_type.s.clone();
@@ -2177,7 +2183,7 @@ impl Element {
             &_ => CppStr::from("none"),
         };
 
-        self.get_app_therm_load_dfd0(app_ld, ld_pt, pre, scr, scr_dfd, sec_ar, fc_ar, nd_ar, dv_ar);
+        self.get_app_therm_load_dfd0(app_ld, ld_pt, time, pre, scr, scr_dfd, sec_ar, fc_ar, nd_ar, dv_ar);
 
         ld_pt.this_type.s = type_copy;
 
@@ -3817,7 +3823,7 @@ impl Element {
         return;
     }
 
-    pub fn get_app_load_dfd1(& self, app_ld : &mut Vec<DiffDoub1>, ld_pt : & Load, n_lgeom : bool, pre : &mut DiffDoub1StressPrereq, 
+    pub fn get_app_load_dfd1(& self, app_ld : &mut Vec<DiffDoub1>, ld_pt : & Load, n_lgeom : bool, time : f64, pre : &mut DiffDoub1StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
         let mut i3 : usize;
@@ -3828,6 +3834,7 @@ impl Element {
         let nd_dof : usize =  self.num_nds*self.dof_per_nd;
         let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let ld_type : CppStr = ld_pt.this_type.clone();
+        let mut ld_at_t = [0.0f64; 6];
         //let mut d_rd_a = &mut scr.scr_m1;
         let mut d_rd_a = match scr.next() {
             None => panic!("Error: ran out of scratch matrices"),
@@ -3859,6 +3866,8 @@ impl Element {
         for i1 in 0..nd_dof {
             pre.glob_acc[i1].set_val(0.0);
         }
+
+        ld_pt.get_load(&mut ld_at_t, time);
         
         if ld_type.s == "bodyForce" {
             i2 = 0;
@@ -3866,7 +3875,7 @@ impl Element {
                 nd = self.dof_table[i2];
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
-                pre.glob_acc[i3].set_val(ld_pt.load[dof]);
+                pre.glob_acc[i3].set_val(ld_at_t[dof]);
                 i2  +=  2;
             }
             self.get_rum_dfd1(&mut el_app_ld, &mut  d_rd_a,  false,  false,  n_lgeom, pre, scr_dfd);
@@ -3877,7 +3886,7 @@ impl Element {
                 i2  +=  2;
             }
             for i1 in 0..self.dof_per_nd {
-                tmp.set_val(ld_pt.load[i1]);
+                tmp.set_val(ld_at_t[i1]);
                 tmp.sqr();
                 inp_mag.add(& tmp);
                 tmp.set_val_dfd1(& tot_nd_f[i1]);
@@ -3910,7 +3919,7 @@ impl Element {
                 dof = self.dof_table[i2 + 1];
                 i3 = dof * self.num_nds + nd;
                 if dof < 3 {
-                    pre.glob_acc[i3].set_val(ld_pt.load[dof]);
+                    pre.glob_acc[i3].set_val(ld_at_t[dof]);
                 }
                 i2  +=  2;
             }
@@ -3971,14 +3980,14 @@ impl Element {
                     if dp.val > tmp.val {
                         if ld_type.s == "surfacePressure" {
                             for i1 in 0..3 {
-                                trac[i1].set_val(ld_pt.load[0]);
+                                trac[i1].set_val(ld_at_t[0]);
                                 trac[i1].mult(& fc_norm[i1]);
                                 trac[i1].neg();
                             }
                         }
                         else {
                             for i1 in 0..3 {
-                                trac[i1].set_val(ld_pt.load[i1]);
+                                trac[i1].set_val(ld_at_t[i1]);
                             }
                         }
                         fc_num_nds = this_fc.num_nds;
@@ -4042,12 +4051,13 @@ impl Element {
         return;
     }
 
-    pub fn get_app_therm_load_dfd1(& self, app_ld : &mut Vec<DiffDoub1>, ld_pt : & Load, pre : &mut DiffDoub1StressPrereq, 
+    pub fn get_app_therm_load_dfd1(& self, app_ld : &mut Vec<DiffDoub1>, ld_pt : & Load, time : f64, pre : &mut DiffDoub1StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : & Vec<DesignVariable>) {
         let mut i2 : usize;
         let mut glob_ind : usize;
         let num_lay : usize =  sec_ar[self.sect_ptr].layers.len();
         let ld_type : CppStr = ld_pt.this_type.clone();
+        let mut ld_at_t = [0.0f64; 6];
         //let mut el_app_ld = &mut scr.scr_v1;
         let el_app_ld = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch matrices"),
@@ -4070,10 +4080,12 @@ impl Element {
         for i1 in 0..self.num_nds {
             pre.glob_tdot[i1].set_val(0.0);
         }
+
+        ld_pt.get_load(&mut ld_at_t, time);
         
         if ld_type.s == "bodyHeatGen" {
             for i1 in 0..self.num_nds {
-                pre.glob_tdot[i1].set_val(ld_pt.load[0]);
+                pre.glob_tdot[i1].set_val(ld_at_t[0]);
             }
             self.get_rtm_dfd1(el_app_ld, d_rd_t, false, false, pre);
             tot_hg.set_val(0.0);
@@ -4090,7 +4102,7 @@ impl Element {
             else {
                 self.get_volume_dfd1(&mut el_vol, pre,  0, sec_ar, dv_ar);
             }
-            tmp.set_val(ld_pt.load[0]);
+            tmp.set_val(ld_at_t[0]);
             tmp.mult(& el_vol);
             tmp.dvd(& tot_hg);
             for i1 in 0..self.num_nds {
@@ -4114,7 +4126,7 @@ impl Element {
                         fc_num_nds = this_fc.num_nds;
                         for i1 in 0..fc_num_nds {
                             i2 = this_fc.loc_nodes[i1];
-                            pre.glob_tdot[i2].set_val(ld_pt.load[0]);
+                            pre.glob_tdot[i2].set_val(ld_at_t[0]);
                         }
                         self.get_rtm_dfd1(el_app_ld, d_rd_t,  false,  false, pre);
                         tot_hg.set_val(0.0);
@@ -4130,7 +4142,7 @@ impl Element {
                             }
                             tot_hg.add(& el_app_ld[i1]);
                         }
-                        tmp.set_val(ld_pt.load[0]);
+                        tmp.set_val(ld_at_t[0]);
                         tmp.mult(& fc_area);
                         tmp.dvd(& tot_hg);
                         for i1 in 0..self.num_nds {
@@ -4149,7 +4161,7 @@ impl Element {
         return;
     }
 
-    pub fn get_app_diff_load_dfd1(&self, app_ld : &mut Vec<DiffDoub1>, ld_pt : &mut Load, pre : &mut DiffDoub1StressPrereq, 
+    pub fn get_app_diff_load_dfd1(&self, app_ld : &mut Vec<DiffDoub1>, ld_pt : &mut Load, time : f64, pre : &mut DiffDoub1StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>, sec_ar : &mut Vec<Section>, fc_ar : &mut Vec<Face>, nd_ar : &mut Vec<Node>, dv_ar : &Vec<DesignVariable>) {
         
         let type_copy = ld_pt.this_type.s.clone();
@@ -4164,7 +4176,7 @@ impl Element {
             &_ => CppStr::from("none"),
         };
 
-        self.get_app_therm_load_dfd1(app_ld, ld_pt, pre, scr, scr_dfd, sec_ar, fc_ar, nd_ar, dv_ar);
+        self.get_app_therm_load_dfd1(app_ld, ld_pt, time, pre, scr, scr_dfd, sec_ar, fc_ar, nd_ar, dv_ar);
 
         ld_pt.this_type.s = type_copy;
 
@@ -4173,6 +4185,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
  

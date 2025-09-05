@@ -20,7 +20,7 @@ if(not os.path.exists('gravitationalLoading/results')):
 ## Define loads
 
 myMod = Model()
-myMod.addGravityForce('all',[0.0,0.0,1.0])
+myMod.addGravityForce('all',G1=0.0,G2=0.0,G3=1.0)
 
 ## Write Load file
 myMod.writeModelInput('gravitationalLoading/loads.yaml')
@@ -42,9 +42,9 @@ myJob.readObjectiveInput('gravitationalLoading/objective.yaml')
 myJob.solve()
 myJob.calcObjGradient()
 
-myJob.writeNodeResults('gravitationalLoading/results/nodeResults.yaml',['displacement'])
-myJob.writeElementResults('gravitationalLoading/results/elementResults.yaml',['strain','stress'])
-myJob.writeObjective('gravitationalLoading/results/objectiveResults.yaml')
+myJob.writeNodeResults('gravitationalLoading/results/nodeResults.csv',['displacement'])
+myJob.writeElementResults('gravitationalLoading/results/elementResults.csv',['strain','stress'])
+myJob.writeObjective('gravitationalLoading/results/objectiveResults.csv')
 
 myJob.writeJobInput('gravitationalLoading/job.yaml')
 

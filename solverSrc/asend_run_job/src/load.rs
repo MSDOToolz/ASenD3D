@@ -1,6 +1,22 @@
 use crate::constants::MAX_INT;
 use crate::cpp_str::CppStr;
 
+use std::collections::LinkedList;
+
+#[derive(Clone)]
+pub struct LoadTimePt {
+    pub time : f64,
+    pub value : [f64; 6],
+}
+
+impl LoadTimePt {
+    pub fn new() -> LoadTimePt {
+        LoadTimePt {
+            time : 0.0,
+            value : [0.0; 6],
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Load {
@@ -10,7 +26,8 @@ pub struct Load {
     pub nd_set_ptr : usize,
     pub element_set : CppStr,
     pub el_set_ptr : usize,
-    pub load : [f64; 6],
+    //pub load : [f64; 6],
+    pub load : LinkedList<LoadTimePt>,
     pub normal_dir : [f64; 3],
     pub norm_tol : f64,
     pub center : [f64; 3],
@@ -27,7 +44,8 @@ impl Load {
             nd_set_ptr : MAX_INT,
             element_set : CppStr::from("none"),
             el_set_ptr : MAX_INT,
-            load : [0f64; 6],
+            //load : [0f64; 6],
+            load : LinkedList::new(),
             normal_dir : [0f64; 3],
             norm_tol : 0f64,
             center : [0f64; 3],

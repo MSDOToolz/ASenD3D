@@ -274,7 +274,7 @@ def mergeMeshes(mData1,mData2,tolerance=None):
     try:
         # mergedData['sets']['node'].extend(mData1['sets']['node'])
         for ns in mData1['sets']['node']:
-            mergedData['sets']['node'][ns] = mData1['sets']['node']
+            mergedData['sets']['node'][ns] = mData1['sets']['node'][ns]
     except:
         pass
     try:
@@ -1116,7 +1116,7 @@ def getElementSetIntersection(meshData,setList,newSetName):
     # newSet['name'] = newSetName
     # newSet['labels'] = list(intsct)
     # meshData['sets']['element'].append(newSet)
-    mestData['sets']['element'][newSetName] = list(intsct)
+    meshData['sets']['element'][newSetName] = list(intsct)
     return meshData
 
 def subtractElementSet(meshData,set1,set2,newSetName):

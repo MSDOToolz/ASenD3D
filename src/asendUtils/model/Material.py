@@ -49,6 +49,22 @@ class Material:
             thermal['specHeat'] = specHeat
             self.matData['thermal'] = thermal
             
+    def setMisesStrength(self, misesStrength):
+        try:
+            self.matData['custom']['misesStrength'] = misesStrength
+        except:
+            self.matData['custom'] = {'misesStrength': misesStrength}
+            
+    def setOrthoStrength(self,TS1,TS2,TS3,CS1,CS2,CS3,S12,S13,S23):
+        try:
+            self.matData['custom']['tensileStrength'] = str([TS1,TS2,TS3])
+            self.matData['custom']['compressiveStrength'] = str([CS1,CS2,CS3])
+            self.matData['custom']['shearStrength'] = str([S12,S13,S23])
+        except:
+            self.matData['custom'] = {'tensileStrength': str([TS1,TS2,TS3]),
+                                     'compressiveStrength': str([CS1,CS2,CS3]),
+                                     'shearStrength': str([S12,S13,S23])}
+            
     def addCustomProperty(self,propName,propVal):
         try:
             self.matData['custom'][propName] = propVal

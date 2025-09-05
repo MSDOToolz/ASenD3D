@@ -35,7 +35,7 @@ job.readModelInput(modFile)
 job.readConstraints(constFile)
 job.solve()
 job.modalAnalysis('freq')
-resFile = 'vibratingDisk/results/modalResults.yaml'
+resFile = 'vibratingDisk/results/modalResults.csv'
 job.writeModalResults(resFile)
 job.writeJobInput('vibratingDisk/job.yaml')
 job.executeJob()

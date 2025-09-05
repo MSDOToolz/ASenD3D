@@ -24,10 +24,25 @@ impl ConstraintTerm {
 }
 
 #[derive(Clone)]
+pub struct ConstTimePt {
+    pub time : f64,
+    pub value : f64,
+}
+
+impl ConstTimePt {
+    pub fn new() -> ConstTimePt {
+        ConstTimePt {
+            time : 0.0,
+            value : 0.0,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct Constraint {
     pub this_type : CppStr,
     pub terms : LinkedList<ConstraintTerm>,
-    pub rhs : f64,
+    pub rhs : LinkedList<ConstTimePt>,
     pub rhs_vec : Vec<f64>,
     pub active_time : [f64; 2],
     pub is_active : bool,
@@ -41,7 +56,7 @@ impl Constraint {
         Constraint {
             this_type : CppStr::from("none"),
             terms : LinkedList::new(),
-            rhs : 0f64,
+            rhs : LinkedList::new(),
             rhs_vec : Vec::new(),
             active_time : [0.0, 1.0e+100],
             is_active : false,

@@ -55,7 +55,7 @@ myMod.writeModelInput('staticElastic/elasticConstraints.yaml')
 ## Define loads
 
 myMod = Model()
-myMod.addNodalForce('xMax',F=[0.0,0.0,0.0],M=[0.0,-1.0,0.0])
+myMod.addNodalForce('xMax',M2=-1.0)
 
 ## Write Load file
 myMod.writeModelInput('staticElastic/staticNodalLoads.yaml')
@@ -82,9 +82,9 @@ myJob.readObjectiveInput('staticElastic/staticObjective.yaml')
 myJob.solve()
 myJob.calcObjGradient()
 
-myJob.writeNodeResults('staticElastic/results/nodeResults.yaml',['displacement'])
-myJob.writeElementResults('staticElastic/results/elementResults.yaml',['strain','stress'])
-myJob.writeObjective('staticElastic/results/objectiveResults.yaml')
+myJob.writeNodeResults('staticElastic/results/nodeResults.csv',['displacement'])
+myJob.writeElementResults('staticElastic/results/elementResults.csv',['strain','stress'])
+myJob.writeObjective('staticElastic/results/objectiveResults.csv')
 
 myJob.writeJobInput('staticElastic/staticElasticJob.yaml')
 

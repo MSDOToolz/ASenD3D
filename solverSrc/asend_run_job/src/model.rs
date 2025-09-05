@@ -202,7 +202,7 @@ impl Model {
             new_mod.d0_scratch.push_back(DiffDoub0Scr::new());
             new_mod.d1_scratch.push_back(DiffDoub1Scr::new());
         }
-        for _i in 0..5 {
+        for _i in 0..7 {
             new_mod.scratch.push_back(FltScr::new());
         }
         new_mod

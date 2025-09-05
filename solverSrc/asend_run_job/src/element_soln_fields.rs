@@ -4339,6 +4339,7 @@ impl Element {
  
  
  
+ 
   
     pub fn get_el_vec(&mut self, el_vec : &mut Vec<f64>, glob_vec : &mut Vec<f64>, for_therm : bool, intnl : bool, nd_ar : &mut Vec<Node>) {
         let mut i2 : usize;

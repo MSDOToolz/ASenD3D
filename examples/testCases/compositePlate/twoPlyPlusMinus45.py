@@ -93,7 +93,7 @@ myMod.addConstraint(blkConst)
 
 ## Define Loads
 
-myMod.addNodalForce('xMax',F=[1.0,0.0,0.0],M=[0.0,0.0,0.0])
+myMod.addNodalForce('xMax',F1=1.0)
 
 ## Write Input file
 
@@ -102,6 +102,6 @@ myMod.writeModelInput('twoPlyPlusMinus45/model.yaml')
 myJob = ASenDJob()
 myJob.readModelInput('twoPlyPlusMinus45/model.yaml')
 myJob.solve()
-myJob.writeNodeResults('twoPlyPlusMinus45/results/nodeResults.yaml',['displacement'])
+myJob.writeNodeResults('twoPlyPlusMinus45/results/nodeResults.csv',['displacement'])
 
 myJob.writeJobInput('twoPlyPlusMinus45/job.yaml')

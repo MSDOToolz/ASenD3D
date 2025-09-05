@@ -14,8 +14,8 @@ from asendUtils.ResultsProcessor import *
 
 constFile = 'fiberUnitCell/constraints.yaml'
 loadFile = 'fiberUnitCell/loads.yaml'
-nodeResFile = 'fiberUnitCell/results/nodeResults.yaml'
-elResFile = 'fiberUnitCell/results/elementResults.yaml'
+nodeResFile = 'fiberUnitCell/results/nodeResults.csv'
+elResFile = 'fiberUnitCell/results/elementResults.csv'
 jobFile = 'fiberUnitCell/job.yaml'
 
 if(not os.path.exists('fiberUnitCell')):
@@ -39,23 +39,23 @@ constMod.periodicDisplacement()
 constMod.writeModelInput(constFile)
 
 loadMod = Model()
-loadMod.addNodalForce('xMaxRef',F=[1000.,0.,0.],M=[0.,0.,0.] ,stTime=0.5, endTime=1.5)
+loadMod.addNodalForce('xMaxRef',F1=1000., stTime=0.5, endTime=1.5)
 
-loadMod.addNodalForce('yMinRef',F=[0.,-100.,0.],M=[0.,0.,0.] ,stTime=1.5,endTime=2.5)
-loadMod.addNodalForce('yMaxRef',F=[0.,100.,0.],M=[0.,0.,0.] ,stTime=1.5,endTime=2.5)
+loadMod.addNodalForce('yMinRef', F2=-100., stTime=1.5, endTime=2.5)
+loadMod.addNodalForce('yMaxRef', F2=100., stTime=1.5, endTime=2.5)
 
-loadMod.addNodalForce('zMinRef',F=[0.,0.,-100.],M=[0.,0.,0] ,stTime=2.5,endTime=3.5)
-loadMod.addNodalForce('zMaxRef',F=[0.,0.,100.],M=[0.,0.,0.] ,stTime=2.5,endTime=3.5)
+loadMod.addNodalForce('zMinRef', F3=-100., stTime=2.5, endTime=3.5)
+loadMod.addNodalForce('zMinRef', F3=100., stTime=2.5, endTime=3.5)
 
-loadMod.addNodalForce('yMinRef',F=[-100.,0.,0.],M=[0.,0.,0.] ,stTime=3.5,endTime=4.5)
-loadMod.addNodalForce('yMaxRef', F=[100.,0.,0.], M=[0.,0.,0.],stTime=3.5,endTime=4.5)
+loadMod.addNodalForce('yMinRef', F1=-100., stTime=3.5, endTime=4.5)
+loadMod.addNodalForce('yMaxRef', F1=100., stTime=3.5, endTime=4.5)
 
-loadMod.addNodalForce('zMinRef',F=[-100.,0.,0.],M=[0.,0.,0.] , stTime=4.5,endTime=5.5)
-loadMod.addNodalForce('zMaxRef',F=[100.,0.,0.],M=[0.,0.,0.] , stTime=4.5,endTime=5.5)
+loadMod.addNodalForce('zMinRef',F1=-100., stTime=4.5, endTime=5.5)
+loadMod.addNodalForce('zMaxRef', F1=100., stTime=4.5, endTime=5.5)
 
-loadMod.addNodalForce('yMaxRef',F=[0.,0.,100.],M=[0.,0.,0] , stTime=5.5,endTime=6.5)
-loadMod.addNodalForce('zMinRef',F=[0.,-57.735,0.],M=[0.,0.,0.] , stTime=5.5,endTime=6.5)
-loadMod.addNodalForce('zMaxRef',F=[0.,57.735,0.],M=[0.,0.,0.] , stTime=5.5,endTime=6.5)
+loadMod.addNodalForce('yMaxRef', F3=100, stTime=5.5, endTime=6.5)
+loadMod.addNodalForce('zMinRef', F2=-57.735, stTime=5.5, endTime=6.5)
+loadMod.addNodalForce('zMaxRef', F2=57.735, stTime=5.5, endTime=6.5)
 
 loadMod.writeModelInput(loadFile)
 
@@ -73,8 +73,8 @@ rp = ResultsProcessor(modFile)
 nrfLst = nodeResFile.split('.')
 erfLst = elResFile.split('.')
 for i in range(0,6):
-    nrf = nrfLst[0] + '_timestep' + str(i) + '.yaml'
-    erf = erfLst[0] + '_timestep' + str(i) + '.yaml'
+    nrf = nrfLst[0] + '_timestep' + str(i) + '.csv'
+    erf = erfLst[0] + '_timestep' + str(i) + '.csv'
     rp.loadNodeResults(nrf)
     rp.loadElementResults(erf)
     rp.plotElementResults('stress',component=(i+1),deformed=True,defScaleFact=100.)

@@ -193,9 +193,13 @@ impl Model {
         for ld in self.elastic_loads.iter() {
             println!("type: {}", ld.this_type.s);
             println!("node_set: {}", ld.node_set.s);
-            print!("load: ");
-            for i in 0..6 {
-                print!("{}, ", ld.load[i]);
+            println!("load: ");
+            for pt in ld.load.iter() {
+                print!("   time: {}, ld: ", pt.time);
+                for i in 0..6 {
+                    print!("{}, ", pt.value[i]);
+                }
+                println!("");
             }
             println!("");
         }

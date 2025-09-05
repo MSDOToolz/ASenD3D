@@ -951,9 +951,18 @@ impl Model {
                             }
                         }
                     } 
-                    else if headings[1].s == "rhs" && data_len == 1 {
-                        self.get_curr_constraint(&curr_type, *curr_ct).rhs = CppStr::stod(&mut data[0])
+                    else if headings[1].s == "rhs" {
+                        if data_len == 1 {
+                            self.get_curr_constraint(&curr_type, *curr_ct).rhs.push_back(ConstTimePt {time : 0.0, value : CppStr::stod(&mut data[0])});
+                            self.get_curr_constraint(&curr_type, *curr_ct).rhs.push_back(ConstTimePt {time : 1.0e+100, value : CppStr::stod(&mut data[0])});
+                        }
+                        else if data_len == 2 {
+                            self.get_curr_constraint(&curr_type, *curr_ct).rhs.push_back(ConstTimePt {time : CppStr::stod(&mut data[0]), value : CppStr::stod(&mut data[1])});
+                        }
                     }
+                    // else if headings[1].s == "rhs" && data_len == 1 {
+                    //     self.get_curr_constraint(&curr_type, *curr_ct).rhs = CppStr::stod(&mut data[0])
+                    // }
                     else if headings[1].s == "active_time" && data_len == 2 {
                         flt_in[0] = data[0].stod();
                         flt_in[1] = data[1].stod();
@@ -1081,14 +1090,16 @@ impl Model {
                         }
                         self.get_curr_ld(&curr_type,curr_ld).set_act_time(&mut doub_inp);
                     } else if headings[1].s == "load" && data_len > 0 {
+                        let mut new_ld = LoadTimePt::new();
+                        new_ld.time = CppStr::stod(&mut data[0]);
                         for i1 in 0..6 {
-                            if i1 < data_len {
-                                doub_inp[i1] = CppStr::stod(&mut data[i1]);
+                            if i1+1 < data_len {
+                                new_ld.value[i1] = CppStr::stod(&mut data[i1+1]);
                             } else {
-                                doub_inp[i1] = 0.0;
+                                new_ld.value[i1] = 0.0;
                             }
                         }
-                        self.get_curr_ld(&curr_type,curr_ld).set_load(&mut doub_inp);
+                        self.get_curr_ld(&curr_type,curr_ld).set_load(new_ld);
                     } else if headings[1].s == "nodeSet" && data_len == 1 {
                         self.get_curr_ld(&curr_type,curr_ld).node_set = data[0].clone();
                     } else if headings[1].s == "elementSet" && data_len == 1 {

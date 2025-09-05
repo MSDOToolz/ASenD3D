@@ -21,7 +21,7 @@ if(not os.path.exists('transverseTipLoading/results')):
 ## Define loads
 
 myMod = Model()
-myMod.addNodalForce('xMax',F=[0.0,0.0,0.0909091],M=[0.0,0.0,0.0])
+myMod.addNodalForce('xMax',F3=0.0909091)
 
 ## Write Load file
 myMod.writeModelInput('transverseTipLoading/loads.yaml')

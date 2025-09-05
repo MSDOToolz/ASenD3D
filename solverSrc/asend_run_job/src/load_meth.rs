@@ -9,13 +9,8 @@ impl Load {
         return;
     }
 
-    pub fn set_load(&mut self, new_ld : &mut [f64]) {
-        self.load[0] = new_ld[0];
-        self.load[1] = new_ld[1];
-        self.load[2] = new_ld[2];
-        self.load[3] = new_ld[3];
-        self.load[4] = new_ld[4];
-        self.load[5] = new_ld[5];
+    pub fn set_load(&mut self, new_ld : LoadTimePt) {
+        self.load.push_back(new_ld);
         return;
     }
 
@@ -48,6 +43,25 @@ impl Load {
         self.axis[1] = mag*self.axis[1];
         self.axis[2] = mag*self.axis[2];
         return;
+    }
+
+    pub fn get_load(&self, ld : &mut [f64], time : f64) {
+        let mut prev_pt = match self.load.front() {
+            None => panic!("Error: time series for load is and empty list"),
+            Some(x) => x,
+        };
+        for pt in self.load.iter() {
+            if time >= prev_pt.time && time < pt.time {
+                let dt = time - prev_pt.time;
+                let mut slope : f64;
+                for i in 0..6 {
+                    slope = (pt.value[i] - prev_pt.value[i])/(pt.time - prev_pt.time);
+                    ld[i] = prev_pt.value[i] + slope*dt;
+                }
+                return;
+            }
+            prev_pt = pt;
+        }
     }
 
 }

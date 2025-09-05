@@ -10,6 +10,24 @@ impl Constraint {
         self.active_time[1] = new_at[1];
     }
 
+    pub fn update_rhs(&mut self, time : f64) {
+        let curr_rhs : f64;
+        let mut prev_pt = match self.rhs.front() {
+            None => panic!("Error: rhs for the constraint is an empty list"),
+            Some(x) => x,
+        };
+        for pt in self.rhs.iter() {
+            if time >= prev_pt.time && time < pt.time {
+                let dt = time - prev_pt.time;
+                let slope = (pt.value - prev_pt.value)/(pt.time - prev_pt.time);
+                curr_rhs = prev_pt.value + slope*dt;
+                self.rhs_vec = vec![curr_rhs; self.mat.dim];
+                return;
+            }
+            prev_pt = pt;
+        }
+    }
+
     pub fn update_active_status(&mut self, time : f64) {
         self.was_active = self.is_active;
         if self.active_time[0] <= time && self.active_time[1] >= time {
@@ -18,6 +36,7 @@ impl Constraint {
         else {
             self.is_active = false;
         }
+        self.update_rhs(time);
     }
 
     pub fn just_activated(&self) -> bool {
@@ -86,7 +105,9 @@ impl Constraint {
             }
         }
 
-        self.rhs_vec = vec![self.rhs; set_len];
+        //self.rhs_vec = vec![self.rhs; set_len];
+        self.update_rhs(0.0);
+
     }
 
     pub fn full_vec_multiply(&mut self, prod : &mut Vec<f64>, vec : &mut Vec<f64>, tmp_v : &mut Vec<f64>) {

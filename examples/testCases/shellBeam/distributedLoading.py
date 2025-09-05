@@ -20,7 +20,7 @@ if(not os.path.exists('distributedLoading/results')):
 ## Define loads
 
 myMod = Model()
-myMod.addSurfacePressure('all',0.1,[0.0,0.0,-1.0])
+myMod.addSurfacePressure('all',N1=0.0,N2=0.0,N3=-1.0,P=0.1)
 
 ## Write Load file
 myMod.writeModelInput('distributedLoading/loads.yaml')
@@ -42,9 +42,9 @@ myJob.readObjectiveInput('distributedLoading/objective.yaml')
 myJob.solve()
 myJob.calcObjGradient()
 
-myJob.writeNodeResults('distributedLoading/results/nodeResults.yaml',['displacement'])
-myJob.writeElementResults('distributedLoading/results/elementResults.yaml',['strain','stress'])
-myJob.writeObjective('distributedLoading/results/objectiveResults.yaml')
+myJob.writeNodeResults('distributedLoading/results/nodeResults.csv',['displacement'])
+myJob.writeElementResults('distributedLoading/results/elementResults.csv',['strain','stress'])
+myJob.writeObjective('distributedLoading/results/objectiveResults.csv')
 
 myJob.writeJobInput('distributedLoading/job.yaml')
 

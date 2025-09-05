@@ -41,7 +41,7 @@ myMod.writeModelInput('staticElastic/elasticConstraints.yaml')
 ## Define loads
 
 myMod = Model()
-myMod.addNodalForce('xMax',F=[0.25,0.0,0.0],M=[0.0,0.0,0.0])
+myMod.addNodalForce('xMax',F1=0.25)
 
 ## Write Load file
 myMod.writeModelInput('staticElastic/staticNodalLoads.yaml')

@@ -31,5 +31,11 @@ class Constraint:
             self.constData['terms'] = terms
         return
     
-    def setRHS(self,rhs):
-        self.constData['rhs'] = rhs
+    def setRHS(self,rhs,timePoints=None):
+        if timePoints == None:
+            self.constData['rhs'] = rhs
+        else:
+            lst = list()
+            for i, r in enumerate(rhs):
+                lst.append(str([timePoints[i],r]))
+            self.constData['rhs'] = lst

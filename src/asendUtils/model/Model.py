@@ -303,33 +303,57 @@ class Model():
            loads.append(newLd)
            self.modelData['loads'] = loads       
             
-    def addNodalForce(self,nodeSet,F,M,stTime=0.0,endTime=1e+100):
+    def addNodalForce(self,nodeSet,F1=0.0,F2=0.0,F3=0.0,M1=0.0,M2=0.0,M3=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'nodalForce'
         newLd['activeTime'] = str([stTime,endTime])
-        ld = list()
-        ld.extend(F)
-        ld.extend(M)
-        newLd['load'] = str(ld)
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,F1,F2,F3,M1,M2,M3]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        else:
+            for i, tp in enumerate(timePts):
+                ld = [tp,F1[i],F2[i],F3[i],M1[i],M2[i],M3[i]]
+                ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['nodeSet'] = nodeSet
-        self.addAnyLoad(newLd) 
+        self.addAnyLoad(newLd)
             
-    def addBodyForce(self,elementSet,F,M,stTime=0.0,endTime=1e+100):
+    def addBodyForce(self,elementSet,F1=0.0,F2=0.0,F3=0.0,M1=0.0,M2=0.0,M3=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'bodyForce'
         newLd['activeTime'] = str([stTime,endTime])
-        ld = list()
-        ld.extend(F)
-        ld.extend(M)
-        newLd['load'] = str(ld)
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,F1,F2,F3,M1,M2,M3]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        else:
+            for i, tp in enumerate(timePts):
+                ld = [tp,F1[i],F2[i],F3[i],M1[i],M2[i],M3[i]]
+                ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)    
             
-    def addGravityForce(self,elementSet,G,stTime=0.0,endTime=1e+100):
+    def addGravityForce(self,elementSet,G1=0.0,G2=0.0,G3=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'gravitational'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = str(G)
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,G1,G2,G3]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        else:
+            for i, tp in enumerate(timePts):
+                ld = [tp,G1[i],G2[i],G3[i]]
+                ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
@@ -343,49 +367,95 @@ class Model():
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfaceTraction(self,elementSet,T,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
+    def addSurfaceTraction(self,elementSet,N1,N2,N3,normTol=5.0,T1=0.0,T2=0.0,T3=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'surfaceTraction'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['normDir'] = str(normDir)
+        newLd['normDir'] = str([N1,N2,N3])
         newLd['normTolerance'] = normTol
-        newLd['load'] = str(T)
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,T1,T2,T3]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,T1[i],T2[i],T3[i]]
+                ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfacePressure(self,elementSet,P,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
+    def addSurfacePressure(self,elementSet,N1,N2,N3,normTol=5.0,P=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'surfacePressure'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['normDir'] = str(normDir)
+        newLd['normDir'] = str([N1,N2,N3])
         newLd['normTolerance'] = normTol
-        newLd['load'] = P
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,P]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,P[i]]
+                ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addNodalHeatGen(self,nodeSet,stTime=0.0,endTime=1e+100,Q=0.0):
+    def addNodalHeatGen(self,nodeSet,Q=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'nodalHeatGen'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = Q
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,Q]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,Q[i]]
+                ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['nodeSet'] = nodeSet
         self.addAnyLoad(newLd)
         
-    def addBodyHeatGen(self,elementSet,stTime=0.0,endTime=1e+100,specQ=0.0):
+    def addBodyHeatGen(self,elementSet,specQ=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'bodyHeatGen'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = specQ
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,specQ]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfaceFlux(self,elementSet,flux,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
+    def addSurfaceFlux(self,elementSet,N1,N2,N3,normTol=5.0,flux=0.0,timePts=None,stTime=0.0,endTime=1e+100):
         newLd = dict()
         newLd['type'] = 'surfaceFlux'
         newLd['activeTime'] = str([stTime,endTime])
-        newLd['normDir'] = str(normDir)
+        newLd['normDir'] = str([N1,N2,N3])
         newLd['normTolerance'] = normTol
-        newLd['load'] = flux
+        ldList = list()
+        if timePts == None:
+            ld = [0.0,flux]
+            ldList.append(str(ld))
+            ld[0] = 1.0e+100
+            ldList.append(str(ld))
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,flux[i]]
+                ldList.append(str(ld))
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
@@ -470,7 +540,7 @@ class Model():
         self.integrateForceElements()
         self.integrateMassElements()
         
-        fileStr = yaml.dump(self.modelData,width=200,sort_keys=False)
+        fileStr = yaml.dump(self.modelData, Dumper=yaml.CDumper, width=200, sort_keys=False)
         
         fileStr = fileStr.replace("'","")
         fileStr = fileStr.replace('"','')

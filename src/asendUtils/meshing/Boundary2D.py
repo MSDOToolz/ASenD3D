@@ -29,12 +29,13 @@ class Boundary2D():
         
     def addMesh(self,meshData,name=None):
         self.meshList.append(meshData)
-        if(name == None):
-            numMsh = len(self.meshList)
-            meshName = 'Sub-Mesh_' + str(numMsh)
-            self.meshNames.append(meshName)
-        else:
-            self.meshNames.append(name)
+        self.meshNames.append(name)
+        # if(name == None):
+        #     numMsh = len(self.meshList)
+        #     meshName = 'Sub-Mesh_' + str(numMsh)
+        #     self.meshNames.append(meshName)
+        # else:
+        #     self.meshNames.append(name)
         
     def getBoundaryMesh(self):
         allNds = list()
@@ -45,10 +46,10 @@ class Boundary2D():
         for i, seg in enumerate(self.segList):
             segMesh = seg.getNodesEdges()
             allNds.extend(segMesh['nodes'])
-            allEds.extend(segMesh['edges'] + totNds)
+            allEds.extend(segMesh['elements'] + totNds)
             # newSet = dict()
             # newSet['name'] = self.segNames[i]
-            totElsNext = totEls + len(segMesh['edges'])
+            totElsNext = totEls + len(segMesh['elements'])
             # newSet['labels'] = list(range(totEls,totElsNext))
             # elSets.append(newSet)
             elSets[self.segNames[i]] = list(range(totEls,totElsNext))
@@ -56,13 +57,30 @@ class Boundary2D():
             totEls = totElsNext
         for i, mesh in enumerate(self.meshList):
             allNds.extend(mesh['nodes'])
-            allEds.extend(mesh['edges'] + totNds)
+            allEds.extend(mesh['elements'] + totNds)
             # newSet = dict()
             # newSet['name'] = self.meshNames[i]
-            totElsNext = totEls + len(mesh['edges'])
+            totElsNext = totEls + len(mesh['elements'])
             # newSet['labels'] = list(range(totEls,totElsNext))
             # elSets.append(newSet)
-            elSets[self.meshNames[i]] = list(range(totEls,totElsNext))
+            nm = self.meshNames[i]
+            if nm != None:
+                if nm in elSets:
+                    elSets[nm].extend(list(range(totEls,totElsNext)))
+                else:
+                    elSets[nm] = list(range(totEls,totElsNext))
+            try:
+                for es in mesh['sets']['element']:
+                    if es in elSets:
+                        for el in mesh['sets']['element'][es]:
+                            elSets[es].append(el + totEls)
+                    else:
+                        setList = list()
+                        for el in mesh['sets']['element'][es]:
+                            setList.append(el + totEls)
+                        elSets[es] = setList
+            except:
+                pass
             totNds = len(allNds)
             totEls = totElsNext
         allNds = np.array(allNds)
