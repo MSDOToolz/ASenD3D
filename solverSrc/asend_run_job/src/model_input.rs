@@ -161,9 +161,13 @@ impl Model {
                 } else if headings[1].s == "dynamic" && data_len == 1 {
                     self.job[cmd_ct].dynamic = data[0].s.contains("yes");
                 }
+                else if headings[1].s == "explicit" && data_len == 1 {
+                    self.job[cmd_ct].explicit = data[0].s.contains("yes");
+                }
                 else if headings[1].s == "elastic" && data_len == 1 {
                     self.job[cmd_ct].elastic = data[0].s.contains("yes");
-                } else if headings[1].s == "loadRampSteps" && data_len == 1 {
+                }
+                else if headings[1].s == "loadRampSteps" && data_len == 1 {
                     self.job[cmd_ct].load_ramp_steps = CppStr::stoi(&mut data[0]);
                 } else if headings[1].s == "newmarkBeta" && data_len == 1 {
                     self.job[cmd_ct].newmark_beta = CppStr::stod(&mut data[0]);
@@ -172,11 +176,17 @@ impl Model {
                 } else if headings[1].s == "nonlinearGeom" && data_len == 1 {
                     self.job[cmd_ct].nonlinear_geom = data[0].s.contains("yes");
                 }
+                else if headings[1].s == "constScaleFactor" && data_len == 1 {
+                    self.job[cmd_ct].const_scale_factor = CppStr::stod(&mut data[0]);
+                }
                 else if headings[1].s == "enforceMaxCon" && data_len == 1 {
                     self.job[cmd_ct].enforce_max_c = data[0].s.contains("yes");
                 }
                 else if headings[1].s == "saveSolnHist" && data_len == 1 {
                     self.job[cmd_ct].save_soln_hist = data[0].s.contains("yes");
+                }
+                else if headings[1].s == "solnHistFreq" && data_len == 1 {
+                    self.job[cmd_ct].soln_hist_freq = CppStr::stoi(&mut data[0]);
                 }
                 else if headings[1].s == "solnHistDir" && data_len == 1 {
                     self.job[cmd_ct].file_name = data[0].clone();

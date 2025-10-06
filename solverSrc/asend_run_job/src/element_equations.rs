@@ -921,7 +921,7 @@ impl Element {
         }
         
         if self.this_type != 1 {
-            self.get_ruk_dfd0(rvec, d_rdu, d_rd_t, d_rd_c, get_matrix, cmd.nonlinear_geom, pre);
+            self.get_ruk_dfd0(rvec, d_rdu, d_rd_t, d_rd_c, (get_matrix && !cmd.explicit), cmd.nonlinear_geom, pre);
         }
         
         if self.num_int_dof > 0 {
@@ -930,7 +930,7 @@ impl Element {
                 self.internal_ru[i1].set_val_dfd0(& rvec[i2]);
                 i2 += 1usize;
             }
-            if get_matrix {
+            if get_matrix && !cmd.explicit {
                 i4 = 0;
                 for i1 in 0..tot_dof {
                     i3 = i1 * tot_dof + nd_dof;
@@ -947,7 +947,7 @@ impl Element {
         
         if cmd.dynamic {
             if get_matrix {
-                if cmd.lump_mass {
+                if cmd.lump_mass || cmd.explicit {
                     i2 = 0;
                     for i1 in 0..nd_dof {
                         nd = self.dof_table[i2];
@@ -958,8 +958,14 @@ impl Element {
                         i2  +=  2;
                     }
                     self.get_rum_dfd0(&mut rtmp, &mut  d_rtmp,  false,  true,  cmd.nonlinear_geom, pre, scr_dfd);
-                    c1 = cmd.time_step;
-                    c1 = -1.0 / (c1 * c1 * (cmd.newmark_beta - cmd.newmark_gamma));
+                    if cmd.explicit {
+                        c1 = cmd.time_step;
+                        c1 = 1.0 / (c1 * c1);
+                    }
+                    else {
+                        c1 = cmd.time_step;
+                        c1 = -1.0 / (c1 * c1 * (cmd.newmark_beta - cmd.newmark_gamma));
+                    }
                     i2 = 0;
                     i3 = tot_dof + 1;
                     for i1 in 0..nd_dof {
@@ -988,25 +994,52 @@ impl Element {
                     }
                 }
                 if self.this_type != 1 {
-                    self.get_rud_dfd0(&mut rtmp, &mut  d_rtmp,  true, cmd, pre, scr, scr_dfd);
-                    for i1 in 0..nd_dof {
-                        rvec[i1].add(& rtmp[i1]);
-                    }
-                    c2 = cmd.time_step * cmd.newmark_gamma * c1;
-                    i3 = 0;
-                    i4 = 0;
-                    for _i1 in 0..nd_dof {
-                        for _i2 in 0..nd_dof {
-                            d_rdu[i3]  +=  c2 * d_rtmp[i4];
-                            i3 += 1usize;
-                            i4 += 1usize;
+                    if cmd.explicit {
+                        self.get_rud_dfd0(rtmp, d_rtmp, false, cmd, pre, scr, scr_dfd);
+                        for i1 in 0..nd_dof {
+                            rvec[i1].add(&rtmp[i1]);
                         }
-                        i3  +=  self.num_int_dof;
+                        i2 = 0;
+                        for i1 in 0..nd_dof {
+                            nd = self.dof_table[i2];
+                            dof = self.dof_table[i2 + 1];
+                            i3 = dof * self.num_nds + nd;
+                            temp_acc[i1].set_val_dfd0(& pre.glob_vel[i3]);
+                            pre.glob_vel[i3].set_val(1.0);
+                            i2  +=  2;
+                        }
+                        self.get_rud_dfd0(rtmp, d_rtmp, false, cmd, pre, scr, scr_dfd);
+                        c1 = 0.5 / cmd.time_step;
+                        i2 = 0;
+                        i3 = tot_dof + 1;
+                        for i1 in 0..nd_dof {
+                            //temp_acc[i1].mult(& rtmp[i1]);
+                            //rvec[i1].add(& temp_acc[i1]);
+                            d_rdu[i2]  +=  c1 * rtmp[i1].val;
+                            i2  +=  i3;
+                        }
+                    }
+                    else {
+                        self.get_rud_dfd0(&mut rtmp, &mut  d_rtmp,  true, cmd, pre, scr, scr_dfd);
+                        for i1 in 0..nd_dof {
+                            rvec[i1].add(& rtmp[i1]);
+                        }
+                        c2 = cmd.time_step * cmd.newmark_gamma * c1;
+                        i3 = 0;
+                        i4 = 0;
+                        for _i1 in 0..nd_dof {
+                            for _i2 in 0..nd_dof {
+                                d_rdu[i3]  +=  c2 * d_rtmp[i4];
+                                i3 += 1usize;
+                                i4 += 1usize;
+                            }
+                            i3  +=  self.num_int_dof;
+                        }
                     }
                 }
             }
             else {
-                if cmd.lump_mass {
+                if cmd.lump_mass  || cmd.explicit {
                     i2 = 0;
                     for i1 in 0..nd_dof {
                         nd = self.dof_table[i2];
@@ -1044,16 +1077,23 @@ impl Element {
             glob_ind = nd_ar[nd].dof_index[dof];
             glob_r[glob_ind].add(& rvec[i1]);
             if get_matrix {
-                i3 = i1*tot_dof;
-                i5 = 0;
-                for _i2 in 0..nd_dof {
-                    nd2 = self.nodes[self.dof_table[i5]];
-                    dof2 = self.dof_table[i5+1];
-                    glob_ind2 = nd_ar[nd2].dof_index[dof2];
-                    globd_rdu.add_entry(glob_ind,   glob_ind2,   d_rdu[i3]);
-                    i3 += 1usize;
-                    i5  +=  2;
+                if cmd.explicit {
+                    i3 = i1*(tot_dof + 1);
+                    globd_rdu.add_entry(glob_ind, glob_ind, d_rdu[i3]);
                 }
+                else {
+                    i3 = i1*tot_dof;
+                    i5 = 0;
+                    for _i2 in 0..nd_dof {
+                        nd2 = self.nodes[self.dof_table[i5]];
+                        dof2 = self.dof_table[i5+1];
+                        glob_ind2 = nd_ar[nd2].dof_index[dof2];
+                        globd_rdu.add_entry(glob_ind,   glob_ind2,   d_rdu[i3]);
+                        i3 += 1usize;
+                        i5  +=  2;
+                    }
+                }
+                
             }
             i4 +=  2;
         }
@@ -1208,7 +1248,12 @@ impl Element {
         let mut i3 : usize;
         let mut glob_ind1 : usize;
         let mut glob_ind2 : usize;
-        let c1 : f64 =  1.0/(cmd.time_step*cmd.newmark_gamma);
+        let mut temp_t = [DiffDoub0::new(); 10];
+        //let c1 : f64 =  1.0/(cmd.time_step*cmd.newmark_gamma);
+        let c1 : f64 = match cmd.explicit {
+            true => 0.5 / cmd.time_step,
+            false => 1.0 / (cmd.time_step*cmd.newmark_gamma),
+        };
         //let mut rvec = &mut scr.scr_v1;
         let mut rvec = match scr_dfd.next() {
             None => panic!("Error: ran out of scratch vectors"),
@@ -1237,18 +1282,35 @@ impl Element {
         }
         
         if self.this_type != 1 {
-            self.get_rtk_dfd0(&mut rvec, &mut  d_rd_t,  get_matrix,  pre);
+            self.get_rtk_dfd0(&mut rvec, &mut  d_rd_t,  (get_matrix && !cmd.explicit),  pre);
         }
         
         if cmd.dynamic {
-            self.get_rtm_dfd0(&mut rtmp, &mut  d_rtmp,  get_matrix,  true,  pre);
-            i3 = 0;
-            for i1 in 0..self.num_nds {
-                rvec[i1].add(& rtmp[i1]);
-                if get_matrix {
-                    for _i2 in 0..self.num_nds {
-                        d_rd_t[i3]  +=  c1 * d_rtmp[i3];
-                        i3 += 1usize;
+            if cmd.explicit {
+                for i1 in 0..self.num_nds {
+                    temp_t[i1].set_val_dfd0(&pre.glob_tdot[i1]);
+                    pre.glob_tdot[i1].set_val(1.0);
+                }
+                self.get_rtm_dfd0(&mut rtmp, &mut d_rtmp, false, true, pre);
+                for i1 in 0..self.num_nds {
+                    temp_t[i1].mult(&rtmp[i1]);
+                    rvec[i1].add(&temp_t[i1]);
+                    if get_matrix {
+                        i3 = i1*(self.num_nds + 1);
+                        d_rd_t[i3] += c1 * rtmp[i1].val;
+                    }
+                }
+            }
+            else {
+                self.get_rtm_dfd0(&mut rtmp, &mut  d_rtmp,  get_matrix,  true,  pre);
+                i3 = 0;
+                for i1 in 0..self.num_nds {
+                    rvec[i1].add(& rtmp[i1]);
+                    if get_matrix {
+                        for _i2 in 0..self.num_nds {
+                            d_rd_t[i3]  +=  c1 * d_rtmp[i3];
+                            i3 += 1usize;
+                        }
                     }
                 }
             }
@@ -1259,10 +1321,16 @@ impl Element {
             glob_ind1 = nd_ar[self.nodes[i1]].sorted_rank;
             glob_r[glob_ind1].add(& rvec[i1]);
             if get_matrix {
-                for i2 in 0..self.num_nds {
-                    glob_ind2 = nd_ar[self.nodes[i2]].sorted_rank;
-                    globd_rd_t.add_entry(glob_ind1,   glob_ind2,   d_rd_t[i3]);
-                    i3 += 1usize;
+                if cmd.explicit {
+                    i3 = i1 * (self.num_nds + 1);
+                    globd_rd_t.add_entry(glob_ind1, glob_ind1, d_rd_t[i3]);
+                }
+                else {
+                    for i2 in 0..self.num_nds {
+                        glob_ind2 = nd_ar[self.nodes[i2]].sorted_rank;
+                        globd_rd_t.add_entry(glob_ind1,   glob_ind2,   d_rd_t[i3]);
+                        i3 += 1usize;
+                    }
                 }
             }
         }

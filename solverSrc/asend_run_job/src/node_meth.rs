@@ -101,9 +101,10 @@ impl Node {
         return;
     }
 
-    pub fn initialize_disp(&mut self) {
+    pub fn initialize_disp(&mut self, delt : f64) {
         for i1 in 0..6 {
             self.prev_disp[i1] = self.initial_disp[i1];
+            self.pp_disp[i1] = self.initial_disp[i1] - delt*self.initial_vel[i1];
             self.prev_vel[i1] = self.initial_vel[i1];
             self.prev_acc[i1] = self.initial_acc[i1];
             self.displacement[i1] = self.initial_disp[i1];
@@ -111,52 +112,77 @@ impl Node {
         return;
     }
 
-    pub fn initialize_temp(&mut self) {
+    pub fn initialize_temp(&mut self, delt : f64) {
         self.prev_temp = self.initial_temp;
+        self.pp_temp = self.initial_temp - delt*self.initial_tdot;
         self.prev_tdot = self.initial_tdot;
         self.temperature = self.initial_temp;
         return;
     }
 
-    pub fn initialize_fl_den(&mut self) {
+    pub fn initialize_fl_den(&mut self, delt : f64) {
         self.prev_fl_den = self.initial_fl_den;
+        self.pp_fl_den = self.initial_fl_den - delt*self.initial_fl_den_dot;
         self.prev_fl_den_dot = self.initial_fl_den_dot;
         return;
     }
 
-    pub fn update_vel_acc(&mut self, nm_beta : f64, nm_gamma : f64, del_t : f64) {
-        let c1 : f64;
-        let c2 : f64;
-        c1 = 1.0 / (del_t * del_t * (nm_beta - nm_gamma));
-        c2 = del_t * del_t * (0.5 + nm_beta - nm_gamma);
-        for i1 in 0..6 {
-            self.acceleration[i1] = c1 * (self.prev_disp[i1] - self.displacement[i1] + del_t * self.prev_vel[i1] + c2 * self.prev_acc[i1]);
-            self.velocity[i1] = self.prev_vel[i1] + del_t * ((1.0 - nm_gamma) * self.prev_acc[i1] + nm_gamma * self.acceleration[i1]);
+    pub fn update_vel_acc(&mut self, nm_beta : f64, nm_gamma : f64, del_t : f64, explicit : bool) {
+        let mut c1 : f64;
+        let mut c2 : f64;
+        if explicit {
+            c1 = 0.5 / del_t;
+            c2 = 1.0 / (del_t*del_t);
+            for i1 in 0..6 {
+                self.prev_vel[i1] = c1*(self.displacement[i1] - self.pp_disp[i1]);
+                self.prev_acc[i1] = c2*(self.displacement[i1] - 2.0*self.prev_disp[i1] + self.pp_disp[i1]);
+            }
+        }
+        else {
+            c1 = 1.0 / (del_t * del_t * (nm_beta - nm_gamma));
+            c2 = del_t * del_t * (0.5 + nm_beta - nm_gamma);
+            for i1 in 0..6 {
+                self.acceleration[i1] = c1 * (self.prev_disp[i1] - self.displacement[i1] + del_t * self.prev_vel[i1] + c2 * self.prev_acc[i1]);
+                self.velocity[i1] = self.prev_vel[i1] + del_t * ((1.0 - nm_gamma) * self.prev_acc[i1] + nm_gamma * self.acceleration[i1]);
+            }
         }
         
         return;
     }
 
-    pub fn update_tdot(&mut self, nm_gamma : f64, del_t : f64) {
-        let c1 : f64;
-        let c2 : f64;
-        c1 = 1.0 / nm_gamma;
-        c2 = 1.0 / del_t;
-        self.temp_change_rate = c1 * (c2 * (self.temperature - self.prev_temp) - (1.0 - nm_gamma) * self.prev_tdot);
+    pub fn update_tdot(&mut self, nm_gamma : f64, del_t : f64, explicit : bool) {
+        let mut c1 : f64;
+        let mut c2 : f64;
+        if explicit {
+            c1 = 0.5 / del_t;
+            self.prev_tdot = c1 * (self.temperature - self.pp_temp);
+        }
+        else {
+            c1 = 1.0 / nm_gamma;
+            c2 = 1.0 / del_t;
+            self.temp_change_rate = c1 * (c2 * (self.temperature - self.prev_temp) - (1.0 - nm_gamma) * self.prev_tdot);
+        }
         return;
     }
 
-    pub fn update_fl_den_dot(&mut self, nm_gamma : f64, del_t : f64) {
-        let c1 : f64;
-        let c2 : f64;
-        c1 = 1.0 / nm_gamma;
-        c2 = 1.0 / del_t;
-        self.fl_den_dot = c1 * (c2 * (self.fl_den - self.prev_fl_den) - (1.0 - nm_gamma) * self.prev_fl_den_dot);
+    pub fn update_fl_den_dot(&mut self, nm_gamma : f64, del_t : f64, explicit : bool) {
+        let mut c1 : f64;
+        let mut c2 : f64;
+        if explicit {
+            c1 = 0.5 / del_t;
+            self.prev_fl_den_dot = c1 * (self.fl_den - self.pp_fl_den);
+        }
+        else {
+            c1 = 1.0 / nm_gamma;
+            c2 = 1.0 / del_t;
+            self.fl_den_dot = c1 * (c2 * (self.fl_den - self.prev_fl_den) - (1.0 - nm_gamma) * self.prev_fl_den_dot);
+        }
         return;
     }
 
     pub fn advance_disp(&mut self) {
         for i1 in 0..6 {
+            self.pp_disp[i1] = self.prev_disp[i1];
             self.prev_disp[i1] = self.displacement[i1];
             self.prev_vel[i1] = self.velocity[i1];
             self.prev_acc[i1] = self.acceleration[i1];
@@ -165,12 +191,14 @@ impl Node {
     }
 
     pub fn advance_temp(&mut self) {
+        self.pp_temp = self.prev_temp;
         self.prev_temp = self.temperature;
         self.prev_tdot = self.temp_change_rate;
         return;
     }
 
     pub fn advance_fl_den(&mut self) {
+        self.pp_fl_den = self.prev_fl_den;
         self.prev_fl_den = self.fl_den;
         self.prev_fl_den_dot = self.fl_den_dot;
         return;
@@ -192,6 +220,7 @@ impl Node {
     pub fn backstep_disp(&mut self) {
         for i1 in 0..6 {
             self.displacement[i1] = self.prev_disp[i1];
+            self.prev_disp[i1] = self.pp_disp[i1];
             self.velocity[i1] = self.prev_vel[i1];
             self.acceleration[i1] = self.prev_acc[i1];
         }
@@ -200,12 +229,14 @@ impl Node {
 
     pub fn backstep_temp(&mut self) {
         self.temperature = self.prev_temp;
+        self.prev_temp = self.pp_temp;
         self.temp_change_rate = self.prev_tdot;
         return;
     }
 
     pub fn backstep_fl_den(&mut self) {
         self.fl_den = self.prev_fl_den;
+        self.prev_fl_den = self.pp_fl_den;
         self.fl_den_dot = self.prev_fl_den_dot;
         return;
     }

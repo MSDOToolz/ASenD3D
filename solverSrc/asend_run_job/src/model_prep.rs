@@ -234,6 +234,25 @@ impl Model {
         self.fluid_lf.set_dim(self.fl_mat_dim);
         
         let scmd = &mut self.job[self.solve_cmd];
+
+        if scmd.explicit {
+            if scmd.thermal {
+                for r in 0..i3 {
+                    self.therm_mat.add_entry(r, r, 0.0);
+                }
+            }
+            if scmd.diffusion {
+                for r in 0..i3 {
+                    self.diff_mat.add_entry(r, r, 0.0);
+                }
+            }
+            if scmd.elastic {
+                for r in 0..i2 {
+                    self.elastic_mat.add_entry(r, r, 0.0);
+                }
+            }
+        }
+
         if scmd.solver_method.s == "iterative" && scmd.max_it == 0 {
             if self.fl_mat_dim > self.el_mat_dim {
                 scmd.max_it = self.fl_mat_dim;
@@ -558,12 +577,19 @@ impl Model {
         
         //let mut scmd = &mut self.job[self.solve_cmd];
         let sci = self.solve_cmd;
+
+        if self.job[sci].const_scale_factor < 0.0 {
+            self.job[sci].const_scale_factor = match self.job[sci].explicit {
+                true => 1.0,
+                false => 100000.0,
+            };
+        }
         
         if self.job[sci].thermal {
             for this_nd in self.nodes.iter_mut() {
-                this_nd.initialize_temp();
+                this_nd.initialize_temp(self.job[sci].time_step);
                 if self.job[sci].dynamic {
-                    this_nd.update_tdot(self.job[sci].newmark_gamma,  self.job[sci].time_step);
+                    this_nd.update_tdot(self.job[sci].newmark_gamma,  self.job[sci].time_step, self.job[sci].explicit);
                 }
             }
             if !self.therm_lt.is_allocated() {
@@ -572,15 +598,15 @@ impl Model {
                 self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat,  &mut self.thermal_const, self.job[sci].solver_block_dim);
             }
             if !self.therm_scaled {
-                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat);
+                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat, self.job[sci].const_scale_factor);
             }
         }
 
         if self.job[sci].diffusion {
             for this_nd in self.nodes.iter_mut() {
-                this_nd.initialize_fl_den();
+                this_nd.initialize_fl_den(self.job[sci].time_step);
                 if self.job[sci].dynamic {
-                    this_nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step);
+                    this_nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step, self.job[sci].explicit);
                 }
             }
             if !self.diff_lt.is_allocated() {
@@ -589,15 +615,15 @@ impl Model {
                 self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const, self.job[sci].solver_block_dim);
             }
             if !self.diff_scaled {
-                self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat);
+                self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat, self.job[sci].const_scale_factor);
             }
         }
         
         if self.job[sci].elastic {
             for this_nd in self.nodes.iter_mut() {
-                this_nd.initialize_disp();
+                this_nd.initialize_disp(self.job[sci].time_step);
                 if self.job[sci].dynamic {
-                    this_nd.update_vel_acc(self.job[sci].newmark_beta,  self.job[sci].newmark_gamma,  self.job[sci].time_step);
+                    this_nd.update_vel_acc(self.job[sci].newmark_beta,  self.job[sci].newmark_gamma,  self.job[sci].time_step, self.job[sci].explicit);
                 }
             }
             for this_el in self.elements.iter_mut() {
@@ -610,7 +636,7 @@ impl Model {
                 self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const, 6 * self.job[sci].solver_block_dim);
             }
             if !self.elastic_scaled {
-                self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat);
+                self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat, self.job[sci].const_scale_factor);
             }
         }
         

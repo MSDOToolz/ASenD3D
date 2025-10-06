@@ -254,8 +254,8 @@ impl Model {
         }
     }
 
-    pub fn scale_const(c_lst : &mut ConstraintList, mat : &SparseMat) -> bool {
-        let scale_fact : f64 =  100000.0*mat.get_max_abs_val();
+    pub fn scale_const(c_lst : &mut ConstraintList, mat : &SparseMat, rel_fact : f64) -> bool {
+        let scale_fact : f64 = rel_fact*mat.get_max_abs_val();
         c_lst.set_scale_fact(scale_fact);
         true
     }
@@ -353,7 +353,7 @@ impl Model {
             }
 
             if !self.therm_scaled {
-                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat);
+                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat, self.job[sci].const_scale_factor);
             }
             self.build_thermal_const_load();
             
@@ -369,7 +369,7 @@ impl Model {
                 dof_ind = this_nd.sorted_rank;
                 this_nd.temperature  +=  self.therm_sol_vec[dof_ind];
                 if self.job[sci].dynamic {
-                    this_nd.update_tdot(self.job[sci].newmark_gamma,  self.job[sci].time_step);
+                    this_nd.update_tdot(self.job[sci].newmark_gamma,  self.job[sci].time_step, self.job[sci].explicit);
                 }
             }
         }
@@ -405,7 +405,7 @@ impl Model {
                 }
                 
                 if !self.diff_scaled {
-                    self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat);
+                    self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat, self.job[sci].const_scale_factor);
                 }
                 self.build_diff_const_load();
 
@@ -429,7 +429,7 @@ impl Model {
                 for nd in self.nodes.iter_mut() {
                     nd.fl_den += self.diff_sol_vec[nd.sorted_rank];
                     if self.job[sci].dynamic {
-                        nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step);
+                        nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step, self.job[sci].explicit);
                     }
                 }
 
@@ -484,7 +484,7 @@ impl Model {
                 }
 
                 if !self.elastic_scaled {
-                    self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat);
+                    self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat, self.job[sci].const_scale_factor);
                 }
                 self.build_elastic_const_load();
                 
@@ -510,7 +510,7 @@ impl Model {
                     }
                     this_nd.add_to_displacement(&mut nd_del_disp);
                     if self.job[sci].dynamic {
-                        this_nd.update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, self.job[sci].time_step);
+                        this_nd.update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, self.job[sci].time_step, self.job[sci].explicit);
                     }
                 }
                 
@@ -601,15 +601,15 @@ impl Model {
                 for this_nd in self.nodes.iter_mut() {
                     if self.job[ci].thermal {
                         this_nd.advance_temp();
-                        this_nd.update_tdot(self.job[ci].newmark_gamma, self.job[ci].time_step);
+                        this_nd.update_tdot(self.job[ci].newmark_gamma, self.job[ci].time_step, self.job[ci].explicit);
                     }
                     if self.job[ci].diffusion {
                         this_nd.advance_fl_den();
-                        this_nd.update_fl_den_dot(self.job[ci].newmark_gamma, self.job[ci].time_step);
+                        this_nd.update_fl_den_dot(self.job[ci].newmark_gamma, self.job[ci].time_step, self.job[ci].explicit);
                     }
                     if self.job[ci].elastic {
                         this_nd.advance_disp();
-                        this_nd.update_vel_acc(self.job[ci].newmark_beta, self.job[ci].newmark_gamma, self.job[ci].time_step);
+                        this_nd.update_vel_acc(self.job[ci].newmark_beta, self.job[ci].newmark_gamma, self.job[ci].time_step, self.job[ci].explicit);
                     }
                 }
                 if self.job[ci].elastic {
@@ -672,6 +672,282 @@ impl Model {
         }
         
         return;
+    }
+
+    pub fn solve_explicit_step(&mut self, time : f64) {
+        let mut i1 : usize;
+        let mut tmp_con : &ConstraintTerm;
+        let mut this_max_c : f64;
+        let mut this_nd_max : &mut f64;
+        let num_nodes = self.nodes.len();
+
+        let sci = self.solve_cmd;
+        if self.job[sci].thermal {
+            for nd in self.nodes.iter_mut() {
+                nd.temperature = nd.prev_temp + nd.prev_temp - nd.pp_temp;
+                nd.update_tdot(self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+                nd.backstep_temp();
+            }
+            
+            for i1 in 0..num_nodes {
+                self.therm_ld_vec[i1] = 0.0;
+                self.therm_sol_vec[i1] = 0.0;
+            }
+
+            self.build_thermal_app_load(time);
+            self.build_thermal_soln_load(true);
+
+            self.thermal_const.update_active_status(time);
+            if !self.therm_scaled {
+                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat, self.job[sci].const_scale_factor);
+            }
+            self.build_thermal_const_load();
+
+            i1 = 0;
+            for r in self.therm_mat.matrix.iter() {
+                self.therm_sol_vec[i1] = match r.row_vec.front() {
+                    None => panic!("Error: empty row in the thermal equation matrix"),
+                    Some(x) => self.therm_ld_vec[i1]/x.value,
+                };
+                i1 += 1;
+            }
+
+            for nd in self.nodes.iter_mut() {
+                nd.advance_temp();
+                nd.temperature = nd.prev_temp + nd.prev_temp - nd.pp_temp + self.therm_sol_vec[nd.sorted_rank];
+                nd.update_tdot(self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+                i1 += 1; 
+            }
+
+            for c in self.thermal_const.const_vec.iter() {
+                if c.is_active && c.terms.len() == 1 {
+                    tmp_con = match c.terms.front() {
+                        None => panic!("Error: empty thermal constraint!"),
+                        Some(x) => x,
+                    };
+                    for ni in self.node_sets[tmp_con.ns_ptr].labels.iter() {
+                        self.nodes[*ni].temperature = match c.mat.matrix[0].row_vec.front() {
+                            None => panic!("Error: emtpy thermal constraint matrix"),
+                            Some(x) => c.rhs_vec[0]/x.value,
+                        };
+                        self.nodes[*ni].update_tdot(self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+                    }
+                }
+            }
+        }
+
+        if self.job[sci].diffusion {
+            for nd in self.nodes.iter_mut() {
+                nd.fl_den = nd.prev_fl_den + nd.prev_fl_den - nd.pp_fl_den;
+                nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+                nd.backstep_fl_den();
+            }
+            
+            for i1 in 0..num_nodes {
+                self.diff_ld_vec[i1] = 0.0;
+                self.diff_sol_vec[i1] = 0.0;
+            }
+
+            self.build_diff_app_load(time);
+            self.build_diff_soln_load(true);
+
+            self.diff_const.update_active_status(time);
+            if !self.diff_scaled {
+                self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat, self.job[sci].const_scale_factor);
+            }
+            self.build_diff_const_load();
+
+            i1 = 0;
+            for r in self.diff_mat.matrix.iter() {
+                self.diff_sol_vec[i1] = match r.row_vec.front() {
+                    None => panic!("Error: empty row in the diffusion equation matrix"),
+                    Some(x) => self.diff_ld_vec[i1]/x.value,
+                };
+                i1 += 1;
+            }
+
+            for nd in self.nodes.iter_mut() {
+                nd.advance_fl_den();
+                nd.fl_den = nd.prev_fl_den + nd.prev_fl_den - nd.pp_fl_den + self.diff_sol_vec[nd.sorted_rank];
+                nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step, true); 
+            }
+
+            if self.job[sci].enforce_max_c {
+                for nd in self.nodes.iter_mut() {
+                    if nd.fl_den > nd.max_fl_den {
+                        nd.fl_den = nd.max_fl_den;
+                        nd.update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step, true); 
+                    }
+                }
+            }
+
+            for c in self.diff_const.const_vec.iter() {
+                if c.is_active && c.terms.len() == 1 {
+                    tmp_con = match c.terms.front() {
+                        None => panic!("Error: empty diffusion constraint!"),
+                        Some(x) => x,
+                    };
+                    for ni in self.node_sets[tmp_con.ns_ptr].labels.iter() {
+                        self.nodes[*ni].fl_den = match c.mat.matrix[0].row_vec.front() {
+                            None => panic!("Error: emtpy diffusive constraint matrix"),
+                            Some(x) => c.rhs_vec[0]/x.value,
+                        };
+                        self.nodes[*ni].update_fl_den_dot(self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+                    }
+                }
+            }
+        }
+
+        if self.job[sci].elastic {
+            for nd in self.nodes.iter_mut() {
+                for i1 in 0..6 {
+                    nd.displacement[i1] = nd.prev_disp[i1] + nd.prev_disp[i1] - nd.pp_disp[i1];
+                }
+                nd.update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+                nd.backstep_disp();
+            }
+
+            for i1 in 0..self.el_mat_dim {
+                self.elastic_ld_vec[i1] = 0.0;
+                self.elastic_sol_vec[i1] = 0.0;
+            }
+
+            self.build_elastic_app_load(time);
+            self.build_elastic_soln_load(true);
+
+            self.elastic_const.update_active_status(time);
+            if !self.elastic_scaled {
+                self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat, self.job[sci].const_scale_factor);
+            }
+            self.build_elastic_const_load();
+
+            for this_el in self.elements.iter_mut() {
+                if this_el.num_int_dof > 0 {
+                    this_el.update_external(&mut self.elastic_ld_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
+                }
+            }
+
+            i1 = 0;
+            for r in self.elastic_mat.matrix.iter() {
+                self.elastic_sol_vec[i1] = match r.row_vec.front() {
+                    None => panic!("Error: empty row in the elastic equation matrix"),
+                    Some(x) => self.elastic_ld_vec[i1]/x.value,
+                };
+                i1 += 1;
+            }
+
+            for nd in self.nodes.iter_mut() {
+                nd.advance_disp();
+                for i1 in 0..6 {
+                    nd.displacement[i1] = nd.prev_disp[i1] + nd.prev_disp[i1] - nd.pp_disp[i1] + self.elastic_sol_vec[nd.dof_index[i1]];
+                }
+                nd.update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+            }
+
+            for c in self.elastic_const.const_vec.iter() {
+                if c.is_active && c.terms.len() == 1 {
+                    tmp_con = match c.terms.front() {
+                        None => panic!("Error: empty elastic constraint!"),
+                        Some(x) => x,
+                    };
+                    for ni in self.node_sets[tmp_con.ns_ptr].labels.iter() {
+                        self.nodes[*ni].displacement[tmp_con.dof - 1] = match c.mat.matrix[0].row_vec.front() {
+                            None => panic!("Error: emtpy elastic constraint matrix"),
+                            Some(x) => c.rhs_vec[0]/x.value,
+                        };
+                        self.nodes[*ni].update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, self.job[sci].time_step, true);
+                    }
+                }
+            }
+
+            for this_el in self.elements.iter_mut() {
+                if this_el.num_int_dof > 0 {
+                    this_el.update_internal(&mut self.elastic_sol_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
+                }
+            }
+
+            if self.job[sci].run_user_update {
+                self.user_update_time_step(time);
+                for nd in self.nodes.iter_mut() {
+                    nd.calc_crd_dfd0(&self.design_vars);
+                }
+                if self.job[sci].enforce_max_c {
+                    for nd in self.nodes.iter_mut() {
+                        nd.max_fl_den = 1.0e+100f64;
+                    }
+                    for el in self.elements.iter() {
+                        el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut self.sections, &mut self.materials, &mut self.nodes, &self.design_vars);
+                        this_max_c = self.d0_pre.max_con.val;
+                        for ndi in el.nodes.iter() {
+                            this_nd_max = &mut self.nodes[*ndi].max_fl_den;
+                            if *this_nd_max > this_max_c {
+                                *this_nd_max = this_max_c;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }        
+    }
+
+    pub fn solve_explicit(&mut self) {
+        let mut time : f64;
+        let mut i1 : usize;
+        let mut rem : usize;
+        let ci = self.solve_cmd;
+
+        if !self.an_prep_run {
+            self.analysis_prep();
+        }
+
+        time = 0.0;
+        i1 = 0;
+        while time < self.job[ci].sim_period {
+            if self.job[ci].elastic {
+                rem = match i1.checked_rem(25) {
+                    None => panic!("Error: obligatory message"),
+                    Some(x) => x,
+                };
+                if rem == 0 {
+                    self.job[ci].explicit = false;
+                    self.build_elastic_soln_load(true);
+                    self.job[ci].explicit = true;
+                }
+            }
+
+            self.solve_explicit_step(time);
+            if self.job[ci].save_soln_hist {
+                rem = match i1.checked_rem(self.job[ci].soln_hist_freq) {
+                    None => panic!("Error: solution history frequency 0"),
+                    Some(x) => x,
+                };
+                if rem == 0 {
+                    self.write_time_step_soln(i1);
+                }
+            }
+
+            for this_nd in self.nodes.iter_mut() {
+                if self.job[ci].thermal {
+                    this_nd.advance_temp();
+                }
+                if self.job[ci].diffusion {
+                    this_nd.advance_fl_den();
+                }
+                if self.job[ci].elastic {
+                    this_nd.advance_disp();
+                }
+            }
+
+            if self.job[ci].elastic {
+                for this_el in self.elements.iter_mut() {
+                    this_el.advance_int_disp();
+                }
+            }
+            
+            i1 += 1;
+            time += self.job[ci].time_step;
+        }
     }
 
     pub fn zero_solution(&mut self, fields : &mut LinkedList<CppStr>) {

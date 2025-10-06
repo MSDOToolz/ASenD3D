@@ -24,15 +24,19 @@ jobCommands:
     elastic: yes
     thermal: no
     diffusion: no
+    fluid: no
     nonlinearGeom: no
     staticLoadTime:
     loadRampSteps:
     dynamic: no
+    explicit: no
     timeStep: 0.01
     newmarkBeta:
     newmarkGamma:
     simPeriod:
+    constScaleFactor: 
     saveSolnHist: no
+    solnHistFreq: 1
     solnHistDir:
     lumpMass: no
     solverMethod:
@@ -40,6 +44,11 @@ jobCommands:
     maxIterations:
     convergenceTol:
     enforceMaxCon:
+    dissipationLevel: 0.25
+    modTurbulence: yes
+    fluidSolver: iterative
+    fluidBlockDim: 20
+    maxFSIGap: 
     userUpdate: no
     
   - command: zeroSolution

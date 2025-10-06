@@ -52,7 +52,13 @@ impl Model {
             else if cmd_str.s == "solve" {
                 println!("{}", "running main analysis " );
                 self.solve_cmd = ci;
-                self.solve();
+                if self.job[ci].explicit {
+                    self.solve_explicit();
+                }
+                else {
+                    self.solve();
+                }
+                
             }
             else if cmd_str.s == "zeroSolution" {
                 let mut fld_cln = self.job[ci].fields.clone();

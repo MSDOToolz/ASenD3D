@@ -68,16 +68,29 @@ class ASenDJob:
         newCmd['fileName'] = makeAbsolute(fileName)
         self.jobData['jobCommands'].append(newCmd)
         
-    def solvePrep(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
-              loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
-              simPeriod=1.0,saveSolnHist=True,solnHistDir='',lumpMass=False,fullReformFreq=1, 
-              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
+    def solvePrep(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,staticLoadTime=0.0,
+              loadRampSteps=1,dynamic=False,explicit=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
+              simPeriod=1.0,constScaleFactor=None,saveSolnHist=True,solnHistFreq=1,solnHistDir='',lumpMass=False, 
+              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,
+              dissipationLevel=0.25,modTurbulence=True,fluidSolver='iterative',fluidBlockDim=20,maxFSIGap=None,userUpdate=False):
         newCmd = dict()
         newCmd['command'] = 'solvePrep'
         if(not elastic):
             newCmd['elastic'] = 'no'
         if(thermal):
             newCmd['thermal'] = 'yes'
+        if(diffusion):
+            newCmd['diffusion'] = 'yes'
+            if(enforceMaxCon):
+                newCmd['enforceMaxCon'] = 'yes'
+        if(fluid):
+            newCmd['fluid'] = 'yes'
+            newCmd['dissipationLevel'] = dissipationLevel
+            newCmd['modTurbulence'] = modTurbulence
+            newCmd['fluidSolver'] = fluidSolver
+            newCmd['fluidBlockDim'] = fluidBlockDim
+            if(maxFSIGap != None):
+                newCmd['maxFSIGap'] = maxFSIGap
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
         try:
@@ -87,35 +100,53 @@ class ASenDJob:
         newCmd['loadRampSteps'] = loadRampSteps
         if(dynamic):
             newCmd['dynamic'] = 'yes'
-        newCmd['timeStep'] = timeStep
-        newCmd['newmarkBeta'] = newmarkBeta
-        newCmd['newmarkGamma'] = newmarkGamma
-        newCmd['simPeriod'] = simPeriod
+            if(explicit):
+                newCmd['explicit'] = 'yes'
+            newCmd['timeStep'] = timeStep
+            newCmd['newmarkBeta'] = newmarkBeta
+            newCmd['newmarkGamma'] = newmarkGamma
+            newCmd['simPeriod'] = simPeriod
+        if(constScaleFactor != None):
+            newCmd['constScaleFactor'] = constScaleFactor
         if(saveSolnHist):
             newCmd['saveSolnHist'] = 'yes'
-        newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
+            newCmd['solnHistFreq'] = solnHistFreq
+            newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
         if(lumpMass):
             newCmd['lumpMass'] = 'yes'
-        if(fullReformFreq != 1):
-            newCmd['fullReformFreq'] = fullReformFreq
         newCmd['solverMethod'] = solverMethod
         newCmd['solverBlockDim'] = solverBlockDim
         if(maxIt != 0):
             newCmd['maxIterations'] = maxIt
         if(convTol != 1.0e-12):
             newCmd['convergenceTol'] = convTol
-        self.jobData['jobCommands'].append(newCmd)
+        if(userUpdate):
+            newCmd['userUpdate'] = 'yes'
+        self.jobData['jobCommands'].append(newCmd)    
         
-    def solve(self,elastic=True,thermal=False,nonlinearGeom=False,staticLoadTime=0.0,
-              loadRampSteps=1,dynamic=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
-              simPeriod=1.0,saveSolnHist=True,solnHistDir='',lumpMass=False,fullReformFreq=1, 
-              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12):
+    def solve(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,staticLoadTime=0.0,
+              loadRampSteps=1,dynamic=False,explicit=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
+              simPeriod=1.0,constScaleFactor=None,saveSolnHist=True,solnHistFreq=1,solnHistDir='',lumpMass=False, 
+              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,
+              dissipationLevel=0.25,modTurbulence=True,fluidSolver='iterative',fluidBlockDim=20,maxFSIGap=None,userUpdate=False):
         newCmd = dict()
         newCmd['command'] = 'solve'
         if(not elastic):
             newCmd['elastic'] = 'no'
         if(thermal):
             newCmd['thermal'] = 'yes'
+        if(diffusion):
+            newCmd['diffusion'] = 'yes'
+            if(enforceMaxCon):
+                newCmd['enforceMaxCon'] = 'yes'
+        if(fluid):
+            newCmd['fluid'] = 'yes'
+            newCmd['dissipationLevel'] = dissipationLevel
+            newCmd['modTurbulence'] = modTurbulence
+            newCmd['fluidSolver'] = fluidSolver
+            newCmd['fluidBlockDim'] = fluidBlockDim
+            if(maxFSIGap != None):
+                newCmd['maxFSIGap'] = maxFSIGap
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
         try:
@@ -124,24 +155,29 @@ class ASenDJob:
             newCmd['staticLoadTime'] = [staticLoadTime]
         newCmd['loadRampSteps'] = loadRampSteps
         if(dynamic):
-            newCmd['dynamic'] = "yes"
-        newCmd['timeStep'] = timeStep
-        newCmd['newmarkBeta'] = newmarkBeta
-        newCmd['newmarkGamma'] = newmarkGamma
-        newCmd['simPeriod'] = simPeriod
+            newCmd['dynamic'] = 'yes'
+            if(explicit):
+                newCmd['explicit'] = 'yes'
+            newCmd['timeStep'] = timeStep
+            newCmd['newmarkBeta'] = newmarkBeta
+            newCmd['newmarkGamma'] = newmarkGamma
+            newCmd['simPeriod'] = simPeriod
+        if(constScaleFactor != None):
+            newCmd['constScaleFactor'] = constScaleFactor
         if(saveSolnHist):
             newCmd['saveSolnHist'] = 'yes'
-        newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
+            newCmd['solnHistFreq'] = solnHistFreq
+            newCmd['solnHistDir'] = makeAbsolute(solnHistDir)
         if(lumpMass):
             newCmd['lumpMass'] = 'yes'
-        if(fullReformFreq != 1):
-            newCmd['fullReformFreq'] = fullReformFreq
         newCmd['solverMethod'] = solverMethod
         newCmd['solverBlockDim'] = solverBlockDim
         if(maxIt != 0):
             newCmd['maxIterations'] = maxIt
         if(convTol != 1.0e-12):
             newCmd['convergenceTol'] = convTol
+        if(userUpdate):
+            newCmd['userUpdate'] = 'yes'
         self.jobData['jobCommands'].append(newCmd)
         
     def zeroSolution(self,fields='all'):
