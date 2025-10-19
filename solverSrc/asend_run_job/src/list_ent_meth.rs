@@ -28,6 +28,10 @@ impl MatrixRow {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.row_vec.clear();
+    }
+
 }
 
 impl SparseMat {
@@ -45,6 +49,12 @@ impl SparseMat {
         }
         
         return;
+    }
+
+    pub fn reset_rows(&mut self) {
+        for r in self.matrix.iter_mut() {
+            r.reset();
+        }
     }
 
     pub fn add_entry(&mut self, row : usize, col : usize, val : f64) {

@@ -399,6 +399,10 @@ impl Model {
                 this_cterm.ns_ptr = i1;
             }
         }
+
+        if self.init_stat_file.s != "" {
+            self.read_initial_state(&mut self.init_stat_file.clone());
+        }
         
         for this_dv in self.design_vars.iter_mut() {
             nd_set = this_dv.nd_set_name.clone();
@@ -425,6 +429,10 @@ impl Model {
                 this_term.nd_set_ptr = i1;
             }
         }
+
+        // initialize structures needed for interactions
+
+        self.interactions.initialize(&self.nodes, &self.node_sets, &self.ns_map, &self.elements, &self.design_vars);
         
         // build dv reference list for self.nodes and self.elements
         let mut coef_len : usize;
@@ -593,7 +601,7 @@ impl Model {
                 }
             }
             if !self.therm_lt.is_allocated() {
-                self.build_thermal_soln_load(true);
+                self.build_thermal_soln_load(true, 0.0);
                 self.thermal_const.update_active_status(0.0);
                 self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat,  &mut self.thermal_const, self.job[sci].solver_block_dim);
             }
@@ -631,7 +639,7 @@ impl Model {
                 this_el.set_int_prev_disp(&mut zero_ar);
             }
             if !self.elastic_lt.is_allocated() {
-                self.build_elastic_soln_load(true);
+                self.build_elastic_soln_load(true, 0.0);
                 self.elastic_const.update_active_status(0.0);
                 self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const, 6 * self.job[sci].solver_block_dim);
             }
@@ -809,11 +817,16 @@ impl Model {
         let spacing = 2.0*avg_dist;
 
         let mut fc_gd_lst = SpatialGrid::new();
-        fc_gd_lst.initialize(&mut x_rng, spacing, &mut y_rng, spacing, &mut z_rng, spacing);
+        let mut sfct = 0usize;
+        for fc in self.faces.iter() {
+            if fc.on_surf && self.elements[fc.host_el].this_type < 100 {
+                sfct += 1;
+            }
+        }
+        fc_gd_lst.initialize(&mut x_rng, spacing, &mut y_rng, spacing, &mut z_rng, spacing, sfct);
 
         let mut cent = [0f64; 3];
         let mut fi = 0usize;
-        let mut sfct = 0usize;
         for fc in self.faces.iter() {
             if fc.on_surf && self.elements[fc.host_el].this_type < 100 {
                 fc.get_centroid(&mut cent, &self.nodes);
@@ -930,6 +943,11 @@ impl Model {
             
             if scmd.static_load_time.len() == 0 {
                 scmd.static_load_time.push_back(0.0);
+            }
+            
+            if !self.interactions.int_vec.is_empty() && !scmd.nonlinear_geom {
+                println!("Warning: the presence of active interactions inherently requires nonlinear analysis.  Switching nonlinear option to 'yes'");
+                scmd.nonlinear_geom = true;
             }
         }
         else {

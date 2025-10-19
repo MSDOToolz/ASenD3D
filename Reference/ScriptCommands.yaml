@@ -6,6 +6,8 @@ jobCommands:
     fileName:
   - command: readConstraints X
     fileName:
+  - command: readInteractions
+    fileName:
   - command: readInitialState  X
     fileName:
   - command: readDesignVarInput X

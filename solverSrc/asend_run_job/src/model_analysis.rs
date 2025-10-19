@@ -178,7 +178,7 @@ impl Model {
         }
     }
 
-    pub fn build_elastic_soln_load(&mut self, build_mat : bool) {
+    pub fn build_elastic_soln_load(&mut self, build_mat : bool, time : f64) {
         
         for i1 in 0..self.el_mat_dim {
             self.temp_d1[i1].set_val(0.0);
@@ -194,6 +194,10 @@ impl Model {
                 this_el.get_ru_dfd0(&mut self.temp_d1, &mut  self.elastic_mat,  build_mat, scmd, &mut  self.d0_pre, &mut self.scratch.iter_mut(), &mut self.d0_scratch.iter_mut(), &mut  self.nodes);
             }
         }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.get_global_r_dfd0(&mut self.temp_d1, &mut self.elastic_mat, 0, &mut self.d0_pre, time, build_mat, scmd, &self.node_sets, &self.nodes, &self.design_vars);
+        }
         
         for i1 in 0..self.el_mat_dim {
             self.elastic_ld_vec[i1] -=  self.temp_d1[i1].val;
@@ -202,7 +206,7 @@ impl Model {
         return;
     }
 
-    pub fn build_thermal_soln_load(&mut self, build_mat : bool) {
+    pub fn build_thermal_soln_load(&mut self, build_mat : bool, time : f64) {
         let num_nodes : usize;
         
         num_nodes = self.nodes.len();
@@ -220,6 +224,10 @@ impl Model {
                 this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                 this_el.get_rt_dfd0(&mut self.temp_d1, &mut  self.therm_mat,  build_mat, scmd, &mut  self.d0_pre, &mut self.scratch.iter_mut(), &mut self.d0_scratch.iter_mut(), &mut  self.nodes);
             }  
+        }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.get_global_r_dfd0(&mut self.temp_d1, &mut self.therm_mat, 1, &mut self.d0_pre, time, build_mat, scmd, &self.node_sets, &self.nodes, &self.design_vars);
         }
         
         for i1 in 0..num_nodes {
@@ -341,7 +349,7 @@ impl Model {
             self.build_thermal_app_load(time);
             
             if self.job[sci].run_user_update || just_act {
-                self.build_thermal_soln_load(true);
+                self.build_thermal_soln_load(true, time);
                 if just_act {
                     self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const, self.job[sci].solver_block_dim);
                 }
@@ -349,7 +357,7 @@ impl Model {
                 self.therm_lt.ldl_factor();
             }
             else {
-                self.build_thermal_soln_load(false);
+                self.build_thermal_soln_load(false, time);
             }
 
             if !self.therm_scaled {
@@ -472,7 +480,7 @@ impl Model {
                 }
 
                 if self.job[sci].nonlinear_geom || (i2 == 0 && (self.job[sci].run_user_update || just_act)) {
-                    self.build_elastic_soln_load(true);
+                    self.build_elastic_soln_load(true, time);
                     if i2 == 0 && just_act {
                         self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, 6*self.job[sci].solver_block_dim);
                     }
@@ -480,7 +488,7 @@ impl Model {
                     self.elastic_lt.ldl_factor();
                 }
                 else {
-                    self.build_elastic_soln_load(false);
+                    self.build_elastic_soln_load(false, time);
                 }
 
                 if !self.elastic_scaled {
@@ -555,6 +563,9 @@ impl Model {
                     }
                 }
             }
+            if !self.interactions.int_vec.is_empty() {
+                self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
+            }
         }
         
     }
@@ -568,6 +579,9 @@ impl Model {
         let mut time : f64;
         let ld_steps : usize =  self.job[ci].load_ramp_steps;
         let c1 : f64 =  1.0/((ld_steps*ld_steps) as f64);
+        let mut rem : usize;
+        let mut crd_d = [DiffDoub0::new(); 3];
+        let mut crd = [0f64; 3];
         
         if !self.an_prep_run {
             self.analysis_prep();
@@ -618,11 +632,41 @@ impl Model {
                     }
                 }
                 if self.job[ci].save_soln_hist {
-                    self.write_time_step_soln(i1);
-                    self.time_steps_saved = i1;
-                    i1 += 1usize;
+                    rem = match i1.checked_rem(self.job[ci].soln_hist_freq) {
+                        None => panic!("Error: solution history frequency is zero."),
+                        Some(x) => x,
+                    };
+                    if rem == 0 {
+                        self.write_time_step_soln(i1);
+                        self.time_steps_saved += 1;
+                    }
+                }
+                if !self.interactions.int_vec.is_empty() {
+                    self.interactions.interact_grid.reset();
+                    for ndi in 0..self.nodes.len() {
+                        if self.interactions.nd_interaction[ndi] {
+                            self.nodes[ndi].get_def_crd_dfd0(&mut crd_d);
+                            crd[0] = crd_d[0].val;
+                            crd[1] = crd_d[1].val;
+                            crd[2] = crd_d[2].val;
+                            self.interactions.interact_grid.add_ent(ndi, &crd);
+                        }
+                    }
+                    rem = match i1.checked_rem(10usize) {
+                        None => panic!("obligatory message"),
+                        Some(x) => x,
+                    };
+                    if rem == 0 {
+                        if self.job[ci].thermal {
+                            self.therm_mat.reset_rows();
+                        }
+                        if self.job[ci].elastic {
+                            self.elastic_mat.reset_rows();
+                        }
+                    }
                 }
                 time  +=  self.job[ci].time_step;
+                i1 += 1usize;
             }
         } else {
             let lt_len = self.job[ci].static_load_time.len();
@@ -695,7 +739,7 @@ impl Model {
             }
 
             self.build_thermal_app_load(time);
-            self.build_thermal_soln_load(true);
+            self.build_thermal_soln_load(true, time);
 
             self.thermal_const.update_active_status(time);
             if !self.therm_scaled {
@@ -813,7 +857,7 @@ impl Model {
             }
 
             self.build_elastic_app_load(time);
-            self.build_elastic_soln_load(true);
+            self.build_elastic_soln_load(true, time);
 
             self.elastic_const.update_active_status(time);
             if !self.elastic_scaled {
@@ -886,6 +930,9 @@ impl Model {
                         }
                     }
                 }
+                if !self.interactions.int_vec.is_empty(){
+                    self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
+                }
             }
 
         }        
@@ -896,6 +943,8 @@ impl Model {
         let mut i1 : usize;
         let mut rem : usize;
         let ci = self.solve_cmd;
+        let mut crd_d = [DiffDoub0::new(); 3];
+        let mut crd = [0f64; 3];
 
         if !self.an_prep_run {
             self.analysis_prep();
@@ -911,8 +960,31 @@ impl Model {
                 };
                 if rem == 0 {
                     self.job[ci].explicit = false;
-                    self.build_elastic_soln_load(true);
+                    self.build_elastic_soln_load(true, time);  // update the internal element matrices
                     self.job[ci].explicit = true;
+                    self.elastic_mat.reset_rows();
+                    for i2 in 0..self.el_mat_dim {
+                        self.elastic_mat.add_entry(i2, i2, 0.0);
+                    }
+                }
+            }
+
+            if !self.interactions.int_vec.is_empty() {
+                rem = match i1.checked_rem(10) {
+                    None => panic!("Error: obligatory message"),
+                    Some(x) => x,
+                };
+                if rem == 0 {
+                    self.interactions.interact_grid.reset();
+                    for ndi in 0..self.nodes.len() {
+                        if self.interactions.nd_interaction[ndi] {
+                            self.nodes[ndi].get_def_crd_dfd0(&mut crd_d);
+                            crd[0] = crd_d[0].val;
+                            crd[1] = crd_d[1].val;
+                            crd[2] = crd_d[2].val;
+                            self.interactions.interact_grid.add_ent(ndi, &crd);
+                        }
+                    }
                 }
             }
 
@@ -1062,7 +1134,7 @@ impl Model {
         self.job[sci].nonlinear_geom = true;
         self.job[sci].dynamic = false;
         println!("{}", "building stiffness matrix" );
-        self.build_elastic_soln_load(true);
+        self.build_elastic_soln_load(true, 0.0);
         println!("{}", "finished building matrix" );
         if self.job[ci].this_type.s == "buckling" || self.job[ci].this_type.s == "frequency" {
             for i1 in 0..self.el_mat_dim {
@@ -1120,7 +1192,7 @@ impl Model {
                 this_el.advance_int_disp();
                 this_el.set_int_disp(&mut zeros);
             }
-            self.build_elastic_soln_load(true);
+            self.build_elastic_soln_load(true, 0.0);
             i2 = 0;
             for i1 in 0..self.job[ci].num_modes {
                 for i3 in 0..self.el_mat_dim {
@@ -1377,13 +1449,13 @@ impl Model {
                 }
             }
             if self.elastic_const.any_just_activated() {
-                self.build_elastic_soln_load(true);
+                self.build_elastic_soln_load(true, time);
                 self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, self.job[sci].solver_block_dim);
                 self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
                 self.elastic_lt.ldl_factor();
             }
             else if self.job[sci].nonlinear_geom {
-                self.build_elastic_soln_load(true);
+                self.build_elastic_soln_load(true, time);
                 self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
                 self.elastic_lt.ldl_factor();
             }
@@ -1520,6 +1592,9 @@ impl Model {
         for nd in self.nodes.iter_mut() {
             nd.calc_crd_dfd1(&self.design_vars);
         }
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
+        }
         
         tot_nodes = self.nodes.len();
         for i1 in 0..tot_nodes {
@@ -1557,7 +1632,13 @@ impl Model {
             if self.elements[*eli].is_active {
                 this_el = &mut self.elements[*eli];
                 this_el.get_stress_prereq_dfd1(&mut self.d1_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
-                this_el.get_rt_dfd1(&mut self.d_rtd_d, &mut self.therm_mat, false, &mut scmd, &mut self.d1_pre, &mut self.scratch.iter_mut(), &mut self.d1_scratch.iter_mut(), &mut self.nodes);
+                this_el.get_rt_dfd1(&mut self.d_rtd_d, &mut self.therm_mat, false, scmd, &mut self.d1_pre, &mut self.scratch.iter_mut(), &mut self.d1_scratch.iter_mut(), &mut self.nodes);
+            }
+        }
+
+        if !self.interactions.int_vec.is_empty() {
+            if self.design_vars[d_var_num].nd_set_name.s != "" || self.design_vars[d_var_num].int_name.s != "" {
+                self.interactions.get_global_r_dfd1(&mut self.d_rtd_d, &mut self.therm_mat, 1, &mut self.d1_pre, time, false, scmd, &self.node_sets, &self.nodes, &self.design_vars);
             }
         }
         
@@ -1578,6 +1659,10 @@ impl Model {
         for nd in self.nodes.iter_mut() {
             nd.calc_crd_dfd1(&self.design_vars);
         }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
+        }
         
         return;
     }
@@ -1593,6 +1678,10 @@ impl Model {
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 1.0);
         for nd in self.nodes.iter_mut() {
             nd.calc_crd_dfd1(&self.design_vars);
+        }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
         tot_nodes = self.nodes.len();
@@ -1651,6 +1740,10 @@ impl Model {
         for nd in self.nodes.iter_mut() {
             nd.calc_crd_dfd1(&self.design_vars);
         }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
+        }
         
     }
 
@@ -1665,6 +1758,10 @@ impl Model {
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 1.0);
         for nd in self.nodes.iter_mut() {
             nd.calc_crd_dfd1(&self.design_vars);
+        }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
         for i1 in 0..self.el_mat_dim {
@@ -1707,6 +1804,12 @@ impl Model {
                 self.elements[*eli].get_ru_dfd1(&mut self.d_rud_d, &mut  self.elastic_mat,  false, scmd, &mut  self.d1_pre, &mut self.scratch.iter_mut(), &mut self.d1_scratch.iter_mut(), &mut  self.nodes);
             }
         }
+
+        if !self.interactions.int_vec.is_empty() {
+            if self.design_vars[d_var_num].nd_set_name.s != "" || self.design_vars[d_var_num].int_name.s != "" {
+                self.interactions.get_global_r_dfd1(&mut self.d_rtd_d, &mut self.therm_mat, 0, &mut self.d1_pre, time, false, scmd, &self.node_sets, &self.nodes, &self.design_vars);
+            }
+        }
         
         
         // design variable dependent contribution
@@ -1729,6 +1832,10 @@ impl Model {
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val,    0.0);
         for nd in self.nodes.iter_mut() {
             nd.calc_crd_dfd1(&self.design_vars);
+        }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
         return;
@@ -1774,6 +1881,9 @@ impl Model {
                 for nd in self.nodes.iter_mut() {
                     nd.calc_crd_dfd0(&self.design_vars);
                 }
+                if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
+                }
                 self.obj.calculate_terms(time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
                 time  -=  self.job[sci].time_step;
             }
@@ -1811,6 +1921,9 @@ impl Model {
                 self.user_update_adjoint_step(this_ld_tm);
                 for nd in self.nodes.iter_mut() {
                     nd.calc_crd_dfd0(&self.design_vars);
+                }
+                if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
                 self.obj.calculate_terms(this_ld_tm,  self.job[sci].nonlinear_geom, &mut self.nodes, &mut self.elements, &mut self.node_sets, &mut self.element_sets, &mut self.sections, &mut self.materials, &mut self.design_vars, &mut  self.d0_pre);
                 //i1 += 1usize;
@@ -1878,6 +1991,9 @@ impl Model {
                 for nd in self.nodes.iter_mut() {
                     nd.calc_crd_dfd0(&self.design_vars);
                 }
+                if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
+                }
                 self.obj.calculate_terms(time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
                 self.solve_for_adjoint(time);
                 self.obj.calculated_ld_d(&mut self.d_ld_d,  time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  &mut  self.element_sets, &mut  self.sections, &mut  self.materials, &mut self.design_vars, &mut  self.d1_pre);
@@ -1937,6 +2053,9 @@ impl Model {
                 self.user_update_adjoint_step(this_ld);
                 for nd in self.nodes.iter_mut() {
                     nd.calc_crd_dfd0(&self.design_vars);
+                }
+                if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
                 self.obj.calculate_terms(this_ld,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
                 for i2 in 0..self.nodes.len() {

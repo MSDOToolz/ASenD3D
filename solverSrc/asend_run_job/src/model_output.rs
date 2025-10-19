@@ -191,7 +191,7 @@ impl Model {
                     for i1 in 0..self.el_mat_dim {
                         self.elastic_ld_vec[i1] = 0.0;
                     }
-                    self.build_elastic_soln_load(false);
+                    self.build_elastic_soln_load(false, time);
                     let nd_pt = &self.nodes[*nd_label];
                     for i1 in 0..6 {
                         glob_ind = nd_pt.dof_index[i1];
@@ -202,7 +202,7 @@ impl Model {
                     for i1 in 0..self.el_mat_dim {
                         self.therm_ld_vec[i1] = 0.0;
                     }
-                    self.build_thermal_soln_load(false);
+                    self.build_thermal_soln_load(false, time);
                     let nd_pt = &self.nodes[*nd_label];
                     glob_ind = nd_pt.sorted_rank;
                     let _ = writer.write(format!("{0:.12e},", -self.therm_ld_vec[glob_ind]).as_bytes());

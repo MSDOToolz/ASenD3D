@@ -5,6 +5,7 @@ from asendUtils.model.Section import Section
 from asendUtils.model.Material import Material
 from asendUtils.model.Fluid import Fluid
 from asendUtils.model.Constraint import Constraint
+from asendUtils.model.Interaction import Interaction
 from asendUtils.syst.pathTools import *
 
 class Model():
@@ -473,6 +474,19 @@ class Model():
             initialState = dict()
             initialState[field] = strState
             self.modelData['initialState'] = initialState
+            
+    def addInteraction(self, newInteraction):
+        if 'interactions' not in self.modelData:
+            self.modelData['interactions'] = dict()
+        if newInteraction.name != None:
+            self.modelData['interactions'][newInteraction.name] = newInteraction.data
+        else:
+            index = 0 
+            name = 'unnamed' + str(index)
+            while name in self.modelData['interactions']:
+                index += 1 
+                name = 'unnamed' + str(index)
+            self.modelData['interactions'][name] = newInteraction.data
     
     def integrateMassElements(self):
         for me in self.massElements:

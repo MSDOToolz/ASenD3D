@@ -139,6 +139,27 @@ loads:
       nodeSet: (label or set name)
       elementSet: (label or set name)
 
+interactions:
+    interaction_1:
+      nodeSet1:
+      nodeSet2:
+      potField:
+          coef:
+            - [t, val]
+          exp:
+      dampField:
+          coef:
+            - [t, val]
+          exp:
+      thermField:
+          condCoef:
+          radCoef: 0
+          refTemp:
+      maxDistance:
+      maxNeighbors:
+      maxDistRatio:
+      idealGasConstant:
+      activeTime:
 ##
 initialState:
     displacement:

@@ -2004,7 +2004,7 @@ impl Element {
         
         for i1 in 0..self.num_nds {
             this_nd = &nd_ar[self.nodes[i1]];
-            this_nd.get_crd_dfd0(&mut nd_crd, dv_ar);
+            this_nd.get_crd_dfd0(&mut nd_crd);
             x_glob[i1].set_val_dfd0(& nd_crd[0]);
             x_glob[i1+self.num_nds].set_val_dfd0(& nd_crd[1]);
             x_glob[i1+2*self.num_nds].set_val_dfd0(& nd_crd[2]);
@@ -2219,7 +2219,7 @@ impl Element {
         return;
     }
 
-    pub fn get_mass_per_el_dfd0(&self, mass_per_el : &mut DiffDoub0, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_mass_per_el_dfd0(&self, mass_per_el : &mut DiffDoub0, sec_ar : & Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub0::new();
         let mut tmp = DiffDoub0::new();
         let mut cat : CppStr;
@@ -4241,7 +4241,7 @@ impl Element {
         
         for i1 in 0..self.num_nds {
             this_nd = &nd_ar[self.nodes[i1]];
-            this_nd.get_crd_dfd1(&mut nd_crd, dv_ar);
+            this_nd.get_crd_dfd1(&mut nd_crd);
             x_glob[i1].set_val_dfd1(& nd_crd[0]);
             x_glob[i1+self.num_nds].set_val_dfd1(& nd_crd[1]);
             x_glob[i1+2*self.num_nds].set_val_dfd1(& nd_crd[2]);
@@ -4456,7 +4456,7 @@ impl Element {
         return;
     }
 
-    pub fn get_mass_per_el_dfd1(&self, mass_per_el : &mut DiffDoub1, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
+    pub fn get_mass_per_el_dfd1(&self, mass_per_el : &mut DiffDoub1, sec_ar : & Vec<Section>, dv_ar : & Vec<DesignVariable>) {
         let mut dv_val = DiffDoub1::new();
         let mut tmp = DiffDoub1::new();
         let mut cat : CppStr;
@@ -4482,6 +4482,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
  

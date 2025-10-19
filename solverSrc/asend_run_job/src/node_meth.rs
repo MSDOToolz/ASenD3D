@@ -128,13 +128,13 @@ impl Node {
     }
 
     pub fn update_vel_acc(&mut self, nm_beta : f64, nm_gamma : f64, del_t : f64, explicit : bool) {
-        let mut c1 : f64;
-        let mut c2 : f64;
+        let c1 : f64;
+        let c2 : f64;
         if explicit {
-            c1 = 0.5 / del_t;
+            c1 = 1.0 / del_t;
             c2 = 1.0 / (del_t*del_t);
             for i1 in 0..6 {
-                self.prev_vel[i1] = c1*(self.displacement[i1] - self.pp_disp[i1]);
+                self.prev_vel[i1] = c1*(self.prev_disp[i1] - self.pp_disp[i1]);
                 self.prev_acc[i1] = c2*(self.displacement[i1] - 2.0*self.prev_disp[i1] + self.pp_disp[i1]);
             }
         }
@@ -147,12 +147,11 @@ impl Node {
             }
         }
         
-        return;
     }
 
     pub fn update_tdot(&mut self, nm_gamma : f64, del_t : f64, explicit : bool) {
-        let mut c1 : f64;
-        let mut c2 : f64;
+        let c1 : f64;
+        let c2 : f64;
         if explicit {
             c1 = 0.5 / del_t;
             self.prev_tdot = c1 * (self.temperature - self.pp_temp);
@@ -166,8 +165,8 @@ impl Node {
     }
 
     pub fn update_fl_den_dot(&mut self, nm_gamma : f64, del_t : f64, explicit : bool) {
-        let mut c1 : f64;
-        let mut c2 : f64;
+        let c1 : f64;
+        let c2 : f64;
         if explicit {
             c1 = 0.5 / del_t;
             self.prev_fl_den_dot = c1 * (self.fl_den - self.pp_fl_den);
@@ -306,7 +305,7 @@ impl Node {
         }
     }
 
-    pub fn get_crd_dfd0(&self, crd_out : &mut [DiffDoub0], dv_ar : & Vec<DesignVariable>) {
+    pub fn get_crd_dfd0(&self, crd_out : &mut [DiffDoub0]) {
         crd_out[0].set_val_dfd0(&self.coord_dfd0[0]);
         crd_out[1].set_val_dfd0(&self.coord_dfd0[1]);
         crd_out[2].set_val_dfd0(&self.coord_dfd0[2]);
@@ -426,7 +425,7 @@ impl Node {
         }
     }
 
-    pub fn get_crd_dfd1(&self, crd_out : &mut [DiffDoub1], dv_ar : & Vec<DesignVariable>) {
+    pub fn get_crd_dfd1(&self, crd_out : &mut [DiffDoub1]) {
         crd_out[0].set_val_dfd1(&self.coord_dfd1[0]);
         crd_out[1].set_val_dfd1(&self.coord_dfd1[1]);
         crd_out[2].set_val_dfd1(&self.coord_dfd1[2]);
@@ -518,6 +517,7 @@ impl Node {
     //end dup
  
 //end skip 
+ 
  
  
  

@@ -32,6 +32,21 @@ impl DualInt {
 }
 
 #[derive(Clone)]
+pub struct DualFloat {
+    pub f1 : f64,
+    pub f2 : f64,
+}
+
+impl DualFloat {
+    pub fn new() -> DualFloat {
+        DualFloat {
+            f1 : 0.0,
+            f2 : 0.0,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct MatrixEnt {
     pub row : usize,
     pub col : usize,

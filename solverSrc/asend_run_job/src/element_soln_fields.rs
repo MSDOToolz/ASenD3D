@@ -117,6 +117,52 @@ impl Element {
         return;
     }
 
+    pub fn get_all_nd_var_dfd0(&self, pre : &mut DiffDoub0StressPrereq, nd_ar : &Vec<Node>) {
+        let mut i2 : usize;
+        let mut i3 : usize;
+        let mut i4 : usize;
+        let mut i5 : usize;
+        let mut i6 : usize;
+        let mut this_nd : &Node;
+        let mut crd = [DiffDoub0::new(); 3];
+
+        for i1 in 0..self.num_nds {
+            this_nd = &nd_ar[self.nodes[i1]];
+            
+            this_nd.get_crd_dfd0(&mut crd);
+            i2 = 0;
+            for d in 0..3 {
+                pre.glob_nds[i2].set_val_dfd0(&crd[d]);
+                i2 += self.num_nds;
+            }
+            
+            pre.glob_temp[i1].set_val(this_nd.temperature);
+            pre.glob_tdot[i1].set_val(this_nd.temp_change_rate);
+            pre.glob_fl_den[i1].set_val(this_nd.fl_den);
+            pre.glob_fl_den_dot[i1].set_val(this_nd.fl_den_dot);
+            i2 = 0;
+            i3 = 0;
+            for d in 0..self.dof_per_nd {
+                pre.glob_disp[i2].set_val(this_nd.displacement[d]);
+                pre.glob_vel[i3].set_val(this_nd.velocity[d]);
+                pre.glob_acc[i3].set_val(this_nd.acceleration[d]);
+                i2 += self.n_dim;
+                i3 += self.num_nds;
+            }
+        }
+
+        if self.num_int_dof > 0 {
+            i2 = 2*self.num_nds*self.dof_per_nd;
+            for i3 in 0..self.num_int_dof {
+                i4 = self.dof_table[i2];
+                i5 = self.dof_table[i2+1];
+                i6 = self.n_dim*i5 + i4;
+                pre.glob_disp[i6].set_val(self.internal_disp[i3]);
+                i2 +=  2;
+            }
+        }
+    }
+
     pub fn eval_n_dfd0(&self, n_vec : &mut [DiffDoub0], d_nds : &mut [DiffDoub0], spt : & [f64]) {
         if self.this_type == 4 || self.this_type == 400 {
             n_vec[0].set_val(1.0-spt[0]-spt[1]-spt[2]);
@@ -2279,6 +2325,52 @@ impl Element {
         return;
     }
 
+    pub fn get_all_nd_var_dfd1(&self, pre : &mut DiffDoub1StressPrereq, nd_ar : &Vec<Node>) {
+        let mut i2 : usize;
+        let mut i3 : usize;
+        let mut i4 : usize;
+        let mut i5 : usize;
+        let mut i6 : usize;
+        let mut this_nd : &Node;
+        let mut crd = [DiffDoub1::new(); 3];
+
+        for i1 in 0..self.num_nds {
+            this_nd = &nd_ar[self.nodes[i1]];
+            
+            this_nd.get_crd_dfd1(&mut crd);
+            i2 = 0;
+            for d in 0..3 {
+                pre.glob_nds[i2].set_val_dfd1(&crd[d]);
+                i2 += self.num_nds;
+            }
+            
+            pre.glob_temp[i1].set_val(this_nd.temperature);
+            pre.glob_tdot[i1].set_val(this_nd.temp_change_rate);
+            pre.glob_fl_den[i1].set_val(this_nd.fl_den);
+            pre.glob_fl_den_dot[i1].set_val(this_nd.fl_den_dot);
+            i2 = 0;
+            i3 = 0;
+            for d in 0..self.dof_per_nd {
+                pre.glob_disp[i2].set_val(this_nd.displacement[d]);
+                pre.glob_vel[i3].set_val(this_nd.velocity[d]);
+                pre.glob_acc[i3].set_val(this_nd.acceleration[d]);
+                i2 += self.n_dim;
+                i3 += self.num_nds;
+            }
+        }
+
+        if self.num_int_dof > 0 {
+            i2 = 2*self.num_nds*self.dof_per_nd;
+            for i3 in 0..self.num_int_dof {
+                i4 = self.dof_table[i2];
+                i5 = self.dof_table[i2+1];
+                i6 = self.n_dim*i5 + i4;
+                pre.glob_disp[i6].set_val(self.internal_disp[i3]);
+                i2 +=  2;
+            }
+        }
+    }
+
     pub fn eval_n_dfd1(&self, n_vec : &mut [DiffDoub1], d_nds : &mut [DiffDoub1], spt : & [f64]) {
         if self.this_type == 4 || self.this_type == 400 {
             n_vec[0].set_val(1.0-spt[0]-spt[1]-spt[2]);
@@ -4332,6 +4424,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
  

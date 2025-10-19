@@ -1,3 +1,5 @@
+use crate::constants::MAX_INT;
+use crate::list_ent::DualInt;
 use crate::spatial_grid::*;
 
 
@@ -17,19 +19,24 @@ impl IntList {
 }
 
 impl SpatialGrid {
-    pub fn initialize(&mut self, x_range : &mut [f64], x_spacing : f64, y_range : &mut [f64], y_spacing : f64, z_range : &mut [f64], z_spacing : f64) {
-        self.x_min = x_range[0];
+    pub fn initialize(&mut self, x_range : &mut [f64], x_spacing : f64, y_range : &mut [f64], y_spacing : f64, z_range : &mut [f64], z_spacing : f64, capacity : usize) {
+        self.x_min = 0.5*(x_range[0] + x_range[1] - x_spacing*(self.x_bins as f64));
         self.x_sp = x_spacing;
-        self.y_min = y_range[0];
+        self.y_min = 0.5*(y_range[0] + y_range[1] - y_spacing*(self.y_bins as f64));
         self.y_sp = y_spacing;
-        self.z_min = z_range[0];
+        self.z_min = 0.5*(z_range[0] + z_range[1] - z_spacing*(self.z_bins as f64));
         self.z_sp = z_spacing;
-        self.x_bins = ((x_range[1] - self.x_min) / self.x_sp + 1.0) as usize;
-        self.y_bins = ((y_range[1] - self.y_min) / self.y_sp + 1.0) as usize;
-        self.z_bins = ((z_range[1] - self.z_min) / self.z_sp + 1.0) as usize;
-        let tot_bins : usize =  self.x_bins * self.y_bins * self.z_bins;
-        self.list_ar = vec![IntList::new(); tot_bins];
-        return;
+        self.data = vec![DualInt {i1 : MAX_INT, i2 : MAX_INT}; capacity];
+        self.next_avail = 0;
+    }
+
+    pub fn reset(&mut self) {
+        self.first.clear();
+        for d in self.data.iter_mut() {
+            d.i1 = MAX_INT;
+            d.i2 = MAX_INT;
+        }
+        self.next_avail = 0;
     }
 
     pub fn add_ent(&mut self, label : usize, crd : & [f64]) {
@@ -67,10 +74,21 @@ impl SpatialGrid {
         }
 
         let ind : usize =  (z_b*self.y_bins + y_b)*self.x_bins + x_b;
-        self.list_ar[ind].i_lst.push_back(label);
+        let na = self.next_avail;
+        self.data[na].i1 = label;
+        let mut d_ind : usize;
+        match self.first.get(&ind) {
+            None => {self.first.insert(ind, na);},
+            Some(x) => {d_ind = *x;
+                                while self.data[d_ind].i2 < MAX_INT {
+                                    d_ind = self.data[d_ind].i2;
+                                }
+                                self.data[d_ind].i2 = na;},
+        }
+        self.next_avail += 1;
     }
 
-    pub fn get_in_xyzrange(&mut self, out_lst : &mut Vec<usize>, max_len : usize, x_range : & [f64], y_range : & [f64], z_range : & [f64]) -> usize {
+    pub fn get_in_xyzrange(&self, out_lst : &mut Vec<usize>, max_len : usize, x_range : & [f64], y_range : & [f64], z_range : & [f64]) -> usize {
         let i_min : usize;
         let mut i_max : usize;
         let j_min : usize;
@@ -132,13 +150,25 @@ impl SpatialGrid {
             k_max = self.z_bins - 1;
         }
         
-        let mut ind : usize;
+        let mut f_ind : usize;
         let mut lst_len : usize =  0;
+        let mut d_ind : usize;
         for k in k_min..=k_max {
             for j in j_min..=j_max {
                 for i in i_min..=i_max {
-                    ind = (k * self.y_bins + j)*self.x_bins + i;
-                    lst_len = self.list_ar[ind].copy_to_vector(out_lst,  lst_len,  max_len);
+                    f_ind = (k*self.y_bins + j)*self.x_bins + i;
+                    //d_ind = self.first[f_ind];
+                    match self.first.get(&f_ind) {
+                        None => {},
+                        Some(x) => {d_ind = *x;
+                                            while d_ind < MAX_INT && lst_len < max_len {
+                                                out_lst[lst_len] = self.data[d_ind].i1;
+                                                d_ind = self.data[d_ind].i2;
+                                                lst_len += 1;
+                                            }},
+                    }
+                    
+                    //lst_len = self.list_ar[ind].copy_to_vector(out_lst,  lst_len,  max_len);
                 }
             }
         }
@@ -146,7 +176,7 @@ impl SpatialGrid {
         return  lst_len;
     }
 
-    pub fn get_in_radius(&mut self, out_list : &mut Vec<usize>, max_len : usize, pt : & [f64], rad : f64) -> usize {
+    pub fn get_in_radius(&self, out_list : &mut Vec<usize>, max_len : usize, pt : & [f64], rad : f64) -> usize {
         let mut range : [f64; 6] = [0f64; 6];
         range[0] = pt[0] - rad;
         range[1] = pt[0] + rad;

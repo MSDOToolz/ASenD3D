@@ -20,18 +20,25 @@ impl Model {
             if cmd_str.s == "readModelInput" {
                 println!("{}{}", "reading Model input: ", file_name.s);
                 self.read_model_input(&mut file_name);
-                self.read_constraint_input(&mut file_name);
-                self.read_load_input(&mut file_name);
-                self.read_initial_state(&mut file_name);
+                // self.read_constraint_input(&mut file_name);
+                // self.read_load_input(&mut file_name);
+                // self.read_interaction_input(&mut file_name);
+                // self.read_initial_state(&mut file_name);
             } else if cmd_str.s == "readConstraints" {
                 println!("{}{}", "reading constraints: ", file_name.s);
                 self.read_constraint_input(&mut file_name);
             } else if cmd_str.s == "readLoads" {
                 println!("{}{}", "reading loads: " , file_name.s);
                 self.read_load_input(&mut file_name);
-            } else if cmd_str.s == "readInitialState" {
+            } 
+            else if cmd_str.s == "readInteractions" {
+                println!("reading interactions : {}", file_name.s);
+                self.read_interaction_input(&mut file_name);
+            }
+            else if cmd_str.s == "readInitialState" {
                 println!("{}{}", "reading initial state: " , file_name.s);
-                self.read_initial_state(&mut file_name);
+                // self.read_initial_state(&mut file_name);
+                self.init_stat_file = file_name.clone();
             } else if cmd_str.s == "readDesignVarInput" {
                 println!("{}{}", "reading design variable input: " , file_name.s);
                 self.read_des_var_input(&mut file_name);

@@ -10,11 +10,13 @@ use crate::nd_el_set::*;
 use crate::section::*;
 use crate::load::*;
 use crate::constraint::*;
+use crate::interaction::*;
 use crate::design_var::*;
 use crate::objective::*;
 use crate::diff_doub::*;
 use crate::scratch::*;
 use crate::cpp_map::CppMap;
+use crate::cpp_str::CppStr;
 
 use std::collections::LinkedList;
 
@@ -38,6 +40,8 @@ pub struct Model {
     pub thermal_loads : Vec<Load>,
     pub diff_loads : Vec<Load>,
     pub fluid_loads : Vec<Load>,
+    pub interactions : InteractionList,
+    pub init_stat_file : CppStr,
     pub design_vars : Vec<DesignVariable>,
     pub obj : Objective,
     pub job : Vec<JobCommand>,
@@ -129,6 +133,8 @@ impl Model {
             thermal_loads : Vec::new(),
             diff_loads : Vec::new(),
             fluid_loads : Vec::new(),
+            interactions : InteractionList::new(),
+            init_stat_file : CppStr::new(),
             design_vars : Vec::new(),
             obj : Objective::new(),
             job : Vec::new(),
