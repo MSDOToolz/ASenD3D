@@ -47,6 +47,25 @@ impl DualFloat {
 }
 
 #[derive(Clone)]
+pub struct QuadFloat {
+    pub f1 : f64,
+    pub f2 : f64,
+    pub f3 : f64,
+    pub f4 : f64,
+}
+
+impl QuadFloat {
+    pub fn new() -> QuadFloat {
+        QuadFloat {
+            f1 : 0f64,
+            f2 : 0f64,
+            f3 : 0f64,
+            f4 : 0f64,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct MatrixEnt {
     pub row : usize,
     pub col : usize,

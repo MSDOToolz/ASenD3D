@@ -8,10 +8,11 @@ use crate::section::*;
 use crate::constraint::*;
 use crate::load::*;
 use crate::interaction::*;
+use crate::particle_source::*;
 use crate::design_var::*;
 use crate::objective::*;
 use crate::cpp_str::CppStr;
-use crate::list_ent::DualFloat;
+use crate::list_ent::{DualFloat, QuadFloat};
 
 use std::char::MAX;
 use std::fs::File;
@@ -349,6 +350,7 @@ impl Model {
         let mut const_ct = [0usize; 4];
         let mut load_ct = [0usize; 4];
         let mut int_ct : usize = 0;
+        let mut ps_ct : usize = 0;
 
         let mut lst_ar = vec![CppStr::new(); 4];
         lst_ar[0] = CppStr::from("nodalForce bodyForce gravitational centrifugal surfacePressure surfaceTraction");
@@ -405,6 +407,7 @@ impl Model {
                     self.const_loop1(&mut headings, &mut data, data_len, &mut const_ct);
                     self.load_loop1(&mut headings, &mut data, data_len, &mut load_ct, &mut lst_ar);
                     self.interaction_loop1(&mut headings, data_len, &mut int_ct);
+                    self.ps_loop1(&headings, data_len, &mut ps_ct);
                     if headings[0].s == "initialState" {
                         self.init_stat_file = file_name.clone();
                     }
@@ -431,6 +434,7 @@ impl Model {
         self.fluid_loads = vec![Load::new(); load_ct[3]];
 
         self.interactions.int_vec = vec![Interaction::new(); int_ct];
+        self.particle_sources = vec![ParticleSource::new(); ps_ct];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             ns_ct = MAX_INT;
@@ -854,6 +858,7 @@ impl Model {
                     self.const_loop2(&mut headings, &mut data, data_len, &mut const_ct, &mut const_ind, &mut con_type, &mut all_types);
                     self.load_loop2(&mut headings, &mut data, data_len, &mut load_ct, &mut lst_ar, &mut ld_ind, &mut load_type);
                     self.interaction_loop2(&mut headings, &mut data, data_len, &mut int_ct);
+                    self.ps_loop2(&headings, &mut data, data_len, &mut ps_ct);
                 }
             }
         } else {
@@ -1288,6 +1293,88 @@ impl Model {
                 file_line.s = line;
                 self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 self.interaction_loop2(&mut headings, &mut data, data_len, &mut int_ct);
+            }
+        }
+    }
+
+    pub fn ps_loop1(&self, headings : &Vec<CppStr>, data_len : usize, ps_ct : &mut usize) {
+        if headings[0].s == "particleSources" {
+            if headings[1].s == "elementSet" && data_len == 1 {
+                *ps_ct += 1;
+            }
+        }
+    }
+
+    pub fn ps_loop2(&mut self, headings : &Vec<CppStr>, data : &mut Vec<CppStr>, data_len : usize, ps_ct : &mut usize) {
+        if headings[0].s == "particleSources" {
+            if data_len == 1 {
+                match headings[1].s.as_str() {
+                    "elementSet" => {*ps_ct = increment_ct(*ps_ct);
+                                     self.particle_sources[*ps_ct].element_set = data[0].clone();},
+                    "refNode" => self.particle_sources[*ps_ct].ref_node = data[0].clone(),
+                    "randomVel" => self.particle_sources[*ps_ct].random_vel = CppStr::stod(&mut data[0]),
+                    &_ => (),
+                }
+            }
+            else if data_len == 2 {
+                match headings[1].s.as_str() {
+                    "temperature" => self.particle_sources[*ps_ct].temp.push_back(DualFloat {f1: CppStr::stod(&mut data[0]), f2: CppStr::stod(&mut data[1])}),
+                    "frequency" => self.particle_sources[*ps_ct].frequency.push_back(DualFloat {f1: CppStr::stod(&mut data[0]), f2: CppStr::stod(&mut data[1])}),
+                    "boundXRange" => {self.particle_sources[*ps_ct].x_range[0] = CppStr::stod(&mut data[0]);
+                                      self.particle_sources[*ps_ct].x_range[1] = CppStr::stod(&mut data[1]);},
+                    "boundYRange" => {self.particle_sources[*ps_ct].y_range[0] = CppStr::stod(&mut data[0]);
+                                      self.particle_sources[*ps_ct].y_range[1] = CppStr::stod(&mut data[1]);},
+                    "boundZRange" => {self.particle_sources[*ps_ct].z_range[0] = CppStr::stod(&mut data[0]);
+                                      self.particle_sources[*ps_ct].z_range[1] = CppStr::stod(&mut data[1]);},
+                    "activeTime" => {self.particle_sources[*ps_ct].active_time[0] = CppStr::stod(&mut data[0]);
+                                      self.particle_sources[*ps_ct].active_time[1] = CppStr::stod(&mut data[1]);},
+                    &_ => (),
+                }
+            }
+            else if data_len == 4 {
+                let mut new_pt = QuadFloat::new();
+                new_pt.f1 = CppStr::stod(&mut data[0]);
+                new_pt.f2 = CppStr::stod(&mut data[1]);
+                new_pt.f3 = CppStr::stod(&mut data[2]);
+                new_pt.f4 = CppStr::stod(&mut data[3]);
+                match headings[1].s.as_str() {
+                    "coordinates" => self.particle_sources[*ps_ct].coord.push_back(new_pt),
+                    "meanVel" => self.particle_sources[*ps_ct].mean_vel.push_back(new_pt),
+                    &_ => (),
+                }
+            }
+        }
+    }
+
+    pub fn read_part_src_input(&mut self, file_name : &mut CppStr) {
+        let mut file_line = CppStr::new();
+        let mut headings  = vec![CppStr::new(); 4];
+        let mut hd_ld_space : [usize; 4] = [0,0,0,0];
+        let mut data = vec![CppStr::new(); 11];
+        let mut data_len : usize = 0usize;
+        let mut ps_ct : usize = 0;
+        
+        if let Ok(lines) = read_lines(file_name.s.clone()) {
+            ps_ct = 0;
+            for line in lines.map_while(Result::ok) {
+                file_line.s = line;
+                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                self.ps_loop1(&headings, data_len, &mut ps_ct);
+            }
+        }
+
+        if ps_ct == 0 {
+            return;
+        }
+
+        self.particle_sources = vec![ParticleSource::new(); ps_ct];
+
+        if let Ok(lines) = read_lines(file_name.s.clone()) {
+            ps_ct = MAX_INT;
+            for line in lines.map_while(Result::ok) {
+                file_line.s = line;
+                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                self.ps_loop2(&headings, &mut data, data_len, &mut ps_ct);
             }
         }
     }

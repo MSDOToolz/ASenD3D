@@ -35,6 +35,10 @@ impl Model {
                 println!("reading interactions : {}", file_name.s);
                 self.read_interaction_input(&mut file_name);
             }
+            else if cmd_str.s == "readParticleSources" {
+                println!("reading particle sources : {}", file_name.s);
+                self.read_part_src_input(&mut file_name);
+            }
             else if cmd_str.s == "readInitialState" {
                 println!("{}{}", "reading initial state: " , file_name.s);
                 // self.read_initial_state(&mut file_name);

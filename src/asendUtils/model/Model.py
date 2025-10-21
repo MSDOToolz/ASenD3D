@@ -6,6 +6,7 @@ from asendUtils.model.Material import Material
 from asendUtils.model.Fluid import Fluid
 from asendUtils.model.Constraint import Constraint
 from asendUtils.model.Interaction import Interaction
+from asendUtils.model.ParticleSourc import ParticleSource
 from asendUtils.syst.pathTools import *
 
 class Model():
@@ -487,6 +488,11 @@ class Model():
                 index += 1 
                 name = 'unnamed' + str(index)
             self.modelData['interactions'][name] = newInteraction.data
+            
+    def addParticleSource(self, newSource):
+        if 'particleSources' not in self.modelData:
+            self.modelData['particleSources'] = list()
+        self.modelData['particleSources'].append(newSource.data)
     
     def integrateMassElements(self):
         for me in self.massElements:

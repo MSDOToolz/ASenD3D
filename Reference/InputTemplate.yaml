@@ -160,6 +160,23 @@ interactions:
       maxDistRatio:
       idealGasConstant:
       activeTime:
+
+particleSources:
+    - elementSet:
+      coordinates:
+        - [t, x, y, z]
+      refNode:
+      meanVel:
+        - [t, vx, vy, vz]
+      randomVel:
+      temperature:
+        - [t, T]
+      frequency:
+        - [t, val]
+      boundXRange: [xMin, xMax]
+      boundYRange: [yMin, yMax]
+      boundZRange: [zMin, zMax]
+      activeTime:
 ##
 initialState:
     displacement:

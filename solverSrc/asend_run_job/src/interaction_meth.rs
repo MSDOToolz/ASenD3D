@@ -154,7 +154,7 @@ impl Interaction {
             lst_len = g_list.get_in_radius(g_out, g_out.len(), &fcrd1, self.max_dist);
             //if self.max_nbrs == MAX_INT {
             for nb in 0..lst_len {
-                if nd_in_set[g_out[nb]] {
+                if nd_in_set[g_out[nb]] && g_out[nb] != *nd {
                     nodes[g_out[nb]].get_def_crd_dfd0(&mut crd2);
                     fcrd2[0] = crd2[0].val;
                     fcrd2[1] = crd2[1].val;

@@ -433,6 +433,24 @@ impl Model {
         // initialize structures needed for interactions
 
         self.interactions.initialize(&self.nodes, &self.node_sets, &self.ns_map, &self.elements, &self.design_vars);
+
+        // initialize references for particle sources
+
+        if !self.particle_sources.is_empty() {
+            for sc in self.particle_sources.iter_mut() {
+                sc.elset_pt = self.es_map.at(&sc.element_set.s);
+                if sc.ref_node.s != "" {
+                    i1 = self.ns_map.at(&sc.ref_node.s);
+                    sc.ref_node_i = match self.node_sets[i1].labels.front() {
+                        None => MAX_INT,
+                        Some(x) => *x,
+                    };
+                }
+                else {
+                    sc.ref_node_i = MAX_INT;
+                }
+            }
+        }
         
         // build dv reference list for self.nodes and self.elements
         let mut coef_len : usize;

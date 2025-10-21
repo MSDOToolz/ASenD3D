@@ -631,6 +631,11 @@ impl Model {
                         this_el.advance_int_disp();
                     }
                 }
+                if !self.particle_sources.is_empty() {
+                    for ps in self.particle_sources.iter_mut() {
+                        ps.release_if_clear(time, self.job[ci].time_step, &self.elements, &mut self.nodes, &self.element_sets);
+                    }
+                }
                 if self.job[ci].save_soln_hist {
                     rem = match i1.checked_rem(self.job[ci].soln_hist_freq) {
                         None => panic!("Error: solution history frequency is zero."),
@@ -989,6 +994,13 @@ impl Model {
             }
 
             self.solve_explicit_step(time);
+
+            if !self.particle_sources.is_empty() {
+                for ps in self.particle_sources.iter_mut() {
+                    ps.release_if_clear(time, self.job[ci].time_step, &self.elements, &mut self.nodes, &self.element_sets);
+                }
+            }
+
             if self.job[ci].save_soln_hist {
                 rem = match i1.checked_rem(self.job[ci].soln_hist_freq) {
                     None => panic!("Error: solution history frequency 0"),

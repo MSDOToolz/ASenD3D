@@ -11,6 +11,7 @@ use crate::section::*;
 use crate::load::*;
 use crate::constraint::*;
 use crate::interaction::*;
+use crate::particle_source::*;
 use crate::design_var::*;
 use crate::objective::*;
 use crate::diff_doub::*;
@@ -41,6 +42,7 @@ pub struct Model {
     pub diff_loads : Vec<Load>,
     pub fluid_loads : Vec<Load>,
     pub interactions : InteractionList,
+    pub particle_sources : Vec<ParticleSource>,
     pub init_stat_file : CppStr,
     pub design_vars : Vec<DesignVariable>,
     pub obj : Objective,
@@ -134,6 +136,7 @@ impl Model {
             diff_loads : Vec::new(),
             fluid_loads : Vec::new(),
             interactions : InteractionList::new(),
+            particle_sources : Vec::new(),
             init_stat_file : CppStr::new(),
             design_vars : Vec::new(),
             obj : Objective::new(),

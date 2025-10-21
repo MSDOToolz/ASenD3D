@@ -8,6 +8,8 @@ jobCommands:
     fileName:
   - command: readInteractions
     fileName:
+  - command: readParticleSources
+    fileName: 
   - command: readInitialState  X
     fileName:
   - command: readDesignVarInput X
