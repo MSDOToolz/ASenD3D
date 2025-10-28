@@ -116,8 +116,6 @@ impl Interaction {
         let mut fcrd2 = [0f64; 3];
         let mut dist : f64;
         let mut lst_len : usize;
-        let mut tmpv = vec![0f64; 18];
-        let mut tmpv2 = vec![0f64; 18];
         let mut inserted : bool;
         let mut i1 : usize;
         
@@ -169,8 +167,8 @@ impl Interaction {
                                 self.get_ig_frc_coef_dfd0(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
                             }
                             match discipline {
-                                0 => dummy_el.get_ru_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
-                                1 => dummy_el.get_rt_frc_fld_dfd0(glob_r, dr_du, &mut tmpv, &mut tmpv2, get_matrix, cmd, pre, nodes),
+                                0 => dummy_el.put_ru_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
+                                1 => dummy_el.put_rt_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                                 _ => (),
                             }
                         }
@@ -209,8 +207,8 @@ impl Interaction {
                             self.get_ig_frc_coef_dfd0(pre, &nd_mass[*nd], &nd_mass[nearest[i2]], near_dist[i2]);
                         }
                         match discipline {
-                            0 => dummy_el.get_ru_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
-                            1 => dummy_el.get_rt_frc_fld_dfd0(glob_r, dr_du, &mut tmpv, &mut tmpv2, get_matrix, cmd, pre, nodes),
+                            0 => dummy_el.put_ru_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
+                            1 => dummy_el.put_rt_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                             _ => (),
                         }
                     }
@@ -288,8 +286,6 @@ impl Interaction {
         let mut fcrd2 = [0f64; 3];
         let mut dist : f64;
         let mut lst_len : usize;
-        let mut tmpv = vec![0f64; 18];
-        let mut tmpv2 = vec![0f64; 18];
         let mut inserted : bool;
         let mut i1 : usize;
         
@@ -326,7 +322,7 @@ impl Interaction {
             lst_len = g_list.get_in_radius(g_out, g_out.len(), &fcrd1, self.max_dist);
             //if self.max_nbrs == MAX_INT {
             for nb in 0..lst_len {
-                if nd_in_set[g_out[nb]] {
+                if nd_in_set[g_out[nb]] && g_out[nb] != *nd {
                     nodes[g_out[nb]].get_def_crd_dfd1(&mut crd2);
                     fcrd2[0] = crd2[0].val;
                     fcrd2[1] = crd2[1].val;
@@ -341,8 +337,8 @@ impl Interaction {
                                 self.get_ig_frc_coef_dfd1(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
                             }
                             match discipline {
-                                0 => dummy_el.get_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
-                                1 => dummy_el.get_rt_frc_fld_dfd1(glob_r, dr_du, &mut tmpv, &mut tmpv2, get_matrix, cmd, pre, nodes),
+                                0 => dummy_el.put_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
+                                1 => dummy_el.put_rt_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                                 _ => (),
                             }
                         }
@@ -373,7 +369,7 @@ impl Interaction {
             //}
             if self.max_nbrs < MAX_INT {
                 for i2 in 0..self.max_nbrs {
-                    if nearest[i2] < MAX_INT {
+                    if nearest[i2] < MAX_INT && near_dist[i2]/near_dist[0] < self.max_ratio {
                         dummy_el.nodes[0] = *nd;
                         dummy_el.nodes[1] = nearest[i2];
                         dummy_el.get_all_nd_var_dfd1(pre, nodes);
@@ -381,8 +377,8 @@ impl Interaction {
                             self.get_ig_frc_coef_dfd1(pre, &nd_mass[*nd], &nd_mass[nearest[i2]], near_dist[i2]);
                         }
                         match discipline {
-                            0 => dummy_el.get_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
-                            1 => dummy_el.get_rt_frc_fld_dfd1(glob_r, dr_du, &mut tmpv, &mut tmpv2, get_matrix, cmd, pre, nodes),
+                            0 => dummy_el.put_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
+                            1 => dummy_el.put_rt_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                             _ => (),
                         }
                     }
@@ -398,6 +394,7 @@ impl Interaction {
 //end dup
  
 //end skip 
+ 
 }
 
 impl InteractionList {
@@ -470,6 +467,7 @@ impl InteractionList {
 //end dup
  
 //end skip 
+ 
 
     pub fn initialize(&mut self, nodes : &Vec<Node>, node_sets : &Vec<Set>, ns_map : &CppMap, el_ar : &Vec<Element>, dv_ar : &Vec<DesignVariable>) {
 

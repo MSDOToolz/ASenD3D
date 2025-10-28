@@ -916,7 +916,7 @@ impl Element {
         }
         
         if self.this_type == 21 {
-            self.get_ru_frc_fld_dfd0(glob_r, globd_rdu,  get_matrix, cmd, pre, nd_ar);
+            self.put_ru_frc_fld_dfd0(glob_r, globd_rdu,  get_matrix, cmd, pre, nd_ar);
             return;
         }
         
@@ -1277,7 +1277,7 @@ impl Element {
         
         if self.this_type == 21 {
             //self.get_rt_frc_fld_dfd0(glob_r, globd_rd_t, &mut  scr.scr_m1, &mut  scr.scr_m2,  get_matrix, cmd, &mut  pre, &mut  nd_ar);
-            self.get_rt_frc_fld_dfd0(glob_r, globd_rd_t, &mut  d_rd_t, &mut  d_rtmp,  get_matrix, cmd, pre, nd_ar);
+            self.put_rt_frc_fld_dfd0(glob_r, globd_rd_t,  get_matrix, cmd, pre, nd_ar);
             return;
         }
         
@@ -1425,22 +1425,9 @@ impl Element {
         }
     }
 
-    pub fn get_ru_frc_fld_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rdu : &mut SparseMat, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub0StressPrereq, nd_ar : &Vec<Node>) {
+    pub fn get_ru_frc_fld_dfd0(&mut self, rvec : &mut [DiffDoub0], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq) {
         let mut i1 : usize;
         let mut i2 : usize;
-        let mut i3 : usize;
-        let mut i4 : usize;
-        let mut i5 : usize;
-        let nd_dof : usize =  6;
-        let tot_dof : usize =  6;
-        let mut nd : usize;
-        let mut nd2 : usize;
-        let mut dof : usize;
-        let mut dof2 : usize;
-        let mut glob_ind : usize;
-        let mut glob_ind2 : usize;
-        let mut rvec = [DiffDoub0::new(); 6];
-        let mut d_rd_u : [f64; 36] = [0f64; 36];
         let mut d_vec = [DiffDoub0::new(); 3];
         let mut dist = DiffDoub0::new();
         let mut dv_vec = [DiffDoub0::new(); 3];
@@ -1533,8 +1520,8 @@ impl Element {
         
         if get_matrix && !cmd.explicit {
             for i1 in 0..18 {
-                d_rd_u[i1] = -df_n1d_u[i1].val;
-                d_rd_u[i1 + 18] = df_n1d_u[i1].val;
+                dr_du[i1] = -df_n1d_u[i1].val;
+                dr_du[i1 + 18] = df_n1d_u[i1].val;
             }
         }
         
@@ -1573,11 +1560,33 @@ impl Element {
         }
         
         if get_matrix && !cmd.explicit {
+            tmp.set_val_dfd0(&pre.frc_fld_coef[1]);
+            tmp.dvd(&dto_p);
             for i1 in 0..18 {
-                d_rd_u[i1]  -=  df_n1d_u[i1].val;
-                d_rd_u[i1 + 18]  +=  df_n1d_u[i1].val;
+                dr_du[i1]  -=  df_n1d_u[i1].val;
+                dr_du[i1 + 18]  +=  df_n1d_u[i1].val;
+                dr_dv[i1] -= tmp.val*d_dvecd_u[i1].val;
+                dr_dv[i1 + 18] += tmp.val*d_dvecd_u[i1].val;
             }
         }
+    }
+
+    pub fn put_ru_frc_fld_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rdu : &mut SparseMat, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub0StressPrereq, nd_ar : &Vec<Node>) {
+        let mut i3 : usize;
+        let mut i4 : usize;
+        let mut i5 : usize;
+        let mut nd : usize;
+        let mut dof : usize;
+        let mut glob_ind : usize;
+        let mut nd2 : usize;
+        let mut dof2 : usize;
+        let mut glob_ind2 : usize;
+        let nd_dof = 6usize;
+        let mut rvec = [DiffDoub0::new(); 6];
+        let mut d_rd_u = [0f64; 36];
+        let mut d_rd_v = [0f64; 36];
+
+        self.get_ru_frc_fld_dfd0(&mut rvec, &mut d_rd_u, &mut d_rd_v, get_matrix, cmd, pre);
         
         i4 = 0;
         for i1 in 0..nd_dof {
@@ -1586,7 +1595,7 @@ impl Element {
             glob_ind = nd_ar[nd].dof_index[dof];
             glob_r[glob_ind].add(& rvec[i1]);
             if get_matrix && !cmd.explicit {
-                i3 = i1 * tot_dof;
+                i3 = i1 * nd_dof;
                 i5 = 0;
                 for _i2 in 0..nd_dof {
                     nd2 = self.nodes[self.dof_table[i5]];
@@ -1603,16 +1612,10 @@ impl Element {
         return;
     }
 
-    pub fn get_rt_frc_fld_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rd_t : &mut SparseMat, d_rd_u : &mut Vec<f64>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq, nd_ar : &Vec<Node>) {
+    pub fn get_rt_frc_fld_dfd0(&mut self, rvec : &mut [DiffDoub0], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
-        let mut nd : usize;
-        let mut nd2 : usize;
-        let mut glob_ind : usize;
-        let mut glob_ind2 : usize;
-        let mut rvec = [DiffDoub0::new(); 2];
-        let mut d_rd_t : [f64; 4] = [0f64; 4];
         let mut d_vec = [DiffDoub0::new(); 3];
         let mut dist = DiffDoub0::new();
         let mut dv_vec = [DiffDoub0::new(); 3];
@@ -1741,11 +1744,6 @@ impl Element {
         
         rvec[0].sub(& tmp);
         rvec[1].sub(& tmp);
-        for i1 in 0..2 {
-            nd = self.nodes[i1];
-            glob_ind = nd_ar[nd].sorted_rank;
-            glob_r[glob_ind].add(& rvec[i1]);
-        }
         
         if get_matrix && !cmd.explicit {
             d_dvecd_u[0].set_val(-1.0);
@@ -1804,26 +1802,14 @@ impl Element {
             tmp2.set_val_dfd0(& pre.thrm_fld_coef[1]);
             tmp2.dvd(& dist);
             tmp2.dvd(& dist);
-            d_rd_t[0] = tmp.val + tmp2.val * t1to3.val;
-            d_rd_t[1] = -tmp.val;
-            d_rd_t[2] = -tmp.val;
-            d_rd_t[3] = tmp.val + tmp2.val * t2to3.val;
-            
-            i3 = 0;
-            for i1 in 0..2 {
-                nd = self.nodes[i1];
-                glob_ind = nd_ar[nd].sorted_rank;
-                for i2 in 0..2 {
-                    nd2 = self.nodes[i2];
-                    glob_ind2 = nd_ar[nd2].sorted_rank;
-                    globd_rd_t.add_entry(glob_ind,   glob_ind2,   d_rd_t[i3]);
-                    i3 += 1usize;
-                }
-            }
+            dr_dt[0] = tmp.val + tmp2.val * t1to3.val;
+            dr_dt[1] = -tmp.val;
+            dr_dt[2] = -tmp.val;
+            dr_dt[3] = tmp.val + tmp2.val * t2to3.val;
             
             // d_rd_u
             for i1 in 0..12 {
-                d_rd_u[i1] = 0.0;
+                dr_du[i1] = 0.0;
             }
             
             // conduction term
@@ -1840,7 +1826,7 @@ impl Element {
             mat_mul_ar_dfd0(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
             
             for i1 in 0..12 {
-                d_rd_u[i1]  +=  tmp_mat2[i1].val;
+                dr_du[i1]  +=  tmp_mat2[i1].val;
             }
             
             // radiation term
@@ -1860,7 +1846,7 @@ impl Element {
             mat_mul_ar_dfd0(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
             
             for i1 in 0..12 {
-                d_rd_u[i1]  +=  tmp_mat2[i1].val;
+                dr_du[i1]  +=  tmp_mat2[i1].val;
             }
             
             // work dissipation term
@@ -1868,7 +1854,7 @@ impl Element {
             i3 = 0;
             for _i1 in 0..2 {
                 for i2 in 0..6 {
-                    d_rd_u[i3]  -=  0.5 * tmp_mat[i2].val;
+                    dr_du[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
                 }
             }
@@ -1876,14 +1862,14 @@ impl Element {
             // d_rd_v
             
             for i1 in 0..12 {
-                d_rd_v[i1] = 0.0;
+                dr_dv[i1] = 0.0;
             }
             
             mat_mul_ar_dfd0(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_v,  1,  3,  6);
             i3 = 0;
             for _i1 in 0..2 {
                 for i2 in 0..6 {
-                    d_rd_v[i3]  -=  0.5 * tmp_mat[i2].val;
+                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
                 }
             }
@@ -1892,7 +1878,45 @@ impl Element {
             i3 = 0;
             for _i1 in 0..2 {
                 for i2 in 0..6 {
-                    d_rd_v[i3]  -=  0.5 * tmp_mat[i2].val;
+                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
+                    i3 += 1usize;
+                }
+            }
+            
+        }
+        
+        return;        
+    }
+
+    pub fn put_rt_frc_fld_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rd_t : &mut SparseMat, get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq, nd_ar : &Vec<Node>) {
+        let mut i3 : usize;
+        let mut nd : usize;
+        let mut nd2 : usize;
+        let mut glob_ind : usize;
+        let mut glob_ind2 : usize;
+        let mut rvec = [DiffDoub0::new(); 2];
+        let mut d_rd_t : [f64; 4] = [0f64; 4];
+        let mut d_rd_u = [0f64; 12];
+        let mut d_rd_v = [0f64; 12];
+        
+        self.get_rt_frc_fld_dfd0(&mut rvec, &mut d_rd_t, &mut d_rd_u, &mut d_rd_v, get_matrix, cmd, pre);
+
+        for i1 in 0..2 {
+            nd = self.nodes[i1];
+            glob_ind = nd_ar[nd].sorted_rank;
+            glob_r[glob_ind].add(& rvec[i1]);
+        }
+        
+        if get_matrix && !cmd.explicit {
+            
+            i3 = 0;
+            for i1 in 0..2 {
+                nd = self.nodes[i1];
+                glob_ind = nd_ar[nd].sorted_rank;
+                for i2 in 0..2 {
+                    nd2 = self.nodes[i2];
+                    glob_ind2 = nd_ar[nd2].sorted_rank;
+                    globd_rd_t.add_entry(glob_ind,   glob_ind2,   d_rd_t[i3]);
                     i3 += 1usize;
                 }
             }
@@ -2981,7 +3005,7 @@ impl Element {
         }
         
         if self.this_type == 21 {
-            self.get_ru_frc_fld_dfd1(glob_r, globd_rdu,  get_matrix, cmd, pre, nd_ar);
+            self.put_ru_frc_fld_dfd1(glob_r, globd_rdu,  get_matrix, cmd, pre, nd_ar);
             return;
         }
         
@@ -3342,7 +3366,7 @@ impl Element {
         
         if self.this_type == 21 {
             //self.get_rt_frc_fld_dfd1(glob_r, globd_rd_t, &mut  scr.scr_m1, &mut  scr.scr_m2,  get_matrix, cmd, &mut  pre, &mut  nd_ar);
-            self.get_rt_frc_fld_dfd1(glob_r, globd_rd_t, &mut  d_rd_t, &mut  d_rtmp,  get_matrix, cmd, pre, nd_ar);
+            self.put_rt_frc_fld_dfd1(glob_r, globd_rd_t,  get_matrix, cmd, pre, nd_ar);
             return;
         }
         
@@ -3490,22 +3514,9 @@ impl Element {
         }
     }
 
-    pub fn get_ru_frc_fld_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rdu : &mut SparseMat, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub1StressPrereq, nd_ar : &Vec<Node>) {
+    pub fn get_ru_frc_fld_dfd1(&mut self, rvec : &mut [DiffDoub1], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq) {
         let mut i1 : usize;
         let mut i2 : usize;
-        let mut i3 : usize;
-        let mut i4 : usize;
-        let mut i5 : usize;
-        let nd_dof : usize =  6;
-        let tot_dof : usize =  6;
-        let mut nd : usize;
-        let mut nd2 : usize;
-        let mut dof : usize;
-        let mut dof2 : usize;
-        let mut glob_ind : usize;
-        let mut glob_ind2 : usize;
-        let mut rvec = [DiffDoub1::new(); 6];
-        let mut d_rd_u : [f64; 36] = [0f64; 36];
         let mut d_vec = [DiffDoub1::new(); 3];
         let mut dist = DiffDoub1::new();
         let mut dv_vec = [DiffDoub1::new(); 3];
@@ -3598,8 +3609,8 @@ impl Element {
         
         if get_matrix && !cmd.explicit {
             for i1 in 0..18 {
-                d_rd_u[i1] = -df_n1d_u[i1].val;
-                d_rd_u[i1 + 18] = df_n1d_u[i1].val;
+                dr_du[i1] = -df_n1d_u[i1].val;
+                dr_du[i1 + 18] = df_n1d_u[i1].val;
             }
         }
         
@@ -3638,11 +3649,33 @@ impl Element {
         }
         
         if get_matrix && !cmd.explicit {
+            tmp.set_val_dfd1(&pre.frc_fld_coef[1]);
+            tmp.dvd(&dto_p);
             for i1 in 0..18 {
-                d_rd_u[i1]  -=  df_n1d_u[i1].val;
-                d_rd_u[i1 + 18]  +=  df_n1d_u[i1].val;
+                dr_du[i1]  -=  df_n1d_u[i1].val;
+                dr_du[i1 + 18]  +=  df_n1d_u[i1].val;
+                dr_dv[i1] -= tmp.val*d_dvecd_u[i1].val;
+                dr_dv[i1 + 18] += tmp.val*d_dvecd_u[i1].val;
             }
         }
+    }
+
+    pub fn put_ru_frc_fld_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rdu : &mut SparseMat, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub1StressPrereq, nd_ar : &Vec<Node>) {
+        let mut i3 : usize;
+        let mut i4 : usize;
+        let mut i5 : usize;
+        let mut nd : usize;
+        let mut dof : usize;
+        let mut glob_ind : usize;
+        let mut nd2 : usize;
+        let mut dof2 : usize;
+        let mut glob_ind2 : usize;
+        let nd_dof = 6usize;
+        let mut rvec = [DiffDoub1::new(); 6];
+        let mut d_rd_u = [0f64; 36];
+        let mut d_rd_v = [0f64; 36];
+
+        self.get_ru_frc_fld_dfd1(&mut rvec, &mut d_rd_u, &mut d_rd_v, get_matrix, cmd, pre);
         
         i4 = 0;
         for i1 in 0..nd_dof {
@@ -3651,7 +3684,7 @@ impl Element {
             glob_ind = nd_ar[nd].dof_index[dof];
             glob_r[glob_ind].add(& rvec[i1]);
             if get_matrix && !cmd.explicit {
-                i3 = i1 * tot_dof;
+                i3 = i1 * nd_dof;
                 i5 = 0;
                 for _i2 in 0..nd_dof {
                     nd2 = self.nodes[self.dof_table[i5]];
@@ -3668,16 +3701,10 @@ impl Element {
         return;
     }
 
-    pub fn get_rt_frc_fld_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rd_t : &mut SparseMat, d_rd_u : &mut Vec<f64>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq, nd_ar : &Vec<Node>) {
+    pub fn get_rt_frc_fld_dfd1(&mut self, rvec : &mut [DiffDoub1], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
-        let mut nd : usize;
-        let mut nd2 : usize;
-        let mut glob_ind : usize;
-        let mut glob_ind2 : usize;
-        let mut rvec = [DiffDoub1::new(); 2];
-        let mut d_rd_t : [f64; 4] = [0f64; 4];
         let mut d_vec = [DiffDoub1::new(); 3];
         let mut dist = DiffDoub1::new();
         let mut dv_vec = [DiffDoub1::new(); 3];
@@ -3806,11 +3833,6 @@ impl Element {
         
         rvec[0].sub(& tmp);
         rvec[1].sub(& tmp);
-        for i1 in 0..2 {
-            nd = self.nodes[i1];
-            glob_ind = nd_ar[nd].sorted_rank;
-            glob_r[glob_ind].add(& rvec[i1]);
-        }
         
         if get_matrix && !cmd.explicit {
             d_dvecd_u[0].set_val(-1.0);
@@ -3869,26 +3891,14 @@ impl Element {
             tmp2.set_val_dfd1(& pre.thrm_fld_coef[1]);
             tmp2.dvd(& dist);
             tmp2.dvd(& dist);
-            d_rd_t[0] = tmp.val + tmp2.val * t1to3.val;
-            d_rd_t[1] = -tmp.val;
-            d_rd_t[2] = -tmp.val;
-            d_rd_t[3] = tmp.val + tmp2.val * t2to3.val;
-            
-            i3 = 0;
-            for i1 in 0..2 {
-                nd = self.nodes[i1];
-                glob_ind = nd_ar[nd].sorted_rank;
-                for i2 in 0..2 {
-                    nd2 = self.nodes[i2];
-                    glob_ind2 = nd_ar[nd2].sorted_rank;
-                    globd_rd_t.add_entry(glob_ind,   glob_ind2,   d_rd_t[i3]);
-                    i3 += 1usize;
-                }
-            }
+            dr_dt[0] = tmp.val + tmp2.val * t1to3.val;
+            dr_dt[1] = -tmp.val;
+            dr_dt[2] = -tmp.val;
+            dr_dt[3] = tmp.val + tmp2.val * t2to3.val;
             
             // d_rd_u
             for i1 in 0..12 {
-                d_rd_u[i1] = 0.0;
+                dr_du[i1] = 0.0;
             }
             
             // conduction term
@@ -3905,7 +3915,7 @@ impl Element {
             mat_mul_ar_dfd1(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
             
             for i1 in 0..12 {
-                d_rd_u[i1]  +=  tmp_mat2[i1].val;
+                dr_du[i1]  +=  tmp_mat2[i1].val;
             }
             
             // radiation term
@@ -3925,7 +3935,7 @@ impl Element {
             mat_mul_ar_dfd1(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
             
             for i1 in 0..12 {
-                d_rd_u[i1]  +=  tmp_mat2[i1].val;
+                dr_du[i1]  +=  tmp_mat2[i1].val;
             }
             
             // work dissipation term
@@ -3933,7 +3943,7 @@ impl Element {
             i3 = 0;
             for _i1 in 0..2 {
                 for i2 in 0..6 {
-                    d_rd_u[i3]  -=  0.5 * tmp_mat[i2].val;
+                    dr_du[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
                 }
             }
@@ -3941,14 +3951,14 @@ impl Element {
             // d_rd_v
             
             for i1 in 0..12 {
-                d_rd_v[i1] = 0.0;
+                dr_dv[i1] = 0.0;
             }
             
             mat_mul_ar_dfd1(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_v,  1,  3,  6);
             i3 = 0;
             for _i1 in 0..2 {
                 for i2 in 0..6 {
-                    d_rd_v[i3]  -=  0.5 * tmp_mat[i2].val;
+                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
                     i3 += 1usize;
                 }
             }
@@ -3957,7 +3967,45 @@ impl Element {
             i3 = 0;
             for _i1 in 0..2 {
                 for i2 in 0..6 {
-                    d_rd_v[i3]  -=  0.5 * tmp_mat[i2].val;
+                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
+                    i3 += 1usize;
+                }
+            }
+            
+        }
+        
+        return;        
+    }
+
+    pub fn put_rt_frc_fld_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rd_t : &mut SparseMat, get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq, nd_ar : &Vec<Node>) {
+        let mut i3 : usize;
+        let mut nd : usize;
+        let mut nd2 : usize;
+        let mut glob_ind : usize;
+        let mut glob_ind2 : usize;
+        let mut rvec = [DiffDoub1::new(); 2];
+        let mut d_rd_t : [f64; 4] = [0f64; 4];
+        let mut d_rd_u = [0f64; 12];
+        let mut d_rd_v = [0f64; 12];
+        
+        self.get_rt_frc_fld_dfd1(&mut rvec, &mut d_rd_t, &mut d_rd_u, &mut d_rd_v, get_matrix, cmd, pre);
+
+        for i1 in 0..2 {
+            nd = self.nodes[i1];
+            glob_ind = nd_ar[nd].sorted_rank;
+            glob_r[glob_ind].add(& rvec[i1]);
+        }
+        
+        if get_matrix && !cmd.explicit {
+            
+            i3 = 0;
+            for i1 in 0..2 {
+                nd = self.nodes[i1];
+                glob_ind = nd_ar[nd].sorted_rank;
+                for i2 in 0..2 {
+                    nd2 = self.nodes[i2];
+                    glob_ind2 = nd_ar[nd2].sorted_rank;
+                    globd_rd_t.add_entry(glob_ind,   glob_ind2,   d_rd_t[i3]);
                     i3 += 1usize;
                 }
             }
@@ -4329,14 +4377,6 @@ impl Element {
     //end dup
  
 //end skip 
- 
- 
- 
- 
- 
- 
- 
- 
  
  
 }

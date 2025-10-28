@@ -439,16 +439,16 @@ impl Model {
         if !self.particle_sources.is_empty() {
             for sc in self.particle_sources.iter_mut() {
                 sc.elset_pt = self.es_map.at(&sc.element_set.s);
-                if sc.ref_node.s != "" {
-                    i1 = self.ns_map.at(&sc.ref_node.s);
-                    sc.ref_node_i = match self.node_sets[i1].labels.front() {
-                        None => MAX_INT,
-                        Some(x) => *x,
-                    };
+                for i in 0..3 {
+                    i1 = self.ns_map.at(&sc.ref_nodes[i].s);
+                    if i1 < MAX_INT {
+                        sc.ref_nodes_i[i] = match self.node_sets[i1].labels.front() {
+                            None => MAX_INT,
+                            Some(x) => *x,
+                        }
+                    } 
                 }
-                else {
-                    sc.ref_node_i = MAX_INT;
-                }
+                
             }
         }
         

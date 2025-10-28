@@ -6,10 +6,10 @@ Created on Fri Nov 17 18:46:31 2023
 """
 
 import os
-fileNames = ['element_equations.rs','element_meth.rs',
+fileNames = ['element_equations.rs', 'element_fluid_eq.rs', 'element_fluid_fields.rs', 'element_meth.rs',
               'element_properties.rs','element_soln_fields.rs',
               'face_meth.rs','matrix_functions.rs',
-              'node_meth.rs']
+              'node_meth.rs', 'interaction_meth.rs']
 
 for fn in fileNames:
     inFile = open(fn,'r')

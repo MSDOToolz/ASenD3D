@@ -304,7 +304,6 @@ impl Model {
                         nd_pt.backstep_disp();
                     }
                 }
-                
             }
             if self.job[sci].elastic {
                 for el_pt in self.elements.iter_mut() {
@@ -490,6 +489,69 @@ impl Model {
             }
         }
         
+    }
+
+    pub fn write_particle_state(&mut self, file_name : &mut CppStr, time_step : usize) {
+        let time : f64;
+        let sci = self.solve_cmd;
+        
+        if time_step < MAX_INT {
+            // read the results from the time step file and store them in self.nodes
+            self.read_time_step_soln(time_step);
+            for nd_pt in self.nodes.iter_mut() {
+                if nd_pt.fluid {
+                    if self.job[sci].fluid {
+                        nd_pt.backstep_flow();
+                    }
+                }
+                else {
+                    if self.job[sci].thermal {
+                        nd_pt.backstep_temp();
+                    }
+                    if self.job[sci].diffusion {
+                        nd_pt.backstep_fl_den();
+                    }
+                    if self.job[sci].elastic {
+                        nd_pt.backstep_disp();
+                    }
+                }
+            }
+            if self.job[sci].elastic {
+                for el_pt in self.elements.iter_mut() {
+                    el_pt.backstep_int_disp();
+                }
+            }
+            if self.job[sci].dynamic {
+                time = self.job[sci].time_step * (time_step as f64);
+            }
+            else {
+                time = 0.0;
+            }
+        }
+        else {
+            time = -1.0;
+        }
+
+        let out_file = match File::create(&file_name.s) {
+            Err(_why) => panic!("could not open file {}", file_name.s),
+            Ok(file) => file,
+        };
+
+        let mut writer = io::BufWriter::new(out_file);
+
+        let _ = writer.write(b"source_index,X,Y,Z,V1,V2,V3\n");
+
+        let mut i1 = 0usize;
+        let mut a_mat = [DiffDoub1::new(); 9];
+        let mut n1_crd = [DiffDoub1::new(); 3];
+        let mut gc = [DiffDoub1::new(); 3];
+        for ps in self.particle_sources.iter() {
+            ps.get_dir_cos(&mut a_mat, &mut n1_crd, &mut self.nodes);
+            ps.get_global_crd(&mut gc, &a_mat, &n1_crd, time);
+            let _ = writer.write(format!("{0},{1:.12e},{2:.12e},{3:.12e},{4:.12e},{5:.12e},{6:.12e}\n",i1, gc[0].val, gc[1].val, gc[2].val, gc[0].dval, gc[1].dval, gc[2].dval).as_bytes());
+            i1 += 1;
+        }
+
     }
 
     pub fn write_modal_results(&mut self, file_name : &mut CppStr) {

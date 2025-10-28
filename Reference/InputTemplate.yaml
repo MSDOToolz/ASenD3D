@@ -165,10 +165,11 @@ particleSources:
     - elementSet:
       coordinates:
         - [t, x, y, z]
-      refNode:
+      refNodes: [no, nx, nxy]
       meanVel:
         - [t, vx, vy, vz]
       randomVel:
+      velInLocal: yes
       temperature:
         - [t, T]
       frequency:

@@ -684,10 +684,6 @@ impl Element {
 //end skip 
  
  
- 
- 
- 
-
     pub fn get_rf_mat_col(&self, glob_mat : &mut SparseMat, pre : &mut DiffDoub1FlPrereq, dynamic : bool, glob_col : usize, prim_var : bool, mult_fact : f64,
         fc_vec : &Vec<Face>, ec_vec : &Vec<CentData>, nd_ar : &Vec<Node>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>) {
 

@@ -112,6 +112,10 @@ jobCommands:
         - 3
         - 7
         - [10,100,10]
+
+  - command: writeParticleState
+    fileName:
+    timeSteps:
         
   - command: writeModalResults X
     fileName:

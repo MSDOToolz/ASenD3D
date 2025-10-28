@@ -136,6 +136,26 @@ impl Model {
                     }
                 }
             }
+            else if cmd_str.s == "writeParticleState" {
+                println!("writing particle state");
+                num_tsteps = self.job[ci].time_steps.len();
+                let ts_cln = self.job[ci].time_steps.clone();
+                if num_tsteps > 0 {
+                    i2 = self.job[ci].file_name.find(".");
+                    if i2 < MAX_INT {
+                        exten = self.job[ci].file_name.substr(i2, MAX_INT);
+                        file_name = self.job[ci].file_name.substr(0, i2);
+                    }
+                    else {
+                        exten = CppStr::from("");
+                        file_name = self.job[ci].file_name.clone();
+                    }
+                    for ts in ts_cln.iter() {
+                        full_fname.s = format!("{}_timestep{}{}", file_name.s, ts, exten.s);
+                        self.write_particle_state(&mut full_fname, *ts);
+                    }
+                }
+            }
             else if cmd_str.s == "writeModalResults" {
                 println!("writing modal results");
                 file_name = self.job[ci].file_name.clone();

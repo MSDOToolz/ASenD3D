@@ -6,12 +6,14 @@ Created on Tue Oct 21 09:32:52 2025
 """
 
 class ParticleSource:
-    def __init__(self, elementSet="", refNode=None, xRange=None, yRange=None, zRange=None, activeTime=None):
+    def __init__(self, elementSet="", refNodes=None, velInLocal=True, xRange=None, yRange=None, zRange=None, activeTime=None):
         self.data = dict()
         self.data['elementSet'] = elementSet
         self.data['coordinates'] = list()
-        if refNode != None:
-            self.data['refNode'] = refNode
+        if refNodes != None:
+            self.data['refNodes'] = str(refNodes)
+        if not velInLocal:
+            self.data['velInLocal'] = 'yes'
         self.data['meanVel'] = list()
         self.data['temperature'] = list()
         self.data['frequency'] = list()

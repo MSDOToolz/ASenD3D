@@ -1311,8 +1311,8 @@ impl Model {
                 match headings[1].s.as_str() {
                     "elementSet" => {*ps_ct = increment_ct(*ps_ct);
                                      self.particle_sources[*ps_ct].element_set = data[0].clone();},
-                    "refNode" => self.particle_sources[*ps_ct].ref_node = data[0].clone(),
                     "randomVel" => self.particle_sources[*ps_ct].random_vel = CppStr::stod(&mut data[0]),
+                    "velInLocal" => self.particle_sources[*ps_ct].vel_in_local = data[0].s.contains("yes"),
                     &_ => (),
                 }
             }
@@ -1328,6 +1328,14 @@ impl Model {
                                       self.particle_sources[*ps_ct].z_range[1] = CppStr::stod(&mut data[1]);},
                     "activeTime" => {self.particle_sources[*ps_ct].active_time[0] = CppStr::stod(&mut data[0]);
                                       self.particle_sources[*ps_ct].active_time[1] = CppStr::stod(&mut data[1]);},
+                    &_ => (),
+                }
+            }
+            else if data_len == 3 {
+                match headings[1].s.as_str() {
+                    "refNodes" => {self.particle_sources[*ps_ct].ref_nodes[0] = data[0].clone();
+                                   self.particle_sources[*ps_ct].ref_nodes[1] = data[1].clone();
+                                   self.particle_sources[*ps_ct].ref_nodes[2] = data[2].clone();},
                     &_ => (),
                 }
             }
