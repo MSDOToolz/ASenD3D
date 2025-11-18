@@ -1,9 +1,10 @@
 import os
+import shutil
 
-fileNames = ['element_equations.rs', 'element_fluid_eq.rs', 'element_fluid_fields.rs', 'element_meth.rs',
-              'element_properties.rs','element_soln_fields.rs',
-              'face_meth.rs','matrix_functions.rs',
-              'node_meth.rs','interaction_meth.rs']
+fileNames = ['element/element_equations.rs', 'element/element_fluid_eq.rs', 'element/element_fluid_fields.rs', 'element/element_meth.rs',
+              'element/element_properties.rs','element/element_soln_fields.rs',
+              'face/face_meth.rs','matrix_functions.rs',
+              'node/node_meth.rs','interaction/interaction_meth.rs']
 
 ##fileNames = ['matrixFunctions.cpp','matrixFunctions.h']
 
@@ -105,7 +106,12 @@ for fn in fileNames:
     inFile.close()
     outFile.close()
     
-    os.remove(fn)
-    os.rename('temp.out',fn)
+    if '/' in fn:
+        lst = fn.split('/')
+        os.rename('temp.out', lst[1])
+        shutil.move(lst[1], lst[0])
+    else:
+        os.remove(fn)
+        os.rename('temp.out', fn)
     
     print('copied '+fn)

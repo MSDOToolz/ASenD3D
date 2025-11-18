@@ -109,3 +109,5 @@ impl SparseMat {
         }
     }
 }
+
+pub mod list_ent_meth;

@@ -217,3 +217,11 @@ impl Model {
         new_mod
     }
 }
+
+
+pub mod model_analysis;
+pub mod model_input;
+pub mod model_meth;
+pub mod model_output;
+pub mod model_prep;
+pub mod model_res_utils;

@@ -62,3 +62,5 @@ impl DiffDoub2 {
         }
     }
 }
+
+pub mod diff_doub_meth;
