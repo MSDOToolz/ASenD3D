@@ -1,6 +1,6 @@
 use crate::lower_tri_mat::*;
 use crate::list_ent::*;
-use crate::constraint::*;
+//use crate::model::constraint::*;
 
 
 impl LowerTriMat {
@@ -12,7 +12,7 @@ impl LowerTriMat {
         return;
     }
 
-    pub fn allocate_from_sparse_mat(&mut self, sp_mat : &mut SparseMat, c_list : &mut ConstraintList, block_dim : usize) {
+    pub fn allocate_from_sparse_mat(&mut self, sp_mat : &mut SparseMat, block_dim : usize) {
         let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
@@ -44,27 +44,27 @@ impl LowerTriMat {
             }
         }
         
-        for cnst in c_list.const_vec.iter() {
-            if cnst.is_active {
-                this_mat = &cnst.mat;
-                for mr in this_mat.matrix.iter() {
-                    for me in mr.row_vec.iter() {
-                        i2 = me.col;
-                        curr_block = i2 / block_dim;
-                        blk_mc = block_dim * curr_block;
-                        for me2 in mr.row_vec.iter() {
-                            i3 = me2.col;
-                            if i3 <= i2 && i3 >= blk_mc {
-                                i4 = i2 - i3 + 1;
-                                if i4 > self.range[i2] {
-                                    self.range[i2] = i4;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // for cnst in c_list.const_vec.iter() {
+        //     if cnst.is_active {
+        //         this_mat = &cnst.mat;
+        //         for mr in this_mat.matrix.iter() {
+        //             for me in mr.row_vec.iter() {
+        //                 i2 = me.col;
+        //                 curr_block = i2 / block_dim;
+        //                 blk_mc = block_dim * curr_block;
+        //                 for me2 in mr.row_vec.iter() {
+        //                     i3 = me2.col;
+        //                     if i3 <= i2 && i3 >= blk_mc {
+        //                         i4 = i2 - i3 + 1;
+        //                         if i4 > self.range[i2] {
+        //                             self.range[i2] = i4;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         
         self.size = 0;
         self.max_bandwidth = 0;
@@ -93,7 +93,7 @@ impl LowerTriMat {
         return  self.allocated;
     }
 
-    pub fn populate_from_sparse_mat(&mut self, sp_mat : &mut SparseMat, c_list : &mut ConstraintList) {
+    pub fn populate_from_sparse_mat(&mut self, sp_mat : &mut SparseMat) {
         let mut i1 : usize;
         let mut i2 : usize;
         let mut i3 : usize;
@@ -117,24 +117,24 @@ impl LowerTriMat {
             i1 += 1usize;
         }
         
-        for cnst in c_list.const_vec.iter() {
-            if cnst.is_active {
-                this_mat = &cnst.mat;
-                const_sf = cnst.scale_fact;
-                for mr in this_mat.matrix.iter() {
-                    for me in mr.row_vec.iter() {
-                        i2 = me.col;
-                        for me2 in mr.row_vec.iter() {
-                            i3 = me2.col;
-                            if i3 <= i2 && i3 >= self.min_col[i2] {
-                                i4 = self.range[i2] + (i3 - self.min_col[i2]);
-                                self.mat[i4]  +=  const_sf * me.value * me2.value;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // for cnst in c_list.const_vec.iter() {
+        //     if cnst.is_active {
+        //         this_mat = &cnst.mat;
+        //         const_sf = cnst.scale_fact;
+        //         for mr in this_mat.matrix.iter() {
+        //             for me in mr.row_vec.iter() {
+        //                 i2 = me.col;
+        //                 for me2 in mr.row_vec.iter() {
+        //                     i3 = me2.col;
+        //                     if i3 <= i2 && i3 >= self.min_col[i2] {
+        //                         i4 = self.range[i2] + (i3 - self.min_col[i2]);
+        //                         self.mat[i4]  +=  const_sf * me.value * me2.value;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         
         return;
     }

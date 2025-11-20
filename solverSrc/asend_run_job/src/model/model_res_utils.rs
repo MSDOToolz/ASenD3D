@@ -1,6 +1,5 @@
 use crate::model::*;
-use crate::element::ElementResults;
-use crate::diff_doub::*;
+use crate::model::element::ElementResults;
 use crate::matrix_functions::*;
 use crate::fmath::*;
 

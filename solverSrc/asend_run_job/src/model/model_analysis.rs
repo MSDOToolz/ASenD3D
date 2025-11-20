@@ -1,11 +1,4 @@
 use crate::model::*;
-use crate::constants::*;
-use crate::list_ent::*;
-use crate::constraint::*;
-use crate::node::*;
-use crate::element::*;
-use crate::diff_doub::*;
-use crate::job::*;
 use crate::matrix_functions::*;
 use crate::cpp_str::CppStr;
 use crate::fmath::*;
@@ -350,10 +343,11 @@ impl Model {
             
             if self.job[sci].run_user_update || just_act {
                 self.build_thermal_soln_load(true, time);
+                self.thermal_const.add_to_sparse_mat(&mut self.therm_mat);
                 if just_act {
-                    self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const, self.job[sci].solver_block_dim);
+                    self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, self.job[sci].solver_block_dim);
                 }
-                self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const);
+                self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat);
                 self.therm_lt.ldl_factor();
             }
             else {
@@ -369,7 +363,7 @@ impl Model {
                 self.therm_lt.ldl_solve(&mut self.therm_sol_vec, &mut  self.therm_ld_vec);
             }
             else {
-                conj_grad_sparse(&mut self.therm_sol_vec, &mut  self.therm_mat, &mut  self.thermal_const, &mut  self.therm_lt, &mut  self.therm_ld_vec,  self.job[sci].conv_tol,  self.job[sci].max_it);
+                conj_grad_sparse(&mut self.therm_sol_vec, &mut  self.therm_mat, &mut  self.therm_lt, &mut  self.therm_ld_vec,  self.job[sci].conv_tol,  self.job[sci].max_it);
                 //g_mres_sparse(self.temp_v2, *self.therm_mat, *self.thermal_const, *self.therm_lt, self.temp_v1, cmd->conv_tol, cmd->max_it, cmd->solver_block_dim);
             }
 
@@ -402,10 +396,11 @@ impl Model {
                 
                 if i2 == 0 && (self.job[sci].run_user_update || just_act) {
                     self.build_diff_soln_load(true);
+                    self.diff_const.add_to_sparse_mat(&mut self.diff_mat);
                     if just_act {
-                        self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const, self.job[sci].solver_block_dim);
+                        self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, self.job[sci].solver_block_dim);
                     }
-                    self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const);
+                    self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat);
                     self.diff_lt.ldl_factor();
                 }
                 else {
@@ -421,7 +416,7 @@ impl Model {
                     self.diff_lt.ldl_solve(&mut self.diff_sol_vec, &mut self.diff_ld_vec);
                 }
                 else {
-                    conj_grad_sparse(&mut self.diff_sol_vec, &mut self.diff_mat, &mut self.diff_const, &mut self.diff_lt,
+                    conj_grad_sparse(&mut self.diff_sol_vec, &mut self.diff_mat, &mut self.diff_lt,
                          &mut self.diff_ld_vec, TOL, self.nodes.len());
                 }
 
@@ -481,10 +476,11 @@ impl Model {
 
                 if self.job[sci].nonlinear_geom || (i2 == 0 && (self.job[sci].run_user_update || just_act)) {
                     self.build_elastic_soln_load(true, time);
+                    self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
                     if i2 == 0 && just_act {
-                        self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, 6*self.job[sci].solver_block_dim);
+                        self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, 6*self.job[sci].solver_block_dim);
                     }
-                    self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+                    self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat);
                     self.elastic_lt.ldl_factor();
                 }
                 else {
@@ -506,7 +502,7 @@ impl Model {
                     self.elastic_lt.ldl_solve(&mut self.elastic_sol_vec, &mut self.elastic_ld_vec);
                 }
                 else {
-                    conj_grad_sparse(&mut self.elastic_sol_vec, &mut  self.elastic_mat, &mut  self.elastic_const, &mut  self.elastic_lt, &mut  self.elastic_ld_vec,  self.job[sci].conv_tol,  self.job[sci].max_it);
+                    conj_grad_sparse(&mut self.elastic_sol_vec, &mut  self.elastic_mat, &mut  self.elastic_lt, &mut  self.elastic_ld_vec,  self.job[sci].conv_tol,  self.job[sci].max_it);
                     //g_mres_sparse(self.temp_v2, *self.elastic_mat, *self.elastic_const, *self.elastic_lt, self.temp_v1, cmd->conv_tol, cmd->max_it, 6*cmd->solver_block_dim);
                 }
 
@@ -588,17 +584,20 @@ impl Model {
         }
         
         if self.job[ci].thermal {
-            self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat,  &mut  self.thermal_const);
+            self.thermal_const.add_to_sparse_mat(&mut self.therm_mat);
+            self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat);
             self.therm_lt.ldl_factor();
         }
 
         if self.job[ci].diffusion {
-            self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const);
+            self.diff_const.add_to_sparse_mat(&mut self.diff_mat);
+            self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat);
             self.diff_lt.ldl_factor();
         }
         
         if self.job[ci].elastic && !self.job[ci].nonlinear_geom {
-            self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+            self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
+            self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat);
             println!("{}", "factoring stiffness matrix" );
             self.elastic_lt.ldl_factor();
             println!("{}", "finished factoring" );
@@ -1154,7 +1153,8 @@ impl Model {
                 self.elastic_mat.add_entry(i1,   i1,   shft);
             }
             if self.job[ci].solver_method.s == "direct" {
-                self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+                self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
+                self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat);
                 println!("{}", "factoring stiffness matrix" );
                 self.elastic_lt.ldl_factor();
                 println!("{}", "finished factoring.  beginning eigensolve" );
@@ -1462,13 +1462,15 @@ impl Model {
             }
             if self.elastic_const.any_just_activated() {
                 self.build_elastic_soln_load(true, time);
-                self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, &mut self.elastic_const, self.job[sci].solver_block_dim);
-                self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+                self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
+                self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, self.job[sci].solver_block_dim);
+                self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat);
                 self.elastic_lt.ldl_factor();
             }
             else if self.job[sci].nonlinear_geom {
                 self.build_elastic_soln_load(true, time);
-                self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat,  &mut  self.elastic_const);
+                self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
+                self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat);
                 self.elastic_lt.ldl_factor();
             }
             for this_el in self.elements.iter_mut() {
@@ -1479,7 +1481,7 @@ impl Model {
                 self.elastic_lt.ldl_solve(&mut self.u_adj, &mut  self.d_ld_u);
             }
             else {
-                conj_grad_sparse(&mut self.u_adj, &mut  self.elastic_mat, &mut  self.elastic_const, &mut  self.elastic_lt, &mut  self.d_ld_u,  self.job[sci].conv_tol,  self.job[sci].max_it);
+                conj_grad_sparse(&mut self.u_adj, &mut  self.elastic_mat, &mut  self.elastic_lt, &mut  self.d_ld_u,  self.job[sci].conv_tol,  self.job[sci].max_it);
                 //g_mres_sparse(self.u_adj, *self.elastic_mat, *self.elastic_const, *self.elastic_lt, self.d_ld_u, self.solve_cmd->conv_tol, self.solve_cmd->max_it, 6*self.solve_cmd->solver_block_dim);
             }
             for this_el in self.elements.iter_mut() {
@@ -1525,15 +1527,17 @@ impl Model {
                 }
             }
             if self.diff_const.any_just_activated() {
-                self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const, self.job[sci].solver_block_dim);
-                self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat, &mut self.diff_const);
+                self.build_diff_soln_load(true);
+                self.diff_const.add_to_sparse_mat(&mut self.diff_mat);
+                self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, self.job[sci].solver_block_dim);
+                self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat);
                 self.diff_lt.ldl_factor();
             }
             if self.job[sci].solver_method.s == "direct" {
                 self.diff_lt.ldl_solve(&mut self.con_adj, &mut  self.d_ld_con);
             }
             else {
-                conj_grad_sparse(&mut self.con_adj, &mut  self.diff_mat, &mut self.diff_const, &mut  self.diff_lt, &mut self.d_ld_con, self.job[sci].conv_tol, self.job[sci].max_it);
+                conj_grad_sparse(&mut self.con_adj, &mut  self.diff_mat, &mut  self.diff_lt, &mut self.d_ld_con, self.job[sci].conv_tol, self.job[sci].max_it);
                 //g_mres_sparse(self.t_adj, *self.therm_mat, *self.thermal_const, *self.therm_lt, self.d_ld_t, self.solve_cmd->conv_tol, self.solve_cmd->max_it, self.solve_cmd->solver_block_dim);
             }
         }
@@ -1576,15 +1580,17 @@ impl Model {
                 }
             }
             if self.thermal_const.any_just_activated() {
-                self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const, self.job[sci].solver_block_dim);
-                self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat, &mut self.thermal_const);
+                self.build_thermal_soln_load(true, time);
+                self.thermal_const.add_to_sparse_mat(&mut self.therm_mat);
+                self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, self.job[sci].solver_block_dim);
+                self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat);
                 self.therm_lt.ldl_factor();
             }
             if self.job[sci].solver_method.s == "direct" {
                 self.therm_lt.ldl_solve(&mut self.t_adj, &mut  self.d_ld_t);
             }
             else {
-                conj_grad_sparse(&mut self.t_adj, &mut  self.therm_mat, &mut  self.thermal_const, &mut  self.therm_lt, &mut  self.d_ld_t,  self.job[sci].conv_tol,  self.job[sci].max_it);
+                conj_grad_sparse(&mut self.t_adj, &mut  self.therm_mat, &mut  self.therm_lt, &mut  self.d_ld_t,  self.job[sci].conv_tol,  self.job[sci].max_it);
                 //g_mres_sparse(self.t_adj, *self.therm_mat, *self.thermal_const, *self.therm_lt, self.d_ld_t, self.solve_cmd->conv_tol, self.solve_cmd->max_it, self.solve_cmd->solver_block_dim);
             }
         }
@@ -1597,7 +1603,7 @@ impl Model {
         let mut glob_ind : usize;
         let mut dv_val = DiffDoub0::new();
         
-        let mut scmd : &JobCommand = &self.job[self.solve_cmd];
+        let scmd : &JobCommand = &self.job[self.solve_cmd];
         //let mut this_dv : &mut DesignVariable = &mut self.design_vars[d_var_num];
         self.design_vars[d_var_num].get_value_dfd0(&mut dv_val);
         self.design_vars[d_var_num].diff_val.set_val_2(dv_val.val, 1.0);

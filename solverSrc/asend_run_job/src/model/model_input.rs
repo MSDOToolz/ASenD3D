@@ -1,20 +1,7 @@
 use crate::model::*;
-use crate::constants::*;
-use crate::job::*;
-use crate::node::*;
-use crate::element::*;
-use crate::nd_el_set::*;
-use crate::section::*;
-use crate::constraint::*;
-use crate::load::*;
-use crate::interaction::*;
-use crate::particle_source::*;
-use crate::design_var::*;
-use crate::objective::*;
 use crate::cpp_str::CppStr;
 use crate::list_ent::{DualFloat, QuadFloat};
 
-use std::char::MAX;
 use std::fs::File;
 use std::io::{self, Read, BufRead};
 use std::path::Path;
@@ -224,24 +211,6 @@ impl Model {
                 } else if headings[1].s == "timeStep" && data_len == 1 {
                     self.job[cmd_ct].time_step = CppStr::stod(&mut data[0]);
                 }
-                else if headings[1].s == "fluid" && data_len == 1 {
-                    self.job[cmd_ct].fluid = data[0].s.contains("yes");
-                }
-                else if headings[1].s == "dissipationLevel" && data_len == 1 {
-                    self.job[cmd_ct].dissipation = CppStr::stod(&mut data[0]);
-                }
-                else if headings[1].s == "modelTurbulence" && data_len == 1 {
-                    self.job[cmd_ct].mod_turb = data[0].s.contains("yes");
-                }
-                else if headings[1].s == "fluidSolver" && data_len == 1 {
-                    self.job[cmd_ct].fluid_solver = data[0].clone();
-                }
-                else if headings[1].s == "fluidBlockDim" && data_len == 1 {
-                    self.job[cmd_ct].fluid_block_dim = CppStr::stoi(&mut data[0]);
-                }
-                else if headings[1].s == "maxFSIGap" && data_len == 1 {
-                    self.job[cmd_ct].max_fsi_gap = CppStr::stod(&mut data[0]);
-                }
                 else if headings[1].s == "userUpdate" && data_len == 1 {
                     self.job[cmd_ct].run_user_update = data[0].s.contains("yes");
                 }
@@ -346,7 +315,6 @@ impl Model {
         let mut es_ct : usize =  0;
         let mut sec_ct : usize =  0;
         let mut mat_ct : usize =  0;
-        let mut fl_ct : usize =  0;
         let mut const_ct = [0usize; 4];
         let mut load_ct = [0usize; 4];
         let mut int_ct : usize = 0;
@@ -356,7 +324,6 @@ impl Model {
         lst_ar[0] = CppStr::from("nodalForce bodyForce gravitational centrifugal surfacePressure surfaceTraction");
         lst_ar[1] = CppStr::from("nodalHeatGen bodyHeatGen surfaceFlux");
         lst_ar[2] = CppStr::from("nodalMassGen massGen massFlux");
-        lst_ar[3] = CppStr::from("fluidBodyForce fluidHeatGen");
         let mut load_type : CppStr = CppStr::new();
         let mut ld_ind = 0usize;
 
@@ -398,11 +365,6 @@ impl Model {
                         mat_ct += 1usize;
                     }
                 }
-                else if headings[0].s == "fluids" {
-                    if headings[1].s != "" && headings[2].s == "" && hd_updated {
-                        fl_ct += 1usize;
-                    }
-                }
                 else {
                     self.const_loop1(&mut headings, &mut data, data_len, &mut const_ct);
                     self.load_loop1(&mut headings, &mut data, data_len, &mut load_ct, &mut lst_ar);
@@ -421,17 +383,14 @@ impl Model {
         self.element_sets = vec![Set::new(); es_ct + el_ct + 1];
         self.sections = vec![Section::new(); sec_ct];
         self.materials = vec![Material::new(); mat_ct];
-        self.fluids = vec![Fluid::new(); fl_ct];
 
         self.elastic_const.const_vec = vec![Constraint::new(); const_ct[0]];
         self.thermal_const.const_vec = vec![Constraint::new(); const_ct[1]];
         self.diff_const.const_vec = vec![Constraint::new(); const_ct[2]];
-        self.fluid_const.const_vec = vec![Constraint::new(); const_ct[3]];
 
         self.elastic_loads = vec![Load::new(); load_ct[0]];
         self.thermal_loads = vec![Load::new(); load_ct[1]];
         self.diff_loads = vec![Load::new(); load_ct[2]];
-        self.fluid_loads = vec![Load::new(); load_ct[3]];
 
         self.interactions.int_vec = vec![Interaction::new(); int_ct];
         self.particle_sources = vec![ParticleSource::new(); ps_ct];
@@ -441,7 +400,6 @@ impl Model {
             es_ct = MAX_INT;
             sec_ct = MAX_INT;
             mat_ct = MAX_INT;
-            fl_ct = MAX_INT;
             for i in 0..4 {
                 const_ct[i] = MAX_INT;
                 load_ct[i] = MAX_INT;
@@ -483,18 +441,6 @@ impl Model {
                         }
                         else if data[0].s == "mass" {
                             el_type = 1;
-                        }
-                        else if data[0].s == "fl4" {
-                            el_type = 400;
-                        }
-                        else if data[0].s == "fl6" {
-                            el_type = 600;
-                        }
-                        else if data[0].s == "fl8" {
-                            el_type = 800;
-                        }
-                        else if data[0].s == "fl10" {
-                            el_type = 1000;
                         }
                         else {
                             panic!("Error: unrecognized element type: {}", data[0].s);
@@ -584,9 +530,6 @@ impl Model {
                         self.sections[sec_ct].this_type = data[0].clone();
                     } else if headings[1].s == "material" && data_len == 1 {
                         self.sections[sec_ct].mat_name = data[0].clone();
-                    }
-                    else if headings[1].s == "fluid" && data_len == 1 {
-                        self.sections[sec_ct].fl_name = data[0].clone();
                     }
                     else if headings[1].s == "orientation" && data_len == 6 {
                         for i1 in 0..6 {
@@ -793,67 +736,6 @@ impl Model {
                         }
                     }
                 }
-                else if headings[0].s == "fluids" {
-                    if headings[1].s != "" {
-                        if headings[2].s == "" && hd_updated {
-                            if fl_ct == MAX_INT {
-                                fl_ct = 0;
-                            }
-                            else {
-                                fl_ct += 1usize;
-                            }
-                            self.fluids[fl_ct].name = headings[1].clone();
-                        }
-                        else if headings[2].s == "viscosity" && data_len == 1 {
-                            self.fluids[fl_ct].viscosity = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "thermal" {
-                            if headings[3].s == "conductivity" && data_len == 1 {
-                                self.fluids[fl_ct].therm_cond = CppStr::stod(&mut data[0]);
-                            }
-                            else if headings[2].s == "expansion" && data_len == 1 {
-                                self.fluids[fl_ct].expansion = CppStr::stod(&mut data[0]);
-                            }
-                            else if headings[3].s == "specHeat" && data_len == 1 {
-                                self.fluids[fl_ct].spec_heat = CppStr::stod(&mut data[0]);
-                            }
-                        }
-                        else if headings[2].s == "idealGasConst" && data_len == 1 {
-                            self.fluids[fl_ct].ideal_gas = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "bulkModulus" && data_len == 1 {
-                            self.fluids[fl_ct].bulk_modulus = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "compressible" && data_len == 1 {
-                            self.fluids[fl_ct].compressible = data[0].s.contains("yes");
-                        }
-                        else if headings[2].s == "refTemp" && data_len == 1 {
-                            self.fluids[fl_ct].ref_temp = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "refPres" && data_len == 1 {
-                            self.fluids[fl_ct].ref_pres = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "refDen" && data_len == 1 {
-                            self.fluids[fl_ct].ref_den = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "refEnth" && data_len == 1 {
-                            self.fluids[fl_ct].ref_enth = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "tempVisCoef" && data_len == 1 {
-                            self.fluids[fl_ct].temp_vis_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "turbVisCoef" && data_len == 1 {
-                            self.fluids[fl_ct].turb_vis_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "gradVTurbCoef" && data_len == 1 {
-                            self.fluids[fl_ct].grad_turb_coef = CppStr::stod(&mut data[0]);
-                        }
-                        else if headings[2].s == "dissTurbCoef" && data_len == 1 {
-                            self.fluids[fl_ct].diss_turb_coef = CppStr::stod(&mut data[0]);
-                        }
-                    }
-                    
-                }
                 else {
                     self.const_loop2(&mut headings, &mut data, data_len, &mut const_ct, &mut const_ind, &mut con_type, &mut all_types);
                     self.load_loop2(&mut headings, &mut data, data_len, &mut load_ct, &mut lst_ar, &mut ld_ind, &mut load_type);
@@ -927,7 +809,6 @@ impl Model {
             "displacement" => &mut self.elastic_const.const_vec[curr_ct],
             "temperature" => &mut self.thermal_const.const_vec[curr_ct],
             "concentration" => &mut self.diff_const.const_vec[curr_ct],
-            "fluid" => &mut self.fluid_const.const_vec[curr_ct],
             &_ => panic!("Error, unrecognized constraint type, {}", curr_type.s),
         }
     }
@@ -939,7 +820,6 @@ impl Model {
                     "displacement" => ct_ar[0] += 1,
                     "temperature" => ct_ar[1] += 1,
                     "concentration" => ct_ar[2] += 1,
-                    "fluid" => ct_ar[3] += 1,
                     &_ => (),
                 }
             }
@@ -1026,7 +906,6 @@ impl Model {
         self.elastic_const.const_vec = vec![Constraint::new(); ct_ar[0]];
         self.thermal_const.const_vec = vec![Constraint::new(); ct_ar[1]];
         self.diff_const.const_vec = vec![Constraint::new(); ct_ar[2]];
-        self.fluid_const.const_vec = vec![Constraint::new(); ct_ar[3]];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             ct_ar[0] = MAX_INT;
@@ -1050,7 +929,6 @@ impl Model {
             "elastic" => &mut self.elastic_loads[curr_ct],
             "thermal" => &mut self.thermal_loads[curr_ct],
             "diffusion" => &mut self.diff_loads[curr_ct],
-            "fluid" => &mut self.fluid_loads[curr_ct],
             &_ => panic!("Error: unrecognized load type '{}' in get_curr_ld()", curr_type.s),
         }
     }
@@ -1174,7 +1052,6 @@ impl Model {
         lst_ar[0] = CppStr::from("nodalForce bodyForce gravitational centrifugal surfacePressure surfaceTraction");
         lst_ar[1] = CppStr::from("nodalHeatGen bodyHeatGen surfaceFlux");
         lst_ar[2] = CppStr::from("nodalMassGen massGen massFlux");
-        lst_ar[3] = CppStr::from("fluidBodyForce fluidHeatGen");
         
         let mut ct_ar = [0usize; 4];
         let mut curr_type : CppStr = CppStr::new();
@@ -1195,7 +1072,6 @@ impl Model {
         self.elastic_loads = vec![Load::new(); ct_ar[0]];
         self.thermal_loads = vec![Load::new(); ct_ar[1]];
         self.diff_loads = vec![Load::new(); ct_ar[2]];
-        self.fluid_loads = vec![Load::new(); ct_ar[3]];
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             ct_ar[0] = MAX_INT;
@@ -1421,17 +1297,12 @@ impl Model {
             i3 = fl_hdings.find(headings[1].s.as_str());
             if i3 < MAX_INT && data_len == 7 {
                 seti = self.ns_map.at(&data[0].to_string());
-                for ndi in self.node_sets[seti].labels.iter_mut() {
-                    this_nd = &mut self.nodes[*ndi];
+                for _ndi in self.node_sets[seti].labels.iter_mut() {
+                    //this_nd = &mut self.nodes[*ndi];
                     i2 = 1;
                     for i1 in 0..6 {
                         doub_inp[i1] = data[i2].stod();
                         i2 += 1;
-                    }
-                    match headings[1].s.as_str() {
-                        "flow" => this_nd.set_initial_flow(&doub_inp),
-                        "flowdot" => this_nd.set_initial_flow(&doub_inp),
-                        &_ => (),
                     }
                 }
             }
@@ -1722,15 +1593,7 @@ impl Model {
                             "C" => self.nodes[ndi].fl_den = dat,
                             "CDOT" => self.nodes[ndi].fl_den_dot = dat,
                             "DEN" => self.nodes[ndi].fl_den = dat,
-                            "FV1" => self.nodes[ndi].fl_vel[0] = dat,
-                            "FV2" => self.nodes[ndi].fl_vel[1] = dat,
-                            "FV3" => self.nodes[ndi].fl_vel[2] = dat,
-                            "TURB" => self.nodes[ndi].turb_e = dat,
                             "DENDOT" => self.nodes[ndi].fl_den_dot = dat,
-                            "FV1DOT" => self.nodes[ndi].fl_vel_dot[0] = dat,
-                            "FV2DOT" => self.nodes[ndi].fl_vel_dot[1] = dat,
-                            "FV3DOT" => self.nodes[ndi].fl_vel_dot[2] = dat,
-                            "TURBDOT" => self.nodes[ndi].turb_edot = dat,
                             &_ => {},
                         }
                     }
@@ -1754,116 +1617,59 @@ impl Model {
         let mut _b_read = 0usize;
 
         for nd in self.nodes.iter_mut() {
-            if nd.fluid {
-                if self.job[self.solve_cmd].fluid {
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_fl_den = f64::from_be_bytes(buf8);
-                    
-                    for i in 0..3 {
-                        _b_read = match reader.read(&mut buf8) {
-                            Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                            Ok(n) => n,
-                        };
-                        nd.prev_fl_vel[i] = f64::from_be_bytes(buf8);
-                    }
-                    
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_temp = f64::from_be_bytes(buf8);
-                    
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_turb_e = f64::from_be_bytes(buf8);
-
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_fl_den_dot = f64::from_be_bytes(buf8);
-                    
-                    for i in 0..3 {
-                        _b_read = match reader.read(&mut buf8) {
-                            Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                            Ok(n) => n,
-                        };
-                        nd.prev_fl_vel_dot[i] = f64::from_be_bytes(buf8);
-                    }
-                    
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_tdot = f64::from_be_bytes(buf8);
-                    
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_turb_edot = f64::from_be_bytes(buf8);
-                }
+            if self.job[self.solve_cmd].thermal {
+                _b_read = match reader.read(&mut buf8) {
+                    Err(why) => panic!("problem reading file, {}, {}", full_file, why),
+                    Ok(n) => n,
+                };
+                nd.prev_temp = f64::from_be_bytes(buf8);
+                
+                _b_read = match reader.read(&mut buf8) {
+                    Err(why) => panic!("problem reading file, {}, {}", full_file, why),
+                    Ok(n) => n,
+                };
+                nd.prev_tdot = f64::from_be_bytes(buf8);
             }
-            else {
-                if self.job[self.solve_cmd].thermal {
+
+            if self.job[self.solve_cmd].diffusion {
+                _b_read = match reader.read(&mut buf8) {
+                    Err(why) => panic!("problem reading file, {}, {}", full_file, why),
+                    Ok(n) => n,
+                };
+                nd.prev_fl_den = f64::from_be_bytes(buf8);
+                
+                _b_read = match reader.read(&mut buf8) {
+                    Err(why) => panic!("problem reading file, {}, {}", full_file, why),
+                    Ok(n) => n,
+                };
+                nd.prev_fl_den_dot = f64::from_be_bytes(buf8);
+            }
+
+            if self.job[self.solve_cmd].elastic {
+                for i in 0..nd.num_dof {
                     _b_read = match reader.read(&mut buf8) {
                         Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                         Ok(n) => n,
                     };
-                    nd.prev_temp = f64::from_be_bytes(buf8);
-                    
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_tdot = f64::from_be_bytes(buf8);
+                    nd.prev_disp[i] = f64::from_be_bytes(buf8);
                 }
 
-                if self.job[self.solve_cmd].diffusion {
+                for i in 0..nd.num_dof {
                     _b_read = match reader.read(&mut buf8) {
                         Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                         Ok(n) => n,
                     };
-                    nd.prev_fl_den = f64::from_be_bytes(buf8);
-                    
-                    _b_read = match reader.read(&mut buf8) {
-                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                        Ok(n) => n,
-                    };
-                    nd.prev_fl_den_dot = f64::from_be_bytes(buf8);
+                    nd.prev_vel[i] = f64::from_be_bytes(buf8);
                 }
 
-                if self.job[self.solve_cmd].elastic {
-                    for i in 0..nd.num_dof {
-                        _b_read = match reader.read(&mut buf8) {
-                            Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                            Ok(n) => n,
-                        };
-                        nd.prev_disp[i] = f64::from_be_bytes(buf8);
-                    }
-    
-                    for i in 0..nd.num_dof {
-                        _b_read = match reader.read(&mut buf8) {
-                            Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                            Ok(n) => n,
-                        };
-                        nd.prev_vel[i] = f64::from_be_bytes(buf8);
-                    }
-    
-                    for i in 0..nd.num_dof {
-                        _b_read = match reader.read(&mut buf8) {
-                            Err(why) => panic!("problem reading file, {}, {}", full_file, why),
-                            Ok(n) => n,
-                        };
-                        nd.prev_acc[i] = f64::from_be_bytes(buf8);
-                    }
-    
+                for i in 0..nd.num_dof {
+                    _b_read = match reader.read(&mut buf8) {
+                        Err(why) => panic!("problem reading file, {}, {}", full_file, why),
+                        Ok(n) => n,
+                    };
+                    nd.prev_acc[i] = f64::from_be_bytes(buf8);
                 }
+
             }
             
         }

@@ -1,7 +1,4 @@
 use crate::model::*;
-use crate::constants::*;
-use crate::diff_doub::*;
-use crate::nd_el_set::*;
 use crate::matrix_functions::*;
 use crate::cpp_str::CppStr;
 use crate::cpp_map::CppMap;
@@ -22,48 +19,29 @@ impl Model {
         let mut writer = io::BufWriter::new(out_file);
 
         for nd in self.nodes.iter() {
-            if nd.fluid {
-                if self.job[self.solve_cmd].fluid {
-                    let _ = writer.write(&nd.prev_fl_den.to_be_bytes());
-                    for i in 0..3 {
-                        let _ = writer.write(&nd.prev_fl_vel[i].to_be_bytes());
-                    }
-                    let _ = writer.write(&nd.prev_temp.to_be_bytes());
-                    let _ = writer.write(&nd.prev_turb_e.to_be_bytes());
-                    
-                    let _ = writer.write(&nd.prev_fl_den_dot.to_be_bytes());
-                    for i in 0..3 {
-                        let _ = writer.write(&nd.prev_fl_vel_dot[i].to_be_bytes());
-                    }
-                    let _ = writer.write(&nd.prev_tdot.to_be_bytes());
-                    let _ = writer.write(&nd.prev_turb_edot.to_be_bytes());
-                }
+            if self.job[self.solve_cmd].thermal {
+                let _ = writer.write(&nd.prev_temp.to_be_bytes());
+                let _ = writer.write(&nd.prev_tdot.to_be_bytes());
             }
-            else {
-                if self.job[self.solve_cmd].thermal {
-                    let _ = writer.write(&nd.prev_temp.to_be_bytes());
-                    let _ = writer.write(&nd.prev_tdot.to_be_bytes());
+
+            if self.job[self.solve_cmd].diffusion {
+                let _ = writer.write(&nd.prev_fl_den.to_be_bytes());
+                let _ = writer.write(&nd.prev_fl_den_dot.to_be_bytes());
+            }
+
+            if self.job[self.solve_cmd].elastic {
+                for i in 0..nd.num_dof {
+                    let _ = writer.write(&nd.prev_disp[i].to_be_bytes());
                 }
 
-                if self.job[self.solve_cmd].diffusion {
-                    let _ = writer.write(&nd.prev_fl_den.to_be_bytes());
-                    let _ = writer.write(&nd.prev_fl_den_dot.to_be_bytes());
+                for i in 0..nd.num_dof {
+                    let _ = writer.write(&nd.prev_vel[i].to_be_bytes());
                 }
 
-                if self.job[self.solve_cmd].elastic {
-                    for i in 0..nd.num_dof {
-                        let _ = writer.write(&nd.prev_disp[i].to_be_bytes());
-                    }
-    
-                    for i in 0..nd.num_dof {
-                        let _ = writer.write(&nd.prev_vel[i].to_be_bytes());
-                    }
-    
-                    for i in 0..nd.num_dof {
-                        let _ = writer.write(&nd.prev_acc[i].to_be_bytes());
-                    }
-    
+                for i in 0..nd.num_dof {
+                    let _ = writer.write(&nd.prev_acc[i].to_be_bytes());
                 }
+
             }
             
         }
@@ -94,23 +72,16 @@ impl Model {
             // read the results from the time step file and store them in self.nodes
             self.read_time_step_soln(time_step);
             for nd_pt in self.nodes.iter_mut() {
-                if nd_pt.fluid {
-                    if self.job[sci].fluid {
-                        nd_pt.backstep_flow();
-                    }
+                if self.job[sci].thermal {
+                    nd_pt.backstep_temp();
                 }
-                else {
-                    if self.job[sci].thermal {
-                        nd_pt.backstep_temp();
-                    }
 
-                    if self.job[sci].diffusion {
-                        nd_pt.backstep_fl_den();
-                    }
+                if self.job[sci].diffusion {
+                    nd_pt.backstep_fl_den();
+                }
 
-                    if self.job[sci].elastic {
-                        nd_pt.backstep_disp();
-                    }
+                if self.job[sci].elastic {
+                    nd_pt.backstep_disp();
                 }
                 
             }
@@ -238,22 +209,6 @@ impl Model {
                         nd_dat[0] = nd_pt.temp_change_rate;
                         let _ = writer.write(format!("{0:.12e},", nd_dat[0]).as_bytes());
                     }
-                    else if this_field.s == "flow" {
-                        let _ = writer.write(format!("{0:.12e},", nd_pt.fl_den).as_bytes());
-                        for i1 in 0..3 {
-                            let _ = writer.write(format!("{0:.12e},", nd_pt.fl_vel[i1]).as_bytes());
-                        }
-                        let _ = writer.write(format!("{0:12.e},", nd_pt.temperature).as_bytes());
-                        let _ = writer.write(format!("{0:12.e},", nd_pt.turb_e).as_bytes());
-                    }
-                    else if this_field.s == "flowdot" {
-                        let _ = writer.write(format!("{0:.12e},", nd_pt.fl_den_dot).as_bytes());
-                        for i1 in 0..3 {
-                            let _ = writer.write(format!("{0:.12e},", nd_pt.fl_vel_dot[i1]).as_bytes());
-                        }
-                        let _ = writer.write(format!("{0:12.e},", nd_pt.temp_change_rate).as_bytes());
-                        let _ = writer.write(format!("{0:12.e},", nd_pt.turb_edot).as_bytes());
-                    }
                 }
             }
             let _ = writer.write(format!("{0:.12e}\n", time).as_bytes());
@@ -288,21 +243,14 @@ impl Model {
             // read the results from the time step file and store them in self.nodes
             self.read_time_step_soln(time_step);
             for nd_pt in self.nodes.iter_mut() {
-                if nd_pt.fluid {
-                    if self.job[sci].fluid {
-                        nd_pt.backstep_flow();
-                    }
+                if self.job[sci].thermal {
+                    nd_pt.backstep_temp();
                 }
-                else {
-                    if self.job[sci].thermal {
-                        nd_pt.backstep_temp();
-                    }
-                    if self.job[sci].diffusion {
-                        nd_pt.backstep_fl_den();
-                    }
-                    if self.job[sci].elastic {
-                        nd_pt.backstep_disp();
-                    }
+                if self.job[sci].diffusion {
+                    nd_pt.backstep_fl_den();
+                }
+                if self.job[sci].elastic {
+                    nd_pt.backstep_disp();
                 }
             }
             if self.job[sci].elastic {
@@ -499,21 +447,14 @@ impl Model {
             // read the results from the time step file and store them in self.nodes
             self.read_time_step_soln(time_step);
             for nd_pt in self.nodes.iter_mut() {
-                if nd_pt.fluid {
-                    if self.job[sci].fluid {
-                        nd_pt.backstep_flow();
-                    }
+                if self.job[sci].thermal {
+                    nd_pt.backstep_temp();
                 }
-                else {
-                    if self.job[sci].thermal {
-                        nd_pt.backstep_temp();
-                    }
-                    if self.job[sci].diffusion {
-                        nd_pt.backstep_fl_den();
-                    }
-                    if self.job[sci].elastic {
-                        nd_pt.backstep_disp();
-                    }
+                if self.job[sci].diffusion {
+                    nd_pt.backstep_fl_den();
+                }
+                if self.job[sci].elastic {
+                    nd_pt.backstep_disp();
                 }
             }
             if self.job[sci].elastic {
