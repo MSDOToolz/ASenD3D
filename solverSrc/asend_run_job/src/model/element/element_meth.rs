@@ -63,6 +63,8 @@ impl DiffDoub1StressPrereq {
 //end skip 
  
  
+ 
+ 
 impl Element {
     pub fn initialize_type(&mut self, new_type : usize) {
         self.this_type = new_type;
@@ -91,19 +93,6 @@ impl Element {
             self.int_pts[1] = 0.25;
             self.int_pts[2] = 0.25;
             self.ip_wt[0] = R_1O6;
-            self.nd_spts = vec![0f64; 12];
-            self.nd_spts[0] = 0.0;
-            self.nd_spts[1] = 0.0;
-            self.nd_spts[2] = 0.0;
-            self.nd_spts[3] = 1.0;
-            self.nd_spts[4] = 0.0;
-            self.nd_spts[5] = 0.0;
-            self.nd_spts[6] = 0.0;
-            self.nd_spts[7] = 1.0;
-            self.nd_spts[8] = 0.0;
-            self.nd_spts[9] = 0.0;
-            self.nd_spts[10] = 0.0;
-            self.nd_spts[11] = 1.0;
         } else if self.this_type == 6 || self.this_type == 600 {
             self.num_nds = 6;
             self.dof_per_nd = 3;
@@ -128,25 +117,6 @@ impl Element {
             self.s_cent[0] = R_1O3;
             self.s_cent[1] = R_1O3;
             self.s_cent[2] = 0.0;
-            self.nd_spts = vec![0f64; 18];
-            self.nd_spts[0] = 0.0;
-            self.nd_spts[1] = 0.0;
-            self.nd_spts[2] = -1.0;
-            self.nd_spts[3] = 1.0;
-            self.nd_spts[4] = 0.0;
-            self.nd_spts[5] = -1.0;
-            self.nd_spts[6] = 0.0;
-            self.nd_spts[7] = 1.0;
-            self.nd_spts[8] = -1.0;
-            self.nd_spts[9] = 0.0;
-            self.nd_spts[10] = 0.0;
-            self.nd_spts[11] = 1.0;
-            self.nd_spts[12] = 1.0;
-            self.nd_spts[13] = 0.0;
-            self.nd_spts[14] = 1.0;
-            self.nd_spts[15] = 0.0;
-            self.nd_spts[16] = 1.0;
-            self.nd_spts[17] = 1.0;
         } else if self.this_type == 8 || self.this_type == 81 || self.this_type == 800 {
             self.num_nds = 8;
             self.dof_per_nd = 3;
@@ -192,31 +162,6 @@ impl Element {
                     }
                 }
             }
-            self.nd_spts = vec![0f64; 24];
-            self.nd_spts[0] = -1.0;
-            self.nd_spts[1] = -1.0;
-            self.nd_spts[2] = -1.0;
-            self.nd_spts[3] = 1.0;
-            self.nd_spts[4] = -1.0;
-            self.nd_spts[5] = -1.0;
-            self.nd_spts[6] = 1.0;
-            self.nd_spts[7] = 1.0;
-            self.nd_spts[8] = -1.0;
-            self.nd_spts[9] = -1.0;
-            self.nd_spts[10] = 1.0;
-            self.nd_spts[11] = -1.0;
-            self.nd_spts[12] = -1.0;
-            self.nd_spts[13] = -1.0;
-            self.nd_spts[14] = 1.0;
-            self.nd_spts[15] = 1.0;
-            self.nd_spts[16] = -1.0;
-            self.nd_spts[17] = 1.0;
-            self.nd_spts[18] = 1.0;
-            self.nd_spts[19] = 1.0;
-            self.nd_spts[20] = 1.0;
-            self.nd_spts[21] = -1.0;
-            self.nd_spts[22] = 1.0;
-            self.nd_spts[23] = 1.0;
         }
         else if self.this_type == 10 || self.this_type == 1000 {
             self.num_nds = 10;
@@ -250,37 +195,6 @@ impl Element {
             self.s_cent[0] = 0.25;
             self.s_cent[1] = 0.25;
             self.s_cent[2] = 0.25;
-            self.nd_spts = vec![0f64; 30];
-            self.nd_spts[0] = 0.0;
-            self.nd_spts[1] = 0.0;
-            self.nd_spts[2] = 0.0;
-            self.nd_spts[3] = 1.0;
-            self.nd_spts[4] = 0.0;
-            self.nd_spts[5] = 0.0;
-            self.nd_spts[6] = 0.0;
-            self.nd_spts[7] = 1.0;
-            self.nd_spts[8] = 0.0;
-            self.nd_spts[9] = 0.0;
-            self.nd_spts[10] = 0.0;
-            self.nd_spts[11] = 1.0;
-            self.nd_spts[12] = 0.5;
-            self.nd_spts[13] = 0.0;
-            self.nd_spts[14] = 0.0;
-            self.nd_spts[15] = 0.5;
-            self.nd_spts[16] = 0.5;
-            self.nd_spts[17] = 0.0;
-            self.nd_spts[18] = 0.0;
-            self.nd_spts[19] = 0.5;
-            self.nd_spts[20] = 0.0;
-            self.nd_spts[21] = 0.0;
-            self.nd_spts[22] = 0.0;
-            self.nd_spts[23] = 0.5;
-            self.nd_spts[24] = 0.5;
-            self.nd_spts[25] = 0.0;
-            self.nd_spts[26] = 0.5;
-            self.nd_spts[27] = 0.0;
-            self.nd_spts[28] = 0.5;
-            self.nd_spts[29] = 0.5;
         }
         else if self.this_type == 3 {
             self.num_nds = 3;

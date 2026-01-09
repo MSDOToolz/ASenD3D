@@ -2,17 +2,11 @@ use crate::model::*;
 use crate::cpp_str::CppStr;
 use crate::list_ent::{DualFloat, QuadFloat};
 
+use crate::file_util::*;
 use std::fs::File;
 use std::io::{self, Read, BufRead};
 use std::path::Path;
 use std::collections::LinkedList;
-//use std::fs::read_to_string;
-
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
 
 fn increment_ct(ct : usize) -> usize {
     match ct {
@@ -22,92 +16,6 @@ fn increment_ct(ct : usize) -> usize {
 }
 
 impl Model {
-    pub fn read_input_line(& self, file_line : &mut CppStr, headings : &mut Vec<CppStr>, hd_ld_space : &mut [usize], data : &mut Vec<CppStr>, data_len : &mut usize) -> bool {
-        let mut i1 : usize;
-        let i2 : usize;
-        let mut ln_len : usize;
-        let wrd_len : usize;
-        i1 = file_line.find("#");
-        if i1 < MAX_INT {
-            *file_line = file_line.substr(0,i1);
-        }
-        file_line.s = file_line.s.clone() + " ";
-        ln_len = file_line.len();
-        i1 = file_line.find(":");
-        *data_len = 0;
-        if i1 < MAX_INT {
-            i2 = file_line.find_first_not_of(" -\n\t");
-            wrd_len = i1 - i2;
-            if headings[0].s == "" || hd_ld_space[0] == i2 {
-                headings[0] = file_line.substr(i2,wrd_len);
-                hd_ld_space[0] = i2;
-                headings[1] = CppStr::from("");
-                hd_ld_space[1] = 0;
-                headings[2] = CppStr::from("");
-                hd_ld_space[2] = 0;
-                headings[3] = CppStr::from("");
-                hd_ld_space[3] = 0;
-            } else if headings[1].s == "" || hd_ld_space[1] == i2 {
-                headings[1] = file_line.substr(i2,wrd_len);
-                hd_ld_space[1] = i2;
-                headings[2] = CppStr::from("");
-                hd_ld_space[2] = 0;
-                headings[3] = CppStr::from("");
-                hd_ld_space[3] = 0;
-            } else if headings[2].s == "" || hd_ld_space[2] == i2 {
-                headings[2] = file_line.substr(i2,wrd_len);
-                hd_ld_space[2] = i2;
-                headings[3] = CppStr::from("");
-                hd_ld_space[3] = 0;
-            } else {
-                headings[3] = file_line.substr(i2,wrd_len);
-                hd_ld_space[3] = i2;
-            }
-            i1 += 1usize;
-            while i1 < ln_len {
-                *file_line = file_line.substr(i1, MAX_INT);
-                i1 = file_line.find_first_not_of(" ,[]\t\n");
-                if i1 < MAX_INT {
-                    *file_line = file_line.substr(i1, MAX_INT);
-                    ln_len = file_line.len();
-                    i1 = file_line.find_first_of(" ,[]\t\n");
-                    if i1 < MAX_INT {
-                        data[*data_len] = file_line.substr(0,i1);
-                        *data_len += 1usize;
-                    } else {
-                        i1 = ln_len;
-                    }
-                } else {
-                    i1 = ln_len;
-                }
-            }
-            return true;
-        } else {
-            i1 = file_line.find("- ");
-            if i1 < MAX_INT {
-                i1 += 1usize;
-                while i1 < ln_len {
-                    *file_line = file_line.substr(i1, MAX_INT);
-                    i1 = file_line.find_first_not_of(" ,[]\t\n");
-                    if i1 < MAX_INT {
-                        *file_line = file_line.substr(i1, MAX_INT);
-                        ln_len = file_line.len();
-                        i1 = file_line.find_first_of(" ,[]\t\n");
-                        if i1 < MAX_INT {
-                            data[*data_len] = file_line.substr(0,i1);
-                            *data_len += 1usize;
-                        } else {
-                            i1 = ln_len;
-                        }
-                    } else {
-                        i1 = ln_len;
-                    }
-                }
-            }
-            return false;
-        }
-        
-    }
 
     pub fn read_job(&mut self, file_name : &mut CppStr) {
         let mut i1 : usize;
@@ -125,7 +33,7 @@ impl Model {
             cmd_ct = 0;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 if headings[1].s == "command" && data_len == 1 {
                     cmd_ct += 1usize;
                 }
@@ -138,7 +46,7 @@ impl Model {
             cmd_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[1].s == "command" && data_len == 1 {
                     if cmd_ct == MAX_INT {
                         cmd_ct = 0;
@@ -334,7 +242,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                hd_updated = self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                hd_updated = read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 if headings[0].s == "nodes" && data_len == 4 {
                     nd_ct += 1usize;
                 }
@@ -407,7 +315,7 @@ impl Model {
             int_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                hd_updated = self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                hd_updated = read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[0].s == "nodes" && data_len == 4 {
                     nd_ct = CppStr::stoi(&mut data[0]);
                     self.nodes[nd_ct].label = nd_ct;
@@ -894,7 +802,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 self.const_loop1(&mut headings, &mut data, data_len, &mut ct_ar);
             }
         }
@@ -914,7 +822,7 @@ impl Model {
             ct_ar[3] = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 self.const_loop2(&mut headings, &mut data, data_len, &mut ct_ar, &mut ct_ind, &mut curr_type, &mut all_types);
             }
         } else {
@@ -1060,7 +968,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 self.load_loop1(&mut headings, &mut data, data_len, &mut ct_ar, &mut lst_ar);
             }
         }
@@ -1079,7 +987,7 @@ impl Model {
             ct_ar[2] = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 self.load_loop2(&mut headings, &mut data, data_len, &mut ct_ar, &mut lst_ar, &mut ct_ind, &mut curr_type);
             }
         } else {
@@ -1121,6 +1029,10 @@ impl Model {
                     "maxNeighbors" => self.interactions.int_vec[*int_ct].max_nbrs = CppStr::stoi(&mut data[0]),
                     "maxDistRatio" => self.interactions.int_vec[*int_ct].max_ratio = CppStr::stod(&mut data[0]),
                     "idealGasConstant" => self.interactions.int_vec[*int_ct].ideal_gas = CppStr::stod(&mut data[0]),
+                    "bulkModulus" => self.interactions.int_vec[*int_ct].bulk_mod = data[0].stod(),
+                    "expansion" => self.interactions.int_vec[*int_ct].therm_exp = data[0].stod(),
+                    "refDen" => self.interactions.int_vec[*int_ct].ref_den = data[0].stod(),
+                    "refPres" => self.interactions.int_vec[*int_ct].ref_pres = data[0].stod(),
                     &_ => {},
                 }
             }
@@ -1152,7 +1064,7 @@ impl Model {
             int_ct = 0;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 self.interaction_loop1(&mut headings, data_len, &mut int_ct);
             }
         }
@@ -1167,7 +1079,7 @@ impl Model {
             int_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 self.interaction_loop2(&mut headings, &mut data, data_len, &mut int_ct);
             }
         }
@@ -1242,7 +1154,7 @@ impl Model {
             ps_ct = 0;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 self.ps_loop1(&headings, data_len, &mut ps_ct);
             }
         }
@@ -1257,7 +1169,7 @@ impl Model {
             ps_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 self.ps_loop2(&headings, &mut data, data_len, &mut ps_ct);
             }
         }
@@ -1346,7 +1258,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 self.init_state_loop(&mut headings, &mut data, data_len, &mut disp_hdings, &mut fl_hdings);
             }
         } else {
@@ -1372,7 +1284,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 if headings[0].s == "designVariables" {
                     if headings[1].s == "category" && data_len == 1 {
                         dv_ct += 1usize;
@@ -1387,7 +1299,7 @@ impl Model {
             dv_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[0].s == "designVariables" {
                     if headings[1].s == "category" && data_len == 1 {
                         if dv_ct == MAX_INT {
@@ -1454,7 +1366,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
+                read_input_line(&mut file_line, &mut  headings, &mut  hd_ld_space, &mut  data, &mut  data_len);
                 if headings[0].s == "objectiveTerms" {
                     if headings[1].s == "category" && data_len == 1 {
                         ob_ct += 1usize;
@@ -1469,7 +1381,7 @@ impl Model {
             ob_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if headings[0].s == "objectiveTerms" {
                     if headings[1].s == "category" && data_len == 1 {
                         if ob_ct == MAX_INT {
@@ -1531,7 +1443,7 @@ impl Model {
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
-                self.read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
+                read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
                 if data_len == 2 {
                     label = CppStr::stoi(&mut data[0]);
                     value = CppStr::stod(&mut data[1]);

@@ -23,6 +23,10 @@ pub struct Interaction {
     pub max_nbrs : usize,
     pub max_ratio : f64,
     pub ideal_gas : f64,
+    pub bulk_mod : f64,
+    pub therm_exp : f64,
+    pub ref_den : f64,
+    pub ref_pres : f64,
     pub active_time : [f64; 2],
     pub dvars : LinkedList<IDCapsule>,
 }
@@ -46,6 +50,10 @@ impl Interaction {
             max_nbrs : MAX_INT,
             max_ratio : 1.0e+100,
             ideal_gas : -1.0,
+            bulk_mod : -1.0,
+            therm_exp : 0.0,
+            ref_den : 1.0,
+            ref_pres : 0.0,
             active_time : [0.0, 1.0e+100],
             dvars : LinkedList::new(),
         }

@@ -56,56 +56,67 @@ impl Interaction {
 
 //dup1
 
-    pub fn get_ig_frc_coef_dfd0(&self, pre : &mut DiffDoub0StressPrereq, m1 : &DiffDoub0, m2 : &DiffDoub0, dist : f64) -> bool {
+    pub fn get_particle_area_vol_dfd0(&self, area : &mut DiffDoub0, vol : &mut DiffDoub0, nearest : &Vec<usize>, near_dist : &Vec<f64>) {
         let mut tmp = DiffDoub0::new();
-        let mut tmp2 = DiffDoub0::new();
-
-        if m1.val <= 0.0 && m2.val <= 0.0 {
-            return false;
+        area.set_val(0.0);
+        vol.set_val(0.0);
+        let mut ct = 0;
+        for i in 0..self.max_nbrs {
+            if nearest[i] < MAX_INT && near_dist[i]/near_dist[0] < self.max_ratio  {
+                tmp.set_val(near_dist[i].powf(2.0));
+                area.add(&tmp);
+                tmp.set_val(near_dist[i].powf(3.0));
+                vol.add(&tmp);
+                ct += 1;
+            }
         }
+        if ct == 0 {
+            area.set_val(1.0e+100);
+            vol.set_val(1.0e+100);
+            return;
+        }
+        tmp.set_val(3.14159265358979/(ct as f64));
+        area.mult(&tmp);
+        tmp.set_val(0.523598775598298/(ct as f64));
+        vol.mult(&tmp)
+    }
 
-        tmp.set_val(self.ref_temp);
-        pre.glob_temp[0].add(&tmp);
-        pre.glob_temp[1].add(&tmp);
+    pub fn get_ig_pressure_dfd0(pressure : &mut DiffDoub0, pre : &DiffDoub0StressPrereq, volume : &DiffDoub0) {
+        pressure.set_val_dfd0(&pre.ref_temp);
+        pressure.add(&pre.glob_temp[0]);
+        pressure.mult(&pre.ideal_gas);
+        pressure.mult(&pre.mass_per_el);
+        pressure.dvd(volume);
+    }
+
+    pub fn get_incomp_pressure_dfd0(pressure : &mut DiffDoub0, pre : &DiffDoub0StressPrereq, volume : &DiffDoub0) {
+        let mut tmp = DiffDoub0::new();
         
-        if m1.val > 0.0 && m2.val > 0.0 {
-            tmp.set_val(-0.125*self.ideal_gas*dist.powf(pre.frc_fld_exp[0].val - 1.0));
-            tmp2.set_val_dfd0(m1);
-            tmp2.add(m2);
-            tmp.mult(&tmp2);
-            tmp2.set_val_dfd0(&pre.glob_temp[0]);
-            tmp2.add(&pre.glob_temp[1]);
-            tmp.mult(&tmp2);
-            pre.frc_fld_coef[0].set_val_dfd0(&tmp);
-        }
-        else if m1.val > 0.0 {
-            tmp.set_val(-0.25*self.ideal_gas*dist.powf(pre.frc_fld_exp[0].val - 1.0));
-            tmp.mult(m1);
-            tmp2.set_val_dfd0(&pre.glob_temp[0]);
-            tmp2.add(&pre.glob_temp[1]);
-            tmp.mult(&tmp2);
-            pre.frc_fld_coef[0].set_val_dfd0(&tmp);
-        }
-        else if m2.val > 0.0 {
-            tmp.set_val(-0.25*self.ideal_gas*dist.powf(pre.frc_fld_exp[0].val - 1.0));
-            tmp.mult(m2);
-            tmp2.set_val_dfd0(&pre.glob_temp[0]);
-            tmp2.add(&pre.glob_temp[1]);
-            tmp.mult(&tmp2);
-            pre.frc_fld_coef[0].set_val_dfd0(&tmp);
-        }
+        pressure.set_val_dfd0(&pre.ref_pres);
+        
+        tmp.set_val_dfd0(&pre.mass_per_el);
+        tmp.dvd(volume);
+        tmp.sub(&pre.ref_den);
+        tmp.dvd(&pre.ref_den);
+        tmp.mult(&pre.bulk_mod);
+        pressure.add(&tmp);
 
-        if self.node_set1.s == self.node_set2.s {
-            tmp.set_val(0.5);
-            pre.frc_fld_coef[0].mult(&tmp);
+        tmp.set_val(3.0);
+        tmp.mult(&pre.bulk_mod);
+        tmp.mult(&pre.therm_exp[0]);
+        tmp.mult(&pre.glob_temp[0]);
+        pressure.add(&tmp);
+
+        if pressure.val < 0.0 {
+            pressure.set_val(0.0);
         }
+    }
 
-        tmp.set_val(self.ref_temp);
-        pre.glob_temp[0].sub(&tmp);
-        pre.glob_temp[1].sub(&tmp);
-
-        true
-
+    pub fn get_pres_frc_coef_dfd0(pre : &mut DiffDoub0StressPrereq, pressure : &DiffDoub0, area : &DiffDoub0, dist : f64) {
+        pre.frc_fld_coef[0].set_val(0.083333333333333*dist.powf(pre.frc_fld_exp[0].val)); // 1/12 * d^(exp)
+        pre.frc_fld_coef[0].mult(pressure);
+        pre.frc_fld_coef[0].mult(area);
+        pre.frc_fld_coef[0].neg();
     }
 
     pub fn get_global_r_dfd0(&self, glob_r : &mut Vec<DiffDoub0>, dr_du : &mut SparseMat, discipline : usize, nd_in_set : &mut Vec<bool>, nd_mass : &Vec<DiffDoub0>, 
@@ -120,6 +131,10 @@ impl Interaction {
         let mut dist : f64;
         let mut lst_len : usize;
         let mut inserted : bool;
+        let mut part_area = DiffDoub0::new();
+        let mut part_vol = DiffDoub0::new();
+        let mut pressure = DiffDoub0::new();
+        let mut tmp = DiffDoub0::new();
         let mut i1 : usize;
         
         for nd in n_sets[self.set_pt2].labels.iter() {
@@ -131,15 +146,35 @@ impl Interaction {
 
         pre.frc_fld_coef[0].set_val(self.get_pot_coef(time));
         dummy_el.get_gen_prop_dfd0(&mut pre.frc_fld_coef[0],&mut CppStr::from("potFldCoef"), dv_ar);
+        
         pre.frc_fld_coef[1].set_val(self.get_damp_coef(time));
         dummy_el.get_gen_prop_dfd0(&mut pre.frc_fld_coef[1],&mut CppStr::from("dampFldCoef"), dv_ar);
+        
         pre.frc_fld_exp[0].set_val(self.pot_exp);
+        
         pre.frc_fld_exp[1].set_val(self.damp_exp);
+        
         pre.thrm_fld_coef[0].set_val(self.cond_coef);
         dummy_el.get_gen_prop_dfd0(&mut pre.thrm_fld_coef[0],&mut CppStr::from("condCoef"), dv_ar);
+        
         pre.thrm_fld_coef[1].set_val(self.rad_coef);
         dummy_el.get_gen_prop_dfd0(&mut pre.thrm_fld_coef[1],&mut CppStr::from("radCoef"), dv_ar);
+        
         pre.ref_temp.set_val(self.ref_temp);
+
+        pre.ideal_gas.set_val(self.ideal_gas);
+        dummy_el.get_gen_prop_dfd0(&mut pre.ideal_gas, &mut CppStr::from("idealGasConstant"), dv_ar);
+
+        pre.bulk_mod.set_val(self.bulk_mod);
+        dummy_el.get_gen_prop_dfd0(&mut pre.bulk_mod, &mut CppStr::from("bulkModulus"), dv_ar);
+
+        pre.therm_exp[0].set_val(self.therm_exp);
+        dummy_el.get_gen_prop_dfd0(&mut pre.therm_exp[0], &mut CppStr::from("thermalExp"), dv_ar);
+
+        pre.ref_den.set_val(self.ref_den);
+
+        pre.ref_pres.set_val(self.ref_pres);
+
         
         for nd in n_sets[self.set_pt1].labels.iter() {
             if self.max_nbrs < MAX_INT {
@@ -166,9 +201,9 @@ impl Interaction {
                             dummy_el.nodes[0] = *nd;
                             dummy_el.nodes[1] = g_out[nb];
                             dummy_el.get_all_nd_var_dfd0(pre, nodes);
-                            if self.ideal_gas > 0.0 {
-                                self.get_ig_frc_coef_dfd0(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
-                            }
+                            // if self.ideal_gas > 0.0 {
+                            //     self.get_ig_frc_coef_dfd0(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
+                            // }
                             match discipline {
                                 0 => dummy_el.put_ru_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                                 1 => dummy_el.put_rt_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
@@ -185,7 +220,7 @@ impl Interaction {
                                     inserted = true;
                                 }
                                 else if dist < near_dist[i1] {
-                                    for i2 in (i1..(self.max_nbrs - 2)).rev() {
+                                    for i2 in (i1..(self.max_nbrs - 1)).rev() {
                                         nearest[i2+1] = nearest[i2];
                                         near_dist[i2+1] = near_dist[i2];
                                     }
@@ -201,13 +236,29 @@ impl Interaction {
             }
             //}
             if self.max_nbrs < MAX_INT {
+                if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
+                    //part_vol.set_val(self.get_particle_volume(nearest, near_dist));
+                    self.get_particle_area_vol_dfd0(&mut part_area, &mut part_vol, nearest, near_dist);
+                    pre.glob_temp[0].set_val(nodes[*nd].temperature);
+                    pre.mass_per_el.set_val_dfd0(&nd_mass[*nd]);
+                    if self.ideal_gas > 0.0 {
+                        Interaction::get_ig_pressure_dfd0(&mut pressure, pre, &part_vol);
+                    }
+                    else {
+                        Interaction::get_incomp_pressure_dfd0(&mut pressure, pre, &part_vol);
+                    }
+                    if self.set_pt1 == self.set_pt2 {
+                        tmp.set_val(0.5);
+                        pressure.mult(&tmp);
+                    }
+                }
                 for i2 in 0..self.max_nbrs {
                     if nearest[i2] < MAX_INT && near_dist[i2]/near_dist[0] < self.max_ratio {
                         dummy_el.nodes[0] = *nd;
                         dummy_el.nodes[1] = nearest[i2];
                         dummy_el.get_all_nd_var_dfd0(pre, nodes);
-                        if self.ideal_gas > 0.0 {
-                            self.get_ig_frc_coef_dfd0(pre, &nd_mass[*nd], &nd_mass[nearest[i2]], near_dist[i2]);
+                        if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
+                            Interaction::get_pres_frc_coef_dfd0(pre, &pressure, &part_area, near_dist[i2]);
                         }
                         match discipline {
                             0 => dummy_el.put_ru_frc_fld_dfd0(glob_r, dr_du, get_matrix, cmd, pre, nodes),
@@ -231,51 +282,67 @@ impl Interaction {
 //DiffDoub1 versions: 
 //dup1
 
-    pub fn get_ig_frc_coef_dfd1(&self, pre : &mut DiffDoub1StressPrereq, m1 : &DiffDoub1, m2 : &DiffDoub1, dist : f64) -> bool {
+    pub fn get_particle_area_vol_dfd1(&self, area : &mut DiffDoub1, vol : &mut DiffDoub1, nearest : &Vec<usize>, near_dist : &Vec<f64>) {
         let mut tmp = DiffDoub1::new();
-        let mut tmp2 = DiffDoub1::new();
-
-        if m1.val <= 0.0 && m2.val <= 0.0 {
-            return false;
+        area.set_val(0.0);
+        vol.set_val(0.0);
+        let mut ct = 0;
+        for i in 0..self.max_nbrs {
+            if nearest[i] < MAX_INT && near_dist[i]/near_dist[0] < self.max_ratio  {
+                tmp.set_val(near_dist[i].powf(2.0));
+                area.add(&tmp);
+                tmp.set_val(near_dist[i].powf(3.0));
+                vol.add(&tmp);
+                ct += 1;
+            }
         }
+        if ct == 0 {
+            area.set_val(1.0e+100);
+            vol.set_val(1.0e+100);
+            return;
+        }
+        tmp.set_val(3.14159265358979/(ct as f64));
+        area.mult(&tmp);
+        tmp.set_val(0.523598775598298/(ct as f64));
+        vol.mult(&tmp)
+    }
 
-        tmp.set_val(self.ref_temp);
-        pre.glob_temp[0].add(&tmp);
-        pre.glob_temp[1].add(&tmp);
+    pub fn get_ig_pressure_dfd1(pressure : &mut DiffDoub1, pre : &DiffDoub1StressPrereq, volume : &DiffDoub1) {
+        pressure.set_val_dfd1(&pre.ref_temp);
+        pressure.add(&pre.glob_temp[0]);
+        pressure.mult(&pre.ideal_gas);
+        pressure.mult(&pre.mass_per_el);
+        pressure.dvd(volume);
+    }
+
+    pub fn get_incomp_pressure_dfd1(pressure : &mut DiffDoub1, pre : &DiffDoub1StressPrereq, volume : &DiffDoub1) {
+        let mut tmp = DiffDoub1::new();
         
-        if m1.val > 0.0 && m2.val > 0.0 {
-            tmp.set_val(0.125*self.ideal_gas*dist.powf(pre.frc_fld_exp[0].val - 1.0));
-            tmp2.set_val_dfd1(m1);
-            tmp2.add(m2);
-            tmp.mult(&tmp2);
-            tmp2.set_val_dfd1(&pre.glob_temp[0]);
-            tmp2.add(&pre.glob_temp[1]);
-            tmp.mult(&tmp2);
-            pre.frc_fld_coef[0].set_val_dfd1(&tmp);
-        }
-        else if m1.val > 0.0 {
-            tmp.set_val(0.25*self.ideal_gas*dist.powf(pre.frc_fld_exp[0].val - 1.0));
-            tmp.mult(m1);
-            tmp2.set_val_dfd1(&pre.glob_temp[0]);
-            tmp2.add(&pre.glob_temp[1]);
-            tmp.mult(&tmp2);
-            pre.frc_fld_coef[0].set_val_dfd1(&tmp);
-        }
-        else if m2.val > 0.0 {
-            tmp.set_val(0.25*self.ideal_gas*dist.powf(pre.frc_fld_exp[0].val - 1.0));
-            tmp.mult(m2);
-            tmp2.set_val_dfd1(&pre.glob_temp[0]);
-            tmp2.add(&pre.glob_temp[1]);
-            tmp.mult(&tmp2);
-            pre.frc_fld_coef[0].set_val_dfd1(&tmp);
-        }
+        pressure.set_val_dfd1(&pre.ref_pres);
+        
+        tmp.set_val_dfd1(&pre.mass_per_el);
+        tmp.dvd(volume);
+        tmp.sub(&pre.ref_den);
+        tmp.dvd(&pre.ref_den);
+        tmp.mult(&pre.bulk_mod);
+        pressure.add(&tmp);
 
-        tmp.set_val(self.ref_temp);
-        pre.glob_temp[0].sub(&tmp);
-        pre.glob_temp[1].sub(&tmp);
+        tmp.set_val(3.0);
+        tmp.mult(&pre.bulk_mod);
+        tmp.mult(&pre.therm_exp[0]);
+        tmp.mult(&pre.glob_temp[0]);
+        pressure.add(&tmp);
 
-        true
+        if pressure.val < 0.0 {
+            pressure.set_val(0.0);
+        }
+    }
 
+    pub fn get_pres_frc_coef_dfd1(pre : &mut DiffDoub1StressPrereq, pressure : &DiffDoub1, area : &DiffDoub1, dist : f64) {
+        pre.frc_fld_coef[0].set_val(0.083333333333333*dist.powf(pre.frc_fld_exp[0].val)); // 1/12 * d^(exp)
+        pre.frc_fld_coef[0].mult(pressure);
+        pre.frc_fld_coef[0].mult(area);
+        pre.frc_fld_coef[0].neg();
     }
 
     pub fn get_global_r_dfd1(&self, glob_r : &mut Vec<DiffDoub1>, dr_du : &mut SparseMat, discipline : usize, nd_in_set : &mut Vec<bool>, nd_mass : &Vec<DiffDoub1>, 
@@ -290,6 +357,10 @@ impl Interaction {
         let mut dist : f64;
         let mut lst_len : usize;
         let mut inserted : bool;
+        let mut part_area = DiffDoub1::new();
+        let mut part_vol = DiffDoub1::new();
+        let mut pressure = DiffDoub1::new();
+        let mut tmp = DiffDoub1::new();
         let mut i1 : usize;
         
         for nd in n_sets[self.set_pt2].labels.iter() {
@@ -301,15 +372,35 @@ impl Interaction {
 
         pre.frc_fld_coef[0].set_val(self.get_pot_coef(time));
         dummy_el.get_gen_prop_dfd1(&mut pre.frc_fld_coef[0],&mut CppStr::from("potFldCoef"), dv_ar);
+        
         pre.frc_fld_coef[1].set_val(self.get_damp_coef(time));
         dummy_el.get_gen_prop_dfd1(&mut pre.frc_fld_coef[1],&mut CppStr::from("dampFldCoef"), dv_ar);
+        
         pre.frc_fld_exp[0].set_val(self.pot_exp);
+        
         pre.frc_fld_exp[1].set_val(self.damp_exp);
+        
         pre.thrm_fld_coef[0].set_val(self.cond_coef);
         dummy_el.get_gen_prop_dfd1(&mut pre.thrm_fld_coef[0],&mut CppStr::from("condCoef"), dv_ar);
+        
         pre.thrm_fld_coef[1].set_val(self.rad_coef);
         dummy_el.get_gen_prop_dfd1(&mut pre.thrm_fld_coef[1],&mut CppStr::from("radCoef"), dv_ar);
+        
         pre.ref_temp.set_val(self.ref_temp);
+
+        pre.ideal_gas.set_val(self.ideal_gas);
+        dummy_el.get_gen_prop_dfd1(&mut pre.ideal_gas, &mut CppStr::from("idealGasConstant"), dv_ar);
+
+        pre.bulk_mod.set_val(self.bulk_mod);
+        dummy_el.get_gen_prop_dfd1(&mut pre.bulk_mod, &mut CppStr::from("bulkModulus"), dv_ar);
+
+        pre.therm_exp[0].set_val(self.therm_exp);
+        dummy_el.get_gen_prop_dfd1(&mut pre.therm_exp[0], &mut CppStr::from("thermalExp"), dv_ar);
+
+        pre.ref_den.set_val(self.ref_den);
+
+        pre.ref_pres.set_val(self.ref_pres);
+
         
         for nd in n_sets[self.set_pt1].labels.iter() {
             if self.max_nbrs < MAX_INT {
@@ -336,9 +427,9 @@ impl Interaction {
                             dummy_el.nodes[0] = *nd;
                             dummy_el.nodes[1] = g_out[nb];
                             dummy_el.get_all_nd_var_dfd1(pre, nodes);
-                            if self.ideal_gas > 0.0 {
-                                self.get_ig_frc_coef_dfd1(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
-                            }
+                            // if self.ideal_gas > 0.0 {
+                            //     self.get_ig_frc_coef_dfd1(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
+                            // }
                             match discipline {
                                 0 => dummy_el.put_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                                 1 => dummy_el.put_rt_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
@@ -355,7 +446,7 @@ impl Interaction {
                                     inserted = true;
                                 }
                                 else if dist < near_dist[i1] {
-                                    for i2 in (i1..(self.max_nbrs - 2)).rev() {
+                                    for i2 in (i1..(self.max_nbrs - 1)).rev() {
                                         nearest[i2+1] = nearest[i2];
                                         near_dist[i2+1] = near_dist[i2];
                                     }
@@ -371,13 +462,29 @@ impl Interaction {
             }
             //}
             if self.max_nbrs < MAX_INT {
+                if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
+                    //part_vol.set_val(self.get_particle_volume(nearest, near_dist));
+                    self.get_particle_area_vol_dfd1(&mut part_area, &mut part_vol, nearest, near_dist);
+                    pre.glob_temp[0].set_val(nodes[*nd].temperature);
+                    pre.mass_per_el.set_val_dfd1(&nd_mass[*nd]);
+                    if self.ideal_gas > 0.0 {
+                        Interaction::get_ig_pressure_dfd1(&mut pressure, pre, &part_vol);
+                    }
+                    else {
+                        Interaction::get_incomp_pressure_dfd1(&mut pressure, pre, &part_vol);
+                    }
+                    if self.set_pt1 == self.set_pt2 {
+                        tmp.set_val(0.5);
+                        pressure.mult(&tmp);
+                    }
+                }
                 for i2 in 0..self.max_nbrs {
                     if nearest[i2] < MAX_INT && near_dist[i2]/near_dist[0] < self.max_ratio {
                         dummy_el.nodes[0] = *nd;
                         dummy_el.nodes[1] = nearest[i2];
                         dummy_el.get_all_nd_var_dfd1(pre, nodes);
-                        if self.ideal_gas > 0.0 {
-                            self.get_ig_frc_coef_dfd1(pre, &nd_mass[*nd], &nd_mass[nearest[i2]], near_dist[i2]);
+                        if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
+                            Interaction::get_pres_frc_coef_dfd1(pre, &pressure, &part_area, near_dist[i2]);
                         }
                         match discipline {
                             0 => dummy_el.put_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
@@ -397,6 +504,8 @@ impl Interaction {
 //end dup
  
 //end skip 
+ 
+ 
  
 }
 
@@ -470,6 +579,8 @@ impl InteractionList {
 //end dup
  
 //end skip 
+ 
+ 
  
 
     pub fn initialize(&mut self, nodes : &Vec<Node>, node_sets : &Vec<Set>, ns_map : &CppMap, el_ar : &Vec<Element>, dv_ar : &Vec<DesignVariable>) {

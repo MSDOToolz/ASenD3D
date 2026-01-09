@@ -30,7 +30,7 @@ impl DesignVariable {
             nd_set_name : CppStr::new(),
             nd_set_ptr : MAX_INT,
             coefs : LinkedList::new(),
-            value : DiffDoub0::new(),
+            val : DiffDoub0::new(),
             diff_val : DiffDoub1::new(),
             comp_cell_list : LinkedList::new(),
         }

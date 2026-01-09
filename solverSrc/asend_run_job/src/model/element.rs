@@ -3,6 +3,8 @@ use crate::list_ent::*;
 
 use std::collections::LinkedList;
 
+//dup1
+
 #[derive(Clone)]
 pub struct DiffDoub0StressPrereq {
     pub glob_nds : Vec<DiffDoub0>,
@@ -45,6 +47,10 @@ pub struct DiffDoub0StressPrereq {
     pub frc_fld_exp : Vec<DiffDoub0>,
     pub thrm_fld_coef : Vec<DiffDoub0>,
     pub ref_temp : DiffDoub0,
+    pub ideal_gas : DiffDoub0,
+    pub bulk_mod : DiffDoub0,
+    pub ref_den : DiffDoub0,
+    pub ref_pres : DiffDoub0,
     pub mass_per_el : DiffDoub0,
     pub current_lay_len : usize,
 }
@@ -92,11 +98,19 @@ impl DiffDoub0StressPrereq {
             frc_fld_exp : vec![DiffDoub0::new(); 2],
             thrm_fld_coef : vec![DiffDoub0::new(); 2],
             ref_temp : DiffDoub0::new(),
+            ideal_gas : DiffDoub0::new(),
+            bulk_mod : DiffDoub0::new(),
+            ref_den : DiffDoub0::new(),
+            ref_pres : DiffDoub0::new(),
             mass_per_el : DiffDoub0::new(),
             current_lay_len : 0usize,
         }
     }
 }
+
+//end dup
+
+//skip
 
 #[derive(Clone)]
 pub struct DiffDoub1StressPrereq {
@@ -140,6 +154,10 @@ pub struct DiffDoub1StressPrereq {
     pub frc_fld_exp : Vec<DiffDoub1>,
     pub thrm_fld_coef : Vec<DiffDoub1>,
     pub ref_temp : DiffDoub1,
+    pub ideal_gas : DiffDoub1,
+    pub bulk_mod : DiffDoub1,
+    pub ref_den : DiffDoub1,
+    pub ref_pres : DiffDoub1,
     pub mass_per_el : DiffDoub1,
     pub current_lay_len : usize,
 }
@@ -187,12 +205,17 @@ impl DiffDoub1StressPrereq {
             frc_fld_exp : vec![DiffDoub1::new(); 2],
             thrm_fld_coef : vec![DiffDoub1::new(); 2],
             ref_temp : DiffDoub1::new(),
+            ideal_gas : DiffDoub1::new(),
+            bulk_mod : DiffDoub1::new(),
+            ref_den : DiffDoub1::new(),
+            ref_pres : DiffDoub1::new(),
             mass_per_el : DiffDoub1::new(),
             current_lay_len : 0usize,
         }
     }
 }
 
+//end skip
 
 #[derive(Clone)]
 pub struct Element {
@@ -208,7 +231,6 @@ pub struct Element {
     pub int_dof_index : usize,
     pub int_pts : Vec<f64>,
     pub ip_wt : Vec<f64>,
-    pub nd_spts : Vec<f64>,
     pub s_cent : [f64; 3],
     pub num_ip : usize,
     pub num_faces : usize,
@@ -219,8 +241,6 @@ pub struct Element {
     pub internal_adj : Vec<f64>,
     pub internal_ru : Vec<DiffDoub1>,
     pub internal_mat : Vec<f64>,
-    pub body_force : [f64; 3],
-    pub body_heat_gen : f64,
     pub design_vars : LinkedList<IDCapsule>,
     pub comp_dvars : LinkedList<usize>,
     pub sect_ptr : usize,
@@ -243,7 +263,6 @@ impl Element {
             int_dof_index : 0usize,
             int_pts : Vec::new(),
             ip_wt : Vec::new(),
-            nd_spts : Vec::new(),
             s_cent : [0f64; 3],
             num_ip : 0usize,
             num_faces : 0usize,
@@ -254,8 +273,6 @@ impl Element {
             internal_adj : Vec::new(),
             internal_ru : Vec::new(),
             internal_mat : Vec::new(),
-            body_force : [0f64; 3],
-            body_heat_gen : 0f64,
             design_vars : LinkedList::new(),
             comp_dvars : LinkedList::new(),
             sect_ptr : 0usize,

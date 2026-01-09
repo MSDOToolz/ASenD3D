@@ -159,6 +159,10 @@ interactions:
       maxNeighbors:
       maxDistRatio:
       idealGasConstant:
+      bulkModulus:
+      expansion:
+      refDen:
+      refPres:
       activeTime:
 
 particleSources:

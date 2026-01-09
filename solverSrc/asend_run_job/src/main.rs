@@ -1,5 +1,7 @@
 pub mod constants;
 pub mod diff_doub;
+pub mod file_util;
+pub mod fluid_domain;
 pub mod list_ent;
 pub mod lower_tri_mat;
 pub mod lu_mat;
