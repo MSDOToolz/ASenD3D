@@ -1,0 +1,15 @@
+## Template for design Variable input file
+
+designVariables:
+    - category: 
+      component: 1
+      activeTime: [start,end]
+      cellSet: setName
+      
+      nodeSet: setName
+	  
+      coefficients: (single value for all)
+      ## or
+      coefficients:
+          - c1
+          - c2
