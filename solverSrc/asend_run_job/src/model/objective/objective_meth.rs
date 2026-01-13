@@ -670,9 +670,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    //for i in 0..3 {
+                    //    s_cent[i] = this_el.s_cent[i];
+                    //}
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar,  dv_ar);
                     this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut d_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
                     if self.category.s == "stress" {
@@ -741,9 +742,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
                     //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
                     this_el.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut s_cent,  n_lgeom, st_pre);
@@ -807,9 +809,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
                     this_el.get_mass_flux_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
                     if self.category.s == "massFlux" {
@@ -862,9 +865,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre,  sec_ar, mat_ar, nd_ar, dv_ar);
                     this_el.get_flux_tgrad_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
                     if self.category.s == "flux" {
@@ -1055,15 +1059,16 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                     this_el.get_stress_strain_dfd0(&mut stress, &mut  strain, &mut t_strain, &mut d_strain, &mut s_cent,  self.layer,  n_lgeom, st_pre);
                     this_el.d_stress_straind_u_dfd0(&mut dsd_u, &mut  ded_u, &mut  dsd_t, &mut dsd_c, &mut s_cent,  self.layer,  n_lgeom, st_pre);
-                    el_num_nds = this_el.num_nds;
-                    el_dof_per_nd = this_el.dof_per_nd;
-                    el_num_int_dof = this_el.num_int_dof;
+                    el_num_nds = this_el.num_nds();
+                    el_dof_per_nd = this_el.dof_per_nd();
+                    el_num_int_dof = this_el.num_int_dof();
                     el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
                     i1 = el_tot_dof * (self.component - 1);
                     i2 = el_num_nds * (self.component - 1);
@@ -1173,17 +1178,18 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                     //this_el->get_stress_strain_dfd0(stress, strain, spt, self.layer, n_lgeom, st_pre);
                     //this_el->d_stress_straind_u_dfd0(dsd_u, ded_u, dsd_t, spt, self.layer, n_lgeom, st_pre);
                     this_el.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut s_cent,  n_lgeom, st_pre);
                     this_el.d_def_frc_momd_u_dfd0(&mut ded_u, &mut  dsd_u, &mut  dsd_t, &mut dsd_c, &mut s_cent,  n_lgeom, st_pre);
-                    el_num_nds = this_el.num_nds;
-                    el_dof_per_nd = this_el.dof_per_nd;
-                    el_num_int_dof = this_el.num_int_dof;
+                    el_num_nds = this_el.num_nds();
+                    el_dof_per_nd = this_el.dof_per_nd();
+                    el_num_int_dof = this_el.num_int_dof();
                     el_tot_dof = el_num_nds * el_dof_per_nd + el_num_int_dof;
                     i1 = el_tot_dof * (self.component - 1);
                     i2 = el_num_nds * (self.component - 1);
@@ -1249,13 +1255,14 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                     this_el.get_mass_flux_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
                     this_el.d_mass_flux_dt_dfd0(&mut d_fd_t, &mut  d_tgd_t, &mut s_cent,  self.layer, st_pre);
-                    el_num_nds = this_el.num_nds;
+                    el_num_nds = this_el.num_nds();
                     i1 = el_num_nds * (self.component - 1);
                     if self.category.s == "massFlux" {
                         sub_vec_dfd0(&mut scr_v1, &mut  d_fd_t,  i1,  i1 + el_num_nds);
@@ -1311,13 +1318,14 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     this_el.get_stress_prereq_dfd0(st_pre, sec_ar, mat_ar, nd_ar, dv_ar);
                     this_el.get_flux_tgrad_dfd0(&mut flux, &mut  t_grad, &mut s_cent,  self.layer, st_pre);
                     this_el.d_flux_tgradd_t_dfd0(&mut d_fd_t, &mut  d_tgd_t, &mut s_cent,  self.layer, st_pre);
-                    el_num_nds = this_el.num_nds;
+                    el_num_nds = this_el.num_nds();
                     i1 = el_num_nds * (self.component - 1);
                     if self.category.s == "flux" {
                         sub_vec_dfd0(&mut scr_v1, &mut  d_fd_t,  i1,  i1 + el_num_nds);
@@ -1404,9 +1412,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     dv_len = 0;
                     for cdv in this_el.comp_dvars.iter() {
                         tmp_dvi[dv_len] = *cdv;
@@ -1511,9 +1520,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     dv_len = 0usize;
                     for cdv in this_el.comp_dvars.iter() {
                         tmp_dv[dv_len] = *cdv;
@@ -1611,9 +1621,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     dv_len = 0usize;
                     for cdv in this_el.comp_dvars.iter() {
                         tmp_dv[dv_len] = *cdv;
@@ -1700,9 +1711,10 @@ impl ObjectiveTerm {
             for eli in el_sets[self.el_set_ptr].labels.iter_mut() {
                 if el_ar[*eli].is_active {
                     this_el = &mut el_ar[*eli];
-                    for i in 0..3 {
-                        s_cent[i] = this_el.s_cent[i];
-                    }
+                    // for i in 0..3 {
+                    //     s_cent[i] = this_el.s_cent[i];
+                    // }
+                    this_el.cent_s_crd(&mut s_cent);
                     dv_len = 0usize;
                     for cdv in this_el.comp_dvars.iter() {
                         tmp_dv[dv_len] = *cdv;

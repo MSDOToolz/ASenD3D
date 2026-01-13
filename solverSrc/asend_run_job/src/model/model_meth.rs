@@ -184,7 +184,7 @@ impl Model {
         ct = 0;
         for el in self.elements.iter() {
             print!("{}",ct);
-            for i in 0..el.num_nds {
+            for i in 0..el.num_nds() {
                 print!(", {}",el.nodes[i]);
             }
             println!("");

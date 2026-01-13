@@ -48,8 +48,8 @@ impl Model {
 
         if self.job[self.solve_cmd].elastic {
             for el in self.elements.iter() {
-                if el.num_int_dof > 0 {
-                    for i in 0..el.num_int_dof {
+                if el.num_int_dof() > 0 {
+                    for i in 0..el.num_int_dof() {
                         let _ = writer.write(&el.int_prev_disp[i].to_be_bytes());
                     }
                 }
@@ -328,14 +328,18 @@ impl Model {
             let el_pt = &mut self.elements[*el_label];
             this_type = el_pt.this_type;
             if position.s == "intPts" {
-                num_ip = el_pt.num_ip;
-                vec_to_ar(&mut int_pts, & el_pt.int_pts,  0,  3 * num_ip);
+                num_ip = el_pt.num_ip();
+                //vec_to_ar(&mut int_pts, & el_pt.int_pts,  0,  3 * num_ip);
+                for i1 in 0..el_pt.num_ip() {
+                    el_pt.ip_crd(&mut int_pts[3*i1..], i1);
+                }
             }
             else {
                 num_ip = 1;
-                int_pts[0] = el_pt.s_cent[0];
-                int_pts[1] = el_pt.s_cent[1];
-                int_pts[2] = el_pt.s_cent[2];
+                //int_pts[0] = el_pt.s_cent[0];
+                //int_pts[1] = el_pt.s_cent[1];
+                //int_pts[2] = el_pt.s_cent[2];
+                el_pt.cent_s_crd(&mut int_pts);
             }
             el_pt.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
             for i1 in 0..num_ip {
@@ -386,7 +390,7 @@ impl Model {
                         
                         field_list = CppStr::from("sectionDef sectionFrcMom");
                         str_ind = field_list.find(&this_field.s.as_str());
-                        if str_ind < MAX_INT && el_pt.dof_per_nd == 6 {
+                        if str_ind < MAX_INT && el_pt.dof_per_nd() == 6 {
                             el_pt.get_def_frc_mom_dfd0(&mut def, &mut  frc_mom, &mut int_pts[(3*i1)..],  self.job[sci].nonlinear_geom, &mut self.d0_pre);
                             if this_field.s == "sectionDef" {
                                 for i3 in 0..6 {

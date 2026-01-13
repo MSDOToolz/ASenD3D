@@ -507,6 +507,7 @@ impl Interaction {
  
  
  
+ 
 }
 
 impl InteractionList {
@@ -582,6 +583,7 @@ impl InteractionList {
  
  
  
+ 
 
     pub fn initialize(&mut self, nodes : &Vec<Node>, node_sets : &Vec<Set>, ns_map : &CppMap, el_ar : &Vec<Element>, dv_ar : &Vec<DesignVariable>) {
 
@@ -638,8 +640,8 @@ impl InteractionList {
             let mut tot_dist = 0f64;
             let mut num_hit = 0usize;
             for el in el_ar.iter() {
-                for n1 in 0..el.num_nds {
-                    for n2 in 0..el.num_nds {
+                for n1 in 0..el.num_nds() {
+                    for n2 in 0..el.num_nds() {
                         if n1 != n2 {
                             tot_dist += get_dist(&nodes[el.nodes[n1]].coord, &nodes[el.nodes[n2]].coord);
                             num_hit += 1;

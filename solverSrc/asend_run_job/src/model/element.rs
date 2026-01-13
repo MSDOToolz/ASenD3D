@@ -109,8 +109,11 @@ impl DiffDoub0StressPrereq {
 }
 
 //end dup
-
-//skip
+ 
+//skip 
+ 
+//DiffDoub1 versions: 
+//dup1
 
 #[derive(Clone)]
 pub struct DiffDoub1StressPrereq {
@@ -215,25 +218,17 @@ impl DiffDoub1StressPrereq {
     }
 }
 
-//end skip
+//end dup
+ 
+//end skip 
+
 
 #[derive(Clone)]
 pub struct Element {
     pub this_type : usize,
     pub label : usize,
     pub nodes : Vec<usize>,
-    pub num_nds : usize,
-    pub dof_per_nd : usize,
-    pub num_int_dof : usize,
-    pub n_dim : usize,
-    pub def_dim : usize,
-    pub dof_table : Vec<usize>,
     pub int_dof_index : usize,
-    pub int_pts : Vec<f64>,
-    pub ip_wt : Vec<f64>,
-    pub s_cent : [f64; 3],
-    pub num_ip : usize,
-    pub num_faces : usize,
     pub faces : LinkedList<usize>,
     pub internal_disp : Vec<f64>,
     pub int_prev_disp : Vec<f64>,
@@ -254,18 +249,7 @@ impl Element {
             this_type : 0usize,
             label : 0usize,
             nodes : Vec::new(),
-            num_nds : 0usize,
-            dof_per_nd : 0usize,
-            num_int_dof : 0usize,
-            n_dim : 0usize,
-            def_dim : 0usize,
-            dof_table : Vec::new(),
             int_dof_index : 0usize,
-            int_pts : Vec::new(),
-            ip_wt : Vec::new(),
-            s_cent : [0f64; 3],
-            num_ip : 0usize,
-            num_faces : 0usize,
             faces : LinkedList::new(),
             internal_disp : Vec::new(),
             int_prev_disp : Vec::new(),

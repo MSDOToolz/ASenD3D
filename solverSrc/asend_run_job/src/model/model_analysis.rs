@@ -493,8 +493,8 @@ impl Model {
                 self.build_elastic_const_load();
                 
                 for this_el in self.elements.iter_mut() {
-                    if this_el.num_int_dof > 0 {
-                        this_el.update_external(&mut self.elastic_ld_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
+                    if this_el.num_int_dof() > 0 {
+                        this_el.update_external(&mut self.elastic_ld_vec, 1, this_el.num_int_dof(), &mut self.nodes, &mut self.scratch.iter_mut());
                     }
                 }
                 
@@ -519,8 +519,8 @@ impl Model {
                 }
                 
                 for this_el in self.elements.iter_mut() {
-                    if this_el.num_int_dof > 0 {
-                        this_el.update_internal(&mut self.elastic_sol_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
+                    if this_el.num_int_dof() > 0 {
+                        this_el.update_internal(&mut self.elastic_sol_vec, 1, this_el.num_int_dof(), &mut self.nodes, &mut self.scratch.iter_mut());
                     }
                 }
                 
@@ -870,8 +870,8 @@ impl Model {
             self.build_elastic_const_load();
 
             for this_el in self.elements.iter_mut() {
-                if this_el.num_int_dof > 0 {
-                    this_el.update_external(&mut self.elastic_ld_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
+                if this_el.num_int_dof() > 0 {
+                    this_el.update_external(&mut self.elastic_ld_vec, 1, this_el.num_int_dof(), &mut self.nodes, &mut self.scratch.iter_mut());
                 }
             }
 
@@ -909,8 +909,8 @@ impl Model {
             }
 
             for this_el in self.elements.iter_mut() {
-                if this_el.num_int_dof > 0 {
-                    this_el.update_internal(&mut self.elastic_sol_vec, 1, &mut self.nodes, &mut self.scratch.iter_mut());
+                if this_el.num_int_dof() > 0 {
+                    this_el.update_internal(&mut self.elastic_sol_vec, 1, this_el.num_int_dof(), &mut self.nodes, &mut self.scratch.iter_mut());
                 }
             }
 
@@ -1061,7 +1061,7 @@ impl Model {
         
         if disp_inc {
             for this_el in self.elements.iter_mut() {
-                n_int_dof = this_el.num_int_dof;
+                n_int_dof = this_el.num_int_dof();
                 if n_int_dof > 0 {
                     this_el.set_int_disp(&mut zero_ar);
                 }
@@ -1113,7 +1113,7 @@ impl Model {
             for this_el in self.elements.iter_mut() {
                 if this_el.is_active {
                     this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
-                    i2 = this_el.num_nds * this_el.dof_per_nd;
+                    i2 = this_el.num_nds() * this_el.dof_per_nd();
                     for i1 in 0..i2 {
                         self.d0_pre.glob_acc[i1].set_val(1.0);
                     }
@@ -1339,7 +1339,7 @@ impl Model {
                     this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                     this_el.get_rtm_dfd0(&mut rvec, &mut  mmat,  true,  true, &mut  self.d0_pre);
                     this_el.get_el_vec(&mut el_adj, &mut  self.t_adj,  true,  false, &mut  self.nodes);
-                    num_nds = this_el.num_nds;
+                    num_nds = this_el.num_nds();
                     i3 = 0;
                     for i1 in 0..num_nds {
                         eld_ld_t[i1] = 0.0;
@@ -1367,7 +1367,7 @@ impl Model {
                     this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                     this_el.get_rdm_dfd0(&mut rvec, &mut  mmat,  true,  true, &mut  self.d0_pre);
                     this_el.get_el_vec(&mut el_adj, &mut  self.con_adj,  true, false, &mut self.nodes);
-                    num_nds = this_el.num_nds;
+                    num_nds = this_el.num_nds();
                     i3 = 0;
                     for i1 in 0..num_nds {
                         eld_ld_c[i1] = 0.0;
@@ -1396,7 +1396,7 @@ impl Model {
                     this_el.get_rum_dfd0(&mut rvec, &mut  mmat,  true,  true,  self.job[sci].nonlinear_geom, &mut  self.d0_pre, &mut self.d0_scratch.iter_mut());
                     this_el.get_rud_dfd0(&mut rvec, &mut  dmat,  true, &self.job[sci], &mut  self.d0_pre, &mut self.scratch.iter_mut(), &mut self.d0_scratch.iter_mut());
                     this_el.get_el_vec(&mut el_adj, &mut  self.u_adj,  false,  false, &mut  self.nodes);
-                    nd_dof = this_el.num_nds * this_el.dof_per_nd;
+                    nd_dof = this_el.num_nds() * this_el.dof_per_nd();
                     i3 = 0;
                     for i1 in 0..nd_dof {
                         eld_ld_u[i1] = 0.0;
@@ -1475,7 +1475,7 @@ impl Model {
             }
             for this_el in self.elements.iter_mut() {
                 this_el.set_intd_ld_u(&mut self.d_ld_u);
-                this_el.update_external(&mut self.d_ld_u,  0, &mut  self.nodes, &mut self.scratch.iter_mut());
+                this_el.update_external(&mut self.d_ld_u,  0, this_el.num_int_dof(), &mut  self.nodes, &mut self.scratch.iter_mut());
             }
             if self.job[sci].solver_method.s == "direct" {
                 self.elastic_lt.ldl_solve(&mut self.u_adj, &mut  self.d_ld_u);
@@ -1485,7 +1485,7 @@ impl Model {
                 //g_mres_sparse(self.u_adj, *self.elastic_mat, *self.elastic_const, *self.elastic_lt, self.d_ld_u, self.solve_cmd->conv_tol, self.solve_cmd->max_it, 6*self.solve_cmd->solver_block_dim);
             }
             for this_el in self.elements.iter_mut() {
-                this_el.update_internal(&mut self.u_adj,  0, &mut  self.nodes, &mut self.scratch.iter_mut());
+                this_el.update_internal(&mut self.u_adj,  0, this_el.num_int_dof(), &mut  self.nodes, &mut self.scratch.iter_mut());
             }
         }
 
@@ -1496,9 +1496,9 @@ impl Model {
                         this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                         this_el.get_ruk_dfd0(&mut rvec, &mut  d_rd_u, &mut  d_rd_t, &mut d_rd_c,  true,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
                         this_el.get_el_vec(&mut el_adj, &mut  self.u_adj,  false,  false, &mut  self.nodes);
-                        el_num_nds = this_el.num_nds;
-                        el_dof_per_nd = this_el.dof_per_nd;
-                        el_int_dof = this_el.num_int_dof;
+                        el_num_nds = this_el.num_nds();
+                        el_dof_per_nd = this_el.dof_per_nd();
+                        el_int_dof = this_el.num_int_dof();
                         el_nd_dof = el_num_nds * el_dof_per_nd;
                         for i1 in 0..el_num_nds {
                             eld_ld_c[i1] = 0.0;
@@ -1549,9 +1549,9 @@ impl Model {
                         this_el.get_stress_prereq_dfd0(&mut self.d0_pre, &mut  self.sections, &mut  self.materials, &mut  self.nodes, & self.design_vars);
                         this_el.get_ruk_dfd0(&mut rvec, &mut  d_rd_u, &mut  d_rd_t, &mut d_rd_c,  true,  self.job[sci].nonlinear_geom, &mut  self.d0_pre);
                         this_el.get_el_vec(&mut el_adj, &mut  self.u_adj,  false,  false, &mut  self.nodes);
-                        el_num_nds = this_el.num_nds;
-                        el_dof_per_nd = this_el.dof_per_nd;
-                        el_int_dof = this_el.num_int_dof;
+                        el_num_nds = this_el.num_nds();
+                        el_dof_per_nd = this_el.dof_per_nd();
+                        el_int_dof = this_el.num_int_dof();
                         el_nd_dof = el_num_nds * el_dof_per_nd;
                         for i1 in 0..el_num_nds {
                             eld_ld_t[i1] = 0.0;

@@ -1588,8 +1588,8 @@ impl Model {
 
         if self.job[self.solve_cmd].elastic {
             for el in self.elements.iter_mut() {
-                if el.num_int_dof > 0 {
-                    for i in 0..el.num_int_dof {
+                if el.num_int_dof() > 0 {
+                    for i in 0..el.num_int_dof() {
                         _b_read = match reader.read(&mut buf8) {
                             Err(why) => panic!("problem reading file, {}, {}", full_file, why),
                             Ok(n) => n,

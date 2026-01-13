@@ -2001,12 +2001,12 @@ impl Element {
         let mut nd_crd = [DiffDoub0::new(); 3];
         let mut this_nd : &Node;
         
-        for i1 in 0..self.num_nds {
+        for i1 in 0..self.num_nds() {
             this_nd = &nd_ar[self.nodes[i1]];
             this_nd.get_crd_dfd0(&mut nd_crd);
             x_glob[i1].set_val_dfd0(& nd_crd[0]);
-            x_glob[i1+self.num_nds].set_val_dfd0(& nd_crd[1]);
-            x_glob[i1+2*self.num_nds].set_val_dfd0(& nd_crd[2]);
+            x_glob[i1+self.num_nds()].set_val_dfd0(& nd_crd[1]);
+            x_glob[i1+2*self.num_nds()].set_val_dfd0(& nd_crd[2]);
         }
         
         return;
@@ -4238,12 +4238,12 @@ impl Element {
         let mut nd_crd = [DiffDoub1::new(); 3];
         let mut this_nd : &Node;
         
-        for i1 in 0..self.num_nds {
+        for i1 in 0..self.num_nds() {
             this_nd = &nd_ar[self.nodes[i1]];
             this_nd.get_crd_dfd1(&mut nd_crd);
             x_glob[i1].set_val_dfd1(& nd_crd[0]);
-            x_glob[i1+self.num_nds].set_val_dfd1(& nd_crd[1]);
-            x_glob[i1+2*self.num_nds].set_val_dfd1(& nd_crd[2]);
+            x_glob[i1+self.num_nds()].set_val_dfd1(& nd_crd[1]);
+            x_glob[i1+2*self.num_nds()].set_val_dfd1(& nd_crd[2]);
         }
         
         return;
@@ -4481,6 +4481,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
  

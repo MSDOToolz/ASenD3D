@@ -15,13 +15,15 @@ impl Model {
         let mut spt = [0f64; 3];
         
         if ip == 0 {
-            for i in 0..3 {
-                spt[i] = self.elements[el_i].s_cent[i];
-            }
+            //for i in 0..3 {
+            //    spt[i] = self.elements[el_i].s_cent[i];
+            //}
+            self.elements[el_i].cent_s_crd(&mut spt);
         }
         else {
             let si = 3*(ip - 1);
-            vec_to_ar(&mut spt, & self.elements[el_i].int_pts,si,si+3);
+            //vec_to_ar(&mut spt, & self.elements[el_i].int_pts,si,si+3);
+            self.elements[el_i].ip_crd(&mut spt, (ip-1));
         }
         
         let sci = self.solve_cmd;

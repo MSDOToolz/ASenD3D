@@ -62,8 +62,8 @@ impl Model {
         
         // build nodal connectivity
         for el in self.elements.iter_mut() {
-            el_num_nds = el.num_nds;
-            el_dof_per_nd = el.dof_per_nd;
+            el_num_nds = el.num_nds();
+            el_dof_per_nd = el.dof_per_nd();
             for i1 in 0..el_num_nds {
                 nd1 = el.nodes[i1];
                 if el_dof_per_nd > 3 {
@@ -232,7 +232,7 @@ impl Model {
         }
         
         for this_el in self.elements.iter_mut() {
-            i3 = this_el.num_int_dof;
+            i3 = this_el.num_int_dof();
             if i3 > 0 {
                 this_el.int_dof_index = i2;
                 i2  +=  i3;
@@ -497,7 +497,7 @@ impl Model {
                 self.design_vars[tmp_vec[i2].int_dat].add_comp_el(el_label);
                 this_el.add_comp_dvar(tmp_vec[i2].int_dat);
             }
-            el_num_nds = this_el.num_nds;
+            el_num_nds = this_el.num_nds();
             for i1 in 0..el_num_nds {
                 this_nd = & self.nodes[this_el.nodes[i1]];
                 for dv in this_nd.d_var_lst.iter() {
@@ -520,7 +520,7 @@ impl Model {
         
         let mut fc_ct : usize =  0;
         for el in self.elements.iter_mut() {
-            fc_ct  +=  el.num_faces;
+            fc_ct  +=  el.num_faces();
         }
         
         self.faces = vec![Face::new(); fc_ct];
