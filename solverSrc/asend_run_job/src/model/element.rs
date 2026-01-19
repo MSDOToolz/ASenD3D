@@ -94,8 +94,8 @@ impl DiffDoub0StressPrereq {
             layer_de : Vec::new(),
             layer_diff : Vec::new(),
             layer_max_con : Vec::new(),
-            frc_fld_coef : vec![DiffDoub0::new(); 2],
-            frc_fld_exp : vec![DiffDoub0::new(); 2],
+            frc_fld_coef : vec![DiffDoub0::new(); 3],
+            frc_fld_exp : vec![DiffDoub0::new(); 5],
             thrm_fld_coef : vec![DiffDoub0::new(); 2],
             ref_temp : DiffDoub0::new(),
             ideal_gas : DiffDoub0::new(),
@@ -204,8 +204,8 @@ impl DiffDoub1StressPrereq {
             layer_de : Vec::new(),
             layer_diff : Vec::new(),
             layer_max_con : Vec::new(),
-            frc_fld_coef : vec![DiffDoub1::new(); 2],
-            frc_fld_exp : vec![DiffDoub1::new(); 2],
+            frc_fld_coef : vec![DiffDoub1::new(); 3],
+            frc_fld_exp : vec![DiffDoub1::new(); 5],
             thrm_fld_coef : vec![DiffDoub1::new(); 2],
             ref_temp : DiffDoub1::new(),
             ideal_gas : DiffDoub1::new(),
@@ -221,7 +221,11 @@ impl DiffDoub1StressPrereq {
 //end dup
  
 //end skip 
-
+ 
+ 
+ 
+ 
+ 
 
 #[derive(Clone)]
 pub struct Element {

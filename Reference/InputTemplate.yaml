@@ -68,7 +68,12 @@ sections:
           exp:
       dampField:
           coef:
-          exp:
+          distExp:
+          velExp:
+      magField:
+          coef:
+          distExp:
+          velExp:
       thermField:
           condCoef:
           radCoef: 0
@@ -150,7 +155,13 @@ interactions:
       dampField:
           coef:
             - [t, val]
-          exp:
+          distExp:
+          velExp:
+      magField:
+          coef:
+            - [t, val]
+          distExp:
+          velExp:
       thermField:
           condCoef:
           radCoef: 0

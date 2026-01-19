@@ -52,6 +52,10 @@ impl DiffDoub0 {
         return;
     }
 
+    pub fn pow(&mut self, inp : &DiffDoub0) {
+        self.val = self.val.powf(inp.val);
+    }
+
     pub fn sn(&mut self) {
         self.val = sin(self.val);
         return;
@@ -146,6 +150,12 @@ impl DiffDoub1 {
         self.dval = 2.0*self.val*self.dval;
         self.val = self.tmp;
         return;
+    }
+
+    pub fn pow(&mut self, inp : &DiffDoub1) {
+        self.tmp = self.val.powf(inp.val);
+        self.dval = self.tmp*(inp.dval*self.val.ln() + inp.val*self.dval/self.val);
+        self.val = self.tmp;
     }
 
     pub fn sn(&mut self) {

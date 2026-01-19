@@ -516,8 +516,22 @@ impl Model {
                         if headings[2].s == "coef" && data_len == 1 {
                             self.sections[sec_ct].damp_coef = CppStr::stod(&mut data[0]);
                         }
-                        else if headings[2].s == "exp" && data_len == 1 {
-                            self.sections[sec_ct].damp_exp = CppStr::stod(&mut data[0]);
+                        else if headings[2].s == "distExp" && data_len == 1 {
+                            self.sections[sec_ct].damp_dist_exp = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "velExp" && data_len == 1 {
+                            self.sections[sec_ct].damp_vel_exp = data[0].stod();
+                        }
+                    }
+                    else if headings[1].s == "magField" {
+                        if headings[2].s == "coef" && data_len == 1 {
+                            self.sections[sec_ct].mag_coef = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "distExp" && data_len == 1 {
+                            self.sections[sec_ct].mag_dist_exp = CppStr::stod(&mut data[0]);
+                        }
+                        else if headings[2].s == "velExp" && data_len == 1 {
+                            self.sections[sec_ct].mag_vel_exp = data[0].stod();
                         }
                     }
                     else if headings[1].s == "thermField" {
@@ -1021,7 +1035,10 @@ impl Model {
                     "nodeSet1" => self.interactions.int_vec[*int_ct].node_set1 = data[0].clone(),
                     "nodeSet2" => self.interactions.int_vec[*int_ct].node_set2 = data[0].clone(),
                     "potFieldexp" => self.interactions.int_vec[*int_ct].pot_exp = CppStr::stod(&mut data[0]),
-                    "dampFieldexp" => self.interactions.int_vec[*int_ct].damp_exp = CppStr::stod(&mut data[0]),
+                    "dampFielddistExp" => self.interactions.int_vec[*int_ct].damp_dist_exp = CppStr::stod(&mut data[0]),
+                    "dampFieldvelExp" => self.interactions.int_vec[*int_ct].damp_vel_exp = data[0].stod(),
+                    "magFielddistExp" => self.interactions.int_vec[*int_ct].mag_dist_exp = data[0].stod(),
+                    "magFieldvelExp" => self.interactions.int_vec[*int_ct].mag_vel_exp = data[0].stod(),
                     "thermFieldcondCoef" => self.interactions.int_vec[*int_ct].cond_coef = CppStr::stod(&mut data[0]),
                     "thermFieldradCoef" => self.interactions.int_vec[*int_ct].rad_coef = CppStr::stod(&mut data[0]),
                     "thermFieldrefTemp" => self.interactions.int_vec[*int_ct].ref_temp = CppStr::stod(&mut data[0]),
@@ -1042,6 +1059,8 @@ impl Model {
                                        self.interactions.int_vec[*int_ct].pot_coef.push_back(new_ent);},
                     "dampFieldcoef" => {let new_ent = DualFloat{f1 : CppStr::stod(&mut data[0]), f2 : CppStr::stod(&mut data[1])};
                                         self.interactions.int_vec[*int_ct].damp_coef.push_back(new_ent);},
+                    "magFieldcoef" => {let new_ent = DualFloat{f1 : CppStr::stod(&mut data[0]), f2 : CppStr::stod(&mut data[1])};
+                                        self.interactions.int_vec[*int_ct].mag_coef.push_back(new_ent);},
                     "activeTime" => {self.interactions.int_vec[*int_ct].active_time[0] = CppStr::stod(&mut data[0]);
                                      self.interactions.int_vec[*int_ct].active_time[1] = CppStr::stod(&mut data[1]);},
                     &_ => {},

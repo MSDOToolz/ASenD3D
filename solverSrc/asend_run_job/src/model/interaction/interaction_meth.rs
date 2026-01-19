@@ -16,35 +16,16 @@ impl Interaction {
         time >= self.active_time[0] && time <= self.active_time[1]
     }
 
-    pub fn get_pot_coef(&self, time : f64) -> f64 {
-        let mut pt = match self.pot_coef.front() {
+    pub fn get_coef(coef_lst : &LinkedList<DualFloat>, time : f64) -> f64 {
+        let mut pt = match coef_lst.front() {
             None => panic!("Error: empty potential coefficients in interaction"),
             Some(x) => x.f1,
         };
-        let mut pv = match self.pot_coef.front() {
+        let mut pv = match coef_lst.front() {
             None => panic!("Error: empty potential coefficients in interaction"),
             Some(x) => x.f2,
         };
-        for ent in self.pot_coef.iter() {
-            if ent.f1 > time {
-                return pv + (ent.f2 - pv)*(time - pt)/(ent.f1 - pt);
-            }
-            pt = ent.f1;
-            pv = ent.f2;
-        }
-        return pv;
-    }
-
-    pub fn get_damp_coef(&self, time : f64) -> f64 {
-        let mut pt = match self.damp_coef.front() {
-            None => panic!("Error: empty potential coefficients in interaction"),
-            Some(x) => x.f1,
-        };
-        let mut pv = match self.damp_coef.front() {
-            None => panic!("Error: empty potential coefficients in interaction"),
-            Some(x) => x.f2,
-        };
-        for ent in self.damp_coef.iter() {
+        for ent in coef_lst.iter() {
             if ent.f1 > time {
                 return pv + (ent.f2 - pv)*(time - pt)/(ent.f1 - pt);
             }
@@ -144,15 +125,24 @@ impl Interaction {
         dummy_el.design_vars = self.dvars.clone();
 
 
-        pre.frc_fld_coef[0].set_val(self.get_pot_coef(time));
+        pre.frc_fld_coef[0].set_val(Interaction::get_coef(&self.pot_coef, time));
         dummy_el.get_gen_prop_dfd0(&mut pre.frc_fld_coef[0],&mut CppStr::from("potFldCoef"), dv_ar);
         
-        pre.frc_fld_coef[1].set_val(self.get_damp_coef(time));
+        pre.frc_fld_coef[1].set_val(Interaction::get_coef(&self.damp_coef, time));
         dummy_el.get_gen_prop_dfd0(&mut pre.frc_fld_coef[1],&mut CppStr::from("dampFldCoef"), dv_ar);
+
+        pre.frc_fld_coef[2].set_val(Interaction::get_coef(&self.mag_coef, time));
+        dummy_el.get_gen_prop_dfd0(&mut pre.frc_fld_coef[2], &mut CppStr::from("magFldCoef"), dv_ar);
         
         pre.frc_fld_exp[0].set_val(self.pot_exp);
         
-        pre.frc_fld_exp[1].set_val(self.damp_exp);
+        pre.frc_fld_exp[1].set_val(self.damp_dist_exp);
+
+        pre.frc_fld_exp[2].set_val(self.damp_vel_exp);
+
+        pre.frc_fld_exp[3].set_val(self.mag_dist_exp);
+
+        pre.frc_fld_exp[4].set_val(self.mag_vel_exp);
         
         pre.thrm_fld_coef[0].set_val(self.cond_coef);
         dummy_el.get_gen_prop_dfd0(&mut pre.thrm_fld_coef[0],&mut CppStr::from("condCoef"), dv_ar);
@@ -370,15 +360,24 @@ impl Interaction {
         dummy_el.design_vars = self.dvars.clone();
 
 
-        pre.frc_fld_coef[0].set_val(self.get_pot_coef(time));
+        pre.frc_fld_coef[0].set_val(Interaction::get_coef(&self.pot_coef, time));
         dummy_el.get_gen_prop_dfd1(&mut pre.frc_fld_coef[0],&mut CppStr::from("potFldCoef"), dv_ar);
         
-        pre.frc_fld_coef[1].set_val(self.get_damp_coef(time));
+        pre.frc_fld_coef[1].set_val(Interaction::get_coef(&self.damp_coef, time));
         dummy_el.get_gen_prop_dfd1(&mut pre.frc_fld_coef[1],&mut CppStr::from("dampFldCoef"), dv_ar);
+
+        pre.frc_fld_coef[2].set_val(Interaction::get_coef(&self.mag_coef, time));
+        dummy_el.get_gen_prop_dfd1(&mut pre.frc_fld_coef[2], &mut CppStr::from("magFldCoef"), dv_ar);
         
         pre.frc_fld_exp[0].set_val(self.pot_exp);
         
-        pre.frc_fld_exp[1].set_val(self.damp_exp);
+        pre.frc_fld_exp[1].set_val(self.damp_dist_exp);
+
+        pre.frc_fld_exp[2].set_val(self.damp_vel_exp);
+
+        pre.frc_fld_exp[3].set_val(self.mag_dist_exp);
+
+        pre.frc_fld_exp[4].set_val(self.mag_vel_exp);
         
         pre.thrm_fld_coef[0].set_val(self.cond_coef);
         dummy_el.get_gen_prop_dfd1(&mut pre.thrm_fld_coef[0],&mut CppStr::from("condCoef"), dv_ar);
@@ -508,6 +507,7 @@ impl Interaction {
  
  
  
+ 
 }
 
 impl InteractionList {
@@ -584,7 +584,7 @@ impl InteractionList {
  
  
  
-
+ 
     pub fn initialize(&mut self, nodes : &Vec<Node>, node_sets : &Vec<Set>, ns_map : &CppMap, el_ar : &Vec<Element>, dv_ar : &Vec<DesignVariable>) {
 
         if self.int_vec.len() > 0 {

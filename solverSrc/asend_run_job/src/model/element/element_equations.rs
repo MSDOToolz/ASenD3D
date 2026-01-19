@@ -1429,149 +1429,176 @@ impl Element {
         }
     }
 
-    pub fn get_ru_frc_fld_dfd0(&mut self, rvec : &mut [DiffDoub0], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq) {
-        let mut i1 : usize;
-        let mut i2 : usize;
-        let mut d_vec = [DiffDoub0::new(); 3];
-        let mut dist = DiffDoub0::new();
-        let mut dv_vec = [DiffDoub0::new(); 3];
-        let mut d_dvecd_u = [DiffDoub0::new(); 18];
-        let mut d_distd_u = [DiffDoub0::new(); 6];
-        let mut f_n1 = [DiffDoub0::new(); 3];
-        let mut df_n1d_u = [DiffDoub0::new(); 18];
-        let mut dto_p = DiffDoub0::new();
-        let mut dto_p1 = DiffDoub0::new();
-        let mut dto_p2 = DiffDoub0::new();
+    pub fn nonlin_force_dfd0(force : &mut [DiffDoub0], d_vec : &[DiffDoub0], v_vec : &[DiffDoub0], coef : &[DiffDoub0], exp : &[DiffDoub0]) {
+        let mut d_mag = DiffDoub0::new();
+        let mut v_mag = DiffDoub0::new();
+        let mut b_vec = [DiffDoub0::new(); 3];
+        let mut mag_vec = [DiffDoub0::new(); 3];
         let mut tmp = DiffDoub0::new();
         let mut tmp2 = DiffDoub0::new();
-        
-        // potential force
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd0(& pre.glob_nds[i2]);
-            tmp.add(& pre.glob_disp[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_nds[i2]);
-            tmp.sub(& pre.glob_disp[i2]);
-            d_vec[i1].set_val_dfd0(& tmp);
+
+        for i in 0..3 {
+            force[i].set_val(0.0);
         }
         
-        dist.set_val_dfd0(& d_vec[0]);
-        dist.sqr();
-        tmp.set_val_dfd0(& d_vec[1]);
-        tmp.sqr();
-        dist.add(& tmp);
-        tmp.set_val_dfd0(& d_vec[2]);
-        tmp.sqr();
-        dist.add(& tmp);
-        dist.sqt();
-        
-        d_dvecd_u[0].set_val(-1.0);
-        d_dvecd_u[3].set_val(1.0);
-        d_dvecd_u[7].set_val(-1.0);
-        d_dvecd_u[10].set_val(1.0);
-        d_dvecd_u[14].set_val(-1.0);
-        d_dvecd_u[17].set_val(1.0);
-        
-        mat_mul_ar_dfd0(&mut d_distd_u, &mut  d_vec, &mut  d_dvecd_u,  1,  3,  6);
-        tmp.set_val(1.0);
-        tmp.dvd(& dist);
-        for i1 in 0..6 {
-            d_distd_u[i1].mult(& tmp);
+        for i in 0..3 {
+            tmp.set_val_dfd0(&d_vec[i]);
+            tmp.sqr();
+            d_mag.add(&tmp);
+            tmp.set_val_dfd0(&v_vec[i]);
+            tmp.sqr();
+            v_mag.add(&tmp);
         }
-        
-        dto_p.set_val_dfd0(& dist);
-        i1 = 1;
-        while i1 < (pre.frc_fld_exp[0].val as usize) {
-            dto_p.mult(& dist);
-            i1 += 1usize;
+        d_mag.sqt();
+        v_mag.sqt();
+
+        // potential
+
+        tmp.set_val_dfd0(&d_mag);
+        tmp2.set_val(-1.0);
+        tmp2.sub(&exp[0]);  // tmp2 = -(exp + 1)
+        tmp.pow(&tmp2);  //tmp = d_mag^-(exp + 1) = 1/(d_mag^(exp + 1))
+        tmp.mult(&coef[0]);  // tmp = coef/(d_mag^(exp + 1))
+
+        for i in 0..3 {
+            tmp2.set_val_dfd0(&d_vec[i]);
+            tmp2.mult(&tmp);
+            force[i].add(&tmp2);
         }
-        dto_p1.set_val_dfd0(& dto_p);
-        dto_p1.mult(& dist);
-        dto_p2.set_val_dfd0(& dto_p1);
-        dto_p2.mult(& dist);
-        
-        tmp.set_val_dfd0(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p1);
-        for i1 in 0..3 {
-            f_n1[i1].set_val_dfd0(& d_vec[i1]);
-            f_n1[i1].mult(& tmp);
+
+        // damping
+
+        tmp.set_val_dfd0(&v_mag);
+        tmp2.set_val(-1.0);
+        tmp2.add(&exp[2]);
+        tmp.pow(&tmp2); // tmp = v_mag^(exp - 1)
+        tmp2.set_val_dfd0(&d_mag);
+        tmp2.pow(&exp[1]);
+        tmp.dvd(&tmp2); // tmp = v_mag^(exp - 1)/d_mag^exp
+        tmp.mult(&coef[1]);
+
+        for i in 0..3 {
+            tmp2.set_val_dfd0(&v_vec[i]);
+            tmp2.mult(&tmp);
+            force[i].add(&tmp2);
         }
-        
-        mat_mul_ar_dfd0(&mut df_n1d_u, &mut  d_vec, &mut  d_distd_u,  3,  1,  6);
-        tmp.set_val(1.0);
-        tmp.add(& pre.frc_fld_exp[0]);
-        tmp.neg();
-        tmp.mult(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p2);
-        for i1 in 0..18 {
-            df_n1d_u[i1].mult(& tmp);
+
+        // magnetic
+
+        cross_prod_dfd0(&mut b_vec, v_vec, d_vec);
+        cross_prod_dfd0(&mut mag_vec, v_vec, &b_vec);
+
+        tmp.set_val_dfd0(&v_mag);
+        tmp2.set_val(-2.0);
+        tmp2.add(&exp[4]);
+        tmp.pow(&tmp2); // tmp = v_mag^(exp -2)
+        tmp2.set_val_dfd0(&d_mag);
+        tmp2.pow(&exp[3]);
+        tmp2.mult(&d_mag);
+        tmp.dvd(&tmp2); // tmp = v_mag^(exp - 2)/d_mag^(exp + 1)
+        tmp.mult(&coef[2]);
+
+        for i in 0..3 {
+            tmp2.set_val_dfd0(&mag_vec[i]);
+            tmp2.mult(&tmp);
+            force[i].add(&tmp2);
         }
-        
-        tmp.set_val_dfd0(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p1);
-        for i1 in 0..18 {
-            tmp2.set_val_dfd0(& tmp);
-            tmp2.mult(& d_dvecd_u[i1]);
-            df_n1d_u[i1].add(& tmp2);
+
+    }
+
+    pub fn get_ru_frc_fld_dfd0(&mut self, rvec : &mut [DiffDoub0], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq) {
+        let mut d_vec = [DiffDoub0::new(); 3];
+        let mut v_vec = [DiffDoub0::new(); 3];
+        let mut tmp = DiffDoub0::new();
+
+        let mut k = 1usize;
+        for i in 0..3 {
+            d_vec[i].set_val_dfd0(&pre.glob_nds[k]);
+            d_vec[i].add(&pre.glob_disp[k]);
+            d_vec[i].sub(&pre.glob_nds[k-1]);
+            d_vec[i].sub(&pre.glob_disp[k-1]);
+            v_vec[i].set_val_dfd0(&pre.glob_vel[k]);
+            v_vec[i].sub(&pre.glob_vel[k-1]);
+            k += 2;
         }
-        
-        for i1 in 0..3 {
-            rvec[i1].set_val_dfd0(& f_n1[i1]);
-            rvec[i1].neg();
-            rvec[i1 + 3].set_val_dfd0(& f_n1[i1]);
+
+        Element::nonlin_force_dfd0(&mut rvec[3..], &d_vec, &v_vec, &pre.frc_fld_coef, &pre.frc_fld_exp);
+
+        for i in 0..3 {
+            tmp.set_val_dfd0(&rvec[i+3]);
+            rvec[i].set_val_dfd0(&tmp);
+            rvec[i].neg();
         }
-        
+
         if get_matrix && !cmd.explicit {
-            for i1 in 0..18 {
-                dr_du[i1] = -df_n1d_u[i1].val;
-                dr_du[i1 + 18] = df_n1d_u[i1].val;
+            let mut d_v1 = [DiffDoub1::new(); 3];
+            let mut v_v1 = [DiffDoub1::new(); 3];
+            let mut coef1 = [DiffDoub1::new(); 3];
+            let mut exp1 = [DiffDoub1::new(); 5];
+            let mut df = [DiffDoub1::new(); 3];
+
+            for i in 0..3 {
+                d_v1[i].set_val_dfd0(&d_vec[i]);
+                v_v1[i].set_val_dfd0(&v_vec[i]);
+                coef1[i].set_val_dfd0(&pre.frc_fld_coef[i]);
             }
-        }
-        
-        // damping force
-        
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd0(& pre.glob_vel[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_vel[i2]);
-            dv_vec[i1].set_val_dfd0(& tmp);
-        }
-        
-        tmp.set_val_dfd0(& pre.frc_fld_coef[1]);
-        tmp.dvd(& dto_p);
-        
-        for i1 in 0..3 {
-            f_n1[i1].set_val_dfd0(& tmp);
-            f_n1[i1].mult(& dv_vec[i1]);
-        }
-        
-        
-        tmp2.set_val(-cmd.newmark_gamma / (cmd.time_step * (cmd.newmark_beta - cmd.newmark_gamma)));
-        tmp.mult(& tmp2);
-        
-        for i1 in 0..18 {
-            tmp2.set_val_dfd0(& tmp);
-            tmp2.mult(& d_dvecd_u[i1]);
-            //df_n1d_u[i1].add(tmp2);
-            df_n1d_u[i1].set_val_dfd0(& tmp2);
-        }
-        
-        for i1 in 0..3 {
-            rvec[i1].sub(& f_n1[i1]);
-            rvec[i1 + 3].add(& f_n1[i1]);
-        }
-        
-        if get_matrix && !cmd.explicit {
-            tmp.set_val_dfd0(&pre.frc_fld_coef[1]);
-            tmp.dvd(&dto_p);
-            for i1 in 0..18 {
-                dr_du[i1]  -=  df_n1d_u[i1].val;
-                dr_du[i1 + 18]  +=  df_n1d_u[i1].val;
-                dr_dv[i1] -= tmp.val*d_dvecd_u[i1].val;
-                dr_dv[i1 + 18] += tmp.val*d_dvecd_u[i1].val;
+            
+            for i in 0..5 {
+                exp1[i].set_val_dfd0(&pre.frc_fld_exp[i]);
             }
+            
+            for j in 0..3 {
+                d_v1[j].dval = 1.0;
+                Element::nonlin_force_dfd1(&mut df, &d_v1, &v_v1, &coef1, &exp1);
+                
+                for i in 0..3 {
+                    k = i*6 + j;
+                    dr_du[k] = df[i].dval;
+                    
+                    k = i*6 + j + 3;
+                    dr_du[k] = -df[i].dval;
+
+                    k = (i + 3)*6 + j + 3;
+                    dr_du[k] = df[i].dval;
+                }
+
+                d_v1[j].dval = 0.0;
+
+                v_v1[j].dval = 1.0;
+                Element::nonlin_force_dfd1(&mut df, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..3 {
+                    k = i*6 + j;
+                    dr_dv[k] = df[i].dval;
+                    
+                    k = i*6 + j + 3;
+                    dr_dv[k] = -df[i].dval;
+
+                    k = (i + 3)*6 + j + 3;
+                    dr_dv[k] = df[i].dval;
+                }
+
+                v_v1[j].dval = 0.0;
+            }
+
+            let dv_du = -cmd.newmark_gamma/(cmd.time_step*(cmd.newmark_beta - cmd.newmark_gamma));
+            for i in 0..6 {
+                for j in i..6 {
+                    k = i*6 + j;
+                    dr_du[k] += dv_du*dr_dv[k];
+                }
+            }
+
+            let mut k2 : usize;
+            for i in 1..6 {
+                for j in 0..i {
+                    k = i*6 + j;
+                    k2 = j*6 + i;
+                    dr_du[k] = dr_du[k2];
+                    dr_dv[k] = dr_dv[k2];
+                }
+            }
+
         }
     }
 
@@ -1616,280 +1643,161 @@ impl Element {
         return;
     }
 
-    pub fn get_rt_frc_fld_dfd0(&mut self, rvec : &mut [DiffDoub0], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq) {
-        let mut i1 : usize;
-        let mut i2 : usize;
-        let mut i3 : usize;
-        let mut d_vec = [DiffDoub0::new(); 3];
-        let mut dist = DiffDoub0::new();
-        let mut dv_vec = [DiffDoub0::new(); 3];
-        let mut d_dvecd_u = [DiffDoub0::new(); 18];
-        let mut d_distd_u = [DiffDoub0::new(); 6];
-        let mut f_n1 = [DiffDoub0::new(); 3];
-        let mut df_n1d_u = [DiffDoub0::new(); 18];
-        let mut df_n1d_v = [DiffDoub0::new(); 18];
-        let mut dto_p = DiffDoub0::new();
-        let mut dto_p1 = DiffDoub0::new();
-        let mut dto_p2 = DiffDoub0::new();
-        let mut t1to3 = DiffDoub0::new();
-        let mut t1to4 = DiffDoub0::new();
-        let mut t2to3 = DiffDoub0::new();
-        let mut t2to4 = DiffDoub0::new();
+    pub fn nonlin_rt_dfd0(rvec : &mut [DiffDoub0], temp : &[DiffDoub0], cond : &DiffDoub0, rad : &DiffDoub0, t_ref : &DiffDoub0, d_vec : &[DiffDoub0], v_vec : &[DiffDoub0], coef : &[DiffDoub0], exp : &[DiffDoub0]) {
         let mut tmp = DiffDoub0::new();
         let mut tmp2 = DiffDoub0::new();
-        let mut tmp_mat = [DiffDoub0::new(); 18];
-        let mut tmp_mat2 = [DiffDoub0::new(); 18];
-        
-        // potential force
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd0(& pre.glob_nds[i2]);
-            tmp.add(& pre.glob_disp[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_nds[i2]);
-            tmp.sub(& pre.glob_disp[i2]);
-            d_vec[i1].set_val_dfd0(& tmp);
+        let mut tmp3 = DiffDoub0::new();
+        let mut d_mag = DiffDoub0::new();
+        let mut frc = [DiffDoub0::new(); 3];
+
+        for i in 0..2 {
+            rvec[i].set_val(0.0);
         }
-        
-        dist.set_val_dfd0(& d_vec[0]);
-        dist.sqr();
-        tmp.set_val_dfd0(& d_vec[1]);
-        tmp.sqr();
-        dist.add(& tmp);
-        tmp.set_val_dfd0(& d_vec[2]);
-        tmp.sqr();
-        dist.add(& tmp);
-        dist.sqt();
-        
-        dto_p.set_val_dfd0(& dist);
-        i1 = 1;
-        while i1 < (pre.frc_fld_exp[0].val as usize) {
-            dto_p.mult(& dist);
-            i1 += 1usize;
+
+        // get magnitude of d
+        for i in 0..3 {
+            tmp.set_val_dfd0(&d_vec[i]);
+            tmp.sqr();
+            d_mag.add(&tmp);
         }
-        dto_p1.set_val_dfd0(& dto_p);
-        dto_p1.mult(& dist);// ||d||^(p+1)
-        dto_p2.set_val_dfd0(& dto_p1);
-        dto_p2.mult(& dist);// ||d||^(p+2)
-        
-        tmp.set_val_dfd0(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p1);
-        for i1 in 0..3 {
-            f_n1[i1].set_val_dfd0(& d_vec[i1]);
-            f_n1[i1].mult(& tmp);
+        d_mag.sqt();
+
+        // Conduction
+        rvec[0].set_val_dfd0(&temp[0]);
+        rvec[0].sub(&temp[1]);
+        rvec[0].mult(cond);
+        rvec[0].dvd(&d_mag);
+
+        // Radiation
+        tmp.set_val_dfd0(&temp[0]);
+        tmp.add(t_ref);
+        tmp2.set_val(4.0);
+        tmp.pow(&tmp2); // tmp = (T1 + Tref)^4
+        tmp3.set_val_dfd0(&temp[1]);
+        tmp3.add(t_ref);
+        tmp3.pow(&tmp2); // tmp3 = (T2 + Tref)^4
+        tmp.sub(&tmp3);
+        tmp.mult(rad);
+        tmp.dvd(&d_mag);
+        tmp.dvd(&d_mag); //tmp = e*((T1 + Tref)^4 - (T2 + Tref)^4)/d_mag^2
+
+        rvec[0].add(&tmp);
+        tmp2.set_val_dfd0(&rvec[0]);
+        tmp2.neg();
+        rvec[1].set_val_dfd0(&tmp2);
+
+        // Force term
+
+        Element::nonlin_force_dfd0(&mut frc, d_vec, v_vec, coef, exp);
+
+        tmp.set_val(0.0);
+        for i in 0..3 {
+            tmp2.set_val_dfd0(&frc[i]);
+            tmp2.mult(&v_vec[i]);
+            tmp.add(&tmp2);
         }
-        
-        // damping force
-        
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd0(& pre.glob_vel[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_vel[i2]);
-            dv_vec[i1].set_val_dfd0(& tmp);
-        }
-        
-        tmp.set_val_dfd0(& pre.frc_fld_coef[1]);
-        tmp.dvd(& dto_p);// tmp = c_d/||d||^p
-        
-        for i1 in 0..3 {
-            tmp2.set_val_dfd0(& tmp);
-            tmp2.mult(& dv_vec[i1]);
-            f_n1[i1].add(& tmp2);
-        }
-        
-        // calculate absolute temps
-        tmp.set_val_dfd0(& pre.glob_temp[0]);
-        tmp.add(& pre.ref_temp);
-        t1to4.set_val_dfd0(& tmp);
-        t1to4.sqr();
-        t1to4.sqr();
-        t1to3.set_val_dfd0(& t1to4);
-        t1to3.dvd(& tmp);
-        
-        tmp.set_val_dfd0(& pre.glob_temp[1]);
-        tmp.add(& pre.ref_temp);
-        t2to4.set_val_dfd0(& tmp);
-        t2to4.sqr();
-        t2to4.sqr();
-        t2to3.set_val_dfd0(& t2to4);
-        t2to3.dvd(& tmp);
-        
-        // conduction and radiation terms
-        tmp.set_val_dfd0(& pre.glob_temp[0]);
-        tmp.sub(& pre.glob_temp[1]);
-        tmp.mult(& pre.thrm_fld_coef[0]);
-        tmp.dvd(& dist);
-        rvec[0].set_val_dfd0(& tmp);
-        
-        tmp.set_val_dfd0(& t1to4);
-        tmp.sub(& t2to4);
-        tmp.mult(& pre.thrm_fld_coef[1]);
-        tmp.dvd(& dist);
-        tmp.dvd(& dist);
-        rvec[0].add(& tmp);
-        
-        tmp.set_val_dfd0(& rvec[0]);
-        rvec[1].set_val_dfd0(& tmp);
-        rvec[1].neg();
-        
-        // work dissipation term
-        
-        tmp.set_val_dfd0(& f_n1[0]);
-        tmp.mult(& dv_vec[0]);
-        tmp2.set_val_dfd0(& f_n1[1]);
-        tmp2.mult(& dv_vec[1]);
-        tmp.add(& tmp2);
-        tmp2.set_val_dfd0(& f_n1[2]);
-        tmp2.mult(& dv_vec[2]);
-        tmp.add(& tmp2);
+
         tmp2.set_val(0.5);
-        tmp.mult(& tmp2);// tmp = 0.5*dot(fn1,d_v)
+        tmp.mult(&tmp2); // tmp 0.5* F*v_vec
+
+        rvec[0].sub(&tmp);
+        rvec[1].sub(&tmp);
+
         
-        rvec[0].sub(& tmp);
-        rvec[1].sub(& tmp);
-        
-        if get_matrix && !cmd.explicit {
-            d_dvecd_u[0].set_val(-1.0);
-            d_dvecd_u[3].set_val(1.0);
-            d_dvecd_u[7].set_val(-1.0);
-            d_dvecd_u[10].set_val(1.0);
-            d_dvecd_u[14].set_val(-1.0);
-            d_dvecd_u[17].set_val(1.0);
-            
-            mat_mul_ar_dfd0(&mut d_distd_u, &mut  d_vec, &mut  d_dvecd_u,  1,  3,  6);
-            tmp.set_val(1.0);
-            tmp.dvd(& dist);
-            for i1 in 0..6 {
-                d_distd_u[i1].mult(& tmp);
-            }
-            
-            mat_mul_ar_dfd0(&mut df_n1d_u, &mut  d_vec, &mut  d_distd_u,  3,  1,  6);
-            tmp.set_val(1.0);
-            tmp.add(& pre.frc_fld_exp[0]);
-            tmp.neg();
-            tmp.mult(& pre.frc_fld_coef[0]);
-            tmp.dvd(& dto_p2);
-            for i1 in 0..18 {
-                df_n1d_u[i1].mult(& tmp);
-            }
-            
-            tmp.set_val_dfd0(& pre.frc_fld_coef[0]);
-            tmp.dvd(& dto_p1);
-            for i1 in 0..18 {
-                tmp2.set_val_dfd0(& tmp);
-                tmp2.mult(& d_dvecd_u[i1]);
-                df_n1d_u[i1].add(& tmp2);
-            }
-            
-            mat_mul_ar_dfd0(&mut tmp_mat, &mut  dv_vec, &mut  d_distd_u,  3,  1,  6);
-            tmp.set_val_dfd0(& pre.frc_fld_coef[1]);
-            tmp.mult(& pre.frc_fld_exp[1]);
-            tmp.dvd(& dto_p1);
-            tmp.neg();
-            for i1 in 0..18 {
-                tmp2.set_val_dfd0(& tmp);
-                tmp2.mult(& tmp_mat[i1]);
-                df_n1d_u[i1].add(& tmp2);
-            }
-            
-            tmp.set_val_dfd0(& pre.frc_fld_coef[1]);
-            tmp.dvd(& dto_p);
-            for i1 in 0..18 {
-                df_n1d_v[i1].set_val_dfd0(& d_dvecd_u[i1]);
-                df_n1d_v[i1].mult(& tmp);
-            }
-            
-            // d_rd_t
-            tmp.set_val_dfd0(& pre.thrm_fld_coef[0]);
-            tmp.dvd(& dist);
-            tmp2.set_val_dfd0(& pre.thrm_fld_coef[1]);
-            tmp2.dvd(& dist);
-            tmp2.dvd(& dist);
-            dr_dt[0] = tmp.val + tmp2.val * t1to3.val;
-            dr_dt[1] = -tmp.val;
-            dr_dt[2] = -tmp.val;
-            dr_dt[3] = tmp.val + tmp2.val * t2to3.val;
-            
-            // d_rd_u
-            for i1 in 0..12 {
-                dr_du[i1] = 0.0;
-            }
-            
-            // conduction term
-            tmp.set_val_dfd0(& pre.glob_temp[0]);
-            tmp.sub(& pre.glob_temp[1]);
-            tmp.mult(& pre.thrm_fld_coef[0]);
-            tmp.dvd(& dist);
-            tmp.dvd(& dist);
-            tmp.neg();
-            tmp_mat[0].set_val_dfd0(& tmp);
-            tmp_mat[1].set_val_dfd0(& tmp);
-            tmp_mat[1].neg();
-            
-            mat_mul_ar_dfd0(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
-            
-            for i1 in 0..12 {
-                dr_du[i1]  +=  tmp_mat2[i1].val;
-            }
-            
-            // radiation term
-            tmp.set_val_dfd0(& t1to4);
-            tmp.sub(& t2to4);
-            tmp.mult(& pre.thrm_fld_coef[1]);
-            tmp2.set_val(2.0);
-            tmp.mult(& tmp2);
-            tmp.dvd(& dist);
-            tmp.dvd(& dist);
-            tmp.dvd(& dist);
-            tmp.neg();
-            tmp_mat[0].set_val_dfd0(& tmp);
-            tmp_mat[1].set_val_dfd0(& tmp);
-            tmp_mat[1].neg();
-            
-            mat_mul_ar_dfd0(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
-            
-            for i1 in 0..12 {
-                dr_du[i1]  +=  tmp_mat2[i1].val;
-            }
-            
-            // work dissipation term
-            mat_mul_ar_dfd0(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_u,  1,  3,  6);
-            i3 = 0;
-            for _i1 in 0..2 {
-                for i2 in 0..6 {
-                    dr_du[i3]  -=  0.5 * tmp_mat[i2].val;
-                    i3 += 1usize;
-                }
-            }
-            
-            // d_rd_v
-            
-            for i1 in 0..12 {
-                dr_dv[i1] = 0.0;
-            }
-            
-            mat_mul_ar_dfd0(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_v,  1,  3,  6);
-            i3 = 0;
-            for _i1 in 0..2 {
-                for i2 in 0..6 {
-                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
-                    i3 += 1usize;
-                }
-            }
-            
-            mat_mul_ar_dfd0(&mut tmp_mat, &mut  f_n1, &mut  d_dvecd_u,  1,  3,  6);
-            i3 = 0;
-            for _i1 in 0..2 {
-                for i2 in 0..6 {
-                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
-                    i3 += 1usize;
-                }
-            }
-            
+    }
+
+    pub fn get_rt_frc_fld_dfd0(&mut self, rvec : &mut [DiffDoub0], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq) {
+        let mut d_vec = [DiffDoub0::new(); 3];
+        let mut v_vec = [DiffDoub0::new(); 3];
+        let mut tmp = DiffDoub0::new();
+
+        let mut k = 1usize;
+        for i in 0..3 {
+            d_vec[i].set_val_dfd0(&pre.glob_nds[k]);
+            d_vec[i].add(&pre.glob_disp[k]);
+            d_vec[i].sub(&pre.glob_nds[k-1]);
+            d_vec[i].sub(&pre.glob_disp[k-1]);
+            v_vec[i].set_val_dfd0(&pre.glob_vel[k]);
+            v_vec[i].sub(&pre.glob_vel[k-1]);
+            k += 2;
         }
-        
-        return;        
+
+        Element::nonlin_rt_dfd0(rvec, &pre.glob_temp, &pre.thrm_fld_coef[0], &pre.thrm_fld_coef[1], &pre.ref_temp, &d_vec, &v_vec, &pre.frc_fld_coef, &pre.frc_fld_exp);
+
+        if get_matrix && !cmd.explicit {
+            let mut dr = [DiffDoub1::new(); 2];
+            let mut temp1 = [DiffDoub1::new(); 2];
+            let mut cond1 = DiffDoub1::new();
+            let mut rad1 = DiffDoub1::new();
+            let mut ref_t1 = DiffDoub1::new();
+            let mut d_v1 = [DiffDoub1::new(); 3];
+            let mut v_v1 = [DiffDoub1::new(); 3];
+            let mut coef1 = [DiffDoub1::new(); 3];
+            let mut exp1 = [DiffDoub1::new(); 5];
+
+            cond1.set_val_dfd0(&pre.thrm_fld_coef[0]);
+            rad1.set_val_dfd0(&pre.thrm_fld_coef[1]);
+            ref_t1.set_val_dfd0(&pre.ref_temp);
+
+            for i in 0..2 {
+                temp1[i].set_val_dfd0(&pre.glob_temp[i]);
+            }
+
+            for i in 0..3 {
+                d_v1[i].set_val_dfd0(&d_vec[i]);
+                v_v1[i].set_val_dfd0(&v_vec[i]);
+                coef1[i].set_val_dfd0(&pre.frc_fld_coef[i]);
+            }
+
+            for i in 0..5 {
+                exp1[i].set_val_dfd0(&pre.frc_fld_exp[i]);
+            }
+
+            // dr_dt
+
+            for j in 0..2 {
+                temp1[j].dval = 1.0;
+                Element::nonlin_rt_dfd1(&mut dr, &temp1, &cond1, &rad1, &ref_t1, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..2 {
+                    k = i*2 + j;
+                    dr_dt[k] = dr[i].dval;
+                }
+
+                temp1[j].dval = 0.0;
+            }
+
+            // Enforce symmetry
+            dr_dt[2] = dr_dt[1]; 
+
+            // dr_du, dr_dv
+            for j in 0..3 {
+                d_v1[j].dval = 1.0;
+                Element::nonlin_rt_dfd1(&mut dr, &temp1, &cond1, &rad1, &ref_t1, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..2 {
+                    k = i*6 + j;
+                    dr_du[k] = -dr[i].dval;
+                    k = i*6 + j + 3;
+                    dr_du[k] = dr[i].dval;
+                }
+
+                d_v1[j].dval = 0.0;
+
+                v_v1[j].dval = 1.0;
+                Element::nonlin_rt_dfd1(&mut dr, &temp1, &cond1, &rad1, &ref_t1, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..2 {
+                    k = i*6 + j;
+                    dr_dv[k] = -dr[i].dval;
+                    k = i*6 + j + 3;
+                    dr_dv[k] = dr[i].dval;
+                }
+
+                v_v1[j].dval = 0.0;
+            }
+
+        }
     }
 
     pub fn put_rt_frc_fld_dfd0(&mut self, glob_r : &mut Vec<DiffDoub0>, globd_rd_t : &mut SparseMat, get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq, nd_ar : &Vec<Node>) {
@@ -3524,149 +3432,176 @@ impl Element {
         }
     }
 
-    pub fn get_ru_frc_fld_dfd1(&mut self, rvec : &mut [DiffDoub1], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq) {
-        let mut i1 : usize;
-        let mut i2 : usize;
-        let mut d_vec = [DiffDoub1::new(); 3];
-        let mut dist = DiffDoub1::new();
-        let mut dv_vec = [DiffDoub1::new(); 3];
-        let mut d_dvecd_u = [DiffDoub1::new(); 18];
-        let mut d_distd_u = [DiffDoub1::new(); 6];
-        let mut f_n1 = [DiffDoub1::new(); 3];
-        let mut df_n1d_u = [DiffDoub1::new(); 18];
-        let mut dto_p = DiffDoub1::new();
-        let mut dto_p1 = DiffDoub1::new();
-        let mut dto_p2 = DiffDoub1::new();
+    pub fn nonlin_force_dfd1(force : &mut [DiffDoub1], d_vec : &[DiffDoub1], v_vec : &[DiffDoub1], coef : &[DiffDoub1], exp : &[DiffDoub1]) {
+        let mut d_mag = DiffDoub1::new();
+        let mut v_mag = DiffDoub1::new();
+        let mut b_vec = [DiffDoub1::new(); 3];
+        let mut mag_vec = [DiffDoub1::new(); 3];
         let mut tmp = DiffDoub1::new();
         let mut tmp2 = DiffDoub1::new();
-        
-        // potential force
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd1(& pre.glob_nds[i2]);
-            tmp.add(& pre.glob_disp[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_nds[i2]);
-            tmp.sub(& pre.glob_disp[i2]);
-            d_vec[i1].set_val_dfd1(& tmp);
+
+        for i in 0..3 {
+            force[i].set_val(0.0);
         }
         
-        dist.set_val_dfd1(& d_vec[0]);
-        dist.sqr();
-        tmp.set_val_dfd1(& d_vec[1]);
-        tmp.sqr();
-        dist.add(& tmp);
-        tmp.set_val_dfd1(& d_vec[2]);
-        tmp.sqr();
-        dist.add(& tmp);
-        dist.sqt();
-        
-        d_dvecd_u[0].set_val(-1.0);
-        d_dvecd_u[3].set_val(1.0);
-        d_dvecd_u[7].set_val(-1.0);
-        d_dvecd_u[10].set_val(1.0);
-        d_dvecd_u[14].set_val(-1.0);
-        d_dvecd_u[17].set_val(1.0);
-        
-        mat_mul_ar_dfd1(&mut d_distd_u, &mut  d_vec, &mut  d_dvecd_u,  1,  3,  6);
-        tmp.set_val(1.0);
-        tmp.dvd(& dist);
-        for i1 in 0..6 {
-            d_distd_u[i1].mult(& tmp);
+        for i in 0..3 {
+            tmp.set_val_dfd1(&d_vec[i]);
+            tmp.sqr();
+            d_mag.add(&tmp);
+            tmp.set_val_dfd1(&v_vec[i]);
+            tmp.sqr();
+            v_mag.add(&tmp);
         }
-        
-        dto_p.set_val_dfd1(& dist);
-        i1 = 1;
-        while i1 < (pre.frc_fld_exp[0].val as usize) {
-            dto_p.mult(& dist);
-            i1 += 1usize;
+        d_mag.sqt();
+        v_mag.sqt();
+
+        // potential
+
+        tmp.set_val_dfd1(&d_mag);
+        tmp2.set_val(-1.0);
+        tmp2.sub(&exp[0]);  // tmp2 = -(exp + 1)
+        tmp.pow(&tmp2);  //tmp = d_mag^-(exp + 1) = 1/(d_mag^(exp + 1))
+        tmp.mult(&coef[0]);  // tmp = coef/(d_mag^(exp + 1))
+
+        for i in 0..3 {
+            tmp2.set_val_dfd1(&d_vec[i]);
+            tmp2.mult(&tmp);
+            force[i].add(&tmp2);
         }
-        dto_p1.set_val_dfd1(& dto_p);
-        dto_p1.mult(& dist);
-        dto_p2.set_val_dfd1(& dto_p1);
-        dto_p2.mult(& dist);
-        
-        tmp.set_val_dfd1(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p1);
-        for i1 in 0..3 {
-            f_n1[i1].set_val_dfd1(& d_vec[i1]);
-            f_n1[i1].mult(& tmp);
+
+        // damping
+
+        tmp.set_val_dfd1(&v_mag);
+        tmp2.set_val(-1.0);
+        tmp2.add(&exp[2]);
+        tmp.pow(&tmp2); // tmp = v_mag^(exp - 1)
+        tmp2.set_val_dfd1(&d_mag);
+        tmp2.pow(&exp[1]);
+        tmp.dvd(&tmp2); // tmp = v_mag^(exp - 1)/d_mag^exp
+        tmp.mult(&coef[1]);
+
+        for i in 0..3 {
+            tmp2.set_val_dfd1(&v_vec[i]);
+            tmp2.mult(&tmp);
+            force[i].add(&tmp2);
         }
-        
-        mat_mul_ar_dfd1(&mut df_n1d_u, &mut  d_vec, &mut  d_distd_u,  3,  1,  6);
-        tmp.set_val(1.0);
-        tmp.add(& pre.frc_fld_exp[0]);
-        tmp.neg();
-        tmp.mult(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p2);
-        for i1 in 0..18 {
-            df_n1d_u[i1].mult(& tmp);
+
+        // magnetic
+
+        cross_prod_dfd1(&mut b_vec, v_vec, d_vec);
+        cross_prod_dfd1(&mut mag_vec, v_vec, &b_vec);
+
+        tmp.set_val_dfd1(&v_mag);
+        tmp2.set_val(-2.0);
+        tmp2.add(&exp[4]);
+        tmp.pow(&tmp2); // tmp = v_mag^(exp -2)
+        tmp2.set_val_dfd1(&d_mag);
+        tmp2.pow(&exp[3]);
+        tmp2.mult(&d_mag);
+        tmp.dvd(&tmp2); // tmp = v_mag^(exp - 2)/d_mag^(exp + 1)
+        tmp.mult(&coef[2]);
+
+        for i in 0..3 {
+            tmp2.set_val_dfd1(&mag_vec[i]);
+            tmp2.mult(&tmp);
+            force[i].add(&tmp2);
         }
-        
-        tmp.set_val_dfd1(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p1);
-        for i1 in 0..18 {
-            tmp2.set_val_dfd1(& tmp);
-            tmp2.mult(& d_dvecd_u[i1]);
-            df_n1d_u[i1].add(& tmp2);
+
+    }
+
+    pub fn get_ru_frc_fld_dfd1(&mut self, rvec : &mut [DiffDoub1], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq) {
+        let mut d_vec = [DiffDoub1::new(); 3];
+        let mut v_vec = [DiffDoub1::new(); 3];
+        let mut tmp = DiffDoub1::new();
+
+        let mut k = 1usize;
+        for i in 0..3 {
+            d_vec[i].set_val_dfd1(&pre.glob_nds[k]);
+            d_vec[i].add(&pre.glob_disp[k]);
+            d_vec[i].sub(&pre.glob_nds[k-1]);
+            d_vec[i].sub(&pre.glob_disp[k-1]);
+            v_vec[i].set_val_dfd1(&pre.glob_vel[k]);
+            v_vec[i].sub(&pre.glob_vel[k-1]);
+            k += 2;
         }
-        
-        for i1 in 0..3 {
-            rvec[i1].set_val_dfd1(& f_n1[i1]);
-            rvec[i1].neg();
-            rvec[i1 + 3].set_val_dfd1(& f_n1[i1]);
+
+        Element::nonlin_force_dfd1(&mut rvec[3..], &d_vec, &v_vec, &pre.frc_fld_coef, &pre.frc_fld_exp);
+
+        for i in 0..3 {
+            tmp.set_val_dfd1(&rvec[i+3]);
+            rvec[i].set_val_dfd1(&tmp);
+            rvec[i].neg();
         }
-        
+
         if get_matrix && !cmd.explicit {
-            for i1 in 0..18 {
-                dr_du[i1] = -df_n1d_u[i1].val;
-                dr_du[i1 + 18] = df_n1d_u[i1].val;
+            let mut d_v1 = [DiffDoub1::new(); 3];
+            let mut v_v1 = [DiffDoub1::new(); 3];
+            let mut coef1 = [DiffDoub1::new(); 3];
+            let mut exp1 = [DiffDoub1::new(); 5];
+            let mut df = [DiffDoub1::new(); 3];
+
+            for i in 0..3 {
+                d_v1[i].set_val_dfd1(&d_vec[i]);
+                v_v1[i].set_val_dfd1(&v_vec[i]);
+                coef1[i].set_val_dfd1(&pre.frc_fld_coef[i]);
             }
-        }
-        
-        // damping force
-        
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd1(& pre.glob_vel[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_vel[i2]);
-            dv_vec[i1].set_val_dfd1(& tmp);
-        }
-        
-        tmp.set_val_dfd1(& pre.frc_fld_coef[1]);
-        tmp.dvd(& dto_p);
-        
-        for i1 in 0..3 {
-            f_n1[i1].set_val_dfd1(& tmp);
-            f_n1[i1].mult(& dv_vec[i1]);
-        }
-        
-        
-        tmp2.set_val(-cmd.newmark_gamma / (cmd.time_step * (cmd.newmark_beta - cmd.newmark_gamma)));
-        tmp.mult(& tmp2);
-        
-        for i1 in 0..18 {
-            tmp2.set_val_dfd1(& tmp);
-            tmp2.mult(& d_dvecd_u[i1]);
-            //df_n1d_u[i1].add(tmp2);
-            df_n1d_u[i1].set_val_dfd1(& tmp2);
-        }
-        
-        for i1 in 0..3 {
-            rvec[i1].sub(& f_n1[i1]);
-            rvec[i1 + 3].add(& f_n1[i1]);
-        }
-        
-        if get_matrix && !cmd.explicit {
-            tmp.set_val_dfd1(&pre.frc_fld_coef[1]);
-            tmp.dvd(&dto_p);
-            for i1 in 0..18 {
-                dr_du[i1]  -=  df_n1d_u[i1].val;
-                dr_du[i1 + 18]  +=  df_n1d_u[i1].val;
-                dr_dv[i1] -= tmp.val*d_dvecd_u[i1].val;
-                dr_dv[i1 + 18] += tmp.val*d_dvecd_u[i1].val;
+            
+            for i in 0..5 {
+                exp1[i].set_val_dfd1(&pre.frc_fld_exp[i]);
             }
+            
+            for j in 0..3 {
+                d_v1[j].dval = 1.0;
+                Element::nonlin_force_dfd1(&mut df, &d_v1, &v_v1, &coef1, &exp1);
+                
+                for i in 0..3 {
+                    k = i*6 + j;
+                    dr_du[k] = df[i].dval;
+                    
+                    k = i*6 + j + 3;
+                    dr_du[k] = -df[i].dval;
+
+                    k = (i + 3)*6 + j + 3;
+                    dr_du[k] = df[i].dval;
+                }
+
+                d_v1[j].dval = 0.0;
+
+                v_v1[j].dval = 1.0;
+                Element::nonlin_force_dfd1(&mut df, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..3 {
+                    k = i*6 + j;
+                    dr_dv[k] = df[i].dval;
+                    
+                    k = i*6 + j + 3;
+                    dr_dv[k] = -df[i].dval;
+
+                    k = (i + 3)*6 + j + 3;
+                    dr_dv[k] = df[i].dval;
+                }
+
+                v_v1[j].dval = 0.0;
+            }
+
+            let dv_du = -cmd.newmark_gamma/(cmd.time_step*(cmd.newmark_beta - cmd.newmark_gamma));
+            for i in 0..6 {
+                for j in i..6 {
+                    k = i*6 + j;
+                    dr_du[k] += dv_du*dr_dv[k];
+                }
+            }
+
+            let mut k2 : usize;
+            for i in 1..6 {
+                for j in 0..i {
+                    k = i*6 + j;
+                    k2 = j*6 + i;
+                    dr_du[k] = dr_du[k2];
+                    dr_dv[k] = dr_dv[k2];
+                }
+            }
+
         }
     }
 
@@ -3711,280 +3646,161 @@ impl Element {
         return;
     }
 
-    pub fn get_rt_frc_fld_dfd1(&mut self, rvec : &mut [DiffDoub1], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq) {
-        let mut i1 : usize;
-        let mut i2 : usize;
-        let mut i3 : usize;
-        let mut d_vec = [DiffDoub1::new(); 3];
-        let mut dist = DiffDoub1::new();
-        let mut dv_vec = [DiffDoub1::new(); 3];
-        let mut d_dvecd_u = [DiffDoub1::new(); 18];
-        let mut d_distd_u = [DiffDoub1::new(); 6];
-        let mut f_n1 = [DiffDoub1::new(); 3];
-        let mut df_n1d_u = [DiffDoub1::new(); 18];
-        let mut df_n1d_v = [DiffDoub1::new(); 18];
-        let mut dto_p = DiffDoub1::new();
-        let mut dto_p1 = DiffDoub1::new();
-        let mut dto_p2 = DiffDoub1::new();
-        let mut t1to3 = DiffDoub1::new();
-        let mut t1to4 = DiffDoub1::new();
-        let mut t2to3 = DiffDoub1::new();
-        let mut t2to4 = DiffDoub1::new();
+    pub fn nonlin_rt_dfd1(rvec : &mut [DiffDoub1], temp : &[DiffDoub1], cond : &DiffDoub1, rad : &DiffDoub1, t_ref : &DiffDoub1, d_vec : &[DiffDoub1], v_vec : &[DiffDoub1], coef : &[DiffDoub1], exp : &[DiffDoub1]) {
         let mut tmp = DiffDoub1::new();
         let mut tmp2 = DiffDoub1::new();
-        let mut tmp_mat = [DiffDoub1::new(); 18];
-        let mut tmp_mat2 = [DiffDoub1::new(); 18];
-        
-        // potential force
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd1(& pre.glob_nds[i2]);
-            tmp.add(& pre.glob_disp[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_nds[i2]);
-            tmp.sub(& pre.glob_disp[i2]);
-            d_vec[i1].set_val_dfd1(& tmp);
+        let mut tmp3 = DiffDoub1::new();
+        let mut d_mag = DiffDoub1::new();
+        let mut frc = [DiffDoub1::new(); 3];
+
+        for i in 0..2 {
+            rvec[i].set_val(0.0);
         }
-        
-        dist.set_val_dfd1(& d_vec[0]);
-        dist.sqr();
-        tmp.set_val_dfd1(& d_vec[1]);
-        tmp.sqr();
-        dist.add(& tmp);
-        tmp.set_val_dfd1(& d_vec[2]);
-        tmp.sqr();
-        dist.add(& tmp);
-        dist.sqt();
-        
-        dto_p.set_val_dfd1(& dist);
-        i1 = 1;
-        while i1 < (pre.frc_fld_exp[0].val as usize) {
-            dto_p.mult(& dist);
-            i1 += 1usize;
+
+        // get magnitude of d
+        for i in 0..3 {
+            tmp.set_val_dfd1(&d_vec[i]);
+            tmp.sqr();
+            d_mag.add(&tmp);
         }
-        dto_p1.set_val_dfd1(& dto_p);
-        dto_p1.mult(& dist);// ||d||^(p+1)
-        dto_p2.set_val_dfd1(& dto_p1);
-        dto_p2.mult(& dist);// ||d||^(p+2)
-        
-        tmp.set_val_dfd1(& pre.frc_fld_coef[0]);
-        tmp.dvd(& dto_p1);
-        for i1 in 0..3 {
-            f_n1[i1].set_val_dfd1(& d_vec[i1]);
-            f_n1[i1].mult(& tmp);
+        d_mag.sqt();
+
+        // Conduction
+        rvec[0].set_val_dfd1(&temp[0]);
+        rvec[0].sub(&temp[1]);
+        rvec[0].mult(cond);
+        rvec[0].dvd(&d_mag);
+
+        // Radiation
+        tmp.set_val_dfd1(&temp[0]);
+        tmp.add(t_ref);
+        tmp2.set_val(4.0);
+        tmp.pow(&tmp2); // tmp = (T1 + Tref)^4
+        tmp3.set_val_dfd1(&temp[1]);
+        tmp3.add(t_ref);
+        tmp3.pow(&tmp2); // tmp3 = (T2 + Tref)^4
+        tmp.sub(&tmp3);
+        tmp.mult(rad);
+        tmp.dvd(&d_mag);
+        tmp.dvd(&d_mag); //tmp = e*((T1 + Tref)^4 - (T2 + Tref)^4)/d_mag^2
+
+        rvec[0].add(&tmp);
+        tmp2.set_val_dfd1(&rvec[0]);
+        tmp2.neg();
+        rvec[1].set_val_dfd1(&tmp2);
+
+        // Force term
+
+        Element::nonlin_force_dfd1(&mut frc, d_vec, v_vec, coef, exp);
+
+        tmp.set_val(0.0);
+        for i in 0..3 {
+            tmp2.set_val_dfd1(&frc[i]);
+            tmp2.mult(&v_vec[i]);
+            tmp.add(&tmp2);
         }
-        
-        // damping force
-        
-        for i1 in 0..3 {
-            i2 = i1 * 2 + 1;
-            tmp.set_val_dfd1(& pre.glob_vel[i2]);
-            i2  -=  1;
-            tmp.sub(& pre.glob_vel[i2]);
-            dv_vec[i1].set_val_dfd1(& tmp);
-        }
-        
-        tmp.set_val_dfd1(& pre.frc_fld_coef[1]);
-        tmp.dvd(& dto_p);// tmp = c_d/||d||^p
-        
-        for i1 in 0..3 {
-            tmp2.set_val_dfd1(& tmp);
-            tmp2.mult(& dv_vec[i1]);
-            f_n1[i1].add(& tmp2);
-        }
-        
-        // calculate absolute temps
-        tmp.set_val_dfd1(& pre.glob_temp[0]);
-        tmp.add(& pre.ref_temp);
-        t1to4.set_val_dfd1(& tmp);
-        t1to4.sqr();
-        t1to4.sqr();
-        t1to3.set_val_dfd1(& t1to4);
-        t1to3.dvd(& tmp);
-        
-        tmp.set_val_dfd1(& pre.glob_temp[1]);
-        tmp.add(& pre.ref_temp);
-        t2to4.set_val_dfd1(& tmp);
-        t2to4.sqr();
-        t2to4.sqr();
-        t2to3.set_val_dfd1(& t2to4);
-        t2to3.dvd(& tmp);
-        
-        // conduction and radiation terms
-        tmp.set_val_dfd1(& pre.glob_temp[0]);
-        tmp.sub(& pre.glob_temp[1]);
-        tmp.mult(& pre.thrm_fld_coef[0]);
-        tmp.dvd(& dist);
-        rvec[0].set_val_dfd1(& tmp);
-        
-        tmp.set_val_dfd1(& t1to4);
-        tmp.sub(& t2to4);
-        tmp.mult(& pre.thrm_fld_coef[1]);
-        tmp.dvd(& dist);
-        tmp.dvd(& dist);
-        rvec[0].add(& tmp);
-        
-        tmp.set_val_dfd1(& rvec[0]);
-        rvec[1].set_val_dfd1(& tmp);
-        rvec[1].neg();
-        
-        // work dissipation term
-        
-        tmp.set_val_dfd1(& f_n1[0]);
-        tmp.mult(& dv_vec[0]);
-        tmp2.set_val_dfd1(& f_n1[1]);
-        tmp2.mult(& dv_vec[1]);
-        tmp.add(& tmp2);
-        tmp2.set_val_dfd1(& f_n1[2]);
-        tmp2.mult(& dv_vec[2]);
-        tmp.add(& tmp2);
+
         tmp2.set_val(0.5);
-        tmp.mult(& tmp2);// tmp = 0.5*dot(fn1,d_v)
+        tmp.mult(&tmp2); // tmp 0.5* F*v_vec
+
+        rvec[0].sub(&tmp);
+        rvec[1].sub(&tmp);
+
         
-        rvec[0].sub(& tmp);
-        rvec[1].sub(& tmp);
-        
-        if get_matrix && !cmd.explicit {
-            d_dvecd_u[0].set_val(-1.0);
-            d_dvecd_u[3].set_val(1.0);
-            d_dvecd_u[7].set_val(-1.0);
-            d_dvecd_u[10].set_val(1.0);
-            d_dvecd_u[14].set_val(-1.0);
-            d_dvecd_u[17].set_val(1.0);
-            
-            mat_mul_ar_dfd1(&mut d_distd_u, &mut  d_vec, &mut  d_dvecd_u,  1,  3,  6);
-            tmp.set_val(1.0);
-            tmp.dvd(& dist);
-            for i1 in 0..6 {
-                d_distd_u[i1].mult(& tmp);
-            }
-            
-            mat_mul_ar_dfd1(&mut df_n1d_u, &mut  d_vec, &mut  d_distd_u,  3,  1,  6);
-            tmp.set_val(1.0);
-            tmp.add(& pre.frc_fld_exp[0]);
-            tmp.neg();
-            tmp.mult(& pre.frc_fld_coef[0]);
-            tmp.dvd(& dto_p2);
-            for i1 in 0..18 {
-                df_n1d_u[i1].mult(& tmp);
-            }
-            
-            tmp.set_val_dfd1(& pre.frc_fld_coef[0]);
-            tmp.dvd(& dto_p1);
-            for i1 in 0..18 {
-                tmp2.set_val_dfd1(& tmp);
-                tmp2.mult(& d_dvecd_u[i1]);
-                df_n1d_u[i1].add(& tmp2);
-            }
-            
-            mat_mul_ar_dfd1(&mut tmp_mat, &mut  dv_vec, &mut  d_distd_u,  3,  1,  6);
-            tmp.set_val_dfd1(& pre.frc_fld_coef[1]);
-            tmp.mult(& pre.frc_fld_exp[1]);
-            tmp.dvd(& dto_p1);
-            tmp.neg();
-            for i1 in 0..18 {
-                tmp2.set_val_dfd1(& tmp);
-                tmp2.mult(& tmp_mat[i1]);
-                df_n1d_u[i1].add(& tmp2);
-            }
-            
-            tmp.set_val_dfd1(& pre.frc_fld_coef[1]);
-            tmp.dvd(& dto_p);
-            for i1 in 0..18 {
-                df_n1d_v[i1].set_val_dfd1(& d_dvecd_u[i1]);
-                df_n1d_v[i1].mult(& tmp);
-            }
-            
-            // d_rd_t
-            tmp.set_val_dfd1(& pre.thrm_fld_coef[0]);
-            tmp.dvd(& dist);
-            tmp2.set_val_dfd1(& pre.thrm_fld_coef[1]);
-            tmp2.dvd(& dist);
-            tmp2.dvd(& dist);
-            dr_dt[0] = tmp.val + tmp2.val * t1to3.val;
-            dr_dt[1] = -tmp.val;
-            dr_dt[2] = -tmp.val;
-            dr_dt[3] = tmp.val + tmp2.val * t2to3.val;
-            
-            // d_rd_u
-            for i1 in 0..12 {
-                dr_du[i1] = 0.0;
-            }
-            
-            // conduction term
-            tmp.set_val_dfd1(& pre.glob_temp[0]);
-            tmp.sub(& pre.glob_temp[1]);
-            tmp.mult(& pre.thrm_fld_coef[0]);
-            tmp.dvd(& dist);
-            tmp.dvd(& dist);
-            tmp.neg();
-            tmp_mat[0].set_val_dfd1(& tmp);
-            tmp_mat[1].set_val_dfd1(& tmp);
-            tmp_mat[1].neg();
-            
-            mat_mul_ar_dfd1(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
-            
-            for i1 in 0..12 {
-                dr_du[i1]  +=  tmp_mat2[i1].val;
-            }
-            
-            // radiation term
-            tmp.set_val_dfd1(& t1to4);
-            tmp.sub(& t2to4);
-            tmp.mult(& pre.thrm_fld_coef[1]);
-            tmp2.set_val(2.0);
-            tmp.mult(& tmp2);
-            tmp.dvd(& dist);
-            tmp.dvd(& dist);
-            tmp.dvd(& dist);
-            tmp.neg();
-            tmp_mat[0].set_val_dfd1(& tmp);
-            tmp_mat[1].set_val_dfd1(& tmp);
-            tmp_mat[1].neg();
-            
-            mat_mul_ar_dfd1(&mut tmp_mat2, &mut  tmp_mat, &mut  d_distd_u,  2,  1,  6);
-            
-            for i1 in 0..12 {
-                dr_du[i1]  +=  tmp_mat2[i1].val;
-            }
-            
-            // work dissipation term
-            mat_mul_ar_dfd1(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_u,  1,  3,  6);
-            i3 = 0;
-            for _i1 in 0..2 {
-                for i2 in 0..6 {
-                    dr_du[i3]  -=  0.5 * tmp_mat[i2].val;
-                    i3 += 1usize;
-                }
-            }
-            
-            // d_rd_v
-            
-            for i1 in 0..12 {
-                dr_dv[i1] = 0.0;
-            }
-            
-            mat_mul_ar_dfd1(&mut tmp_mat, &mut  dv_vec, &mut  df_n1d_v,  1,  3,  6);
-            i3 = 0;
-            for _i1 in 0..2 {
-                for i2 in 0..6 {
-                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
-                    i3 += 1usize;
-                }
-            }
-            
-            mat_mul_ar_dfd1(&mut tmp_mat, &mut  f_n1, &mut  d_dvecd_u,  1,  3,  6);
-            i3 = 0;
-            for _i1 in 0..2 {
-                for i2 in 0..6 {
-                    dr_dv[i3]  -=  0.5 * tmp_mat[i2].val;
-                    i3 += 1usize;
-                }
-            }
-            
+    }
+
+    pub fn get_rt_frc_fld_dfd1(&mut self, rvec : &mut [DiffDoub1], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq) {
+        let mut d_vec = [DiffDoub1::new(); 3];
+        let mut v_vec = [DiffDoub1::new(); 3];
+        let mut tmp = DiffDoub1::new();
+
+        let mut k = 1usize;
+        for i in 0..3 {
+            d_vec[i].set_val_dfd1(&pre.glob_nds[k]);
+            d_vec[i].add(&pre.glob_disp[k]);
+            d_vec[i].sub(&pre.glob_nds[k-1]);
+            d_vec[i].sub(&pre.glob_disp[k-1]);
+            v_vec[i].set_val_dfd1(&pre.glob_vel[k]);
+            v_vec[i].sub(&pre.glob_vel[k-1]);
+            k += 2;
         }
-        
-        return;        
+
+        Element::nonlin_rt_dfd1(rvec, &pre.glob_temp, &pre.thrm_fld_coef[0], &pre.thrm_fld_coef[1], &pre.ref_temp, &d_vec, &v_vec, &pre.frc_fld_coef, &pre.frc_fld_exp);
+
+        if get_matrix && !cmd.explicit {
+            let mut dr = [DiffDoub1::new(); 2];
+            let mut temp1 = [DiffDoub1::new(); 2];
+            let mut cond1 = DiffDoub1::new();
+            let mut rad1 = DiffDoub1::new();
+            let mut ref_t1 = DiffDoub1::new();
+            let mut d_v1 = [DiffDoub1::new(); 3];
+            let mut v_v1 = [DiffDoub1::new(); 3];
+            let mut coef1 = [DiffDoub1::new(); 3];
+            let mut exp1 = [DiffDoub1::new(); 5];
+
+            cond1.set_val_dfd1(&pre.thrm_fld_coef[0]);
+            rad1.set_val_dfd1(&pre.thrm_fld_coef[1]);
+            ref_t1.set_val_dfd1(&pre.ref_temp);
+
+            for i in 0..2 {
+                temp1[i].set_val_dfd1(&pre.glob_temp[i]);
+            }
+
+            for i in 0..3 {
+                d_v1[i].set_val_dfd1(&d_vec[i]);
+                v_v1[i].set_val_dfd1(&v_vec[i]);
+                coef1[i].set_val_dfd1(&pre.frc_fld_coef[i]);
+            }
+
+            for i in 0..5 {
+                exp1[i].set_val_dfd1(&pre.frc_fld_exp[i]);
+            }
+
+            // dr_dt
+
+            for j in 0..2 {
+                temp1[j].dval = 1.0;
+                Element::nonlin_rt_dfd1(&mut dr, &temp1, &cond1, &rad1, &ref_t1, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..2 {
+                    k = i*2 + j;
+                    dr_dt[k] = dr[i].dval;
+                }
+
+                temp1[j].dval = 0.0;
+            }
+
+            // Enforce symmetry
+            dr_dt[2] = dr_dt[1]; 
+
+            // dr_du, dr_dv
+            for j in 0..3 {
+                d_v1[j].dval = 1.0;
+                Element::nonlin_rt_dfd1(&mut dr, &temp1, &cond1, &rad1, &ref_t1, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..2 {
+                    k = i*6 + j;
+                    dr_du[k] = -dr[i].dval;
+                    k = i*6 + j + 3;
+                    dr_du[k] = dr[i].dval;
+                }
+
+                d_v1[j].dval = 0.0;
+
+                v_v1[j].dval = 1.0;
+                Element::nonlin_rt_dfd1(&mut dr, &temp1, &cond1, &rad1, &ref_t1, &d_v1, &v_v1, &coef1, &exp1);
+
+                for i in 0..2 {
+                    k = i*6 + j;
+                    dr_dv[k] = -dr[i].dval;
+                    k = i*6 + j + 3;
+                    dr_dv[k] = dr[i].dval;
+                }
+
+                v_v1[j].dval = 0.0;
+            }
+
+        }
     }
 
     pub fn put_rt_frc_fld_dfd1(&mut self, glob_r : &mut Vec<DiffDoub1>, globd_rd_t : &mut SparseMat, get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq, nd_ar : &Vec<Node>) {
@@ -4387,6 +4203,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
  

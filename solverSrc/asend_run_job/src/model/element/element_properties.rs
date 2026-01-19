@@ -2164,8 +2164,12 @@ impl Element {
         let this_sec : &Section = &sec_ar[self.sect_ptr];
         coef[0].set_val(this_sec.pot_coef);
         coef[1].set_val(this_sec.damp_coef);
+        coef[2].set_val(this_sec.mag_coef);
         exp[0].set_val(this_sec.pot_exp);
-        exp[1].set_val(this_sec.damp_exp);
+        exp[1].set_val(this_sec.damp_dist_exp);
+        exp[2].set_val(this_sec.damp_vel_exp);
+        exp[3].set_val(this_sec.mag_dist_exp);
+        exp[4].set_val(this_sec.mag_vel_exp);
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
@@ -4401,8 +4405,12 @@ impl Element {
         let this_sec : &Section = &sec_ar[self.sect_ptr];
         coef[0].set_val(this_sec.pot_coef);
         coef[1].set_val(this_sec.damp_coef);
+        coef[2].set_val(this_sec.mag_coef);
         exp[0].set_val(this_sec.pot_exp);
-        exp[1].set_val(this_sec.damp_exp);
+        exp[1].set_val(this_sec.damp_dist_exp);
+        exp[2].set_val(this_sec.damp_vel_exp);
+        exp[3].set_val(this_sec.mag_dist_exp);
+        exp[4].set_val(this_sec.mag_vel_exp);
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
