@@ -81,6 +81,9 @@ class Section:
         
     def setMassPerElement(self,elMass):
         self.secData['massPerEl'] = elMass
+        
+    def setSpecHeat(self, specHeat):
+        self.secData['specHeat'] = specHeat
             
     def setElementSet(self,elsetName):
         self.secData['elementSet'] = elsetName

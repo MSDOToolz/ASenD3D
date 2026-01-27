@@ -390,28 +390,6 @@ impl Model {
                 this_term.nd_set_ptr = i1;
             }
         }
-
-        // initialize structures needed for interactions
-
-        self.interactions.initialize(&self.nodes, &self.node_sets, &self.ns_map, &self.elements, &self.design_vars);
-
-        // initialize references for particle sources
-
-        if !self.particle_sources.is_empty() {
-            for sc in self.particle_sources.iter_mut() {
-                sc.elset_pt = self.es_map.at(&sc.element_set.s);
-                for i in 0..3 {
-                    i1 = self.ns_map.at(&sc.ref_nodes[i].s);
-                    if i1 < MAX_INT {
-                        sc.ref_nodes_i[i] = match self.node_sets[i1].labels.front() {
-                            None => MAX_INT,
-                            Some(x) => *x,
-                        }
-                    } 
-                }
-                
-            }
-        }
         
         // build dv reference list for self.nodes and self.elements
         let mut coef_len : usize;
@@ -509,6 +487,28 @@ impl Model {
                 }
             }
         }
+
+         // initialize structures needed for interactions
+
+         self.interactions.initialize(&self.nodes, &self.node_sets, &self.ns_map, &self.elements, &self.design_vars);
+
+         // initialize references for particle sources
+ 
+         if !self.particle_sources.is_empty() {
+             for sc in self.particle_sources.iter_mut() {
+                 sc.elset_pt = self.es_map.at(&sc.element_set.s);
+                 for i in 0..3 {
+                     i1 = self.ns_map.at(&sc.ref_nodes[i].s);
+                     if i1 < MAX_INT {
+                         sc.ref_nodes_i[i] = match self.node_sets[i1].labels.front() {
+                             None => MAX_INT,
+                             Some(x) => *x,
+                         }
+                     } 
+                 }
+                 sc.deact_ob_els(&mut self.elements, &mut self.nodes, &self.element_sets);
+             }
+         }
         
         return;
     }

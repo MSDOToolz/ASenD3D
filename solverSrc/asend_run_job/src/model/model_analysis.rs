@@ -195,6 +195,10 @@ impl Model {
         for i1 in 0..self.el_mat_dim {
             self.elastic_ld_vec[i1] -=  self.temp_d1[i1].val;
         }
+
+        if build_mat {
+            self.elastic_mat.weight_zero_rows();
+        }
         
         return;
     }
@@ -226,6 +230,10 @@ impl Model {
         for i1 in 0..num_nodes {
             self.therm_ld_vec[i1]  -=  self.temp_d1[i1].val;
         }
+
+        if build_mat {
+            self.therm_mat.weight_zero_rows();
+        }
         
         return;
     }
@@ -252,6 +260,10 @@ impl Model {
         
         for i1 in 0..num_nodes {
             self.diff_ld_vec[i1]  -=  self.temp_d1[i1].val;
+        }
+
+        if build_mat {
+            self.diff_mat.weight_zero_rows();
         }
     }
 
@@ -560,6 +572,7 @@ impl Model {
                 }
             }
             if !self.interactions.int_vec.is_empty() {
+                self.interactions.update_nd_active(&self.elements);
                 self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
             }
         }
@@ -632,7 +645,7 @@ impl Model {
                 }
                 if !self.particle_sources.is_empty() {
                     for ps in self.particle_sources.iter_mut() {
-                        ps.release_if_clear(time, self.job[ci].time_step, &self.elements, &mut self.nodes, &self.element_sets);
+                        ps.release_if_clear(time, self.job[ci].time_step, &mut self.elements, &mut self.nodes, &self.element_sets);
                     }
                 }
                 if self.job[ci].save_soln_hist {
@@ -935,6 +948,7 @@ impl Model {
                     }
                 }
                 if !self.interactions.int_vec.is_empty(){
+                    self.interactions.update_nd_active(&self.elements);
                     self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
             }
@@ -996,7 +1010,7 @@ impl Model {
 
             if !self.particle_sources.is_empty() {
                 for ps in self.particle_sources.iter_mut() {
-                    ps.release_if_clear(time, self.job[ci].time_step, &self.elements, &mut self.nodes, &self.element_sets);
+                    ps.release_if_clear(time, self.job[ci].time_step, &mut self.elements, &mut self.nodes, &self.element_sets);
                 }
             }
 
@@ -1611,6 +1625,7 @@ impl Model {
             nd.calc_crd_dfd1(&self.design_vars);
         }
         if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_active(&self.elements);
             self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
@@ -1679,6 +1694,7 @@ impl Model {
         }
 
         if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_active(&self.elements);
             self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
@@ -1699,6 +1715,7 @@ impl Model {
         }
 
         if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_active(&self.elements);
             self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
@@ -1760,6 +1777,7 @@ impl Model {
         }
 
         if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_active(&self.elements);
             self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
@@ -1779,6 +1797,7 @@ impl Model {
         }
 
         if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_active(&self.elements);
             self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
@@ -1853,6 +1872,7 @@ impl Model {
         }
 
         if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_active(&self.elements);
             self.interactions.update_nd_mass_dfd1(&self.elements, &self.sections, &self.design_vars);
         }
         
@@ -1900,6 +1920,7 @@ impl Model {
                     nd.calc_crd_dfd0(&self.design_vars);
                 }
                 if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_active(&self.elements);
                     self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
                 self.obj.calculate_terms(time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
@@ -1941,6 +1962,7 @@ impl Model {
                     nd.calc_crd_dfd0(&self.design_vars);
                 }
                 if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_active(&self.elements);
                     self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
                 self.obj.calculate_terms(this_ld_tm,  self.job[sci].nonlinear_geom, &mut self.nodes, &mut self.elements, &mut self.node_sets, &mut self.element_sets, &mut self.sections, &mut self.materials, &mut self.design_vars, &mut  self.d0_pre);
@@ -2010,6 +2032,7 @@ impl Model {
                     nd.calc_crd_dfd0(&self.design_vars);
                 }
                 if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_active(&self.elements);
                     self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
                 self.obj.calculate_terms(time,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);
@@ -2073,6 +2096,7 @@ impl Model {
                     nd.calc_crd_dfd0(&self.design_vars);
                 }
                 if !self.interactions.int_vec.is_empty() {
+                    self.interactions.update_nd_active(&self.elements);
                     self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
                 self.obj.calculate_terms(this_ld,  self.job[sci].nonlinear_geom, &mut  self.nodes, &mut  self.elements, &mut  self.node_sets, &mut  self.element_sets, &mut  self.sections, &mut  self.materials, & self.design_vars, &mut  self.d0_pre);

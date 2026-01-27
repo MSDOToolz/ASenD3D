@@ -51,6 +51,33 @@ impl SparseMat {
         return;
     }
 
+    pub fn weight_zero_rows(&mut self) {
+        let mut avg = 0f64;
+        let mut ct = 0usize;
+        let mut sum : f64;
+        
+        for mr in self.matrix.iter() {
+            for ent in mr.row_vec.iter() {
+                avg += ent.value.abs();
+                ct += 1;
+            }
+        }
+        avg /= ct as f64;
+
+        ct = 0;
+        for mr in self.matrix.iter_mut() {
+            sum = 0.0;
+            for ent in mr.row_vec.iter() {
+                sum += ent.value.abs();
+            }
+            if sum < 1.0e-12*avg {
+                mr.add_entry(ct, ct, avg);
+            }
+            ct += 1;
+        }
+
+    }
+
     pub fn reset_rows(&mut self) {
         for r in self.matrix.iter_mut() {
             r.reset();

@@ -247,7 +247,30 @@ impl ParticleSource {
 
     }
 
-    pub fn release_if_clear(&mut self, time : f64, del_t : f64, el_ar : &Vec<Element>, nd_ar : &mut Vec<Node>, el_sets : &Vec<Set>) {
+    pub fn deact_ob_els(&self, el_ar : &mut Vec<Element>, nd_ar : &mut Vec<Node>, el_sets : &Vec<Set>) {
+        let mut crd = [DiffDoub0::new(); 3];
+        let mut loc_crd = [0f64; 3];
+        let mut a_mat = [DiffDoub1::new(); 9];
+        a_mat[0].set_val(1.0);
+        a_mat[4].set_val(1.0);
+        a_mat[8].set_val(1.0);
+        let mut n1_crd = [DiffDoub1::new(); 3];
+
+        if self.ref_nodes_i[0] < MAX_INT {
+            self.get_dir_cos(&mut a_mat, &mut n1_crd, nd_ar);
+        }
+        for el in el_sets[self.elset_pt].labels.iter() {
+            if el_ar[*el].this_type == 1 {
+                nd_ar[el_ar[*el].nodes[0]].get_def_crd_dfd0(&mut crd);
+                self.get_local_crd(&mut loc_crd, &mut crd, &a_mat, &n1_crd);
+                if self.out_of_bounds(&loc_crd) {
+                    el_ar[*el].is_active = false;
+                }
+            }
+        }
+    }
+
+    pub fn release_if_clear(&mut self, time : f64, del_t : f64, el_ar : &mut Vec<Element>, nd_ar : &mut Vec<Node>, el_sets : &Vec<Set>) {
         let mut crd = [DiffDoub0::new(); 3];
         let mut ndi : usize;
         let mut nd : &mut Node;
@@ -278,6 +301,7 @@ impl ParticleSource {
                         self.get_local_crd(&mut loc_crd, &mut crd, &a_mat, &n1_crd);
 
                         if self.out_of_bounds(&loc_crd) {
+                            el_ar[*el].is_active = true;
                             for i in 0..3 {
                                 nd.prev_disp[i] = glob_crd[i].val - nd.coord_dfd0[i].val;
                                 nd.pp_disp[i] = nd.prev_disp[i] - del_t*glob_crd[i].dval;
