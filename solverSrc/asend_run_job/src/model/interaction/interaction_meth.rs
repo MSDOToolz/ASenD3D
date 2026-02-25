@@ -37,16 +37,37 @@ impl Interaction {
 
 //dup1
 
-    pub fn get_particle_area_vol_dfd0(&self, area : &mut DiffDoub0, vol : &mut DiffDoub0, nearest : &Vec<usize>, near_dist : &Vec<f64>) {
+    pub fn get_particle_area_vol_dfd0(&self, area : &mut DiffDoub0, vol : &mut DiffDoub0, nearest : &Vec<usize>, near_dist : &Vec<f64>, this_nd : usize, nd_mass : &Vec<DiffDoub0>) {
         let mut tmp = DiffDoub0::new();
+        let mut tmp2 = DiffDoub0::new();
+        let mut d1 = DiffDoub0::new();
         area.set_val(0.0);
         vol.set_val(0.0);
         let mut ct = 0;
         for i in 0..self.max_nbrs {
             if nearest[i] < MAX_INT && near_dist[i]/near_dist[0] < self.max_ratio  {
-                tmp.set_val(near_dist[i].powf(2.0));
+                if nd_mass[nearest[i]].val == 0.0f64 {
+                    d1.set_val(0.5*near_dist[i]);
+                }
+                else {
+                    tmp.set_val_dfd0(&nd_mass[this_nd]);
+                    tmp.dvd(&nd_mass[nearest[i]]);
+                    tmp2.set_val(0.3333333333333);
+                    tmp.pow(&tmp2);
+                    d1.set_val(near_dist[i]);
+                    d1.mult(&tmp);
+                    tmp2.set_val(1.0);
+                    tmp2.add(&tmp);
+                    d1.dvd(&tmp2);
+                }
+                //tmp.set_val(near_dist[i].powf(2.0));
+                tmp.set_val_dfd0(&d1);
+                tmp.sqr();
                 area.add(&tmp);
-                tmp.set_val(near_dist[i].powf(3.0));
+                //tmp.set_val(near_dist[i].powf(3.0));
+                tmp.set_val_dfd0(&d1);
+                tmp2.set_val(3.0);
+                tmp.pow(&tmp2);
                 vol.add(&tmp);
                 ct += 1;
             }
@@ -56,9 +77,11 @@ impl Interaction {
             vol.set_val(1.0e+100);
             return;
         }
-        tmp.set_val(3.14159265358979/(ct as f64));
+        //tmp.set_val(3.14159265358979/(ct as f64));
+        tmp.set_val(12.566370614359172/(ct as f64));
         area.mult(&tmp);
-        tmp.set_val(0.523598775598298/(ct as f64));
+        //tmp.set_val(0.523598775598298/(ct as f64));
+        tmp.set_val(4.18879020478639/(ct as f64));
         vol.mult(&tmp)
     }
 
@@ -230,7 +253,7 @@ impl Interaction {
                 if self.max_nbrs < MAX_INT {
                     if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
                         //part_vol.set_val(self.get_particle_volume(nearest, near_dist));
-                        self.get_particle_area_vol_dfd0(&mut part_area, &mut part_vol, nearest, near_dist);
+                        self.get_particle_area_vol_dfd0(&mut part_area, &mut part_vol, nearest, near_dist, *nd, nd_mass);
                         pre.glob_temp[0].set_val(nodes[*nd].temperature);
                         pre.mass_per_el.set_val_dfd0(&nd_mass[*nd]);
                         if self.ideal_gas > 0.0 {
@@ -277,16 +300,37 @@ impl Interaction {
 //DiffDoub1 versions: 
 //dup1
 
-    pub fn get_particle_area_vol_dfd1(&self, area : &mut DiffDoub1, vol : &mut DiffDoub1, nearest : &Vec<usize>, near_dist : &Vec<f64>) {
+    pub fn get_particle_area_vol_dfd1(&self, area : &mut DiffDoub1, vol : &mut DiffDoub1, nearest : &Vec<usize>, near_dist : &Vec<f64>, this_nd : usize, nd_mass : &Vec<DiffDoub1>) {
         let mut tmp = DiffDoub1::new();
+        let mut tmp2 = DiffDoub1::new();
+        let mut d1 = DiffDoub1::new();
         area.set_val(0.0);
         vol.set_val(0.0);
         let mut ct = 0;
         for i in 0..self.max_nbrs {
             if nearest[i] < MAX_INT && near_dist[i]/near_dist[0] < self.max_ratio  {
-                tmp.set_val(near_dist[i].powf(2.0));
+                if nd_mass[nearest[i]].val == 0.0f64 {
+                    d1.set_val(0.5*near_dist[i]);
+                }
+                else {
+                    tmp.set_val_dfd1(&nd_mass[this_nd]);
+                    tmp.dvd(&nd_mass[nearest[i]]);
+                    tmp2.set_val(0.3333333333333);
+                    tmp.pow(&tmp2);
+                    d1.set_val(near_dist[i]);
+                    d1.mult(&tmp);
+                    tmp2.set_val(1.0);
+                    tmp2.add(&tmp);
+                    d1.dvd(&tmp2);
+                }
+                //tmp.set_val(near_dist[i].powf(2.0));
+                tmp.set_val_dfd1(&d1);
+                tmp.sqr();
                 area.add(&tmp);
-                tmp.set_val(near_dist[i].powf(3.0));
+                //tmp.set_val(near_dist[i].powf(3.0));
+                tmp.set_val_dfd1(&d1);
+                tmp2.set_val(3.0);
+                tmp.pow(&tmp2);
                 vol.add(&tmp);
                 ct += 1;
             }
@@ -296,9 +340,11 @@ impl Interaction {
             vol.set_val(1.0e+100);
             return;
         }
-        tmp.set_val(3.14159265358979/(ct as f64));
+        //tmp.set_val(3.14159265358979/(ct as f64));
+        tmp.set_val(12.566370614359172/(ct as f64));
         area.mult(&tmp);
-        tmp.set_val(0.523598775598298/(ct as f64));
+        //tmp.set_val(0.523598775598298/(ct as f64));
+        tmp.set_val(4.18879020478639/(ct as f64));
         vol.mult(&tmp)
     }
 
@@ -340,9 +386,10 @@ impl Interaction {
         pre.frc_fld_coef[0].neg();
     }
 
-    pub fn get_global_r_dfd1(&self, glob_r : &mut Vec<DiffDoub1>, dr_du : &mut SparseMat, discipline : usize, nd_in_set : &mut Vec<bool>, nd_mass : &Vec<DiffDoub1>, 
-        g_list : &SpatialGrid, g_out : &mut Vec<usize>, nearest : &mut Vec<usize>, near_dist : &mut Vec<f64>, dummy_el : &mut Element, pre : &mut DiffDoub1StressPrereq, 
-        time : f64, get_matrix : bool, cmd : &JobCommand, n_sets : &Vec<Set>, nodes : &Vec<Node>, dv_ar : &Vec<DesignVariable>) {
+    pub fn get_global_r_dfd1(&self, glob_r : &mut Vec<DiffDoub1>, dr_du : &mut SparseMat, discipline : usize, nd_active : &Vec<bool>,
+        nd_in_set : &mut Vec<bool>, nd_mass : &Vec<DiffDoub1>, g_list : &SpatialGrid, g_out : &mut Vec<usize>, nearest : &mut Vec<usize>, 
+        near_dist : &mut Vec<f64>, dummy_el : &mut Element, pre : &mut DiffDoub1StressPrereq, time : f64, get_matrix : bool, 
+        cmd : &JobCommand, n_sets : &Vec<Set>, nodes : &Vec<Node>, dv_ar : &Vec<DesignVariable>) {
         //discipline = 0: elastic, 1: thermal
 
         let mut crd1 = [DiffDoub1::new(); 3];
@@ -407,97 +454,101 @@ impl Interaction {
 
         
         for nd in n_sets[self.set_pt1].labels.iter() {
-            if self.max_nbrs < MAX_INT {
-                for i2 in 0..self.max_nbrs {
-                    nearest[i2] = MAX_INT;
-                    near_dist[i2] = 1.0e+100;
+            if nd_active[*nd] {
+                if self.max_nbrs < MAX_INT {
+                    for i2 in 0..self.max_nbrs {
+                        nearest[i2] = MAX_INT;
+                        near_dist[i2] = 1.0e+100;
+                    }
                 }
-            }
-            nodes[*nd].get_def_crd_dfd1(&mut crd1);
-            fcrd1[0] = crd1[0].val;
-            fcrd1[1] = crd1[1].val;
-            fcrd1[2] = crd1[2].val;
-            lst_len = g_list.get_in_radius(g_out, g_out.len(), &fcrd1, self.max_dist);
-            //if self.max_nbrs == MAX_INT {
-            for nb in 0..lst_len {
-                if nd_in_set[g_out[nb]] && g_out[nb] != *nd {
-                    nodes[g_out[nb]].get_def_crd_dfd1(&mut crd2);
-                    fcrd2[0] = crd2[0].val;
-                    fcrd2[1] = crd2[1].val;
-                    fcrd2[2] = crd2[2].val;
-                    dist = get_dist(&fcrd1, &fcrd2);
-                    if dist <= self.max_dist {
-                        if self.max_nbrs == MAX_INT {
+                nodes[*nd].get_def_crd_dfd1(&mut crd1);
+                fcrd1[0] = crd1[0].val;
+                fcrd1[1] = crd1[1].val;
+                fcrd1[2] = crd1[2].val;
+                lst_len = g_list.get_in_radius(g_out, g_out.len(), &fcrd1, self.max_dist);
+                //if self.max_nbrs == MAX_INT {
+                for nb in 0..lst_len {
+                    if nd_active[g_out[nb]] && nd_in_set[g_out[nb]] && g_out[nb] != *nd {
+                        nodes[g_out[nb]].get_def_crd_dfd1(&mut crd2);
+                        fcrd2[0] = crd2[0].val;
+                        fcrd2[1] = crd2[1].val;
+                        fcrd2[2] = crd2[2].val;
+                        dist = get_dist(&fcrd1, &fcrd2);
+                        if dist <= self.max_dist {
+                            if self.max_nbrs == MAX_INT {
+                                dummy_el.nodes[0] = *nd;
+                                dummy_el.nodes[1] = g_out[nb];
+                                dummy_el.get_all_nd_var_dfd1(pre, nodes);
+                                // if self.ideal_gas > 0.0 {
+                                //     self.get_ig_frc_coef_dfd1(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
+                                // }
+                                match discipline {
+                                    0 => dummy_el.put_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
+                                    1 => dummy_el.put_rt_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
+                                    _ => (),
+                                }
+                            }
+                            else {
+                                inserted = false;
+                                i1 = 0;
+                                while !inserted && i1 < self.max_nbrs {
+                                    if nearest[i1] == MAX_INT {
+                                        nearest[i1] = g_out[nb];
+                                        near_dist[i1] = dist;
+                                        inserted = true;
+                                    }
+                                    else if dist < near_dist[i1] {
+                                        for i2 in (i1..(self.max_nbrs - 1)).rev() {
+                                            nearest[i2+1] = nearest[i2];
+                                            near_dist[i2+1] = near_dist[i2];
+                                        }
+                                        nearest[i1] = g_out[nb];
+                                        near_dist[i1] = dist;
+                                        inserted = true;
+                                    }
+                                    i1 += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                //}
+                if self.max_nbrs < MAX_INT {
+                    if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
+                        //part_vol.set_val(self.get_particle_volume(nearest, near_dist));
+                        self.get_particle_area_vol_dfd1(&mut part_area, &mut part_vol, nearest, near_dist, *nd, nd_mass);
+                        pre.glob_temp[0].set_val(nodes[*nd].temperature);
+                        pre.mass_per_el.set_val_dfd1(&nd_mass[*nd]);
+                        if self.ideal_gas > 0.0 {
+                            Interaction::get_ig_pressure_dfd1(&mut pressure, pre, &part_vol);
+                        }
+                        else {
+                            Interaction::get_incomp_pressure_dfd1(&mut pressure, pre, &part_vol);
+                        }
+                        if self.set_pt1 == self.set_pt2 {
+                            tmp.set_val(0.5);
+                            pressure.mult(&tmp);
+                        }
+                    }
+                    for i2 in 0..self.max_nbrs {
+                        if nearest[i2] < MAX_INT && near_dist[i2]/near_dist[0] < self.max_ratio {
                             dummy_el.nodes[0] = *nd;
-                            dummy_el.nodes[1] = g_out[nb];
+                            dummy_el.nodes[1] = nearest[i2];
                             dummy_el.get_all_nd_var_dfd1(pre, nodes);
-                            // if self.ideal_gas > 0.0 {
-                            //     self.get_ig_frc_coef_dfd1(pre, &nd_mass[*nd], &nd_mass[g_out[nb]], dist);
-                            // }
+                            if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
+                                Interaction::get_pres_frc_coef_dfd1(pre, &pressure, &part_area, near_dist[i2]);
+                            }
                             match discipline {
                                 0 => dummy_el.put_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                                 1 => dummy_el.put_rt_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
                                 _ => (),
                             }
                         }
-                        else {
-                            inserted = false;
-                            i1 = 0;
-                            while !inserted && i1 < self.max_nbrs {
-                                if nearest[i1] == MAX_INT {
-                                    nearest[i1] = g_out[nb];
-                                    near_dist[i1] = dist;
-                                    inserted = true;
-                                }
-                                else if dist < near_dist[i1] {
-                                    for i2 in (i1..(self.max_nbrs - 1)).rev() {
-                                        nearest[i2+1] = nearest[i2];
-                                        near_dist[i2+1] = near_dist[i2];
-                                    }
-                                    nearest[i1] = g_out[nb];
-                                    near_dist[i1] = dist;
-                                    inserted = true;
-                                }
-                                i1 += 1;
-                            }
-                        }
                     }
                 }
             }
-            //}
-            if self.max_nbrs < MAX_INT {
-                if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
-                    //part_vol.set_val(self.get_particle_volume(nearest, near_dist));
-                    self.get_particle_area_vol_dfd1(&mut part_area, &mut part_vol, nearest, near_dist);
-                    pre.glob_temp[0].set_val(nodes[*nd].temperature);
-                    pre.mass_per_el.set_val_dfd1(&nd_mass[*nd]);
-                    if self.ideal_gas > 0.0 {
-                        Interaction::get_ig_pressure_dfd1(&mut pressure, pre, &part_vol);
-                    }
-                    else {
-                        Interaction::get_incomp_pressure_dfd1(&mut pressure, pre, &part_vol);
-                    }
-                    if self.set_pt1 == self.set_pt2 {
-                        tmp.set_val(0.5);
-                        pressure.mult(&tmp);
-                    }
-                }
-                for i2 in 0..self.max_nbrs {
-                    if nearest[i2] < MAX_INT && near_dist[i2]/near_dist[0] < self.max_ratio {
-                        dummy_el.nodes[0] = *nd;
-                        dummy_el.nodes[1] = nearest[i2];
-                        dummy_el.get_all_nd_var_dfd1(pre, nodes);
-                        if self.ideal_gas > 0.0 || self.bulk_mod > 0.0 {
-                            Interaction::get_pres_frc_coef_dfd1(pre, &pressure, &part_area, near_dist[i2]);
-                        }
-                        match discipline {
-                            0 => dummy_el.put_ru_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
-                            1 => dummy_el.put_rt_frc_fld_dfd1(glob_r, dr_du, get_matrix, cmd, pre, nodes),
-                            _ => (),
-                        }
-                    }
-                }
-            }
+
+            
         }
 
         for nd in n_sets[self.set_pt2].labels.iter() {
@@ -508,6 +559,7 @@ impl Interaction {
 //end dup
  
 //end skip 
+ 
  
  
  
@@ -576,7 +628,7 @@ impl InteractionList {
 
         for i in self.int_vec.iter() {
             if i.is_active(time) {
-                i.get_global_r_dfd1(glob_r, dr_du, discipline, &mut self.nd_in_set, &self.nd_mass_dfd1, &self.interact_grid, &mut self.grid_out, 
+                i.get_global_r_dfd1(glob_r, dr_du, discipline, &self.nd_active, &mut self.nd_in_set, &self.nd_mass_dfd1, &self.interact_grid, &mut self.grid_out, 
                     &mut self.nearest, &mut self.near_dist, &mut dummy_el, pre, time, get_matrix, cmd, n_sets, nodes, dv_ar);
             }
         }
@@ -585,6 +637,7 @@ impl InteractionList {
 //end dup
  
 //end skip 
+ 
  
  
  

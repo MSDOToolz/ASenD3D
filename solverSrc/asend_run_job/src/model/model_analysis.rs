@@ -272,20 +272,6 @@ impl Model {
         c_lst.set_scale_fact(scale_fact);
         true
     }
-    
-    // pub fn scale_elastic_const(&mut self) {
-    //     let scale_fact : f64 =  100000.0*self.elastic_mat.get_max_abs_val();
-    //     self.elastic_const.set_scale_fact(scale_fact);
-    //     self.elastic_scaled = true;
-    //     return;
-    // }
-
-    // pub fn scale_thermal_const(&mut self) {
-    //     let scale_fact : f64 =  100000.0 * self.therm_mat.get_max_abs_val();
-    //     self.thermal_const.set_scale_fact(scale_fact);
-    //     self.therm_scaled = true;
-    //     return;
-    // }
 
     pub fn build_elastic_const_load(&mut self) {
         let mut nd_dof : usize;
@@ -624,6 +610,11 @@ impl Model {
             i1 = 1;
             while time < self.job[ci].sim_period {
                 self.solve_step(time,1.0);
+                if !self.particle_sources.is_empty() {
+                    for ps in self.particle_sources.iter_mut() {
+                        ps.release_if_clear(time, self.job[ci].time_step, &mut self.elements, &mut self.nodes, &self.element_sets);
+                    }
+                }
                 for this_nd in self.nodes.iter_mut() {
                     if self.job[ci].thermal {
                         this_nd.advance_temp();
@@ -641,11 +632,6 @@ impl Model {
                 if self.job[ci].elastic {
                     for this_el in self.elements.iter_mut() {
                         this_el.advance_int_disp();
-                    }
-                }
-                if !self.particle_sources.is_empty() {
-                    for ps in self.particle_sources.iter_mut() {
-                        ps.release_if_clear(time, self.job[ci].time_step, &mut self.elements, &mut self.nodes, &self.element_sets);
                     }
                 }
                 if self.job[ci].save_soln_hist {
@@ -1097,8 +1083,6 @@ impl Model {
         let mut m_avg : f64;
         let m_min : f64;
         
-        //let mut cmd = &mut self.job[self.modal_cmd];
-        //let mut scmd = &mut self.job[self.solve_cmd];
         let ci : usize = self.modal_cmd;
         let sci : usize = self.solve_cmd;
         
@@ -1182,30 +1166,9 @@ impl Model {
                 self.eig_vals[i1]  +=  self.job[ci].tgt_eval;
             }
         }
-        else {
-            //step_inc = self.time_steps_saved / cmd.num_modes;
-            //if (step_inc == 0) {
-            //	string er_str = "Error: not enough solution time steps have been saved to find the requested number of active eigenmodes.\n";
-            //	er_str += "Be sure to Set the saveSolnHist option to true in the dynamic solve command.\n";
-            //	throw invalid_argument(er_str);
-            //}
-            //for (i1 = 0; i1 < cmd.num_modes; i1++) {
-            //	i2 = (i1 + 1) * step_inc;
-            //	i3 = i1 * self.el_mat_dim;
-            //	read_time_step_soln(i2);
-            //	this_nd = self.nodes.get_first();
-            //	while (this_nd) {
-            //		this_nd->get_prev_disp(nd_disp);
-            //		n_dof = this_nd->get_num_dof();
-            //		for (i4 = 0; i4 < n_dof; i4++) {
-            //			glob_ind = this_nd->get_dof_index(i4);
-            //			self.eig_vecs[i3 + glob_ind] = nd_disp[i4];
-            //		}
-            //		this_nd = this_nd->get_next();
-            //	}
-            //}
-            //
-            //get_nearest_evec_subspace(self.elastic_mat, self.elastic_const, self.diag_mass, self.eig_vecs, self.eig_vals, cmd->num_modes);
+        else if self.job[ci].this_type.s == "highestFreq" {
+            self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
+            highest_eigen_sparse(&mut self.eig_vals, &mut self.eig_vecs, &self.elastic_mat, &mut self.diag_mass, self.el_mat_dim);
         }
         
         if self.job[ci].this_type.s == "buckling" {

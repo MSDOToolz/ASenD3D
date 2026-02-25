@@ -1118,6 +1118,10 @@ impl Model {
                 match headings[1].s.as_str() {
                     "elementSet" => {*ps_ct = increment_ct(*ps_ct);
                                      self.particle_sources[*ps_ct].element_set = data[0].clone();},
+                    "swapSet" => self.particle_sources[*ps_ct].swap_set = data[0].clone(),
+                    "swapDistance" => self.particle_sources[*ps_ct].swap_dist = data[0].stod(),
+                    "swapRefLevel" => self.particle_sources[*ps_ct].refine_lev = data[0].stoi(),
+                    "swapSpacing" => self.particle_sources[*ps_ct].spacing = data[0].stod(),
                     "randomVel" => self.particle_sources[*ps_ct].random_vel = CppStr::stod(&mut data[0]),
                     "velInLocal" => self.particle_sources[*ps_ct].vel_in_local = data[0].s.contains("yes"),
                     &_ => (),

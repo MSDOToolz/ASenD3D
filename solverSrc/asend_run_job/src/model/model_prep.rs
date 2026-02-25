@@ -506,6 +506,11 @@ impl Model {
                          }
                      } 
                  }
+                 sc.swapset_pt = self.es_map.at(&sc.swap_set.s);
+                 if sc.swapset_pt < MAX_INT {
+                    i1 = sc.refine_lev;
+                    sc.insert_els = vec![MAX_INT; i1*i1*i1];
+                 }
                  sc.deact_ob_els(&mut self.elements, &mut self.nodes, &self.element_sets);
              }
          }

@@ -88,6 +88,8 @@ impl Node {
             self.prev_vel[i1] = self.initial_vel[i1];
             self.prev_acc[i1] = self.initial_acc[i1];
             self.displacement[i1] = self.initial_disp[i1];
+            self.velocity[i1] = self.initial_vel[i1];
+            self.acceleration[i1] = self.initial_acc[i1];
         }
         return;
     }
@@ -97,6 +99,7 @@ impl Node {
         self.pp_temp = self.initial_temp - delt*self.initial_tdot;
         self.prev_tdot = self.initial_tdot;
         self.temperature = self.initial_temp;
+        self.temp_change_rate = self.initial_tdot;
         return;
     }
 
@@ -104,6 +107,8 @@ impl Node {
         self.prev_fl_den = self.initial_fl_den;
         self.pp_fl_den = self.initial_fl_den - delt*self.initial_fl_den_dot;
         self.prev_fl_den_dot = self.initial_fl_den_dot;
+        self.fl_den = self.initial_fl_den;
+        self.fl_den_dot = self.initial_fl_den_dot;
         return;
     }
 
@@ -471,6 +476,7 @@ impl Node {
     //end dup
  
 //end skip 
+ 
  
  
  

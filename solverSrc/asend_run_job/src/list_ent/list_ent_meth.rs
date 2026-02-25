@@ -98,16 +98,16 @@ impl SparseMat {
         return;
     }
 
-    pub fn vector_multiply(&mut self, prod : &mut Vec<f64>, inp_vec : &mut Vec<f64>, transpose : bool) {
+    pub fn vector_multiply(&self, prod : &mut Vec<f64>, inp_vec : &Vec<f64>, transpose : bool) {
         if transpose {
-            for i1 in self.matrix.iter_mut() {
-                for i2 in i1.row_vec.iter_mut() {
+            for i1 in self.matrix.iter() {
+                for i2 in i1.row_vec.iter() {
                     prod[i2.col]  +=  i2.value * inp_vec[i2.row];
                 }
             }
         } else {
-            for i1 in self.matrix.iter_mut() {
-                for i2 in i1.row_vec.iter_mut() {
+            for i1 in self.matrix.iter() {
+                for i2 in i1.row_vec.iter() {
                     prod[i2.row]  +=  i2.value * inp_vec[i2.col];
                 }
             }
