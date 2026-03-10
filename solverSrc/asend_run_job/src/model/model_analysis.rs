@@ -485,6 +485,12 @@ impl Model {
                     self.build_elastic_soln_load(false, time);
                 }
 
+                // ---------------------
+
+                //self.elastic_mat.print_diagonals("elastic_diagonals.csv");
+
+                // -----------------------
+
                 if !self.elastic_scaled {
                     self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat, self.job[sci].const_scale_factor);
                 }
@@ -558,9 +564,12 @@ impl Model {
                 }
             }
             if !self.interactions.int_vec.is_empty() {
-                self.interactions.update_nd_active(&self.elements);
                 self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
             }
+        }
+
+        if !self.interactions.int_vec.is_empty() {
+            self.interactions.update_nd_active(&self.elements);
         }
         
     }
@@ -583,19 +592,16 @@ impl Model {
         }
         
         if self.job[ci].thermal {
-            self.thermal_const.add_to_sparse_mat(&mut self.therm_mat);
             self.therm_lt.populate_from_sparse_mat(&mut self.therm_mat);
             self.therm_lt.ldl_factor();
         }
 
         if self.job[ci].diffusion {
-            self.diff_const.add_to_sparse_mat(&mut self.diff_mat);
             self.diff_lt.populate_from_sparse_mat(&mut self.diff_mat);
             self.diff_lt.ldl_factor();
         }
         
         if self.job[ci].elastic && !self.job[ci].nonlinear_geom {
-            self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
             self.elastic_lt.populate_from_sparse_mat(&mut self.elastic_mat);
             println!("{}", "factoring stiffness matrix" );
             self.elastic_lt.ldl_factor();
@@ -885,7 +891,7 @@ impl Model {
 
             for nd in self.nodes.iter_mut() {
                 nd.advance_disp();
-                for i1 in 0..6 {
+                for i1 in 0..nd.num_dof {
                     nd.displacement[i1] = nd.prev_disp[i1] + nd.prev_disp[i1] - nd.pp_disp[i1] + self.elastic_sol_vec[nd.dof_index[i1]];
                 }
                 nd.update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, self.job[sci].time_step, true);
@@ -934,9 +940,12 @@ impl Model {
                     }
                 }
                 if !self.interactions.int_vec.is_empty(){
-                    self.interactions.update_nd_active(&self.elements);
                     self.interactions.update_nd_mass_dfd0(&self.elements, &self.sections, &self.design_vars);
                 }
+            }
+
+            if !self.interactions.int_vec.is_empty() {
+                self.interactions.update_nd_active(&self.elements);
             }
 
         }        
@@ -1091,6 +1100,9 @@ impl Model {
         }
         
         if self.eig_vecs.len() == 0 {
+            if self.job[ci].this_type.s == "highestFreq" {
+                self.job[ci].num_modes = 1;
+            }
             i1 = self.job[ci].num_modes;
             self.eig_vals = vec![0f64; i1];
             self.load_fact = vec![0f64; i1];
@@ -1143,8 +1155,14 @@ impl Model {
         self.job[sci].nonlinear_geom = true;
         self.job[sci].dynamic = false;
         println!("{}", "building stiffness matrix" );
+        let exp_save = self.job[sci].explicit;
+        self.job[sci].explicit = false;
         self.build_elastic_soln_load(true, 0.0);
+        self.job[sci].explicit = exp_save;
         println!("{}", "finished building matrix" );
+        // -------------------
+        //self.elastic_mat.print_all("full_matrix.csv");
+        // ------------------
         if self.job[ci].this_type.s == "buckling" || self.job[ci].this_type.s == "frequency" {
             for i1 in 0..self.el_mat_dim {
                 shft = -self.job[ci].tgt_eval * self.diag_mass[i1];

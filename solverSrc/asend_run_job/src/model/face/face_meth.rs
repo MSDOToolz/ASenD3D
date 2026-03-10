@@ -292,10 +292,6 @@ impl Face {
 //end skip 
  
  
- 
- 
- 
- 
 }
 
 impl FacePtList {

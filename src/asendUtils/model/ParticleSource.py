@@ -6,6 +6,7 @@ Created on Tue Oct 21 09:32:52 2025
 """
 
 import numpy as np
+import copy
 from asendUtils.model.Section import *
 
 class ParticleSource:
@@ -54,7 +55,7 @@ class ParticleSource:
     def setVelocity(self, vx, vy, vz, vRandom=None, time=None):
         if vRandom != None:
             self.data['randomVel'] = vRandom
-        if time != None:
+        if time == None:
             s1 = str([0., vx, vy, vz])
             s2 = str([1.0e+100, vx, vy, vz])
             self.data['meanVel'] = [s1,s2]
@@ -66,7 +67,7 @@ class ParticleSource:
             self.data['meanVel'] = clst
             
     def setTemperature(self, temperature, time=None):
-        if time != None:
+        if time == None:
             s1 = str([0., temperature])
             s2 = str([1.0e+100, temperature])
             self.data['temperature'] = [s1,s2]
@@ -78,7 +79,7 @@ class ParticleSource:
             self.data['temperature'] = clst
             
     def setFrequency(self, frequency, time=None):
-        if time != None:
+        if time == None:
             s1 = str([0., frequency])
             s2 = str([1.0e+100, frequency])
             self.data['frequency'] = [s1,s2]
@@ -95,6 +96,7 @@ def sourceGroupFromMesh(meshData, elsPerSource, massPerEl, specHeat, resXRng, re
     totParts = elsPerSource*numSrc
     srcLst = list()
     elsets = dict()
+    ndsets = dict()
     sectns = list()
     for s in range(0, numSrc):
         snm = elementSet + '_' + str(s)
@@ -102,12 +104,15 @@ def sourceGroupFromMesh(meshData, elsPerSource, massPerEl, specHeat, resXRng, re
         newSrc.setCoordinates(inNds[s,0], inNds[s,1], inNds[s,2])
         srcLst.append(newSrc)
         elsets[snm] = list(range(s*elsPerSource, (s+1)*elsPerSource))
+        ndsets[snm] = copy.deepcopy(elsets[snm])
         newSec = Section('mass')
         newSec.setElementSet(snm)
         newSec.setMassPerElement(massPerEl)
         newSec.setSpecHeat(specHeat)
         sectns.append(newSec)
-        
+    snm = elementSet + '_all'
+    elsets[snm] = list(range(0, totParts))
+    ndsets[snm] = list(range(0, totParts))
 
     nodes = list()
     elements = list()
@@ -115,7 +120,7 @@ def sourceGroupFromMesh(meshData, elsPerSource, massPerEl, specHeat, resXRng, re
     yLen = resYRng[1] - resYRng[0]
     zLen = resZRng[1] - resZRng[0]
     base = totParts*xLen*xLen/(zLen*yLen)
-    xRowsFlt = np.pow(base, 0.3333333333)
+    xRowsFlt = np.power(base, 0.3333333333)
     xRows = int(np.ceil(xRowsFlt))
     yRows = int(np.ceil(xRows*yLen/xLen))
     zRows = int(np.ceil(xRows*zLen/xLen))
@@ -136,7 +141,7 @@ def sourceGroupFromMesh(meshData, elsPerSource, massPerEl, specHeat, resXRng, re
     outMesh = dict()
     outMesh['nodes'] = np.array(nodes)
     outMesh['elements'] = np.array(elements)
-    outMesh['sets'] = {'node': dict(), 'element': elsets}
+    outMesh['sets'] = {'node': ndsets, 'element': elsets}
     
     return srcLst, sectns, outMesh
     

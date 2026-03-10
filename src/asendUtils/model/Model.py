@@ -6,7 +6,7 @@ from asendUtils.model.Material import Material
 from asendUtils.model.Fluid import Fluid
 from asendUtils.model.Constraint import Constraint
 from asendUtils.model.Interaction import Interaction
-from asendUtils.model.ParticleSourc import ParticleSource
+from asendUtils.model.ParticleSource import ParticleSource
 from asendUtils.syst.pathTools import *
 
 class Model():
@@ -127,10 +127,19 @@ class Model():
             elList = list()
             for i, eRow in enumerate(allEls,nEls):
                 el = [i]
-                el.extend(eRow)
+                el.extend(eRow+nNds)
                 elList.append(str(el))
             elDic = dict()
             elDic['type'] = 'frcFld'
+            elDic['connectivity'] = elList
+            self.modelData['elements'].append(elDic)
+        elif(meshType == 'mass'):
+            elList = list()
+            for i, el in enumerate(allEls,nEls):
+                el = [i, el+nNds]
+                elList.append(str(el))
+            elDic = dict()
+            elDic['type'] = 'mass'
             elDic['connectivity'] = elList
             self.modelData['elements'].append(elDic)
         try:

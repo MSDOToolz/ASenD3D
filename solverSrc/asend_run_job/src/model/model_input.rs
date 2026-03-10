@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::{self, Read, BufRead};
 use std::path::Path;
 use std::collections::LinkedList;
+use std::usize::MAX;
 
 fn increment_ct(ct : usize) -> usize {
     match ct {
@@ -313,6 +314,7 @@ impl Model {
                 load_ct[i] = MAX_INT;
             }
             int_ct = MAX_INT;
+            ps_ct = MAX_INT;
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 hd_updated = read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
@@ -1054,7 +1056,7 @@ impl Model {
                 }
             }
             else if data_len == 2 {
-                match format!("{}{}", headings[1].s, headings[2].s).as_str() {
+                match format!("{}{}", headings[2].s, headings[3].s).as_str() {
                     "potFieldcoef" => {let new_ent = DualFloat{f1 : CppStr::stod(&mut data[0]), f2 : CppStr::stod(&mut data[1])};
                                        self.interactions.int_vec[*int_ct].pot_coef.push_back(new_ent);},
                     "dampFieldcoef" => {let new_ent = DualFloat{f1 : CppStr::stod(&mut data[0]), f2 : CppStr::stod(&mut data[1])};

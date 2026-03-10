@@ -63,10 +63,6 @@ impl DiffDoub1StressPrereq {
 //end skip 
  
  
- 
- 
- 
- 
 impl Element {
     pub fn initialize_type(&mut self, new_type : usize) {
         self.this_type = new_type;
@@ -112,6 +108,7 @@ impl Element {
     pub fn n_dim(&self) -> usize {
         match self.this_type {
             2 => 3,
+            21 => 2,
             3 => 6,
             41 => 10,
             81 => 11,
@@ -296,7 +293,7 @@ impl Element {
                        0 => -R_1ORT3,
                        _ => R_1ORT3,
                    };
-                   crd[0] = 0.0;},
+                   crd[2] = 0.0;},
             4 => {crd[0] = 0.25;
                   crd[1] = 0.25;
                   crd[2] = 0.25;},

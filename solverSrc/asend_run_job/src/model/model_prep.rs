@@ -587,11 +587,9 @@ impl Model {
             if !self.therm_lt.is_allocated() {
                 self.build_thermal_soln_load(true, 0.0);
                 self.thermal_const.update_active_status(0.0);
+                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat, self.job[sci].const_scale_factor);
                 self.thermal_const.add_to_sparse_mat(&mut self.therm_mat);
                 self.therm_lt.allocate_from_sparse_mat(&mut self.therm_mat, self.job[sci].solver_block_dim);
-            }
-            if !self.therm_scaled {
-                self.therm_scaled = Model::scale_const(&mut self.thermal_const, &self.therm_mat, self.job[sci].const_scale_factor);
             }
         }
 
@@ -605,11 +603,9 @@ impl Model {
             if !self.diff_lt.is_allocated() {
                 self.build_diff_soln_load(true);
                 self.diff_const.update_active_status(0.0);
+                self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat, self.job[sci].const_scale_factor);
                 self.diff_const.add_to_sparse_mat(&mut self.diff_mat);
                 self.diff_lt.allocate_from_sparse_mat(&mut self.diff_mat, self.job[sci].solver_block_dim);
-            }
-            if !self.diff_scaled {
-                self.diff_scaled = Model::scale_const(&mut self.diff_const, &self.diff_mat, self.job[sci].const_scale_factor);
             }
         }
         
@@ -627,11 +623,9 @@ impl Model {
             if !self.elastic_lt.is_allocated() {
                 self.build_elastic_soln_load(true, 0.0);
                 self.elastic_const.update_active_status(0.0);
+                self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat, self.job[sci].const_scale_factor);
                 self.elastic_const.add_to_sparse_mat(&mut self.elastic_mat);
                 self.elastic_lt.allocate_from_sparse_mat(&mut self.elastic_mat, 6*self.job[sci].solver_block_dim);
-            }
-            if !self.elastic_scaled {
-                self.elastic_scaled = Model::scale_const(&mut self.elastic_const, &self.elastic_mat, self.job[sci].const_scale_factor);
             }
         }
         

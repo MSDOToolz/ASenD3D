@@ -166,7 +166,12 @@ impl Model {
                     let nd_pt = &self.nodes[*nd_label];
                     for i1 in 0..6 {
                         glob_ind = nd_pt.dof_index[i1];
-                        let _ = writer.write(format!("{0:.12e},", -self.elastic_ld_vec[glob_ind]).as_bytes());
+                        if glob_ind < MAX_INT {
+                            let _ = writer.write(format!("{0:.12e},", -self.elastic_ld_vec[glob_ind]).as_bytes());
+                        }
+                        else {
+                            let _ = writer.write(b"0.0,");
+                        }
                     }
                 }
                 else if this_field.s == "reactionHeatGen" {
@@ -550,8 +555,13 @@ impl Model {
                     let _ = writer.write(format!("{}", this_nd.label).as_bytes());
                     for i2 in 0..6 {
                         glob_ind = this_nd.dof_index[i2];
-                        i3 = i1 * self.el_mat_dim + glob_ind;
-                        let _ = writer.write(format!(",{0:.12e}", self.eig_vecs[i3]).as_bytes());
+                        if glob_ind < MAX_INT {
+                            i3 = i1 * self.el_mat_dim + glob_ind;
+                            let _ = writer.write(format!(",{0:.12e}", self.eig_vecs[i3]).as_bytes());
+                        }
+                        else {
+                            let _ = writer.write(b",0.0");
+                        }
                     }
                     let _ = writer.write(b"\n");
                 }

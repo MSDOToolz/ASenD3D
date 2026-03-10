@@ -21,20 +21,8 @@ if(not os.path.exists('dynamicElastic/results')):
 
 ## Define constraints
 myMod = Model()
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 1, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
 
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 2, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
-
-blkConst = Constraint('displacement')
-blkConst.addTerm('xMin', 3, 1.0)
-blkConst.setRHS(0.0)
-myMod.addConstraint(blkConst)
+myMod.fixDisplacement('xMin', ux=0.0, uy=0.0, uz=0.0)
 
 ## Write constraint file
 myMod.writeModelInput('dynamicElastic/elasticConstraints.yaml')

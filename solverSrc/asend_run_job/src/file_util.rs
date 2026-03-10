@@ -2,7 +2,7 @@ use crate::cpp_str::CppStr;
 use crate::constants::*;
 
 use std::fs::File;
-use std::io::{self, Read, BufRead};
+use std::io::{self, Read, Write, BufRead};
 use std::path::Path;
 
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>> where P: AsRef<Path>, {
@@ -95,4 +95,29 @@ pub fn read_input_line(file_line : &mut CppStr, headings : &mut Vec<CppStr>, hd_
         return false;
     }
     
+}
+
+pub fn print_matrix(mat : &Vec<f64>, size : usize, cols : usize, file_name : &str) {
+    let out_file = match File::create(file_name) {
+        Err(_why) => panic!("could not open file {}", file_name),
+        Ok(file) => file,
+    };
+
+    let mut writer = io::BufWriter::new(out_file);
+
+    for i in 0..cols {
+        let _ = writer.write(format!("c{},", i).as_bytes());
+    }
+    let _ = writer.write(b"\n");
+
+    let mut col = 0usize;
+
+    for i in 0..size {
+        let _ = writer.write(format!("{},", mat[i]).as_bytes());
+        col += 1;
+        if col == cols {
+            let _ = writer.write(b"\n");
+            col = 0;
+        }
+    }
 }

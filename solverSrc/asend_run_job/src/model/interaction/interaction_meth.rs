@@ -1,5 +1,5 @@
 use crate::model::interaction::*;
-use crate::constants::MAX_INT;
+use crate::constants::*;
 use crate::model::node::Node;
 use crate::model::element::*;
 use crate::model::section::*;
@@ -18,11 +18,11 @@ impl Interaction {
 
     pub fn get_coef(coef_lst : &LinkedList<DualFloat>, time : f64) -> f64 {
         let mut pt = match coef_lst.front() {
-            None => panic!("Error: empty potential coefficients in interaction"),
+            None => return 0.0,
             Some(x) => x.f1,
         };
         let mut pv = match coef_lst.front() {
-            None => panic!("Error: empty potential coefficients in interaction"),
+            None => return 0.0,
             Some(x) => x.f2,
         };
         for ent in coef_lst.iter() {
@@ -561,10 +561,6 @@ impl Interaction {
 //end skip 
  
  
- 
- 
- 
- 
 }
 
 impl InteractionList {
@@ -637,8 +633,6 @@ impl InteractionList {
 //end dup
  
 //end skip 
- 
- 
  
  
     pub fn update_nd_active(&mut self, elements : &Vec<Element>) {
@@ -720,7 +714,21 @@ impl InteractionList {
                     }
                 }
             }
-            let spacing = 3.0*tot_dist/(num_hit as f64);
+
+            let spacing : f64;
+            if num_hit > 0 {
+                spacing = 2.0*tot_dist/(num_hit as f64);
+            }
+            else {
+                let mut x_l = x_r[1] - x_r[0];
+                let mut y_l = y_r[1] - y_r[0];
+                let mut z_l = z_r[1] - z_r[0];
+                let padding = 0.1*(x_l*x_l + y_l*y_l + z_l*z_l).sqrt();
+                x_l += padding;
+                y_l += padding;
+                z_l += padding;
+                spacing = (x_l*y_l*z_l/(num_nds as f64)).powf(R_1O3);
+            }
 
             self.interact_grid.initialize(&mut x_r, spacing, &mut y_r, spacing, &mut z_r, spacing, num_nds);
 

@@ -71,8 +71,7 @@ class ASenDJob:
     def solvePrep(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,explicit=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
               simPeriod=1.0,constScaleFactor=None,saveSolnHist=True,solnHistFreq=1,solnHistDir='',lumpMass=False, 
-              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,
-              dissipationLevel=0.25,modTurbulence=True,fluidSolver='iterative',fluidBlockDim=20,maxFSIGap=None,userUpdate=False):
+              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,userUpdate=False):
         newCmd = dict()
         newCmd['command'] = 'solvePrep'
         if(not elastic):
@@ -83,14 +82,6 @@ class ASenDJob:
             newCmd['diffusion'] = 'yes'
             if(enforceMaxCon):
                 newCmd['enforceMaxCon'] = 'yes'
-        if(fluid):
-            newCmd['fluid'] = 'yes'
-            newCmd['dissipationLevel'] = dissipationLevel
-            newCmd['modTurbulence'] = modTurbulence
-            newCmd['fluidSolver'] = fluidSolver
-            newCmd['fluidBlockDim'] = fluidBlockDim
-            if(maxFSIGap != None):
-                newCmd['maxFSIGap'] = maxFSIGap
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
         try:
@@ -127,8 +118,7 @@ class ASenDJob:
     def solve(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,explicit=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
               simPeriod=1.0,constScaleFactor=None,saveSolnHist=True,solnHistFreq=1,solnHistDir='',lumpMass=False, 
-              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,
-              dissipationLevel=0.25,modTurbulence=True,fluidSolver='iterative',fluidBlockDim=20,maxFSIGap=None,userUpdate=False):
+              solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,userUpdate=False):
         newCmd = dict()
         newCmd['command'] = 'solve'
         if(not elastic):
@@ -139,14 +129,6 @@ class ASenDJob:
             newCmd['diffusion'] = 'yes'
             if(enforceMaxCon):
                 newCmd['enforceMaxCon'] = 'yes'
-        if(fluid):
-            newCmd['fluid'] = 'yes'
-            newCmd['dissipationLevel'] = dissipationLevel
-            newCmd['modTurbulence'] = modTurbulence
-            newCmd['fluidSolver'] = fluidSolver
-            newCmd['fluidBlockDim'] = fluidBlockDim
-            if(maxFSIGap != None):
-                newCmd['maxFSIGap'] = maxFSIGap
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
         try:

@@ -65,7 +65,7 @@ def calcPotForce(surfNodes, freeNode, coef, expnt):
         F += (fmag/dmag)*dvec
     return F
         
-def contactInteraction(maxNormalStress, frictionCoef, elementSize, name=None, nodeSet1="", nodeSet2="", activeTime=None):
+def contactInteraction(maxNormalStress, frictionCoef, elementSize, exp=4.0, name=None, nodeSet1="", nodeSet2="", maxDistance=None, activeTime=None):
     hsz = 0.5*elementSize
     surfNodes = np.array([[-hsz,-hsz,0.], 
                           [hsz,-hsz,0.], 
@@ -74,11 +74,14 @@ def contactInteraction(maxNormalStress, frictionCoef, elementSize, name=None, no
     maxF = maxNormalStress*elementSize*elementSize
     appF = np.array([frictionCoef*maxF, 0., -maxF])
     coef = 0.0
-    exp = 1.0
-    dexp = 1.0
+    #exp = 1.0
+    #dexp = 1.0
     loopct = 0
-    while dexp > 0.1 and loopct < 100:
-        freeNd = np.array([0.,0.,hsz])
+    ht = elementSize
+    hfact = 0.5
+    while hfact < 0.99 and loopct < 100:
+        #freeNd = np.array([0.,0.,hsz])
+        freeNd = np.array([0., 0., ht])
         PF = calcPotForce(surfNodes, freeNd, 1.0, exp)
         coef = maxF/np.linalg.norm(PF)
         
@@ -93,19 +96,35 @@ def contactInteraction(maxNormalStress, frictionCoef, elementSize, name=None, no
             ppX = prevX
             prevX = freeNd
             freeNd = xNext
-        if np.linalg.norm(freeNd) > elementSize:
-            exp += dexp
+        if np.linalg.norm(freeNd) > 2*ht:
+            #exp += dexp
+            ht *= hfact
         else:
-            exp += (0.63 - 1.0)*dexp
-            dexp *= 0.63
+            #exp += (0.63 - 1.0)*dexp
+            #dexp *= 0.63
+            ht /= hfact
+            hfact = np.sqrt(hfact)
+            ht *= hfact
         
         loopct += 1
         
     if loopct == 100:
         print("Warning: did not converge to a set of contact interaction parameters")
         
-    newInt = Interaction(name=name, nodeSet1=nodeSet1, nodeSet2=nodeSet2, maxDistance=elementSize, maxNeighbors=4, activeTime=activeTime)
+    if maxDistance == None:
+        mD = elementSize
+    else:
+        mD = maxDistance
+    newInt = Interaction(name=name, nodeSet1=nodeSet1, nodeSet2=nodeSet2, maxDistance=mD, maxNeighbors=4, activeTime=activeTime)
     newInt.setPotentialField(coef, exp)
+    return newInt
+
+def collisionInteraction(mass, velocity, nearDist, expnt=4, numNdPairs=1, name=None, nodeSet1="", nodeSet2="", maxDistance=None, maxNeighbors=None, maxDistRatio=None, idealGasConstant=None, activeTime=None):
+    intExp = -expnt + 1.0
+    ke = 0.5*mass*velocity*velocity
+    coef = ke*intExp/(np.power(nearDist,intExp)*numNdPairs)
+    newInt = Interaction(name=name, nodeSet1=nodeSet1, nodeSet2=nodeSet2, maxDistance=maxDistance, maxNeighbors=maxNeighbors, maxDistRatio=maxDistRatio, activeTime=activeTime)
+    newInt.setPotentialField(coef, expnt)
     return newInt
         
 def idealGasInteraction(idealGasConst, specificHeat, conductivity, viscosity, spacing, refTemp=0.0, name=None, nodeSet1="", nodeSet2="", maxDistance=None, maxNeighbors=12, maxDistRatio=1.8, activeTime=None):

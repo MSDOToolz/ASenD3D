@@ -478,10 +478,6 @@ impl Node {
 //end skip 
  
  
- 
- 
- 
- 
     pub fn get_def_crd_vel(&self, crd : &mut [DiffDoub1]) {
         for i in 0..3 {
             crd[i].val = self.coord_dfd0[i].val + self.displacement[i];

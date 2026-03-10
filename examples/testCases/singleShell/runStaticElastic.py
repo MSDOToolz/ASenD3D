@@ -88,4 +88,4 @@ myJob.writeObjective('staticElastic/results/objectiveResults.csv')
 
 myJob.writeJobInput('staticElastic/staticElasticJob.yaml')
 
-#myJob.executeJob()
+myJob.executeJob()

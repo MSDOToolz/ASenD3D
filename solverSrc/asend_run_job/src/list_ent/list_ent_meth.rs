@@ -2,6 +2,9 @@ use crate::list_ent::*;
 
 use crate::fmath::*;
 
+use std::fs::File;
+use std::io::{self, Write};
+
 impl MatrixRow {
     pub fn add_entry(&mut self, row : usize, col : usize, val : f64) {
         for me in self.row_vec.iter_mut() {
@@ -62,7 +65,12 @@ impl SparseMat {
                 ct += 1;
             }
         }
-        avg /= ct as f64;
+        if avg == 0.0 || ct == 0 {
+            avg = 1.0;
+        }
+        else {
+            avg /= ct as f64;
+        }
 
         ct = 0;
         for mr in self.matrix.iter_mut() {
@@ -132,6 +140,44 @@ impl SparseMat {
 
     pub fn scale_row_to_sum(&mut self, row : usize, new_sum : f64) {
         self.matrix[row].scale_to_sum(new_sum);
+    }
+
+    pub fn print_all(&self, file_name : &str) {
+        let out_file = match File::create(file_name) {
+            Err(_why) => panic!("could not open file {}", file_name),
+            Ok(file) => file,
+        };
+
+        let mut writer = io::BufWriter::new(out_file);
+
+        let _ = writer.write(b"row,col,value\n");
+
+        for r in self.matrix.iter() {
+            for e in r.row_vec.iter() {
+                let _ = writer.write(format!("{},{},{}\n", e.row, e.col, e.value).as_bytes());
+            }
+        }
+
+    }
+
+    pub fn print_diagonals(&self, file_name : &str) {
+        let out_file = match File::create(file_name) {
+            Err(_why) => panic!("could not open file {}", file_name),
+            Ok(file) => file,
+        };
+
+        let mut writer = io::BufWriter::new(out_file);
+
+        let _ = writer.write(b"row, diag_val\n");
+
+        for r in self.matrix.iter() {
+            for e in r.row_vec.iter() {
+                if e.col == e.row {
+                    let _ = writer.write(format!("{},{}\n", e.row, e.value).as_bytes());
+                }
+            }
+        }
+
     }
 
 }

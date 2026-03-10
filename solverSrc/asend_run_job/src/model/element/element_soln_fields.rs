@@ -128,7 +128,7 @@ impl Element {
             this_nd = &nd_ar[self.nodes[i1]];
             
             this_nd.get_crd_dfd0(&mut crd);
-            i2 = 0;
+            i2 = i1;
             for d in 0..3 {
                 pre.glob_nds[i2].set_val_dfd0(&crd[d]);
                 i2 += self.num_nds();
@@ -138,8 +138,8 @@ impl Element {
             pre.glob_tdot[i1].set_val(this_nd.temp_change_rate);
             pre.glob_fl_den[i1].set_val(this_nd.fl_den);
             pre.glob_fl_den_dot[i1].set_val(this_nd.fl_den_dot);
-            i2 = 0;
-            i3 = 0;
+            i2 = i1;
+            i3 = i1;
             for d in 0..self.dof_per_nd() {
                 pre.glob_disp[i2].set_val(this_nd.displacement[d]);
                 pre.glob_vel[i3].set_val(this_nd.velocity[d]);
@@ -2300,7 +2300,7 @@ impl Element {
             this_nd = &nd_ar[self.nodes[i1]];
             
             this_nd.get_crd_dfd1(&mut crd);
-            i2 = 0;
+            i2 = i1;
             for d in 0..3 {
                 pre.glob_nds[i2].set_val_dfd1(&crd[d]);
                 i2 += self.num_nds();
@@ -2310,8 +2310,8 @@ impl Element {
             pre.glob_tdot[i1].set_val(this_nd.temp_change_rate);
             pre.glob_fl_den[i1].set_val(this_nd.fl_den);
             pre.glob_fl_den_dot[i1].set_val(this_nd.fl_den_dot);
-            i2 = 0;
-            i3 = 0;
+            i2 = i1;
+            i3 = i1;
             for d in 0..self.dof_per_nd() {
                 pre.glob_disp[i2].set_val(this_nd.displacement[d]);
                 pre.glob_vel[i3].set_val(this_nd.velocity[d]);
@@ -4350,10 +4350,6 @@ impl Element {
     //end dup
  
 //end skip 
- 
- 
- 
- 
  
  
     pub fn get_el_vec(&mut self, el_vec : &mut Vec<f64>, glob_vec : &mut Vec<f64>, for_therm : bool, intnl : bool, nd_ar : &mut Vec<Node>) {

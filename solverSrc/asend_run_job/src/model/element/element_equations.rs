@@ -9,6 +9,7 @@ use crate::model::job::*;
 use crate::matrix_functions::*;
 use crate::model::scratch::*;
 use crate::cpp_str::CppStr;
+use crate::file_util::print_matrix;
 
 use std::collections::linked_list::IterMut;
 
@@ -925,6 +926,13 @@ impl Element {
         if self.this_type != 1 {
             self.get_ruk_dfd0(rvec, d_rdu, d_rd_t, d_rd_c, get_matrix && !cmd.explicit, cmd.nonlinear_geom, pre);
         }
+
+        // --------------------------------
+
+        //let file_nm = format!("element_matrix_{}.csv", self.label);
+        //print_matrix(d_rdu, tot_dof*tot_dof, tot_dof, file_nm.as_str());
+
+        // ---------------------------------
         
         if self.num_int_dof() > 0 {
             i2 = nd_dof;
@@ -2928,6 +2936,13 @@ impl Element {
         if self.this_type != 1 {
             self.get_ruk_dfd1(rvec, d_rdu, d_rd_t, d_rd_c, get_matrix && !cmd.explicit, cmd.nonlinear_geom, pre);
         }
+
+        // --------------------------------
+
+        //let file_nm = format!("element_matrix_{}.csv", self.label);
+        //print_matrix(d_rdu, tot_dof*tot_dof, tot_dof, file_nm.as_str());
+
+        // ---------------------------------
         
         if self.num_int_dof() > 0 {
             i2 = nd_dof;
@@ -4203,11 +4218,6 @@ impl Element {
     //end dup
  
 //end skip 
- 
- 
- 
- 
- 
  
  
 }

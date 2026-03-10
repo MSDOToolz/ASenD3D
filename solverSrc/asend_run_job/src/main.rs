@@ -1,10 +1,8 @@
 pub mod constants;
 pub mod diff_doub;
 pub mod file_util;
-pub mod fluid_domain;
 pub mod list_ent;
 pub mod lower_tri_mat;
-pub mod lu_mat;
 pub mod matrix_functions;
 pub mod model;
 pub mod nd_el_set;
@@ -20,8 +18,10 @@ use std::env;
 fn main() {
     let args : Vec<String> = env::args().collect();
     
-    // let args = vec!["".to_string(),"C:/Users/evaande/BladeReliability/modeling/triax_coupon/x_compression/job.yaml".to_string()];
-    
+    //let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/ASenD3D/examples/testCases/shellBeam/transverseTipLoading/job.yaml".to_string()];
+    //let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/single_shell_debug/staticElastic/staticElasticJob.yaml".to_string()];
+    //let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/ASenD3D/examples/testCases/particleInteractions/runExplicit/job.yaml".to_string()];
+
     let job_file = match args.get(1) {
         None => panic!("Error: job input file not specified in call to analysis solver."),
         Some(x) => x,

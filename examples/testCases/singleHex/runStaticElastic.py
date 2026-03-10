@@ -76,8 +76,8 @@ myJob.writeJobInput('staticElastic/staticElasticJob.yaml')
 
 myJob.executeJob()
 
-rp = ResultsProcessor('singleHex.yaml')
-rp.loadNodeResults('staticElastic/results/nodeResults.csv')
-rp.loadElementResults('staticElastic/results/elementResults.csv')
-rp.plotNodeResults('displacement', component=1, deformed=True)
-rp.plotElementResults('stress',component=1,deformed=True)
+# rp = ResultsProcessor('singleHex.yaml')
+# rp.loadNodeResults('staticElastic/results/nodeResults.csv')
+# rp.loadElementResults('staticElastic/results/elementResults.csv')
+# rp.plotNodeResults('displacement', component=1, deformed=True)
+# rp.plotElementResults('stress',component=1,deformed=True)

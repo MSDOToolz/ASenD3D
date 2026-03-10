@@ -59,7 +59,7 @@ class ShellRegion:
                 totNds = xNodes*yNodes
                 seg = Segment2D('line',[[-1.0,-1.0],[1.0,-1.0]],(xNodes-1))
                 bnd = seg.getNodesEdges()
-                mesh = Mesh2D(bnd['nodes'],bnd['edges'])
+                mesh = Mesh2D(bnd['nodes'],bnd['elements'])
                 mData = mesh.createSweptMesh('inDirection',(yNodes-1),sweepDistance=2.0,axis=[0.0,1.0])
 
                 moved = False

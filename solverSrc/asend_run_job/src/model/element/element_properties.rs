@@ -1906,8 +1906,11 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         let this_sec : &Section = &sec_ar[self.sect_ptr];
-        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        spec_heat.set_val(this_mat.spec_heat);
+        match this_sec.mat_ptr {
+            MAX_INT => spec_heat.set_val(this_sec.spec_heat),
+            _ => spec_heat.set_val(mat_ar[this_sec.mat_ptr].spec_heat),
+        }
+        
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
@@ -4147,8 +4150,11 @@ impl Element {
         let mut this_dv : &DesignVariable;
         
         let this_sec : &Section = &sec_ar[self.sect_ptr];
-        let this_mat : &Material = &mat_ar[this_sec.mat_ptr];
-        spec_heat.set_val(this_mat.spec_heat);
+        match this_sec.mat_ptr {
+            MAX_INT => spec_heat.set_val(this_sec.spec_heat),
+            _ => spec_heat.set_val(mat_ar[this_sec.mat_ptr].spec_heat),
+        }
+        
         
         for dv in self.design_vars.iter() {
             this_dv = &dv_ar[dv.int_dat];
@@ -4489,10 +4495,6 @@ impl Element {
     //end dup
  
 //end skip 
- 
- 
- 
- 
  
  
 }
