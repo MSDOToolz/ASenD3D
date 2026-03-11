@@ -30,12 +30,6 @@ class Boundary2D():
     def addMesh(self,meshData,name=None):
         self.meshList.append(meshData)
         self.meshNames.append(name)
-        # if(name == None):
-        #     numMsh = len(self.meshList)
-        #     meshName = 'Sub-Mesh_' + str(numMsh)
-        #     self.meshNames.append(meshName)
-        # else:
-        #     self.meshNames.append(name)
         
     def getBoundaryMesh(self):
         allNds = list()
@@ -47,22 +41,14 @@ class Boundary2D():
             segMesh = seg.getNodesEdges()
             allNds.extend(segMesh['nodes'])
             allEds.extend(segMesh['elements'] + totNds)
-            # newSet = dict()
-            # newSet['name'] = self.segNames[i]
             totElsNext = totEls + len(segMesh['elements'])
-            # newSet['labels'] = list(range(totEls,totElsNext))
-            # elSets.append(newSet)
             elSets[self.segNames[i]] = list(range(totEls,totElsNext))
             totNds = len(allNds)
             totEls = totElsNext
         for i, mesh in enumerate(self.meshList):
             allNds.extend(mesh['nodes'])
             allEds.extend(mesh['elements'] + totNds)
-            # newSet = dict()
-            # newSet['name'] = self.meshNames[i]
             totElsNext = totEls + len(mesh['elements'])
-            # newSet['labels'] = list(range(totEls,totElsNext))
-            # elSets.append(newSet)
             nm = self.meshNames[i]
             if nm != None:
                 if nm in elSets:
@@ -93,5 +79,7 @@ class Boundary2D():
         meshData['sets']['element'] = elSets
         
         output = mt.mergeDuplicateNodes(meshData)
+        
+        output = mt.getAllMatchingNodeSets(output)
         
         return output

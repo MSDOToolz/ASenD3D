@@ -64,6 +64,17 @@ def calcPotForce(surfNodes, freeNode, coef, expnt):
         fmag = coef/np.power(dmag, expnt)
         F += (fmag/dmag)*dvec
     return F
+
+def dPotFdX(surfNodes, freeNode, coef, expnt, elsz):
+    dFdX = np.zeros((3,3), dtype=float)
+    Fn = calcPotForce(surfNodes, freeNode, coef, expnt)
+    dx = 0.01*elsz
+    for i in range(0,3):
+        xp = freeNode.copy()
+        xp[i] += dx
+        Fp = calcPotForce(surfNodes, xp, coef, expnt)
+        dFdX[:,i] = (1.0/dx)*(Fp - Fn)
+    return dFdX
         
 def contactInteraction(maxNormalStress, frictionCoef, elementSize, exp=4.0, name=None, nodeSet1="", nodeSet2="", maxDistance=None, activeTime=None):
     hsz = 0.5*elementSize
@@ -79,37 +90,60 @@ def contactInteraction(maxNormalStress, frictionCoef, elementSize, exp=4.0, name
     loopct = 0
     ht = elementSize
     hfact = 0.5
+    dFdX = np.zeros((3,3), dtype=float)
     while hfact < 0.99 and loopct < 100:
         #freeNd = np.array([0.,0.,hsz])
         freeNd = np.array([0., 0., ht])
         PF = calcPotForce(surfNodes, freeNd, 1.0, exp)
         coef = maxF/np.linalg.norm(PF)
         
-        k = (exp/hsz)*maxF
-        omega = np.sqrt(k)
-        dt = 0.2*np.pi/omega
-        prevX = np.array([0.,0.,hsz])
-        ppX = np.array([0.,0.,hsz])
-        for i in range(0,100):
+        nlit = 0
+        dxmag = elementSize
+        while dxmag > 1.0e-6*elementSize and nlit < 50:
             totF = appF + calcPotForce(surfNodes, freeNd, coef, exp)
-            xNext = (dt*dt)*totF + 2.0*prevX - ppX
-            ppX = prevX
-            prevX = freeNd
-            freeNd = xNext
-        if np.linalg.norm(freeNd) > 2*ht:
-            #exp += dexp
+            dFdX = dPotFdX(surfNodes, freeNd, coef, exp, elementSize)
+            try:
+                dx = np.linalg.solve(dFdX, -totF)
+                freeNd += dx
+                dxmag = np.linalg.norm(dx)
+                nlit += 1
+            except:
+                nlit = 50
+                
+        if nlit == 50:
             ht *= hfact
         else:
-            #exp += (0.63 - 1.0)*dexp
-            #dexp *= 0.63
             ht /= hfact
             hfact = np.sqrt(hfact)
             ht *= hfact
+        
+        # k = (exp/hsz)*maxF
+        # omega = np.sqrt(k)
+        # dt = 0.2*np.pi/omega
+        # prevX = np.array([0.,0.,hsz])
+        # ppX = np.array([0.,0.,hsz])
+        # for i in range(0,100):
+        #     totF = appF + calcPotForce(surfNodes, freeNd, coef, exp)
+        #     xNext = (dt*dt)*totF + 2.0*prevX - ppX
+        #     ppX = prevX
+        #     prevX = freeNd
+        #     freeNd = xNext
+        # if np.linalg.norm(freeNd) > 2*ht:
+        #     #exp += dexp
+        #     ht *= hfact
+        # else:
+        #     #exp += (0.63 - 1.0)*dexp
+        #     #dexp *= 0.63
+        #     ht /= hfact
+        #     hfact = np.sqrt(hfact)
+        #     ht *= hfact
         
         loopct += 1
         
     if loopct == 100:
         print("Warning: did not converge to a set of contact interaction parameters")
+        
+    print('Interaction: ' + name + ' equilibrium gap distance: ' + str(ht/elementSize) + ' X (element size)')
         
     if maxDistance == None:
         mD = elementSize

@@ -52,12 +52,8 @@ class Surface():
                     if(el[i] != -1):
                         el[i] = el[i] + numNds
                 allEls.append(el)
-                setList.append((eli + numEls))
+                setList.append(int(eli + numEls))
                 eli = eli + 1
-            # thisSet = dict()
-            # thisSet['name'] = self.regionNames[regi]
-            # thisSet['labels'] = setList
-            # elSetList.append(thisSet)
             elSetList[self.regionNames[regi]] = setList
             allNds.extend(regMesh['nodes'])
             numNds = len(allNds)
@@ -70,11 +66,7 @@ class Surface():
                     if(el[i] != -1):
                         newEl[i] = el[i] + numNds
                 allEls.append(newEl)
-                setList.append((eli + numEls))
-            # thisSet = dict()
-            # thisSet['name'] = self.meshNames[mshi]
-            # thisSet['labels'] = setList
-            # elSetList.append(thisSet)
+                setList.append(int(eli + numEls))
             nm = self.meshNames[mshi]
             if nm != None:
                 if nm in elSetList:
@@ -102,4 +94,5 @@ class Surface():
         mData = mt.mergeDuplicateNodes(mData)
         mData['sets'] = dict()
         mData['sets']['element'] = elSetList
+        mData = mt.getAllMatchingNodeSets(mData)
         return mData

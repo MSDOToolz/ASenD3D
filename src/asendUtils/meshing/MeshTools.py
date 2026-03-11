@@ -946,7 +946,7 @@ def getMatchingNodeSet(meshData,elSet,ndSetName):
     for ei in elSets[elSet]:
         for elnd in elements[ei]:
             if(elnd > -1):
-                ns.add(elnd)
+                ns.add(int(elnd))
     # newSet = dict()
     # newSet['name'] = ndSetName
     # newSet['labels'] = list(ns)
@@ -980,21 +980,15 @@ def getMatchingElementSet(meshData,nodeSet,elSetName,optn='allNodes'):
 def getAllMatchingNodeSets(meshData): ## Name changed from getMatchingNodeSets
     elements = meshData['elements']
     elSets = meshData['sets']['element']
-    # nodeSets = list()
     nodeSets = dict()
     for es in elSets:
         ns = set()
         for ei in elSets[es]:
             for elnd in elements[ei]:
                 if(elnd > -1):
-                    ns.add(elnd)
-        # newSet = dict()
-        # newSet['name'] = es['name']
-        # newSet['labels'] = list(ns)
-        # nodeSets.append(newSet)
+                    ns.add(int(elnd))
         nodeSets[es] = list(ns)
     try:
-        # meshData['sets']['node'].extend(nodeSets)
         for ns in nodeSets:
             meshData['sets']['node'][ns] = nodeSets[ns]
     except:
