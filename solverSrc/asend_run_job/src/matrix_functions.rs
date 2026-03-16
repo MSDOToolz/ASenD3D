@@ -1164,6 +1164,7 @@ pub fn highest_eigen_sparse(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat 
 
         for i in 0..mat_dim {
             t_vec1[i] = t_vec2[i]/mag;
+            t_vec2[i] = 0.0;
         }
 
         ct += 1;

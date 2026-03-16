@@ -20,7 +20,7 @@ fn main() {
     
     //let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/ASenD3D/examples/testCases/shellBeam/transverseTipLoading/job.yaml".to_string()];
     //let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/single_shell_debug/staticElastic/staticElasticJob.yaml".to_string()];
-    //let args = vec!["".to_string(),"C:/Users/evaande/ASenDHome/ASenD3D/examples/modalAnalysis/bouncingBall/job.yaml".to_string()];
+    //let args = vec!["".to_string(),"C:/Users/evans/ASenDHome/ASenD3D/examples/modalAnalysis/bouncingBall/job.yaml".to_string()];
 
     let job_file = match args.get(1) {
         None => panic!("Error: job input file not specified in call to analysis solver."),
