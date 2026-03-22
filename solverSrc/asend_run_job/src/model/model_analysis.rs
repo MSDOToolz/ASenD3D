@@ -313,9 +313,10 @@ impl Model {
     pub fn solve_step(&mut self, time : f64, app_ld_fact : f64) {
         let mut i2 : usize;
         let num_nodes : usize;
+        let sci = self.solve_cmd;
         let mut max_nlit : usize;
         let mut d_unorm : f64;
-        let d_utol : f64 = 1.0e-12;
+        let d_utol : f64 = self.job[sci].nl_conv_tol;
         let mut absd_u : f64;
         let mut ndof : usize;
         let mut dof_ind : usize;
@@ -324,9 +325,10 @@ impl Model {
         let mut this_nd_max : &mut f64;
         let mut exceed : f64;
         let mut just_act : bool;
+        let ts = self.job[sci].time_step;
         
         //let mut cmd = &mut self.job[self.solve_cmd];
-        let sci = self.solve_cmd;
+        
         if self.job[sci].thermal {
             self.thermal_const.update_active_status(time);
             just_act = self.thermal_const.any_just_activated();
@@ -376,7 +378,7 @@ impl Model {
 
         if self.job[sci].diffusion {
             max_nlit = match self.job[sci].enforce_max_c {
-                true => 50,
+                true => self.job[sci].max_nl_it,
                 false => 1,
             };
 
@@ -448,14 +450,40 @@ impl Model {
 
                 i2 += 1;
             }
+
+            if self.job[sci].enforce_max_c && i2 == max_nlit {
+                match self.job[sci].abort_nl {
+                    true => panic!("Nonlinear diffusion iterations not converged, time {}.  Aborting simulation", time),
+                    false => println!("Warning: nonlinear iterations not converged, time {}", time), 
+                }
+            }
         }
         
         if self.job[sci].elastic {
-            if self.job[sci].nonlinear_geom {
-                max_nlit = 50;
-            } else {
-                max_nlit = 1;
-            }
+            max_nlit = match self.job[sci].nonlinear_geom {
+                true => self.job[sci].max_nl_it,
+                false => 1,
+            };
+
+            // if self.job[sci].dynamic {
+            //     for nd in self.nodes.iter_mut() {
+            //         for i in 0..6 {
+            //             match i < nd.num_dof {
+            //                 true => {nd_del_disp[i] = ts*(nd.prev_vel[i] + 0.5*ts*nd.prev_acc[i]);
+            //                         self.elastic_sol_vec[nd.dof_index[i]] = nd_del_disp[i];},
+            //                 false => nd_del_disp[i] = 0.0,
+            //             }
+            //             nd.add_to_displacement(&mut nd_del_disp);
+            //             nd.update_vel_acc(self.job[sci].newmark_beta, self.job[sci].newmark_gamma, ts, false);
+            //         }
+            //     }
+
+            //     for this_el in self.elements.iter_mut() {
+            //         if this_el.num_int_dof() > 0 {
+            //             this_el.update_internal(&mut self.elastic_sol_vec, 1, this_el.num_int_dof(), &mut self.nodes, &mut self.scratch.iter_mut());
+            //         }
+            //     }
+            // }
 
             self.elastic_const.update_active_status(time);
             just_act = self.elastic_const.any_just_activated();
@@ -512,9 +540,12 @@ impl Model {
 
                 for this_nd in self.nodes.iter_mut() {
                     ndof = this_nd.num_dof;
-                    for i1 in 0..ndof {
-                        dof_ind = this_nd.dof_index[i1];
-                        nd_del_disp[i1] = self.elastic_sol_vec[dof_ind];
+                    for i1 in 0..6 {
+                        match i1 < ndof {
+                            true => {dof_ind = this_nd.dof_index[i1];
+                                     nd_del_disp[i1] = self.elastic_sol_vec[dof_ind];},
+                            false => nd_del_disp[i1] = 0.0,
+                        }
                     }
                     this_nd.add_to_displacement(&mut nd_del_disp);
                     if self.job[sci].dynamic {
@@ -535,11 +566,38 @@ impl Model {
                         d_unorm = absd_u;
                     }
                 }
+
+                // -------------------------------
+
+                // if i2 > 5 {
+                //     let mut val : f64;
+                //     let mut def_crd = [DiffDoub0::new(); 3];
+                //     for n in self.nodes.iter() {
+                //         for dof in 0..n.num_dof {
+                //             val = self.elastic_sol_vec[n.dof_index[dof]]; 
+                //             if fabs(val) > 0.99*d_unorm {
+                //                 println!("node: {}, dof: {}, du: {}", n.label, dof, val);
+                //                 println!("original coord: {}, {}, {}", n.coord[0], n.coord[1], n.coord[2]);
+                //                 n.get_def_crd_dfd0(&mut def_crd);
+                //                 println!("deformed coord: {}, {}, {}", def_crd[0].val, def_crd[1].val, def_crd[2].val);
+                //             }
+                //         }
+                //     }
+                // }
+
+                // ---------------------------------
                 
                 if i2 > 0 {
                     println!("{}{}{}{}", "Nonlinear iteration: " , i2 , ", max solution step: " , d_unorm );
                 }
                 i2 += 1usize;
+            }
+
+            if self.job[sci].nonlinear_geom && i2 == max_nlit {
+                match self.job[sci].abort_nl {
+                    true => panic!("Nonlinear iterations not converged, time {}.  Aborting simulation", time),
+                    false => println!("Warning: nonlinear iterations not converged, time {}", time), 
+                }
             }
         }
         

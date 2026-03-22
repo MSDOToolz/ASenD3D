@@ -30,6 +30,9 @@ jobCommands:
     diffusion: no
     fluid: no
     nonlinearGeom: no
+    maxNonlinIterations: 10
+    nonlinConvTol: 1e-12
+    abortNonlinDiv: no
     staticLoadTime:
     loadRampSteps:
     dynamic: no
@@ -48,11 +51,6 @@ jobCommands:
     maxIterations:
     convergenceTol:
     enforceMaxCon:
-    dissipationLevel: 0.25
-    modTurbulence: yes
-    fluidSolver: iterative
-    fluidBlockDim: 20
-    maxFSIGap: 
     userUpdate: no
     
   - command: zeroSolution

@@ -21,7 +21,7 @@ from asendUtils.syst.pathTools import *
 plateDim = 1.0
 ballDiam = 0.5
 centerHt = 0.75
-elSize = 0.02
+elSize = 0.05
 
 ## end input
 

@@ -150,7 +150,7 @@ def contactInteraction(maxNormalStress, frictionCoef, elementSize, exp=4.0, name
     else:
         mD = maxDistance
     newInt = Interaction(name=name, nodeSet1=nodeSet1, nodeSet2=nodeSet2, maxDistance=mD, maxNeighbors=4, activeTime=activeTime)
-    newInt.setPotentialField(coef, exp)
+    newInt.setPotentialField(-coef, exp)
     return newInt
 
 def collisionInteraction(mass, velocity, nearDist, expnt=4, numNdPairs=1, name=None, nodeSet1="", nodeSet2="", maxDistance=None, maxNeighbors=None, maxDistRatio=None, idealGasConstant=None, activeTime=None):

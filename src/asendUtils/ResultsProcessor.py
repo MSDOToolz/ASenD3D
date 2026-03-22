@@ -310,15 +310,9 @@ class ResultsProcessor:
             elVal = np.zeros(numEls,dtype=int)
             
             elSets = self.modelData['sets']['element']
-            # setDic = dict()
-            # for si, es in enumerate(elSets):
-            #     setDic[es['name']] = si
             
             for si, sec in enumerate(self.modelData['sections']):
                 setNm = sec['elementSet']
-                # seti = setDic[setNm]
-                # for eli in elSets[seti]['labels']:
-                #     elVal[eli] = si
                 for eli in elSets[setNm]:
                     elVal[eli] = si
         
@@ -348,21 +342,6 @@ class ResultsProcessor:
         else:
             fldLab = abrv[field][component-1]
             values = list(self.nodeData.loc[list(ndSet), fldLab])
-        
-        # valAr = np.zeros(numNds,dtype=float)
-        # for nd in self.nodeData['nodeResults'][field]:
-        #     lab = nd[0]
-        #     if(component == 'mag'):
-        #         vec = np.array(nd[1:4])
-        #         val = np.linalg.norm(vec)
-        #     else:
-        #         val = nd[component]
-        #     valAr[lab] = val
-        # values = list()
-        # for nd in self.modelData['nodes']:
-        #     lab = nd[0]
-        #     if(lab in ndSet):
-        #         values.append(valAr[lab])
         
         verts = self.buildElementVertexList(elSet)
         cbTitle = field + str(component)
@@ -405,14 +384,6 @@ class ResultsProcessor:
         elValues = np.zeros(numEls,dtype=float)
         for r, ei in enumerate(df2['element']):
             elValues[ei] = df2.loc[r,fldLab]
-        
-        # elValues = np.zeros(numEls,dtype=float)
-        # for el in self.elementData['elementResults'][field]:
-        #     if(el[2] == layer):
-        #         lab = el[0]
-        #         i = component + 2
-        #         val = el[i]
-        #         elValues[lab] = val
         
         fcVals = self.getFaceValues(elSet,elValues)
         verts = self.buildElementVertexList(elSet)
@@ -481,7 +452,7 @@ class ResultsProcessor:
                 allNdValues.append(ndValues)
                 firstStep = False
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allNdValues,verts,'vertex',frameDuration,cbTitle)
+        animateMeshSolution(allNdCrd,allNdValues,verts,valMode='vertex',title=cbTitle)
         
     def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,frameDuration=1000):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
@@ -535,27 +506,15 @@ class ResultsProcessor:
             for r, ei in enumerate(df2['elements']):
                 elValues[ei] = df2.loc[r,fldLab]
             
-            # elValues = np.zeros(numEls,dtype=float)
-            # for el in self.elementData['elementResults'][field]:
-            #     if(el[2] == layer):
-            #         lab = el[0]
-            #         i = component + 2
-            #         val = el[i]
-            #         elValues[lab] = val
-            
             fcVals = self.getFaceValues(elSet,elValues)
             allNdCrd.append(ndCrd)
             allFcValues.append(fcVals)
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allFcValues,verts,'cell',frameDuration,cbTitle)
+        animateMeshSolution(allNdCrd,allFcValues,verts,valMode='cell',title=cbTitle)
         
     def animateModalSolution(self,elementSet='all',defScaleFact=1.0):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
         nodeCopy = self.nodeData.copy()
-        # for md in self.modalData['modalResults']['modes']:
-        #     if(md['mode'] == mode):
-        #         self.nodeData['nodeResults'] = dict()
-        #         self.nodeData['nodeResults']['displacement'] = md['displacement']
         self.nodeData = self.modalVec
         
         allNdCrd = list()
@@ -575,16 +534,6 @@ class ResultsProcessor:
             ndValues = list()
             for u in uAr:
                 ndValues.append(np.linalg.norm(u))
-            # for nd in self.nodeData['nodeResults']['displacement']:
-            #     lab = nd[0]
-            #     if(lab in ndSet):
-            #         vec = np.array(nd[1:4])
-            #         valAr[lab] = np.linalg.norm(vec)
-            # ndValues = list()
-            # for nd in self.modelData['nodes']:
-            #     lab = nd[0]
-            #     if(lab in ndSet):
-            #         ndValues.append(valAr[lab])
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
         cbTitle = 'displacement'

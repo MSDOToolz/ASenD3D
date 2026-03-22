@@ -68,7 +68,8 @@ class ASenDJob:
         newCmd['fileName'] = makeAbsolute(fileName)
         self.jobData['jobCommands'].append(newCmd)
         
-    def solvePrep(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,staticLoadTime=0.0,
+    def solvePrep(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,
+              maxNonlinIterations=10,nonlinConvTol=1.0e-12,abortNonlinDiv=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,explicit=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
               simPeriod=1.0,constScaleFactor=None,saveSolnHist=True,solnHistFreq=1,solnHistDir='',lumpMass=False, 
               solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,userUpdate=False):
@@ -82,8 +83,17 @@ class ASenDJob:
             newCmd['diffusion'] = 'yes'
             if(enforceMaxCon):
                 newCmd['enforceMaxCon'] = 'yes'
+                newCmd['maxNonlinIterations'] = maxNonlinIterations
+                newCmd['nonlinConvTol'] = nonlinConvTol
+                if abortNonlinDiv:
+                    newCmd['abortNonlinDiv'] = 'yes'
+                newCmd['abortNonlinDiv'] = abortNonlinDiv
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
+            newCmd['maxNonlinIterations'] = maxNonlinIterations
+            newCmd['nonlinConvTol'] = nonlinConvTol
+            if abortNonlinDiv:
+                newCmd['abortNonlinDiv'] = 'yes'
         try:
             newCmd['staticLoadTime'] = list(staticLoadTime)
         except:
@@ -115,7 +125,8 @@ class ASenDJob:
             newCmd['userUpdate'] = 'yes'
         self.jobData['jobCommands'].append(newCmd)    
         
-    def solve(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,staticLoadTime=0.0,
+    def solve(self,elastic=True,thermal=False,diffusion=False,fluid=False,nonlinearGeom=False,
+              maxNonlinIterations=10,nonlinConvTol=1.0e-12,abortNonlinDiv=False,staticLoadTime=0.0,
               loadRampSteps=1,dynamic=False,explicit=False,timeStep=1.0,newmarkBeta=0.25,newmarkGamma=0.5,
               simPeriod=1.0,constScaleFactor=None,saveSolnHist=True,solnHistFreq=1,solnHistDir='',lumpMass=False, 
               solverMethod='direct',solverBlockDim=2000000000,maxIt=0,convTol=1.0e-12,enforceMaxCon=False,userUpdate=False):
@@ -129,8 +140,16 @@ class ASenDJob:
             newCmd['diffusion'] = 'yes'
             if(enforceMaxCon):
                 newCmd['enforceMaxCon'] = 'yes'
+                newCmd['maxNonlinIterations'] = maxNonlinIterations
+                newCmd['nonlinConvTol'] = nonlinConvTol
+                if abortNonlinDiv:
+                    newCmd['abortNonlinDiv'] = 'yes'
         if(nonlinearGeom):
             newCmd['nonlinearGeom'] = 'yes'
+            newCmd['maxNonlinIterations'] = maxNonlinIterations
+            newCmd['nonlinConvTol'] = nonlinConvTol
+            if abortNonlinDiv:
+                newCmd['abortNonlinDiv'] = 'yes'
         try:
             newCmd['staticLoadTime'] = list(staticLoadTime)
         except:
