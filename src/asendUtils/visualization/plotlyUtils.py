@@ -236,22 +236,22 @@ def plotSolidMesh(meshData):
 
 def plotMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',xRange=None,yRange=None,zRange=None,title=''):
     if xRange == None:
-        xMax = np.max(nodeCrd[0]['xLst'])
-        xMin = np.min(nodeCrd[0]['xLst'])
+        xMax = np.max(nodeCrd['xLst'])
+        xMin = np.min(nodeCrd['xLst'])
     else:
         xMax = xRange[1]
         xMin = xRange[0]
         
     if yRange == None:
-        yMax = np.max(nodeCrd[0]['yLst'])
-        yMin = np.min(nodeCrd[0]['yLst'])
+        yMax = np.max(nodeCrd['yLst'])
+        yMin = np.min(nodeCrd['yLst'])
     else:
         yMax = yRange[1]
         yMin = yRange[0]
     
     if zRange == None:
-        zMax = np.max(nodeCrd[0]['zLst'])
-        zMin = np.min(nodeCrd[0]['zLst'])
+        zMax = np.max(nodeCrd['zLst'])
+        zMin = np.min(nodeCrd['zLst'])
     else:
         zMax = zRange[1]
         zMin = zRange[0]
@@ -301,22 +301,43 @@ def plotMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',xRange=None,yRang
 
 def animateMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',xRange=None,yRange=None,zRange=None,title=''):
     if xRange == None:
-        xMax = np.max(nodeCrd[0]['xLst'])
-        xMin = np.min(nodeCrd[0]['xLst'])
+        xMax = -1.0e-100
+        xMin = 1.0e+100
+        for nc in nodeCrd:
+            xMaxi = np.max(nc['xLst'])
+            if xMaxi > xMax:
+                xMax = xMaxi
+            xMini = np.min(nc['xLst'])
+            if xMini < xMin:
+                xMin = xMini
     else:
         xMax = xRange[1]
         xMin = xRange[0]
         
     if yRange == None:
-        yMax = np.max(nodeCrd[0]['yLst'])
-        yMin = np.min(nodeCrd[0]['yLst'])
+        yMax = -1.0e-100
+        yMin = 1.0e+100
+        for nc in nodeCrd:
+            yMaxi = np.max(nc['yLst'])
+            if yMaxi > yMax:
+                yMax = yMaxi
+            yMini = np.min(nc['yLst'])
+            if yMini < yMin:
+                yMin = yMini
     else:
         yMax = yRange[1]
         yMin = yRange[0]
     
     if zRange == None:
-        zMax = np.max(nodeCrd[0]['zLst'])
-        zMin = np.min(nodeCrd[0]['zLst'])
+        zMax = -1.0e-100
+        zMin = 1.0e+100
+        for nc in nodeCrd:
+            zMaxi = np.max(nc['zLst'])
+            if zMaxi > zMax:
+                zMax = zMaxi
+            zMini = np.min(nc['zLst'])
+            if zMini < zMin:
+                zMin = zMini
     else:
         zMax = zRange[1]
         zMin = zRange[0]

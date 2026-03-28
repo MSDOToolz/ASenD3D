@@ -7,6 +7,7 @@ Created on Fri Mar  6 16:08:41 2026
 
 import os
 from asendUtils.job.ASenDJob import *
+from asendUtils.ResultsProcessor import *
 
 if not os.path.exists('runImplicit'):
     os.mkdir('runImplicit')
@@ -27,3 +28,6 @@ myJob.writeNodeResults('runImplicit/results/node_results.csv', ['displacement'],
 myJob.writeJobInput('runImplicit/job.yaml')
 
 myJob.executeJob()
+
+rp = ResultsProcessor('collidingParticles.yaml')
+rp.animateNodeResults('runImplicit/results/node_results.csv', 'displacement', ts, deformed=True, massElOptns={'showAsDots': True, 'refSize': 0.1, 'refMass': 1.0})

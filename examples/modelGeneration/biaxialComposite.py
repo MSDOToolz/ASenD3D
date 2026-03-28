@@ -311,13 +311,12 @@ yTowSets = list()
 matrixSets = list()
 
 for es in wholeMesh['sets']['element']:
-    nm = es['name']
-    if('xTow' in nm):
-        xTowSets.append(nm)
-    elif('yTow' in nm):
-        yTowSets.append(nm)
-    elif('Matrix' in nm):
-        matrixSets.append(nm)
+    if('xTow' in es):
+        xTowSets.append(es)
+    elif('yTow' in es):
+        yTowSets.append(es)
+    elif('Matrix' in es):
+        matrixSets.append(es)
         
 print('getting set unions')
 

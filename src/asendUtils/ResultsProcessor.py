@@ -45,22 +45,13 @@ class ResultsProcessor:
 
     def loadNodeResults(self,nodeResFile):
         self.nodeData = pd.read_csv(nodeResFile,index_col=0)
-        # inFile = open(nodeResFile,'r')
-        # self.nodeData = yaml.load(inFile,Loader=Loader)
-        # inFile.close()
-
+        
     def loadElementResults(self,elementResFile):
         self.elementData = pd.read_csv(elementResFile)
-        # inFile = open(elementResFile,'r')
-        # self.elementData = yaml.load(inFile,Loader=Loader)
-        # inFile.close()
-        
+                
     def loadModalVals(self,modalResFile):
         self.modalVals = pd.read_csv(modalResFile)
-        # inFile = open(modalResFile,'r')
-        # self.modalData = yaml.load(inFile,Loader=Loader)
-        # inFile.close()
-        
+                
     def loadModalVec(self,modalResFile,mode=0):
         rep = '_mode' + str(mode) + '.'
         f_name = modalResFile.replace('.',rep)
@@ -70,69 +61,111 @@ class ResultsProcessor:
         self.objectiveVals = pd.read_csv(objResFile,index_col=0)
         f_name = objResFile.replace('.','_grad.')
         self.objectiveGrad = pd.read_csv(f_name,index_col=0)
-        # inFile = open(objResFile,'r')
-        # self.objectiveData = yaml.load(inFile,Loader=Loader)
-        # inFile.close()
-        
+                
     def getPlotNdElSet(self,elementSet):
-        numNds = len(self.modelData['nodes'])
-        ndSet = set(range(0,numNds))
         if(elementSet == 'all'):
-            #ndSet = set(range(0,numNds))
             elSet = set()
             for et in self.modelData['elements']:
                 for el in et['connectivity']:
                     elSet.add(el[0])
         else:
-            # for es in self.modelData['sets']['element']:
-            #     if(es['name'] == elementSet):
-                    elSet = set(self.modelData['sets']['element'][elementSet])
-                    # ndSet = set()
-                    # for et in self.modelData['elements']:
-                    #     for el in et['connectivity']:
-                    #         lab = el[0]
-                    #         if(lab in elSet):
-                    #             for ni, nd in enumerate(el):
-                    #                 if(ni > 0):
-                    #                     ndSet.add(nd)
-        return ndSet, elSet
+            elSet = set(self.modelData['sets']['element'][elementSet])
+        return elSet
         
-    def buildNodalPlotCrd(self,ndSet,deformed=False,defScaleFact=1.0):
-        ## ndSet a python set() of the desired node labels
+    def buildNodalPlotCrd(self,elSet,deformed=False,defScaleFact=1.0,massElOptns=None):
+        ## elSet a python set() of the desired element labels
         allNds = self.modelData['nodes']
         numNds = len(allNds)
-        crdAr = np.zeros((numNds,3),dtype=float)
+        
+        numMassNds = 0
+        if massElOptns != None:
+            if massElOptns['showAsDots']:
+                for et in self.modelData['elements']:
+                    if et['type'] == 'mass':
+                        for el in et['connectivity']:
+                            if el[0] in elSet:
+                                numMassNds += 8
+                                
+        totNds = numNds + numMassNds
+        crdAr = np.zeros((totNds,3),dtype=float)
+        
+        if(deformed):
+            uar = defScaleFact*np.array(self.nodeData.loc[list(range(0,numNds)), ['U1','U2','U3']])
+            crdAr[0:numNds] = uar
+        
         for nd in allNds:
             lab = nd[0]
-            if(lab in ndSet):
-                crdAr[lab] = np.array(nd[1:4])
-        if(deformed):
-            crdAr +=  defScaleFact*np.array(self.nodeData.loc[list(range(0,numNds)), ['U1','U2','U3']])
-        setCrd = crdAr[list(ndSet)]
+            crdAr[lab] += np.array(nd[1:4])
+        
+        if massElOptns != None:
+            if massElOptns['showAsDots']:
+                numEls = 0
+                for et in self.modelData['elements']:
+                    numEls += len(et['connectivity'])
+                elMass = np.zeros(numEls, dtype=float)
+                for sec in self.modelData['sections']:
+                    if sec['type'] == 'mass':
+                        for el in self.modelData['sets']['element'][sec['elementSet']]:
+                            elMass[el] = sec['massPerEl']
+                            
+                szConst = massElOptns['refSize']/massElOptns['refMass']
+                ind = numNds
+                for et in self.modelData['elements']:
+                    if et['type'] == 'mass':
+                        for el in et['connectivity']:
+                            if el[0] in elSet:
+                                esz = szConst*np.power(elMass[el[0]], 0.333333333)
+                                ndCrd = np.array(allNds[el[1]][1:4])
+                                if deformed:
+                                    ndCrd += uar[el[1]]
+                                shft = 0.5*esz*np.array([[-1, -1, -1],
+                                                         [1, -1, -1],
+                                                         [1, 1, -1],
+                                                         [-1, 1, -1],
+                                                         [-1, -1, 1],
+                                                         [1, -1, 1],
+                                                         [1, 1, 1],
+                                                         [-1, 1, 1]])
+                                for s in shft:
+                                    crdAr[ind] = ndCrd + s
+                                    ind += 1
+            
         xLst = list(crdAr[:,0])
         yLst = list(crdAr[:,1])
         zLst = list(crdAr[:,2])
             
         return {'xLst': xLst, 'yLst': yLst, 'zLst': zLst}
 
-    def buildElementVertexList(self,elSet):
+    def buildElementVertexList(self,elSet,massElOptns=None):
         # elSet = python set() with the desired element labels
         v1 = []
         v2 = []
         v3 = []
+        mndInd = len(self.modelData['nodes'])
         for et in self.modelData['elements']:
-            if('brick' in et['type']):
+            if('brick' in et['type'] or (et['type'] == 'mass' and massElOptns['showAsDots']) ):
                 for el in et['connectivity']:
                     eli = el[0]
                     if(eli in elSet):
-                        n1 = el[1]
-                        n2 = el[2]
-                        n3 = el[3]
-                        n4 = el[4]
-                        n5 = el[5]
-                        n6 = el[6]
-                        n7 = el[7]
-                        n8 = el[8]
+                        if 'brick' in et['type']:
+                            n1 = el[1]
+                            n2 = el[2]
+                            n3 = el[3]
+                            n4 = el[4]
+                            n5 = el[5]
+                            n6 = el[6]
+                            n7 = el[7]
+                            n8 = el[8]
+                        else:
+                            n1 = mndInd
+                            n2 = mndInd + 1 
+                            n3 = mndInd + 2 
+                            n4 = mndInd + 3 
+                            n5 = mndInd + 4 
+                            n6 = mndInd + 5 
+                            n7 = mndInd + 6 
+                            n8 = mndInd + 7
+                            mndInd += 8
                         
                         v1.append(n1)
                         v2.append(n4)
@@ -277,7 +310,7 @@ class ResultsProcessor:
                     
         return {'v1': v1, 'v2': v2, 'v3': v3}
     
-    def getFaceValues(self,elSet,elVal):
+    def getFaceValues(self,elSet,elVal,massElOptns=None):
         fcVal = list()
         for et in self.modelData['elements']:
             eTp = et['type']
@@ -285,7 +318,7 @@ class ResultsProcessor:
                 eli = el[0]
                 if(eli in elSet):
                     si = elVal[eli]
-                    if('brick' in eTp):
+                    if('brick' in eTp or ('mass' in eTp and massElOptns['showAsDots'])):
                         fcVal.extend([si,si,si,si,si,si,si,si,si,si,si,si])
                     elif('wedge' in eTp):
                         fcVal.extend([si,si,si,si,si,si,si,si])
@@ -298,10 +331,10 @@ class ResultsProcessor:
                         
         return fcVal
     
-    def plotElementProperty(self,prop='section',elementSet='all'):
-        ndSet, elSet = self.getPlotNdElSet(elementSet)
-        ndCrd = self.buildNodalPlotCrd(ndSet)
-        verts = self.buildElementVertexList(elSet)
+    def plotElementProperty(self,prop='section',elementSet='all',massElOptns=None):
+        elSet = self.getPlotNdElSet(elementSet)
+        ndCrd = self.buildNodalPlotCrd(elSet,massElOptns=massElOptns)
+        verts = self.buildElementVertexList(elSet,massElOptns=massElOptns)
         
         if(prop == 'section'):
             numEls = 0
@@ -320,10 +353,16 @@ class ResultsProcessor:
         cbTitle = prop
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell',title=cbTitle)
 
-    def plotNodeResults(self,field,component=1,elementSet='all',deformed=False,defScaleFact=1.0):
-        ndSet, elSet = self.getPlotNdElSet(elementSet)
-        ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
+    def plotNodeResults(self,field,component=1,elementSet='all',deformed=False,defScaleFact=1.0,massElOptns=None):
+        if massElOptns == None:
+            massElOptns = {'showAsDots': False}
+        if 'showAsDots' not in massElOptns:
+            massElOptns['showAsDots'] = False
+        
+        elSet = self.getPlotNdElSet(elementSet)
+        ndCrd = self.buildNodalPlotCrd(elSet,deformed,defScaleFact,massElOptns)
         numNds = len(self.modelData['nodes'])
+        ndRng = list(range(0,numNds))
         
         abrv = {'displacement': ['U1','U2','U3','R1','R2','R3'],
                 'velocity': ['V1','V2','V3','RV1','RV2','RV3'],
@@ -335,20 +374,44 @@ class ResultsProcessor:
         
         if (component == 'mag'):
             cols = abrv[field][0:3]
-            uAr = np.array(self.nodeData.loc[list(ndSet), cols])
+            uAr = np.array(self.nodeData.loc[ndRng, cols])
             values = list()
             for u in uAr:
                 values.append(np.linalg.norm(u))
+                
+            if massElOptns['showAsDots']:
+                for et in self.modelData['elements']:
+                    if et['type'] == 'mass':
+                        for el in et['connectivity']:
+                            if el[0] in elSet:
+                                u = uAr[el[1]]
+                                umag = np.linalg.norm(u)
+                                for i in range(0,8):
+                                    values.append(umag)
         else:
             fldLab = abrv[field][component-1]
-            values = list(self.nodeData.loc[list(ndSet), fldLab])
+            values = list(self.nodeData.loc[ndRng, fldLab])
+            
+            if massElOptns['showAsDots']:
+                for et in self.modelData['elements']:
+                    if et['type'] == 'mass':
+                        for el in et['connectivity']:
+                            if el[0] in elSet:
+                                v = values[el[1]]
+                                for i in range(0,8):
+                                    values.append(v)
         
-        verts = self.buildElementVertexList(elSet)
+        verts = self.buildElementVertexList(elSet,massElOptns)
         cbTitle = field + str(component)
         plotMeshSolution(ndCrd,values,verts,valMode='vertex',title=cbTitle)
         
-    def plotElementResults(self,field,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0):
-        ndSet, elSet = self.getPlotNdElSet(elementSet)
+    def plotElementResults(self,field,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,massElOptns=None):
+        if massElOptns == None:
+            massElOptns = {'showAsDots': False}
+        if 'showAsDots' not in massElOptns:
+            massElOptns['showAsDots'] = False
+        
+        elSet = self.getPlotNdElSet(elementSet)
         
         abrv = {'stress': ['S11','S22','S33','S12','S13','S23','MISES','PS1','PS2','PS3'],
                 'strain': ['E11','E22','E33','E12','E13','E23','PE1','PE2','PE3'],
@@ -372,7 +435,7 @@ class ResultsProcessor:
                 print('Error: unrecognized element result component ' + str(component) + 'plotElementResults() failed')
                 return
                                         
-        ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
+        ndCrd = self.buildNodalPlotCrd(elSet,deformed,defScaleFact,massElOptns)
         numNds = len(self.modelData['nodes'])
         
         numEls = 0
@@ -385,23 +448,24 @@ class ResultsProcessor:
         for r, ei in enumerate(df2['element']):
             elValues[ei] = df2.loc[r,fldLab]
         
-        fcVals = self.getFaceValues(elSet,elValues)
-        verts = self.buildElementVertexList(elSet)
+        fcVals = self.getFaceValues(elSet,elValues,massElOptns)
+        verts = self.buildElementVertexList(elSet,massElOptns)
         cbTitle = field + str(component)
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell',title=cbTitle)
         
-    def plotModalResults(self,elementSet='all',defScaleFact=1.0):
+    def plotModalResults(self,elementSet='all',defScaleFact=1.0,massElOptns=None):
         nodeCopy = self.nodeData.copy()
-        # for md in self.modalData['modalResults']['modes']:
-        #     if(md['mode'] == mode):
-        #         self.nodeData['nodeResults'] = dict()
-        #         self.nodeData['nodeResults']['displacement'] = md['displacement']
         self.nodeData = self.modalVec
-        self.plotNodeResults('displacement',component='mag',elementSet=elementSet,deformed=True,defScaleFact=defScaleFact)
+        self.plotNodeResults('displacement',component='mag',elementSet=elementSet,deformed=True,defScaleFact=defScaleFact,massElOptns=massElOptns)
         self.nodeData = nodeCopy
         
-    def animateNodeResults(self,fileName,field,timeSteps,component=1,elementSet='all',deformed=False,defScaleFact=1.0,frameDuration=1000):
-        ndSet, elSet = self.getPlotNdElSet(elementSet)
+    def animateNodeResults(self,fileName,field,timeSteps,component=1,elementSet='all',deformed=False,defScaleFact=1.0,massElOptns=None):
+        if massElOptns == None:
+            massElOptns = {'showAsDots': False}
+        if 'showAsDots' not in massElOptns:
+            massElOptns['showAsDots'] = False
+            
+        elSet = self.getPlotNdElSet(elementSet)
         
         abrv = {'displacement': ['U1','U2','U3','R1','R2','R3'],
                 'velocity': ['V1','V2','V3','RV1','RV2','RV3'],
@@ -415,36 +479,44 @@ class ResultsProcessor:
         allNdCrd = list()
         allNdValues = list()
         numNds = len(self.modelData['nodes'])
+        ndRng = list(range(0,numNds))
         fnLst = fileName.split('.')
-        verts = self.buildElementVertexList(elSet)
+        verts = self.buildElementVertexList(elSet,massElOptns)
         valAr = np.zeros(numNds,dtype=float)
         firstStep = True
         for ts in timeSteps:
             print('animate time step: ' + str(ts))
             fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
             self.loadNodeResults(fn)
-            ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
+            ndCrd = self.buildNodalPlotCrd(elSet,deformed,defScaleFact,massElOptns)
             if (component == 'mag'):
                 cols = abrv[field][0:3]
-                uAr = np.array(self.nodeData.loc[list(ndSet), cols])
+                uAr = np.array(self.nodeData.loc[ndRng, cols])
                 ndValues = list()
                 for u in uAr:
                     ndValues.append(np.linalg.norm(u))
+                    
+                if massElOptns['showAsDots']:
+                    for et in self.modelData['elements']:
+                        if et['type'] == 'mass':
+                            for el in et['connectivity']:
+                                if el[0] in elSet:
+                                    u = uAr[el[1]]
+                                    umag = np.linalg.norm(u)
+                                    for i in range(0,8):
+                                        ndValues.append(umag)
             else:
-                ndValues = list(self.nodeData.loc[list(ndSet), fldLab])
-            # for nd in self.nodeData['nodeResults'][field]:
-            #     lab = nd[0]
-            #     if(component == 'mag'):
-            #         vec = np.array(nd[1:4])
-            #         val = np.linalg.norm(vec)
-            #     else:
-            #         val = nd[component]
-            #     valAr[lab] = val
-            # ndValues = list()
-            # for nd in self.modelData['nodes']:
-            #     lab = nd[0]
-            #     if(lab in ndSet):
-            #         ndValues.append(valAr[lab])
+                ndValues = list(self.nodeData.loc[ndRng, fldLab])
+                
+                if massElOptns['showAsDots']:
+                    for et in self.modelData['elements']:
+                        if et['type'] == 'mass':
+                            for el in et['connectivity']:
+                                if el[0] in elSet:
+                                    v = ndValues[el[1]]
+                                    for i in range(0,8):
+                                        ndValues.append(v)
+                
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
             if(firstStep):
@@ -452,10 +524,15 @@ class ResultsProcessor:
                 allNdValues.append(ndValues)
                 firstStep = False
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allNdValues,verts,valMode='vertex',title=cbTitle)
+        animateMeshSolution(allNdCrd,allNdValues,verts,'vertex',title=cbTitle)
         
-    def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,frameDuration=1000):
-        ndSet, elSet = self.getPlotNdElSet(elementSet)
+    def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,massElOptns=None):
+        if massElOptns == None:
+            massElOptns = {'showAsDots': False}
+        if 'showAsDots' not in massElOptns:
+            massElOptns['showAsDots'] = False
+        
+        elSet = self.getPlotNdElSet(elementSet)
         
         abrv = {'stress': ['S11','S22','S33','S12','S13','S23','MISES','PS1','PS2','PS3'],
                 'strain': ['E11','E22','E33','E12','E13','E23','PE1','PE2','PE3'],
@@ -485,7 +562,7 @@ class ResultsProcessor:
         fnLst = fileName.split('.')
         if(nodeResFile != None):
             ndFnLst = nodeResFile.split('.')
-        verts = self.buildElementVertexList(elSet)
+        verts = self.buildElementVertexList(elSet,massElOptns)
         
         numEls = 0
         for et in self.modelData['elements']:
@@ -496,7 +573,7 @@ class ResultsProcessor:
             if(deformed and nodeResFile != None):
                 fn = ndFnLst[0] + '_timestep' + str(ts) + '.' + ndFnLst[1]
                 self.loadNodeResults(fn)
-            ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact)
+            ndCrd = self.buildNodalPlotCrd(ndSet,deformed,defScaleFact,massElOptns)
             fn = fnLst[0] + '_timestep' + str(ts) + '.' + fnLst[1]
             self.loadElementResults(fn)
             
@@ -506,14 +583,19 @@ class ResultsProcessor:
             for r, ei in enumerate(df2['elements']):
                 elValues[ei] = df2.loc[r,fldLab]
             
-            fcVals = self.getFaceValues(elSet,elValues)
+            fcVals = self.getFaceValues(elSet,elValues,massElOptns)
             allNdCrd.append(ndCrd)
             allFcValues.append(fcVals)
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allFcValues,verts,valMode='cell',title=cbTitle)
+        animateMeshSolution(allNdCrd,allFcValues,verts,'cell',title=cbTitle)
         
-    def animateModalSolution(self,elementSet='all',defScaleFact=1.0):
-        ndSet, elSet = self.getPlotNdElSet(elementSet)
+    def animateModalSolution(self,elementSet='all',defScaleFact=1.0,massElOptns=None):
+        if massElOptns == None:
+            massElOptns = {'showAsDots': False}
+        if 'showAsDots' not in massElOptns:
+            massElOptns['showAsDots'] = False
+        
+        elSet = self.getPlotNdElSet(elementSet)
         nodeCopy = self.nodeData.copy()
         self.nodeData = self.modalVec
         
@@ -521,19 +603,30 @@ class ResultsProcessor:
         allNdValues = list()
         numNds = len(self.modelData['nodes'])
         valAr = np.zeros(numNds,dtype=float)
-        verts = self.buildElementVertexList(elSet)
+        verts = self.buildElementVertexList(elSet, massElOptns)
         
         for theta in range(0,360,30):
             tRad = 0.0174533*theta
             sinTh = np.math.sin(tRad)
             sf = sinTh*defScaleFact
-            ndCrd = self.buildNodalPlotCrd(ndSet,deformed=True,defScaleFact=sf)
+            ndCrd = self.buildNodalPlotCrd(ndSet,deformed=True,defScaleFact=sf,massElOptns=massElOptns)
             
             cols = ['U1','U2','U3']
-            uAr = np.array(self.nodeData.loc[list(ndSet), cols])
+            uAr = np.array(self.nodeData.loc[list(range(0, numNds)), cols])
             ndValues = list()
             for u in uAr:
                 ndValues.append(np.linalg.norm(u))
+                
+            if massElOptns['showAsDots']:
+                for et in self.modelData['elements']:
+                    if et['type'] == 'mass':
+                        for el in et['connectivity']:
+                            if el[0] in elSet:
+                                u = uAr[el[1]]
+                                umag = np.linalg.norm(u)
+                                for i in range(0,8):
+                                    ndValues.append(umag)    
+            
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
         cbTitle = 'displacement'
@@ -563,18 +656,11 @@ class ResultsProcessor:
                 resrow = self.nodeData.loc[ndI]
                 vals.append(list(resrow[rescols]))
                 timepts.append(resrow['time'])
-                # for nd in self.nodeData['nodeResults'][field]:
-                #     if(nd[0] == ndI):
-                #         vals.append(nd[1:])
-                #         timePts.append(self.nodeData['nodeResults']['time'])
             series = dict()
             lab = 'node_' + str(ndI)
             series[lab] = vals
         except:
             series = dict()
-            # nsLabs = []
-            # for ns in self.modelData['sets']['node']:
-            #     if(ns['name'] == nodeSet):
             nsLabs = self.modelData['sets']['node'][nodeSet]
             for nd in nsLabs:
                 lab = 'node_' + str(nd)
@@ -588,12 +674,6 @@ class ResultsProcessor:
                     lab = 'node_' + str(nd)
                     resrow = self.nodeData.loc[nd, rescols]
                     series[lab].append(list(resrow))
-                # for nd in self.nodeData['nodeResults'][field]:
-                #     try:
-                #         lab = 'node_' + str(nd[0])
-                #         series[lab].append(nd[1:])
-                #     except:
-                #         pass
         return series, timePts
         
     def nodeHistorySeries(self,fileName,field,timeSteps,nodeSet,component=1):
@@ -657,10 +737,6 @@ class ResultsProcessor:
                 resrow = df2[df2['layer'] == layer]
                 vals.append(resrow[rescol])
                 timePts.append(resrow['time'])
-                # for el in self.elementData['elementResults'][field]:
-                #     if(el[0] == elI):
-                #         vals.append(el[component+2])
-                #         timePts.append(self.elementData['elementResults']['time'])
             series = dict()
             lab = 'element_' + str(elI)
             series[lab] = vals
@@ -671,9 +747,6 @@ class ResultsProcessor:
             plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=yTitle)
         except:
             series = dict()
-            # esLabs = []
-            # for es in self.modelData['sets']['element']:
-            #     if(es['name'] == elementSet):
             esLabs = self.modelData['sets']['element'][elementSet]
             for el in esLabs:
                 lab = 'element_' + str(el)
@@ -690,12 +763,6 @@ class ResultsProcessor:
                 for r, ei in enumerate(df3['element']):
                     lab = 'element_' + str(ei)
                     series[lab].append(df3.loc[r,rescol])
-                # for el in self.elementData['elementResults'][field]:
-                #     try:
-                #         lab = 'element_' + str(el[0])
-                #         series[lab].append(el[component+2])
-                #     except:
-                #         pass
             if(yTitle == None):
                 ytitle = field + str(component)
             else:
@@ -748,9 +815,6 @@ class ResultsProcessor:
         try:
             nSet = {int(nodeSet)}
         except:
-            # for ns in self.modelData['sets']['node']:
-            #     if(ns['name'] == nodeSet):
-            #         nSet = set(ns['labels'])
             nSet = set(self.modelData['sets']['node'][nodeSet])
         
         normMdDisp = dict()
@@ -772,24 +836,7 @@ class ResultsProcessor:
         self.loadModalVals(modalResFile)
         freq = list(self.modalVals['frequency'])
         
-        # for md in self.modalData['modalResults']['modes']:
-        #     mdStr = str(md['mode'])
-        #     maxMag = 0.
-        #     for nu in md['displacement']:
-        #         vec = np.array(nu[1:4])
-        #         mag = np.linalg.norm(vec)
-        #         if(mag > maxMag):
-        #             maxMag = mag
-        #     mFact = 1.0/maxMag
-        #     for nu in md['displacement']:
-        #         lab = nu[0]
-        #         if(lab in nSet):
-        #             ndStr = str(lab)
-        #             dk = ndStr + ',' + mdStr
-        #             normMdDisp[dk] = mFact*np.array(nu[1:4])
-                    
-        # freq = self.modalData['modalResults']['frequencies']
-        
+                
         series, timePts = self.extractNodeHistory(fileName,'displacement',timeSteps,nodeSet)
         outDat = dict()
         nRows = 3*len(timeSteps)
@@ -827,38 +874,7 @@ class ResultsProcessor:
             outDat[sk] = ndDic
             
         return outDat, freq
-        
-    # def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,component=1):
-    #     series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
-    #     npts = len(timePts)
-    #     totalPeriod = timePts[npts-1] - timePts[0]
-    #     lowFreq = 1.0/totalPeriod
-    #     timeStep = totalPeriod/npts
-    #     highFreq = 1.0/(2*timeStep)
-    #     nFreq = int(np.ceil(highFreq/lowFreq))
-    #     freq = list()
-    #     for fi in range(0,nFreq):
-    #         freq.append((fi+1)*lowFreq)
-    #     pi2 = 2.0*np.pi
-    #     tAr = np.array(timePts)
-    #     ons = np.ones(npts,dtype=float)
-    #     seriesAmp = dict()
-    #     for sLab in series:
-    #         vAr = np.array(series[sLab])
-    #         seriesAmp[sLab] = list()
-    #         for fi in range(0,nFreq):
-    #             omega = pi2*(fi+1)*lowFreq
-    #             sVec = np.sin(omega*tAr)
-    #             cVec = np.cos(omega*tAr)
-    #             mT = np.array([sVec,cVec,ons])
-    #             mat = np.transpose(mT)
-    #             Q, R = np.linalg.qr(mat)
-    #             rhs = np.matmul(vAr,Q)
-    #             soln = np.linalg.solve(R,rhs)
-    #             amp = np.linalg.norm(soln[0:2])
-    #             seriesAmp[sLab].append(amp)
-    #     return seriesAmp, freq
-    
+           
     def extractNodeFrequencies(self,fileName,field,timeSteps,nodeSet,freq,component=1):
         series, timePts = self.nodeHistorySeries(fileName,field,timeSteps,nodeSet,component)
         npts = len(timePts)
@@ -886,36 +902,7 @@ class ResultsProcessor:
                 seriesAmp[sLab].append(amp)
                 j += 2
         return seriesAmp
-        
-        # npts = len(timePts)
-        # totalPeriod = timePts[npts-1] - timePts[0]
-        # lowFreq = 1.0/totalPeriod
-        # timeStep = totalPeriod/npts
-        # highFreq = 1.0/(2*timeStep)
-        # nFreq = int(np.ceil(highFreq/lowFreq))
-        # freq = list()
-        # for fi in range(0,nFreq):
-        #     freq.append((fi+1)*lowFreq)
-        # pi2 = 2.0*np.pi
-        # tAr = np.array(timePts)
-        # ons = np.ones(npts,dtype=float)
-        # seriesAmp = dict()
-        # for sLab in series:
-        #     vAr = np.array(series[sLab])
-        #     seriesAmp[sLab] = list()
-        #     for fi in range(0,nFreq):
-        #         omega = pi2*(fi+1)*lowFreq
-        #         sVec = np.sin(omega*tAr)
-        #         cVec = np.cos(omega*tAr)
-        #         mT = np.array([sVec,cVec,ons])
-        #         mat = np.transpose(mT)
-        #         Q, R = np.linalg.qr(mat)
-        #         rhs = np.matmul(vAr,Q)
-        #         soln = np.linalg.solve(R,rhs)
-        #         amp = np.linalg.norm(soln[0:2])
-        #         seriesAmp[sLab].append(amp)
-        # return seriesAmp, freq
-    
+           
     def plotNodeFrequencies(self,fileName,field,timeSteps,nodeSet,freq,component=1,xTitle='Frequency',yTitle='Amplitude'):
         seriesAmp = self.extractNodeFrequencies(fileName, field, timeSteps, nodeSet, freq, component)
         plotFrequencySpectrum(seriesAmp,freq,xTitle=xTitle,yTitle=yTitle)
