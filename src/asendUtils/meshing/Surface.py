@@ -54,7 +54,12 @@ class Surface():
                 allEls.append(el)
                 setList.append(int(eli + numEls))
                 eli = eli + 1
-            elSetList[self.regionNames[regi]] = setList
+            nm = self.regionNames[regi]
+            if nm != None:
+                if nm in elSetList:
+                    elSetList[nm].extend(setList)
+                else:
+                    elSetList[nm] = setList
             allNds.extend(regMesh['nodes'])
             numNds = len(allNds)
             numEls = len(allEls)
