@@ -11,15 +11,32 @@ from asendUtils.meshing.MeshTools import *
 
 def splitToTri(meshData):
     newEList = list()
+    newLabels = list()
+    newEi = 0
     for el in meshData['elements']:
         if(el[3] == -1):
             newEList.append(el)
+            newLabels.append([newEi])
+            newEi += 1
         else:
             newE = np.array([el[0],el[1],el[2],-1])
             newEList.append(newE)
             newE = np.array([el[0],el[2],el[3],-1])
             newEList.append(newE)
+            newLabels.append([newEi, newEi + 1])
+            newEi += 2
     meshData['elements'] = np.array(newEList)
+    try:
+        eSets = meshData['sets']['element']
+        newESets = dict()
+        for es in eSets:
+            newLst = list()
+            for el in eSets[es]:
+                newLst.extend(newLabels[el])
+            newESets[es] = newLst
+        meshData['sets']['element'] = newESets
+    except:
+        pass
     return meshData
 
 def convertToQuadratic(meshData):
