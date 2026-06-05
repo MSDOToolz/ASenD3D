@@ -6,6 +6,7 @@ Created on Sat Mar 28 06:36:35 2026
 """
 
 import numpy as np
+import copy
 
 from asendUtils.meshing.ElementUtils import *
 from asendUtils.meshing.MeshTools.extract import *
@@ -71,7 +72,7 @@ def getNodeSetInRadius(meshData,pt,rad,setName):
 
 def getNodeSetNearLine(meshData,pt,dirVec,rad,setName):
     mag = np.linalg.norm(dirVec)
-    unitDir = (1.0/mag)*dirVec
+    unitDir = (1.0/mag)*np.array(dirVec)
     ptAr = np.array(pt)
     labs = list()
     for i, nd in enumerate(meshData['nodes']):
@@ -120,6 +121,29 @@ def getNodeSetInXYZRange(meshData,setName,xRange=None,yRange=None,zRange=None):
     newSet = {setName: labs}
     return addNodeSet(meshData,newSet)
 
+def getConnectedNodeSet(meshData,setName,newSetName):
+    
+    ndConn = list()
+    for i in range(0, len(meshData['nodes'])):
+        ndConn.append(set())
+    
+    for el in meshData['elements']:
+        for nd in el:
+            if nd != -1:
+                for nd2 in el:
+                    if nd2 != -1:
+                        ndConn[nd].add(nd2)
+                        ndConn[nd2].add(nd)
+                        
+    prevSet = set()
+    newSet = set(meshData['sets']['node'][setName])
+    while len(prevSet) < len(newSet):
+        prevSet = copy.deepcopy(newSet)
+        for nd in prevSet:
+            newSet = newSet.union(ndConn[nd])
+    
+    return addNodeSet(meshData, {newSetName: list(newSet)})
+
 def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
     if(setNames is None):
         sN = ['periodicXMin','periodicXMax',
@@ -148,9 +172,10 @@ def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
     meshData = getNearestNodes(meshData,[xMid,yMid,zMin],1,sN[10])
     meshData = getNearestNodes(meshData,[xMid,yMid,zMax],1,sN[11])
     
-    nSp = getAverageNodeSpacing(nodes,meshData['elements'])
-    gSp = 2.0*nSp
-    gL = getMeshSpatialList(nodes,gSp,gSp,gSp)
+    # nSp = getAverageNodeSpacing(nodes,meshData['elements'])
+    # gSp = 2.0*nSp
+    gL = getMeshSpatialList(nodes,meshData['elements'])
+    nSp = 0.5*gL.xGSz
     srcTol = 1.0e-4*nSp
     for i, nd in enumerate(nodes):
         gL.addEntry(i,nd)
@@ -343,15 +368,7 @@ def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
     mag = np.linalg.norm(normDir)
     unitNorm = (1.0/mag)*normDir
     cosTol = np.cos(normTol*np.pi/180.0)
-    faceDic = dict()
-    for ei in meshData['sets']['element'][elSet]:
-        fcStr, globFc = getSortedFaceStrings(els[ei])
-        for fi, fk in enumerate(fcStr):
-            try:
-                curr = faceDic[fk]
-                faceDic[fk] = None
-            except:
-                faceDic[fk] = globFc[fi]
+    faceDic = getSurfaceFaces(meshData,elSet)
     surfSet = set()
     for fk in faceDic:
         glob = faceDic[fk]
@@ -375,7 +392,7 @@ def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
 
 def getForceElementCloud(meshData,nodeSet1,nodeSet2,elSetName,maxDist):
     nds = meshData['nodes']
-    gL = getMeshSpatialList(nds)
+    gL = getMeshSpatialList(nds, meshData['elements'])
     for s2 in meshData['sets']['node'][nodeSet2]:
         crds = nds[s2]
         gL.addEntry(s2,crds)

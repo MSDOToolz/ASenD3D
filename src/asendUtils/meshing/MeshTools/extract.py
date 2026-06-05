@@ -38,18 +38,9 @@ def getAverageNodeSpacing(nodes,elements):
 
 def checkAllJacobians(nodes,elements):
     failedEls = set()
-    ei = 0
-    for el in elements:
-        xC = []
-        yC = []
-        zC = []
-        for nd in el:
-            if(nd > -1):
-                xC.append(nodes[nd,0])
-                yC.append(nodes[nd,1])
-                zC.append(nodes[nd,2])
-        elCrd = np.array([xC,yC,zC])
-        nn = len(xC)
+    for ei, el in enumerate(elements):
+        elCrd = getElCoord(el, nodes)
+        nn = len(elCrd[0])
         if(nn == 8):
             elType = 'brick8'
         elif(nn == 6):
@@ -59,10 +50,9 @@ def checkAllJacobians(nodes,elements):
         passed = checkJacobian(elCrd,elType)
         if(not passed):
             failedEls.add(ei)
-        ei = ei + 1
     return failedEls
 
-def getMeshSpatialList(nodes,xSpacing=0,ySpacing=0,zSpacing=0):
+def getMeshSpatialList(nodes,elements,xSpacing=0,ySpacing=0,zSpacing=0):
     totNds = len(nodes)
     spaceDim = len(nodes[0])
 
@@ -70,8 +60,9 @@ def getMeshSpatialList(nodes,xSpacing=0,ySpacing=0,zSpacing=0):
     minX = np.amin(nodes[:,0])
     maxY = np.amax(nodes[:,1])
     minY = np.amin(nodes[:,1])
-    nto1_2 = np.power(totNds,0.5)
-    nto1_3 = np.power(totNds,0.3333333)
+    # nto1_2 = np.power(totNds,0.5)
+    # nto1_3 = np.power(totNds,0.3333333)
+    avgSp = getAverageNodeSpacing(nodes, elements)
     if(spaceDim == 3):
         maxZ = np.amax(nodes[:,2])
         minZ = np.amin(nodes[:,2])
@@ -84,15 +75,15 @@ def getMeshSpatialList(nodes,xSpacing=0,ySpacing=0,zSpacing=0):
         maxZ = maxZ + 0.01*meshDim
         minZ = minZ - 0.01*meshDim
         if(xSpacing == 0):
-            xS = 0.5*(maxX - minX)/nto1_3
+            xS = 2*avgSp
         else:
             xS = xSpacing
         if(ySpacing == 0):
-            yS = 0.5*(maxY - minY)/nto1_3
+            yS = 2*avgSp
         else:
             yS = ySpacing
         if(zSpacing == 0):
-            zS = 0.5*(maxZ - minZ)/nto1_3
+            zS = 2*avgSp
         else:
             zS = zSpacing
         meshGL = SpatialGridList3D(minX,maxX,minY,maxY,minZ,maxZ,xS,yS,zS)
@@ -105,23 +96,72 @@ def getMeshSpatialList(nodes,xSpacing=0,ySpacing=0,zSpacing=0):
         maxY = maxY + 0.01*meshDim
         minY = minY - 0.01*meshDim
         if(xSpacing == 0):
-            xS = 0.5*(maxX - minX)/nto1_2
+            xS = 2*avgSp
         else:
             xS = xSpacing
         if(ySpacing == 0):
-            yS = 0.5*(maxY - minY)/nto1_2
+            yS = 2*avgSp
         else:
             yS = ySpacing
         meshGL = SpatialGridList2D(minX,maxX,minY,maxY,xS,yS)
         #tol = 1.0e-6*meshDim/nto1_2
     return meshGL
 
+def getSurfaceFaces(meshData, elSet='all'):
+    els = meshData['elements']
+    if elSet == 'all':
+        eset = list(range(0, len(els)))
+    else:
+        eset = meshData['sets']['element'][elSet]
+    
+    faceDic = dict()
+    for ei in eset:
+        fcStr, globFc = getSortedFaceStrings(els[ei])
+        for fi, fk in enumerate(fcStr):
+            if fk in faceDic:
+                faceDic[fk] = None
+            else:
+                faceDic[fk] = globFc[fi]
+    
+    fcOut = dict()
+    for fk in faceDic:
+        fdat = faceDic[fk]
+        if fdat != None:
+            fcOut[fk] = fdat
+            
+    return fcOut
+
+def getSurfaceMesh(meshData, elSet='all'):
+    faces = getSurfaceFaces(meshData, elSet)
+    surfNodes = set()
+    for fk in faces:
+        for nd in faces[fk]:
+            surfNodes.add(nd)
+    
+    ndNewLab = -1*np.ones(len(meshData['nodes']), dtype=int)
+    newNds = list()
+    i = 0
+    for j, nd in meshData['nodes']:
+        if j in surfNodes:
+            ndNewLab[j] = i
+            newNds.append(nd)
+            i += 1
+    
+    newEls = list()
+    for fk in faces:
+        newEl = np.array([-1,-1,-1,-1])
+        for i, nd in enumerate(faces[fk]):
+            newEl[i] = ndNewLab[nd]
+        newEls.append(newEl)
+        
+    return {'nodes': np.array(newNds), 'elements': np.array(newEls)}
+
 def tie2MeshesConstraints(tiedMesh,tgtMesh,maxDist):
     tiedNds = tiedMesh['nodes']
     tgtNds = tgtMesh['nodes']
     tgtEls = tgtMesh['elements']
-    radius = getAverageNodeSpacing(tgtNds,tgtEls)
-    elGL = getMeshSpatialList(tgtNds,radius,radius,radius)
+    elGL = getMeshSpatialList(tgtNds,tgtEls)
+    radius = elGL.xGSz
     if(radius < maxDist):
         radius = maxDist
     ei = 0
@@ -222,8 +262,9 @@ def tie2SetsConstraints(mesh,tiedSetName,tgtSetName,maxDist):
         tgtNdCrd.append(nodes[ni])
     tgtNdCrd = np.array(tgtNdCrd)
     
-    radius = getAverageNodeSpacing(nodes, elements)
-    elGL = getMeshSpatialList(tgtNdCrd,radius,radius,radius)
+    #radius = getAverageNodeSpacing(nodes, elements)
+    elGL = getMeshSpatialList(tgtNdCrd, elements)
+    radius = elGL.xGSz
     if(radius < maxDist):
         radius = maxDist
     for ei in tgtSet:

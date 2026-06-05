@@ -15,15 +15,15 @@ class SpatialGridList3D():
         self.xRows = int(np.ceil(xLen/xGridSize))
         self.yRows = int(np.ceil(yLen/yGridSize))
         self.zRows = int(np.ceil(zLen/zGridSize))
-        self.fullList = list()
-        for i in range(0,self.xRows):
-            xList = list()
-            for j in range(0,self.yRows):
-                yList = list()
-                for k in range(0,self.zRows):
-                    yList.append(list())
-                xList.append(yList)
-            self.fullList.append(xList)
+        self.fullList = dict()
+        # for i in range(0,self.xRows):
+        #     xList = list()
+        #     for j in range(0,self.yRows):
+        #         yList = list()
+        #         for k in range(0,self.zRows):
+        #             yList.append(list())
+        #         xList.append(yList)
+        #     self.fullList.append(xList)
             
     def getDim(self):
         return [self.xGSz*self.xRows, self.yGSz*self.yRows, self.zGSz*self.zRows]
@@ -44,7 +44,12 @@ class SpatialGridList3D():
             zRow = self.zRows - 1
         if(zRow < 0):
             zRow = 0
-        self.fullList[xRow][yRow][zRow].append(val)
+        # self.fullList[xRow][yRow][zRow].append(val)
+        key = f'{xRow},{yRow},{zRow}'
+        try:
+            self.fullList[key].append(val)
+        except:
+            self.fullList[key] = [val]
         
     def findInXYZMargin(self,point,Xmargin,Ymargin,Zmargin):
         if(Xmargin == -1):
@@ -84,7 +89,12 @@ class SpatialGridList3D():
         for i in range(iMin,iMax):
             for j in range(jMin,jMax):
                 for k in range(kMin,kMax):
-                    labelList.extend(self.fullList[i][j][k])
+                    # labelList.extend(self.fullList[i][j][k])
+                    key = f'{i},{j},{k}'
+                    try:
+                        labelList.extend(self.fullList[key])
+                    except:
+                        pass
         
         return labelList
         

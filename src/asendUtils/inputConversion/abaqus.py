@@ -33,9 +33,9 @@ def asendToAbaqus(inFile, outFile):
             tp = et['type']
             if tp in solidTypes:
                 for el in et['connectivity']:
-                    solidEls.add(el[0])
+                    solidEls.add(int(el[0]))
                     for i in range(1, len(el)):
-                        solidNds.add(el[i])
+                        solidNds.add(int(el[i]))
         
         outStr.write('*Node\n')
         for ni in solidNds:
@@ -44,6 +44,13 @@ def asendToAbaqus(inFile, outFile):
             repStr = f'{ni+1}'
             nstr = nstr.replace(indStr,repStr)
             nstr = nstr.replace(']', '\n')
+            ## --------------
+            if '[' in nstr:
+                print(f'nstr = {nstr}')
+                print(f'ni = {ni}')
+                print(f'indStr = {indStr}')
+                print(f'repStr = {repStr}')
+            ## ---------------
             outStr.write(nstr)
         
         for et in modDat['elements']:

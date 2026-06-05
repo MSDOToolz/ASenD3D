@@ -11,12 +11,13 @@ class SpatialGridList2D():
         yLen = maximumY - minimumY
         self.xRows = int(np.ceil(xLen/xGridSize))
         self.yRows = int(np.ceil(yLen/yGridSize))
-        self.fullList = list()
-        for i in range(0,self.xRows):
-            xList = list()
-            for j in range(0,self.yRows):
-                xList.append(list())
-            self.fullList.append(xList)
+        # self.fullList = list()
+        # for i in range(0,self.xRows):
+        #     xList = list()
+        #     for j in range(0,self.yRows):
+        #         xList.append(list())
+        #     self.fullList.append(xList)
+        self.fullList = dict()
             
     def getDim(self):
         return [self.xGSz*self.xRows, self.yGSz*self.yRows]
@@ -32,15 +33,18 @@ class SpatialGridList2D():
             yRow = self.yRows - 1
         if(yRow < 0):
             yRow = 0
-        self.fullList[xRow][yRow].append(val)
+        key = f'{xRow},{yRow}'
+        try:
+            self.fullList[key].append(val)
+        except:
+            self.fullList[key] = [val]
+        # self.fullList[xRow][yRow].append(val)
         
     def findInXYMargin(self,point,Xmargin,Ymargin):
         if(Xmargin == -1):
             iMax = self.xRows
             iMin = 0
         else:
-            # outStr = 'point[0] ' + str(point[0]) + ' Xmargin ' + str(Xmargin) + ' xMin ' + str(self.xMin) + ' xGSz ' + str(self.xGSz)
-            # print(outStr)
             iMax = int(np.ceil((point[0] + Xmargin - self.xMin)/self.xGSz))
             if(iMax > self.xRows):
                 iMax = self.xRows
@@ -62,7 +66,12 @@ class SpatialGridList2D():
         labelList = list()
         for i in range(iMin,iMax):
             for j in range(jMin,jMax):
-                labelList.extend(self.fullList[i][j])
+                key = f'{i},{j}'
+                try:
+                    labelList.extend(self.fullList[key])
+                except:
+                    pass
+                # labelList.extend(self.fullList[i][j])
         
         return labelList
         

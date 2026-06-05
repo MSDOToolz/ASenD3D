@@ -7,7 +7,7 @@ Created on Sat Mar 28 06:37:55 2026
 
 import numpy as np
 
-from asendUtils.meshing.MeshTools import *
+from asendUtils.meshing.MeshTools.extract import *
 
 ## - Convert list of mesh objects into a single merged mesh, returning sets representing the elements/nodes from the original meshes     
 def mergeDuplicateNodes(meshData,tolerance=None):
@@ -17,9 +17,10 @@ def mergeDuplicateNodes(meshData,tolerance=None):
     totEls = len(allEls)
     elDim = len(allEls[0])
 
-    avgSp = getAverageNodeSpacing(meshData['nodes'], meshData['elements'])
-    sp = 2*avgSp
-    nodeGL = getMeshSpatialList(allNds,sp,sp,sp)
+    # avgSp = getAverageNodeSpacing(meshData['nodes'], meshData['elements'])
+    # sp = 2*avgSp
+    nodeGL = getMeshSpatialList(allNds,allEls)
+    avgSp = 0.5*nodeGL.xGSz
     if(tolerance == None):
         tol = 1.0e-2*avgSp
     else:
