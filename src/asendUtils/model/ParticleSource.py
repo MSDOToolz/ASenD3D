@@ -10,84 +10,144 @@ import copy
 from asendUtils.model.Section import *
 
 class ParticleSource:
-    def __init__(self, elementSet="", refNodes=None, velInLocal=True, xRange=None, yRange=None, zRange=None, activeTime=None):
+    def __init__(self, elementSet="", refNodes=None, velInLocal=True, xRange=None, yRange=None, zRange=None, activeTime=None, listAsStr=True):
         self.data = dict()
         self.data['elementSet'] = elementSet
         self.data['coordinates'] = list()
         if refNodes != None:
-            self.data['refNodes'] = str(refNodes)
+            if listAsStr:
+                self.data['refNodes'] = str(refNodes)
+            else:
+                self.data['refNodes'] = refNodes
         if not velInLocal:
             self.data['velInLocal'] = 'yes'
         self.data['meanVel'] = list()
         self.data['temperature'] = list()
         self.data['frequency'] = list()
-        if xRange != None:
-            self.data['boundXRange'] = str(xRange)
+        if listAsStr:
+            if xRange != None:
+                self.data['boundXRange'] = str(xRange)
+            else:
+                self.data['boundXRange'] = '[-1.0e+100, 1.0e+100]'
+            if yRange != None:
+                self.data['boundYRange'] = str(yRange)
+            else:
+                self.data['boundYRange'] = '[-1.0e+100, 1.0e+100]'
+            if zRange != None:
+                self.data['boundZRange'] = str(zRange)
+            else:
+                self.data['boundZRange'] = '[-1.0e+100, 1.0e+100]'
+            if activeTime != None:
+                self.data['activeTime'] = str(activeTime)
+            else:
+                self.data['activeTime'] = '[0.0, 1.0e+100]'
         else:
-            self.data['boundXRange'] = '[-1.0e+100, 1.0e+100]'
-        if yRange != None:
-            self.data['boundYRange'] = str(yRange)
-        else:
-            self.data['boundYRange'] = '[-1.0e+100, 1.0e+100]'
-        if zRange != None:
-            self.data['boundZRange'] = str(zRange)
-        else:
-            self.data['boundZRange'] = '[-1.0e+100, 1.0e+100]'
-        if activeTime != None:
-            self.data['activeTime'] = str(activeTime)
-        else:
-            self.data['activeTime'] = '[0.0, 1.0e+100]'
+            if xRange != None:
+                self.data['boundXRange'] = xRange
+            else:
+                self.data['boundXRange'] = [-1.0e+100, 1.0e+100]
+            if yRange != None:
+                self.data['boundYRange'] = yRange
+            else:
+                self.data['boundYRange'] = [-1.0e+100, 1.0e+100]
+            if zRange != None:
+                self.data['boundZRange'] = zRange
+            else:
+                self.data['boundZRange'] = [-1.0e+100, 1.0e+100]
+            if activeTime != None:
+                self.data['activeTime'] = activeTime
+            else:
+                self.data['activeTime'] = [0.0, 1.0e+100]
             
-    def setCoordinates(self, x, y, z, refNodes=None, time=None):
+    def setCoordinates(self, x, y, z, refNodes=None, time=None, listAsStr=True):
         if refNodes != None:
-            self.data['refNodes'] = str(refNodes)
+            if listAsStr:
+                self.data['refNodes'] = str(refNodes)
+            else:
+                self.data['refNodes'] = refNodes
         if time == None:
-            s1 = str([0., x, y, z])
-            s2 = str([1.0e+100, x, y, z])
+            if listAsStr:
+                s1 = str([0., x, y, z])
+                s2 = str([1.0e+100, x, y, z])
+            else:
+                s1 = [0., x, y, z]
+                s2 = [1.0e+100, x, y, z]
             self.data['coordinates'] = [s1,s2]
         else:
             clst = list()
-            for i, t in enumerate(time):
-                s = str([t, x[i], y[i], z[i]])
-                clst.append(s)
+            if listAsStr:
+                for i, t in enumerate(time):
+                    s = str([t, x[i], y[i], z[i]])
+                    clst.append(s)
+            else:
+                for i, t in enumerate(time):
+                    s = [t, x[i], y[i], z[i]]
+                    clst.append(s)
             self.data['coordinates'] = clst
             
-    def setVelocity(self, vx, vy, vz, vRandom=None, time=None):
+    def setVelocity(self, vx, vy, vz, vRandom=None, time=None, listAsStr=True):
         if vRandom != None:
             self.data['randomVel'] = vRandom
         if time == None:
-            s1 = str([0., vx, vy, vz])
-            s2 = str([1.0e+100, vx, vy, vz])
+            if listAsStr:
+                s1 = str([0., vx, vy, vz])
+                s2 = str([1.0e+100, vx, vy, vz])
+            else:
+                s1 = [0., vx, vy, vz]
+                s2 = [1.0e+100, vx, vy, vz]
             self.data['meanVel'] = [s1,s2]
         else:
             clst = list()
-            for i, t in enumerate(time):
-                s = str([t, vx[i], vy[i], vz[i]])
-                clst.append(s)
+            if listAsStr:
+                for i, t in enumerate(time):
+                    s = str([t, vx[i], vy[i], vz[i]])
+                    clst.append(s)
+            else:
+                for i, t in enumerate(time):
+                    s = [t, vx[i], vy[i], vz[i]]
+                    clst.append(s)
             self.data['meanVel'] = clst
             
-    def setTemperature(self, temperature, time=None):
+    def setTemperature(self, temperature, time=None, listAsStr=True):
         if time == None:
-            s1 = str([0., temperature])
-            s2 = str([1.0e+100, temperature])
+            if listAsStr:
+                s1 = str([0., temperature])
+                s2 = str([1.0e+100, temperature])
+            else:
+                s1 = [0., temperature]
+                s2 = [1.0e+100, temperature]
             self.data['temperature'] = [s1,s2]
         else:
             clst = list()
-            for i, t in enumerate(time):
-                s = str([t, temperature[i]])
-                clst.append(s)
+            if listAsStr:
+                for i, t in enumerate(time):
+                    s = str([t, temperature[i]])
+                    clst.append(s)
+            else:
+                for i, t in enumerate(time):
+                    s = [t, temperature[i]]
+                    clst.append(s)
             self.data['temperature'] = clst
             
-    def setFrequency(self, frequency, time=None):
+    def setFrequency(self, frequency, time=None, listAsStr=True):
         if time == None:
-            s1 = str([0., frequency])
-            s2 = str([1.0e+100, frequency])
+            if listAsStr:
+                s1 = str([0., frequency])
+                s2 = str([1.0e+100, frequency])
+            else:
+                s1 = [0., frequency]
+                s2 = [1.0e+100, frequency]
             self.data['frequency'] = [s1,s2]
         else:
             clst = list()
-            for i, t in enumerate(time):
-                s = str([t, frequency[i]])
-                clst.append(s)
+            if listAsStr:
+                for i, t in enumerate(time):
+                    s = str([t, frequency[i]])
+                    clst.append(s)
+            else:
+                for i, t in enumerate(time):
+                    s = [t, frequency[i]]
+                    clst.append(s)
             self.data['frequency'] = clst
 
 def sourceGroupFromMesh(meshData, elsPerSource, massPerEl, specHeat, resXRng, resYRng, resZRng, elementSet="", refNodes=None, velInLocal=True, xRange=None, yRange=None, zRange=None, activeTime=None):

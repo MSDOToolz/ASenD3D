@@ -411,6 +411,179 @@ def cutMesh(meshData, surfaceData, criteria='elOverlap', distance=None):
     meshData['sets'] = newSets
     
     return meshData
+
+def eliminateHangingNodes(meshData):
+    nds = meshData['nodes']
+    newEls = meshData['elements']
+    
+    ndElim = np.ones(len(nds), dtype=int)
+    for el in newEls:
+        for nd in el:
+            if nd != -1:
+                ndElim[nd] = -1
+    
+    ndNewLab = -1*np.ones(len(nds), dtype=int)
+    newNds = list()
+    j = 0
+    for i, nd in enumerate(nds):
+        if ndElim[i] == -1:
+            ndNewLab[i] = j
+            newNds.append(nd)
+            j += 1
+    newNds = np.array(newNds)
+    
+    for i, el in enumerate(newEls):
+        for j, nd in enumerate(el):
+            if nd != -1:
+                newEls[i,j] = ndNewLab[nd]
+    
+    meshData['nodes'] = newNds
+    meshData['elements'] = newEls
+    
+    try:
+        newSets = dict()
+        for ns in meshData['sets']['node']:
+            newSet = list()
+            for nd in meshData['sets']['node'][ns]:
+                newLab = ndNewLab[nd]
+                if newLab != -1:
+                    newSet.append(newLab)
+            newSets[ns] = newSet
+        meshData['sets']['node'] = newSets
+    except:
+        pass
+    
+    return meshData   
+
+def smoothQuadCorners(meshData, elSet='all'):
+    els = meshData['elements']
+    nds = meshData['nodes']
+    if elSet == 'all':
+        eSet = set(range(0, len(els)))
+    else:
+        eSet = set(meshData['sets']['element'][elSet])
+        
+    surfEdges = getSurfaceEdges(meshData)
+    surfNodes = set()
+    for fk in surfEdges:
+        for nd in surfEdges[fk]:
+            surfNodes.add(nd)
+            
+    newEls = list()
+    for i, el in enumerate(els):
+        if i in eSet and el[3] != -1:
+            chstr = ''
+            ct = 0
+            for nd in el:
+                if nd in surfNodes:
+                    chstr += '1'
+                    ct += 1
+                else:
+                    chstr += '0'
+            if ct == 3:
+                if chstr == '1101': # 0
+                    newEl = np.array([el[1], el[2], el[3], -1])
+                elif chstr == '1110': # 1
+                    newEl = np.array([el[0], el[2], el[3], -1])
+                elif chstr == '0111': # 2
+                    newEl = np.array([el[0], el[1], el[3], -1])
+                elif chstr == '1011': # 3
+                    newEl = np.array([el[0], el[1], el[2], -1])
+                else:
+                    newEl = np.copy(el)
+            else:
+                newEl = np.copy(el)
+        else:
+            newEl = np.copy(el)
+            
+        newEls.append(newEl)
+        
+    meshData['elements'] = np.array(newEls)
+    
+    return eliminateHangingNodes(meshData)
+
+
+def smoothHexEdges(meshData, elSet='all'):
+    els = meshData['elements']
+    nds = meshData['nodes']
+    if elSet == 'all':
+        eSet = set(range(0, len(els)))
+    else:
+        eSet = set(meshData['sets']['element'][elSet])
+    
+    surfFaces = getSurfaceFaces(meshData)
+    surfNodes = set()
+    for fk in surfFaces:
+        for nd in surfFaces[fk]:
+            surfNodes.add(nd)
+    
+    newEls = list()
+    for i, el in enumerate(els):
+        if i in eSet and el[6] != -1:
+            chstr = ''
+            ct = 0
+            for nd in el:
+                if nd in surfNodes:
+                    chstr += '1'
+                    ct += 1
+                else:
+                    chstr += '0'
+            ## Edges
+            if ct == 6:
+                if chstr == '11111100': # 0 - 1
+                    newEl = np.array([el[2], el[5], el[6], el[3], el[4], el[7], -1, -1])
+                elif chstr == '11110110': # 1 - 2
+                    newEl = np.array([el[0], el[4], el[5], el[3], el[7], el[6], -1, -1])
+                elif chstr == '11110011': # 2 - 3
+                    newEl = np.array([el[0], el[7], el[4], el[1], el[6], el[5], -1, -1])
+                elif chstr == '11111001': # 3 - 0
+                    newEl = np.array([el[1], el[4], el[5], el[2], el[7], el[6], -1, -1])
+                elif chstr == '11001111': # 4 - 5
+                    newEl = np.array([el[0], el[3], el[7], el[1], el[2], el[6], -1, -1])
+                elif chstr == '01101111': # 5 - 6
+                    newEl = np.array([el[0], el[4], el[1], el[3], el[7], el[2], -1, -1])
+                elif chstr == '00111111': # 6 - 7
+                    newEl = np.array([el[0], el[3], el[4], el[1], el[2], el[5], -1, -1])
+                elif chstr == '10011111': # 7 - 4
+                    newEl = np.array([el[0], el[5], el[1], el[3], el[6], el[2], -1, -1])
+                elif chstr == '11011101': # 0 - 4
+                    newEl = np.array([el[1], el[2], el[3], el[5], el[6], el[7], -1, -1])
+                elif chstr == '11101110': # 1 - 5
+                    newEl = np.array([el[0], el[2], el[3], el[4], el[6], el[7], -1, -1])
+                elif chstr == '01110111': # 2 - 6
+                    newEl = np.array([el[0], el[1], el[3], el[4], el[5], el[7], -1, -1])
+                elif chstr == '10111011': # 3 - 7
+                    newEl = np.array([el[0], el[1], el[2], el[4], el[5], el[6], -1, -1])
+                else:
+                    newEl = np.copy(el)
+            elif ct == 7:
+                if chstr == '01111111':
+                    newEl = np.array([el[0], el[1], el[3], el[4], -1, -1, -1, -1])
+                elif chstr == '10111111':
+                    newEl = np.array([el[1], el[2], el[0], el[5], -1, -1, -1, -1])
+                elif chstr == '11011111':
+                    newEl = np.array([el[2], el[3], el[1], el[6], -1, -1, -1, -1])
+                elif chstr == '11101111':
+                    newEl = np.array([el[3], el[0], el[2], el[7], -1, -1, -1, -1])
+                elif chstr == '11110111':
+                    newEl = np.array([el[4], el[0], el[7], el[5], -1, -1, -1, -1])
+                elif chstr == '11111011':
+                    newEl = np.array([el[5], el[1], el[4], el[6], -1, -1, -1, -1])
+                elif chstr == '11111101':
+                    newEl = np.array([el[6], el[2], el[5], el[7], -1, -1, -1, -1])
+                elif chstr == '11111110':
+                    newEl = np.array([el[7], el[3], el[6], el[4], -1, -1, -1, -1])
+            else:
+                newEl = np.copy(el)
+        else:
+            newEl = np.copy(el)
+            
+        newEls.append(newEl)
+    
+    meshData['elements'] = np.array(newEls)
+    
+    return eliminateHangingNodes(meshData)
+    
     
 def projectMeshToSurface(meshData, surfaceData, searchRad, elSet='all', newSetName='projected'):
     meshFaces = getSurfaceFaces(meshData, elSet)
@@ -479,9 +652,9 @@ def projectMeshToSurface(meshData, surfaceData, searchRad, elSet='all', newSetNa
     meshData['nodes'] = allNds
     meshData['elements'] = allEls
     
-    badEls = checkAllJacobians(allNds, allEls)
+    badEls = checkAllJacobians(allNds, allEls, maxCond=50)
     if len(badEls) > 0:
-        print("Warning: elements with negative jacobian in surface projected mesh:")
+        print("Warning: elements with negative or ill-conditioned jacobian in surface projected mesh:")
         print(badEls)
         
         elElim = -1*np.ones(len(allEls), dtype=int)

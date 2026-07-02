@@ -128,10 +128,10 @@ class ShellRegion:
                     mData['nodes'] = meshNds
                     moved = True
                 
-                if(moved):                    
+                if(moved):
                     mData = mt.mergeDuplicateNodes(mData)
                     elLst = mData['elements']
-                    ndLst = mData['nodes']     
+                    ndLst = mData['nodes']
                     for eli in range(0,len(elLst)):
                         srted = np.sort(elLst[eli])
                         for i in range(0,3):
@@ -151,7 +151,7 @@ class ShellRegion:
                                 elLst[eli,2] = n2
                 else:
                     elLst = mData['elements']
-                    ndLst = mData['nodes'] 
+                    ndLst = mData['nodes']
 
                 XYZ = self.XYZCoord(ndLst)
                 

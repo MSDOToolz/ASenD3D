@@ -8,7 +8,7 @@ Created on Fri Oct 17 14:30:24 2025
 import numpy as np
 
 class Interaction:
-    def __init__(self, name=None, nodeSet1="", nodeSet2="", maxDistance=None, maxNeighbors=None, maxDistRatio=None, idealGasConstant=None, activeTime=None):
+    def __init__(self, name=None, nodeSet1="", nodeSet2="", maxDistance=None, maxNeighbors=None, maxDistRatio=None, idealGasConstant=None, activeTime=None, listAsStr=True):
         self.name = name
         self.data = dict()
         self.data['nodeSet1'] = nodeSet1
@@ -21,36 +21,61 @@ class Interaction:
             self.data['maxDistRatio'] = maxDistRatio
         if idealGasConstant != None:
             self.data['idealGasConstant'] = idealGasConstant
-        if activeTime == None:
-            self.data['activeTime'] = '[0., 1.0e+100]'
+        if listAsStr:
+            if activeTime == None:
+                self.data['activeTime'] = '[0., 1.0e+100]'
+            else:
+                self.data['activeTime'] = str(activeTime)
+            self.data['potField'] = {'coef': ['[0., 0.]', '[1.0e+100, 0.]'], 'exp': 1.0}
+            self.data['dampField'] = {'coef': ['[0., 0.]', '[1.0e+100, 0.]'], 'exp': 1.0}
+            self.data['thermField'] = {'condCoef': 0., 'radCoef': 0., 'refTemp': 0.}
         else:
-            self.data['activeTime'] = str(activeTime)
-        self.data['potField'] = {'coef': ['[0., 0.]', '[1.0e+100, 0.]'], 'exp': 1.0}
-        self.data['dampField'] = {'coef': ['[0., 0.]', '[1.0e+100, 0.]'], 'exp': 1.0}
-        self.data['thermField'] = {'condCoef': 0., 'radCoef': 0., 'refTemp': 0.}
+            if activeTime == None:
+                self.data['activeTime'] = [0., 1.0e+100]
+            else:
+                self.data['activeTime'] = activeTime
+            self.data['potField'] = {'coef': [[0., 0.], [1.0e+100, 0.]], 'exp': 1.0}
+            self.data['dampField'] = {'coef': [[0., 0.], [1.0e+100, 0.]], 'exp': 1.0}
+            self.data['thermField'] = {'condCoef': 0., 'radCoef': 0., 'refTemp': 0.}
         
-    def setPotentialField(self, coefficient, exponent, coefTime=None):
+    def setPotentialField(self, coefficient, exponent, coefTime=None, listAsStr=True):
         if coefTime != None:
             clst = list()
-            for i, t in enumerate(coefTime):
-                clst.append(str([t, coefficient[i]]))
+            if listAsStr:
+                for i, t in enumerate(coefTime):
+                    clst.append(str([t, coefficient[i]]))
+            else:
+                for i, t in enumerate(coefTime):
+                    clst.append([t, coefficient[i]])
             self.data['potField'] = {'coef': clst, 'exp': exponent}
         else:
             clst = list()
-            clst.append(str([0., coefficient]))
-            clst.append(str([1.0e+100, coefficient]))
+            if listAsStr:
+                clst.append(str([0., coefficient]))
+                clst.append(str([1.0e+100, coefficient]))
+            else:
+                clst.append([0., coefficient])
+                clst.append([1.0e+100, coefficient])
             self.data['potField'] = {'coef': clst, 'exp': exponent}
             
-    def setDampingField(self, coefficient, exponent, coefTime=None):
+    def setDampingField(self, coefficient, exponent, coefTime=None, listAsStr=True):
         if coefTime != None:
             clst = list()
-            for i, t in enumerate(coefTime):
-                clst.append(str([t, coefficient[i]]))
+            if listAsStr:
+                for i, t in enumerate(coefTime):
+                    clst.append(str([t, coefficient[i]]))
+            else:
+                for i, t in enumerate(coefTime):
+                    clst.append([t, coefficient[i]])
             self.data['dampField'] = {'coef': clst, 'exp': exponent}
         else:
             clst = list()
-            clst.append(str([0., coefficient]))
-            clst.append(str([1.0e+100, coefficient]))
+            if listAsStr:
+                clst.append(str([0., coefficient]))
+                clst.append(str([1.0e+100, coefficient]))
+            else:
+                clst.append([0., coefficient])
+                clst.append([1.0e+100, coefficient])
             self.data['dampField'] = {'coef': clst, 'exp': exponent}
             
     def setThermalField(self, conductionCoef=0., radiationCoef=0., referenceTemp=0.):

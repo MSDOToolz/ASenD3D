@@ -36,7 +36,7 @@ def getAverageNodeSpacing(nodes,elements):
                         ct = ct + 1
     return totDist/ct
 
-def checkAllJacobians(nodes,elements):
+def checkAllJacobians(nodes,elements,maxCond=None):
     failedEls = set()
     for ei, el in enumerate(elements):
         elCrd = getElCoord(el, nodes)
@@ -47,7 +47,7 @@ def checkAllJacobians(nodes,elements):
             elType = 'wedge6'
         else:
             elType = ''
-        passed = checkJacobian(elCrd,elType)
+        passed = checkJacobian(elCrd,elType,maxCond)
         if(not passed):
             failedEls.add(ei)
     return failedEls
@@ -62,7 +62,11 @@ def getMeshSpatialList(nodes,elements,xSpacing=0,ySpacing=0,zSpacing=0):
     minY = np.amin(nodes[:,1])
     # nto1_2 = np.power(totNds,0.5)
     # nto1_3 = np.power(totNds,0.3333333)
-    avgSp = getAverageNodeSpacing(nodes, elements)
+    
+    if xSpacing*ySpacing*zSpacing == 0:
+        avgSp = getAverageNodeSpacing(nodes, elements)
+    else:
+        avgSp = 0.33333*(xSpacing + ySpacing + zSpacing)
     if(spaceDim == 3):
         maxZ = np.amax(nodes[:,2])
         minZ = np.amin(nodes[:,2])
@@ -75,15 +79,15 @@ def getMeshSpatialList(nodes,elements,xSpacing=0,ySpacing=0,zSpacing=0):
         maxZ = maxZ + 0.01*meshDim
         minZ = minZ - 0.01*meshDim
         if(xSpacing == 0):
-            xS = 2*avgSp
+            xS = avgSp
         else:
             xS = xSpacing
         if(ySpacing == 0):
-            yS = 2*avgSp
+            yS = avgSp
         else:
             yS = ySpacing
         if(zSpacing == 0):
-            zS = 2*avgSp
+            zS = avgSp
         else:
             zS = zSpacing
         meshGL = SpatialGridList3D(minX,maxX,minY,maxY,minZ,maxZ,xS,yS,zS)
@@ -96,16 +100,40 @@ def getMeshSpatialList(nodes,elements,xSpacing=0,ySpacing=0,zSpacing=0):
         maxY = maxY + 0.01*meshDim
         minY = minY - 0.01*meshDim
         if(xSpacing == 0):
-            xS = 2*avgSp
+            xS = avgSp
         else:
             xS = xSpacing
         if(ySpacing == 0):
-            yS = 2*avgSp
+            yS = avgSp
         else:
             yS = ySpacing
         meshGL = SpatialGridList2D(minX,maxX,minY,maxY,xS,yS)
         #tol = 1.0e-6*meshDim/nto1_2
     return meshGL
+
+def getSurfaceEdges(meshData, elSet='all'):
+    els = meshData['elements']
+    if elSet == 'all':
+        eset = list(range(0, len(els)))
+    else:
+        eset = meshData['sets']['element'][elSet]
+    
+    edgeDic = dict()
+    for ei in eset:
+        edStr, globEd = getSortedEdgeStrings(els[ei])
+        for ei, ek in enumerate(edStr):
+            if ek in edgeDic:
+                edgeDic[ek] = None
+            else:
+                edgeDic[ek] = globEd[ei]
+                
+    edOut = dict()
+    for ek in edgeDic:
+        edDat = edgeDic[ek]
+        if edDat != None:
+            edOut[ek] = edDat
+    
+    return edOut
 
 def getSurfaceFaces(meshData, elSet='all'):
     els = meshData['elements']

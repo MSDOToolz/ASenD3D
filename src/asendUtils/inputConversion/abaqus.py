@@ -9,13 +9,16 @@ import yaml
 from yaml import CLoader as Cld
 import numpy as np
 
-def asendToAbaqus(inFile, outFile):
+def asendFileToAbaqus(inFile, outFile):
     inStr = open(inFile, 'r')
     modDat = yaml.load(inStr, Loader=Cld)
     inStr.close()
     
+    asendModelToAbaqus(modDat, outFile)
+    
+
+def asendModelToAbaqus(modDat, outFile):
     outStr = open(outFile, 'w')
-    outStr.write(f'** Abaqus conversion of ASenD3D model input {inFile}\n**\n')
     
     hasSolid = False
     solidNds = set()

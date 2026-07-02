@@ -97,6 +97,19 @@ def getElBasis(elType,sVec):
     
     return nOut
 
+def getElementEdges(elType):
+    edges = list()
+    if(elType == 'shell3'):
+        edges = [[0,1],
+                 [1,2],
+                 [2,0]]
+    elif(elType == 'shell4'):
+        edges = [[0,1],
+                 [1,2],
+                 [2,3],
+                 [3,0]]
+    return edges
+
 def getElementFaces(elType):
     if(elType == 'tet4'):
         faces = [[0,2,1],
@@ -124,6 +137,21 @@ def getElementFaces(elType):
                  [0,3,2,1]]
     return faces
 
+def getSortedEdgeStrings(elNds):
+    if elNds[3] == -1:
+        edges = getElementEdges('shell3')
+    else:
+        edges = getElementEdges('shell4')
+    edStr = list()
+    globEd = list()
+    for ed in edges:
+        glob = list()
+        for nd in ed:
+            glob.append(elNds[nd])
+        globEd.append(glob)
+        edStr.append(str(np.sort(glob)))
+    return edStr, globEd
+
 def getSortedFaceStrings(elNds):
     eLen = len(elNds)
     if(eLen == 8):
@@ -149,7 +177,7 @@ def getSortedFaceStrings(elNds):
         fcStr.append(str(srted))
     return fcStr, globFc
 
-def checkJacobian(elCrd,elType):
+def checkJacobian(elCrd,elType,maxCond=None):
     sPts = []
     if(elType == "brick8"):
         sPts = [[-1.0,-1.0,-1.0],
@@ -173,6 +201,10 @@ def checkJacobian(elCrd,elType):
         det = np.linalg.det(jac)
         if(det <= 0.0):
             return False
+        if maxCond != None:
+            cond = np.linalg.cond(jac)
+            if cond > maxCond:
+                return False
     return True
 
 def getElCoord(ndLabs,ndList):

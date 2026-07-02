@@ -14,23 +14,31 @@ from asendUtils.meshing.MeshTools.extract import *
 def addNodeSet(meshData,newSet):
     try:
         for ns in newSet:
-            meshData['sets']['node'][ns] = newSet[ns]
+            meshData['sets']['node'][ns].extend(newSet[ns])
     except:
         try:
-            meshData['sets']['node'] = newSet
+            for ns in newSet:
+                meshData['sets']['node'][ns] = newSet[ns]
         except:
-            meshData['sets'] = {'node': newSet}
+            try:
+                meshData['sets']['node'] = newSet
+            except:
+                meshData['sets'] = {'node': newSet}
     return meshData
 
 def addElementSet(meshData,newSet):
     try:
         for es in newSet:
-            meshData['sets']['element'][es] = newSet[es]
+            meshData['sets']['element'][es].extend(newSet[es])
     except:
         try:
-            meshData['sets']['element'] = newSet
+            for es in newSet:
+                meshData['sets']['element'][es] = newSet[es]
         except:
-            meshData['sets'] = {'element': newSet}
+            try:
+                meshData['sets']['element'] = newSet
+            except:
+                meshData['sets'] = {'element': newSet}
     return meshData
 
 def getNearestNodes(meshData,pt,numNds,setName):
@@ -285,7 +293,7 @@ def getElementSetNearLine(meshData,pt,dirVec,rad,setName):
 def getElementSetNearPlane(meshData,pt,normDir,dist,setName):
     nodes = meshData['nodes']
     mag = np.linalg.norm(normDir)
-    unitNorm = (1.0/mag)*normDir
+    unitNorm = (1.0/mag)*np.array(normDir)
     ptAr = np.array(pt)
     labs = list()
     for i, el in enumerate(meshData['elements']):
