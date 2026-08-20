@@ -331,7 +331,7 @@ class ResultsProcessor:
                         
         return fcVal
     
-    def plotElementProperty(self,prop='section',elementSet='all',massElOptns=None):
+    def plotElementProperty(self,prop='section',elementSet='all',nodeSet='all',massElOptns=None):
         elSet = self.getPlotNdElSet(elementSet)
         ndCrd = self.buildNodalPlotCrd(elSet,massElOptns=massElOptns)
         verts = self.buildElementVertexList(elSet,massElOptns=massElOptns)
@@ -350,10 +350,14 @@ class ResultsProcessor:
                     elVal[eli] = si
         
         fcVals = self.getFaceValues(elSet,elVal)
+        if nodeSet == 'all':
+            ndCrd, verts, ndVals = removeUnusedNodes(ndCrd, verts)
+        else:
+            ndCrd, verts, fcVals = reduceToNodeSet(ndCrd, verts, set(self.modelData['sets']['node'][nodeSet]), fcVals=fcVals)
         cbTitle = prop
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell',title=cbTitle)
 
-    def plotNodeResults(self,field,component=1,elementSet='all',deformed=False,defScaleFact=1.0,massElOptns=None):
+    def plotNodeResults(self,field,component=1,elementSet='all',nodeSet='all',deformed=False,defScaleFact=1.0,massElOptns=None):
         if massElOptns == None:
             massElOptns = {'showAsDots': False}
         if 'showAsDots' not in massElOptns:
@@ -402,10 +406,14 @@ class ResultsProcessor:
                                     values.append(v)
         
         verts = self.buildElementVertexList(elSet,massElOptns)
+        if nodeSet == 'all':
+            ndCrd, verts, values = removeUnusedNodes(ndCrd, verts, ndVals=values)
+        else:
+            ndCrd, verts, values = reduceToNodeSet(ndCrd, verts, set(self.modelData['sets']['node'][nodeSet]), ndVals=values)
         cbTitle = field + str(component)
         plotMeshSolution(ndCrd,values,verts,valMode='vertex',title=cbTitle)
         
-    def plotElementResults(self,field,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,massElOptns=None):
+    def plotElementResults(self,field,component=1,elementSet='all',nodeSet='all',layer=0,deformed=False,defScaleFact=1.0,massElOptns=None):
         if massElOptns == None:
             massElOptns = {'showAsDots': False}
         if 'showAsDots' not in massElOptns:
@@ -450,6 +458,10 @@ class ResultsProcessor:
         
         fcVals = self.getFaceValues(elSet,elValues,massElOptns)
         verts = self.buildElementVertexList(elSet,massElOptns)
+        if nodeSet == 'all':
+            ndCrd, verts, ndVals = removeUnusedNodes(ndCrd, verts)
+        else:
+            ndCrd, verts, fcVals = reduceToNodeSet(ndCrd, verts, set(self.modelData['sets']['node'][nodeSet]), fcVals=fcVals)
         cbTitle = field + str(component)
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell',title=cbTitle)
         
@@ -459,7 +471,7 @@ class ResultsProcessor:
         self.plotNodeResults('displacement',component='mag',elementSet=elementSet,deformed=True,defScaleFact=defScaleFact,massElOptns=massElOptns)
         self.nodeData = nodeCopy
         
-    def animateNodeResults(self,fileName,field,timeSteps,component=1,elementSet='all',deformed=False,defScaleFact=1.0,massElOptns=None):
+    def animateNodeResults(self,fileName,field,timeSteps,component=1,elementSet='all',nodeSet='all',deformed=False,defScaleFact=1.0,massElOptns=None):
         if massElOptns == None:
             massElOptns = {'showAsDots': False}
         if 'showAsDots' not in massElOptns:
@@ -516,7 +528,11 @@ class ResultsProcessor:
                                     v = ndValues[el[1]]
                                     for i in range(0,8):
                                         ndValues.append(v)
-                
+            
+            if nodeSet == 'all':
+                ndCrd, redVerts, ndValues = removeUnusedNodes(ndCrd, verts, ndVals=ndValues)
+            else:
+                ndCrd, redVerts, ndValues = reduceToNodeSet(ndCrd, verts, set(self.modelData['sets']['node'][nodeSet]), ndVals=ndValues)
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
             if(firstStep):
@@ -524,9 +540,9 @@ class ResultsProcessor:
                 allNdValues.append(ndValues)
                 firstStep = False
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allNdValues,verts,'vertex',title=cbTitle)
+        animateMeshSolution(allNdCrd,allNdValues,redVerts,'vertex',title=cbTitle)
         
-    def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,massElOptns=None):
+    def animateElementResults(self,fileName,field,timeSteps,component=1,elementSet='all',nodeSet='all',layer=0,deformed=False,defScaleFact=1.0,nodeResFile=None,massElOptns=None):
         if massElOptns == None:
             massElOptns = {'showAsDots': False}
         if 'showAsDots' not in massElOptns:
@@ -584,12 +600,16 @@ class ResultsProcessor:
                 elValues[ei] = df2.loc[r,fldLab]
             
             fcVals = self.getFaceValues(elSet,elValues,massElOptns)
+            if nodeSet == 'all':
+                ndCrd, redVerts, ndVals = removeUnusedNodes(ndCrd, verts)
+            else:
+                ndCrd, redVerts, fcVals = reduceToNodeSet(ndCrd, verts, set(self.modelData['sets']['node'][nodeSet]), fcVals=fcVals)
             allNdCrd.append(ndCrd)
             allFcValues.append(fcVals)
         cbTitle = field + str(component)
-        animateMeshSolution(allNdCrd,allFcValues,verts,'cell',title=cbTitle)
+        animateMeshSolution(allNdCrd,allFcValues,redVerts,'cell',title=cbTitle)
         
-    def animateModalSolution(self,elementSet='all',defScaleFact=1.0,massElOptns=None):
+    def animateModalSolution(self,elementSet='all',nodeSet='all',defScaleFact=1.0,massElOptns=None):
         if massElOptns == None:
             massElOptns = {'showAsDots': False}
         if 'showAsDots' not in massElOptns:
@@ -627,10 +647,14 @@ class ResultsProcessor:
                                 for i in range(0,8):
                                     ndValues.append(umag)    
             
+            if nodeSet == 'all':
+                ndCrd, redVerts, ndValues = removeUnusedNodes(ndCrd, verts, ndValues)
+            else:
+                ndCrd, redVerts, ndValues = reduceToNodeSet(ndCrd, verts, set(self.modelData['sets']['node'][nodeSet]), ndVals=ndValues)
             allNdCrd.append(ndCrd)
             allNdValues.append(ndValues)
         cbTitle = 'displacement'
-        animateMeshSolution(allNdCrd,allNdValues,verts,title=cbTitle)
+        animateMeshSolution(allNdCrd,allNdValues,redVerts,title=cbTitle)
         self.nodeData = nodeCopy
         
     def extractNodeHistory(self,fileName,field,timeSteps,nodeSet):
@@ -769,7 +793,7 @@ class ResultsProcessor:
                 ytitle = yTitle
             plotTimeHistory(series,timePts,xTitle=xTitle,yTitle=ytitle)
             
-    def plotElementSensitivity(self,elementSet='all',dVarSet='all',magnitude=False):
+    def plotElementSensitivity(self,elementSet='all',nodeSet='all',dVarSet='all',magnitude=False):
         ndSet, elSet = self.getPlotNdElSet(elementSet)
         if(dVarSet == 'all'):
             lenD = len(self.dVarData['designVariables'])
@@ -809,6 +833,10 @@ class ResultsProcessor:
         ndCrd = self.buildNodalPlotCrd(ndSet)
         fcVals = self.getFaceValues(elSet,elValues)
         verts = self.buildElementVertexList(elSet)
+        if nodeSet == 'all':
+            ndCrd, verts, ndVals = removeUnusedNodes(ndCrd, verts)
+        else:
+            ndCrd, verts, fcVals = reduceToNodeSet(ndCrd, verts, set(self.modelData['sets']['node'][nodeSet]), fcVals=fcVals)
         plotMeshSolution(ndCrd,fcVals,verts,valMode='cell')
         
     def extractModalAmplitudes(self,nodeResFile,modalResFile,timeSteps,nodeSet,modeList):

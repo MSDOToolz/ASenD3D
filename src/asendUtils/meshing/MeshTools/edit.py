@@ -87,6 +87,148 @@ def convertToQuadratic(meshData):
     newData['elements'] = newEls
     return mergeDuplicateNodes(newData)
 
+def refineMesh(meshData, xSpacing=0, ySpacing=0, zSpacing=0):
+    nodes = meshData['nodes']
+    elements = meshData['elements']
+    numEls = len(elements)
+    elNds = len(elements[0])
+    newNds = list()
+    newEls = list()
+    ndCt = 0
+    if elNds == 8:
+        for el in elements:
+            n0 = el[0]
+            n1 = el[1]
+            n2 = el[2]
+            n3 = el[3]
+            if el[4] == -1:
+                for i in range(0, 4):
+                    newNds.append(nodes[el[i]])
+                newNds.append(0.5*(nodes[n0] + nodes[n1]))
+                newNds.append(0.5*(nodes[n1] + nodes[n2]))
+                newNds.append(0.5*(nodes[n2] + nodes[n0]))
+                newNds.append(0.5*(nodes[n0] + nodes[n3]))
+                newNds.append(0.5*(nodes[n1] + nodes[n3]))
+                newNds.append(0.5*(nodes[n2] + nodes[n3]))
+                
+                j = -ndCt - 1
+                newEls.append(np.array([0,4,6,7,j,j,j,j]) + ndCt)
+                newEls.append(np.array([1,5,4,8,j,j,j,j]) + ndCt)
+                newEls.append(np.array([2,6,5,9,j,j,j,j]) + ndCt)
+                newEls.append(np.array([3,7,9,8,j,j,j,j]) + ndCt)
+                newEls.append(np.array([4,5,6,8,j,j,j,j]) + ndCt)
+                newEls.append(np.array([4,7,8,6,j,j,j,j]) + ndCt)
+                newEls.append(np.array([5,8,9,6,j,j,j,j]) + ndCt)
+                newEls.append(np.array([6,9,7,8,j,j,j,j]) + ndCt)
+            elif el[6] == -1:
+                n4 = el[4]
+                n5 = el[5]
+                for i in range(0, 6):
+                    newNds.append(nodes[el[i]])
+                newNds.append(0.5*(nodes[n0] + nodes[n1]))
+                newNds.append(0.5*(nodes[n1] + nodes[n2]))
+                newNds.append(0.5*(nodes[n2] + nodes[n0]))
+                
+                newNds.append(0.5*(nodes[n3] + nodes[n4]))
+                newNds.append(0.5*(nodes[n4] + nodes[n5]))
+                newNds.append(0.5*(nodes[n5] + nodes[n3]))
+                
+                newNds.append(0.5*(nodes[n0] + nodes[n3]))
+                newNds.append(0.5*(nodes[n1] + nodes[n4]))
+                newNds.append(0.5*(nodes[n2] + nodes[n5]))
+                
+                newNds.append(0.25*(nodes[n0] + nodes[n1] + nodes[n3] + nodes[n4]))
+                newNds.append(0.25*(nodes[n1] + nodes[n2] + nodes[n4] + nodes[n5]))
+                newNds.append(0.25*(nodes[n0] + nodes[n2] + nodes[n3] + nodes[n5]))
+                
+                j = -ndCt - 1 
+                newEls.append(np.array([0,6,8,12,15,17,j,j]) + ndCt)
+                newEls.append(np.array([1,7,6,13,16,15,j,j]) + ndCt)
+                newEls.append(np.array([2,8,7,14,17,16,j,j]) + ndCt)
+                newEls.append(np.array([6,7,8,15,16,17,j,j]) + ndCt)
+                newEls.append(np.array([12,15,17,3,9,11,j,j]) + ndCt)
+                newEls.append(np.array([13,16,15,4,10,9,j,j]) + ndCt)
+                newEls.append(np.array([14,17,16,5,11,10,j,j]) + ndCt)
+                newEls.append(np.array([15,16,17,9,10,11,j,j]) + ndCt)
+            else:
+                n4 = el[4]
+                n5 = el[5]
+                n6 = el[6]
+                n7 = el[7]
+                for i in range(0, 8):
+                    newNds.append(nodes[el[i]])
+                    
+                newNds.append(0.5*(nodes[n0] + nodes[n1]))
+                newNds.append(0.5*(nodes[n1] + nodes[n2]))
+                newNds.append(0.5*(nodes[n2] + nodes[n3]))
+                newNds.append(0.5*(nodes[n3] + nodes[n0]))
+                
+                newNds.append(0.5*(nodes[n4] + nodes[n5]))
+                newNds.append(0.5*(nodes[n5] + nodes[n6]))
+                newNds.append(0.5*(nodes[n6] + nodes[n7]))
+                newNds.append(0.5*(nodes[n7] + nodes[n4]))
+                
+                newNds.append(0.5*(nodes[n0] + nodes[n4]))
+                newNds.append(0.5*(nodes[n1] + nodes[n5]))
+                newNds.append(0.5*(nodes[n2] + nodes[n6]))
+                newNds.append(0.5*(nodes[n3] + nodes[n7]))
+                
+                newNds.append(0.25*(nodes[n0] + nodes[n1] + nodes[n5] + nodes[n4]))
+                newNds.append(0.25*(nodes[n1] + nodes[n2] + nodes[n6] + nodes[n5]))
+                newNds.append(0.25*(nodes[n2] + nodes[n3] + nodes[n7] + nodes[n6]))
+                newNds.append(0.25*(nodes[n0] + nodes[n4] + nodes[n7] + nodes[n3]))
+                newNds.append(0.25*(nodes[n0] + nodes[n1] + nodes[n2] + nodes[n3]))
+                newNds.append(0.25*(nodes[n4] + nodes[n5] + nodes[n6] + nodes[n7]))
+                
+                newNds.append(0.125*(nodes[n0] + nodes[n1] + nodes[n2] + nodes[n3] + nodes[n4] + nodes[n5] + nodes[n6] + nodes[n7]))
+                
+                newEls.append(np.array([0,8,24,11,16,20,26,23]) + ndCt)
+                newEls.append(np.array([8,1,9,24,20,17,21,26]) + ndCt)
+                newEls.append(np.array([24,9,2,10,26,21,18,22]) + ndCt)
+                newEls.append(np.array([11,24,10,3,23,26,22,19]) + ndCt)
+                newEls.append(np.array([16,20,26,23,4,12,25,15]) + ndCt)
+                newEls.append(np.array([20,17,21,26,12,5,13,25]) + ndCt)
+                newEls.append(np.array([26,21,18,22,25,13,6,14]) + ndCt)
+                newEls.append(np.array([23,26,22,19,15,25,14,7]) + ndCt)
+            
+            ndCt = len(newNds)    
+    elif elNds == 4:
+        for el in elements:
+            n0 = el[0]
+            n1 = el[1]
+            n2 = el[2]
+            if el[3] == -1:
+                for i in range(0, 3):
+                    newNds.append(nodes[el[i]])
+                newNds.append(0.5*(nodes[n0] + nodes[n1]))
+                newNds.append(0.5*(nodes[n1] + nodes[n2]))
+                newNds.append(0.5*(nodes[n2] + nodes[n0]))
+                
+                j = -ndCt - 1
+                newEls.append(np.array([0,3,5,j]) + ndCt)
+                newEls.append(np.array([3,1,4,j]) + ndCt)
+                newEls.append(np.array([3,4,5,j]) + ndCt)
+                newEls.append(np.array([2,5,4,j]) + ndCt)
+            else:
+                n3 = el[3]
+                for i in range(0, 4):
+                    newNds.append(nodes[el[i]])
+                newNds.append(0.5*(nodes[n0] + nodes[n1]))
+                newNds.append(0.5*(nodes[n1] + nodes[n2]))
+                newNds.append(0.5*(nodes[n2] + nodes[n3]))
+                newNds.append(0.5*(nodes[n3] + nodes[n0]))
+                newNds.append(0.25*(nodes[n0] + nodes[n1] + nodes[n2] + nodes[n3]))
+                
+                newEls.append(np.array([0,4,8,7]) + ndCt)
+                newEls.append(np.array([1,5,8,4]) + ndCt)
+                newEls.append(np.array([3,7,8,6]) + ndCt)
+                newEls.append(np.array([2,6,8,5]) + ndCt)
+            ndCt = len(newNds)
+            
+    newMd = {'nodes': np.array(newNds), 'elements': np.array(newEls)}
+    
+    return mergeDuplicateNodes(newMd, xSpacing=xSpacing, ySpacing=ySpacing, zSpacing=zSpacing)
+
 def addFreeNodes(meshData,ndList,setName):
     stLen = len(meshData['nodes'])
     newLen = len(ndList)

@@ -17,6 +17,55 @@ def plotNodes(meshData):
     
     fig.show()
     
+def removeUnusedNodes(ndCoord,verts,ndVals=None):
+    v1 = verts['v1']
+    v2 = verts['v2']
+    v3 = verts['v3']
+    
+    ndSet = set()
+    for i, v in enumerate(v1):
+        ndSet.add(v)
+        ndSet.add(v2[i])
+        ndSet.add(v3[i])
+        
+    return reduceToNodeSet(ndCoord, verts, ndSet, ndVals=ndVals)
+
+def reduceToNodeSet(ndCoord, verts, ndSet, ndVals=None, fcVals=None):
+    xLst = ndCoord['xLst']
+    yLst = ndCoord['yLst']
+    zLst = ndCoord['zLst']
+    v1 = verts['v1']
+    v2 = verts['v2']
+    v3 = verts['v3']
+    newX = list()
+    newY = list()
+    newZ = list()
+    newVals = list()
+    ndNewLab = -np.ones(len(xLst), dtype=int)
+    j = 0
+    for i, x in enumerate(xLst):
+        if i in ndSet:
+            newX.append(x)
+            newY.append(yLst[i])
+            newZ.append(zLst[i])
+            ndNewLab[i] = j
+            j += 1
+            if ndVals != None:
+                newVals.append(ndVals[i])
+            
+    newV1 = list()
+    newV2 = list()
+    newV3 = list()
+    for i in range(0, len(v1)):
+        if v1[i] in ndSet and v2[i] in ndSet and v3[i] in ndSet:
+            newV1.append(ndNewLab[v1[i]])
+            newV2.append(ndNewLab[v2[i]])
+            newV3.append(ndNewLab[v3[i]])
+            if fcVals != None:
+                newVals.append(fcVals[i])
+            
+    return {'xLst': newX, 'yLst': newY, 'zLst': newZ}, {'v1': newV1, 'v2': newV2, 'v3': newV3}, newVals
+            
 
 def plotShellMesh(meshData):
     xLst = meshData['nodes'][:,0]

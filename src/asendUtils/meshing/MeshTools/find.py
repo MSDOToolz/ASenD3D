@@ -41,6 +41,11 @@ def addElementSet(meshData,newSet):
                 meshData['sets'] = {'element': newSet}
     return meshData
 
+def getAllNodesSet(meshData,setName):
+    numNds = len(meshData['nodes'])
+    newSet = {setName: list(range(0, numNds))}
+    return addNodeSet(meshData, newSet)
+
 def getNearestNodes(meshData,pt,numNds,setName):
     ptAr = np.array(pt)
     nearLst = list()
@@ -229,6 +234,11 @@ def getPeriodicSets(meshData,xDim,yDim,zDim,setNames=None):
     meshData = addNodeSet(meshData,{sN[5]: zMaxSet})
     return meshData
 
+def getAllElementSet(meshData,setName):
+    numEls = len(meshData['elements'])
+    newSet = {setName: list(range(0, numEls))}
+    return addElementSet(meshData, newSet)
+
 def getNearestElements(meshData,pt,numEls,setName):
     nodes = meshData['nodes']
     ptAr = np.array(pt)
@@ -374,7 +384,7 @@ def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
     nds = meshData['nodes']
     els = meshData['elements']
     mag = np.linalg.norm(normDir)
-    unitNorm = (1.0/mag)*normDir
+    unitNorm = (1.0/mag)*np.array(normDir)
     cosTol = np.cos(normTol*np.pi/180.0)
     faceDic = getSurfaceFaces(meshData,elSet)
     surfSet = set()
@@ -394,7 +404,7 @@ def getSurfaceNodes(meshData,elSet,newSetName,normDir,normTol=5.0):
             dp = np.dot(fcNrm,unitNorm)
             if(dp >= cosTol):
                 for nd in glob:
-                    surfSet.add(nd)
+                    surfSet.add(int(nd))
     newSet = {newSetName: list(surfSet)}
     return addNodeSet(meshData,newSet)
 
@@ -532,6 +542,14 @@ def getNodeSetIntersection(meshData,setList,newSetName):
     meshData['sets']['node'][newSetName] = list(intsct)
     return meshData
 
+def getInverseNodeSet(meshData,setName,newSetName):
+    ns = set(meshData['sets']['node'][setName])
+    newSet = list()
+    for i in range(0, len(meshData['nodes'])):
+        if i not in ns:
+            newSet.append(i)
+    return addNodeSet(meshData, {newSetName: newSet})
+
 def subtractNodeSet(meshData,set1,set2,newSetName):
     labs = list()
     s1 = meshData['sets']['node'][set1]
@@ -561,6 +579,14 @@ def getElementSetIntersection(meshData,setList,newSetName):
             intsct = intsct.intersection(thisSet)
     meshData['sets']['element'][newSetName] = list(intsct)
     return meshData
+
+def getInverseElementSet(meshData,setName,newSetName):
+    ns = set(meshData['sets']['node'][setName])
+    newSet = list()
+    for i in range(0, len(meshData['elements'])):
+        if i not in ns:
+            newSet.append(i)
+    return addElementSet(meshData, {newSetName: newSet})
 
 def subtractElementSet(meshData,set1,set2,newSetName):
     labs = list()
