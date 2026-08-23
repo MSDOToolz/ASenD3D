@@ -23,6 +23,7 @@ if(not os.path.exists('buckling/results')):
 myMod = Model()
 ld = 20.56176/2
 myMod.addSurfacePressure('all',ld,[1.0,0.0,0.0])
+myMod.addSurfacePressure('all',N1=1.0,N2=0.0,N3=0.0,P=ld)
 
 ## Write Load file
 myMod.writeModelInput('buckling/loads.yaml')
@@ -35,7 +36,7 @@ myJob.readLoads('buckling/loads.yaml')
 myJob.solve()
 myJob.modalAnalysis()
 
-myJob.writeModalResults('buckling/results/bucklingResults.yaml')
+myJob.writeModalResults('buckling/results/bucklingResults.csv')
 
 myJob.writeJobInput('buckling/job.yaml')
 

@@ -42,9 +42,9 @@ myJob.readObjectiveInput('centrifugalLoading/objective.yaml')
 myJob.solve()
 myJob.calcObjGradient()
 
-myJob.writeNodeResults('centrifugalLoading/results/nodeResults.yaml',['displacement'])
-myJob.writeElementResults('centrifugalLoading/results/elementResults.yaml',['strain','stress'])
-myJob.writeObjective('centrifugalLoading/results/objectiveResults.yaml')
+myJob.writeNodeResults('centrifugalLoading/results/nodeResults.csv',['displacement'])
+myJob.writeElementResults('centrifugalLoading/results/elementResults.csv',['strain','stress'])
+myJob.writeObjective('centrifugalLoading/results/objectiveResults.csv')
 
 myJob.writeJobInput('centrifugalLoading/job.yaml')
 

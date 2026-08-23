@@ -59,7 +59,7 @@ class ShellRegion:
                 totNds = xNodes*yNodes
                 seg = Segment2D('line',[[-1.0,-1.0],[1.0,-1.0]],(xNodes-1))
                 bnd = seg.getNodesEdges()
-                mesh = Mesh2D(bnd['nodes'],bnd['edges'])
+                mesh = Mesh2D(bnd['nodes'],bnd['elements'])
                 mData = mesh.createSweptMesh('inDirection',(yNodes-1),sweepDistance=2.0,axis=[0.0,1.0])
 
                 moved = False
@@ -128,10 +128,10 @@ class ShellRegion:
                     mData['nodes'] = meshNds
                     moved = True
                 
-                if(moved):                    
+                if(moved):
                     mData = mt.mergeDuplicateNodes(mData)
                     elLst = mData['elements']
-                    ndLst = mData['nodes']     
+                    ndLst = mData['nodes']
                     for eli in range(0,len(elLst)):
                         srted = np.sort(elLst[eli])
                         for i in range(0,3):
@@ -151,7 +151,7 @@ class ShellRegion:
                                 elLst[eli,2] = n2
                 else:
                     elLst = mData['elements']
-                    ndLst = mData['nodes'] 
+                    ndLst = mData['nodes']
 
                 XYZ = self.XYZCoord(ndLst)
                 
@@ -291,7 +291,7 @@ class ShellRegion:
                 Nmat[i,4] = 4*eta[i,0]*eta[i,1]
                 Nmat[i,5] = - 4*eta[i,1]*(eta[i,0] + eta[i,1] - 1)
             XYZ = np.matmul(Nmat,self.keyPts)
-        elif 'tri3' == self.type:
+        elif 'tri3' == self.regType:
             r2 = 1 / 3
             r3 = 2 / 3
             coef = np.array([- 4.5,4.5,4.5,13.5,- 13.5,13.5,13.5,- 13.5,13.5,- 27])
@@ -334,14 +334,14 @@ class ShellRegion:
                     (vec[2]*vec2[0] - vec[0]*vec2[2]),
                     (vec[0]*vec2[1] - vec[1]*vec2[0])
                     ])
-                mag = np.sqrt(vec3*vec3.T)
+                mag = np.linalg.norm(vec3)
                 a3 = (1/mag)*vec3
                 a2 = np.array([
                     (a3[1]*a1[2] - a3[2]*a1[1]),
                     (a3[2]*a1[0] - a3[0]*a1[2]),
                     (a3[0]*a1[1] - a3[1]*a1[0])
                     ])
-                alpha = np.array([[a1],[a2],[a3]])
+                alpha = np.array([a1,a2,a3])
                 XYZ[ndi] = np.matmul(XYZLoc,alpha) + self.keyPts[0,:]
                 ndi = ndi + 1
         

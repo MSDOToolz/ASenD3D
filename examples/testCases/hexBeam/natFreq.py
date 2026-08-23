@@ -25,7 +25,7 @@ myJob.readModelInput('hexBeam.yaml')
 myJob.solve()
 myJob.modalAnalysis(analysisType='freq')
 
-myJob.writeModalResults('natFreq/results/natFreqResults.yaml')
+myJob.writeModalResults('natFreq/results/natFreqResults.csv')
 
 myJob.writeJobInput('natFreq/job.yaml')
 

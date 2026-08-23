@@ -75,7 +75,7 @@ myJob.solve(dynamic=True,timeStep=0.00573573,simPeriod=0.115,saveSolnHist=True,
 
 
 tSteps = list(range(0,20))
-myJob.writeNodeResults('dynamicElastic/results/nodeResults.yaml',['displacement'],timeSteps=tSteps)
+myJob.writeNodeResults('dynamicElastic/results/nodeResults.csv',['displacement'],timeSteps=tSteps)
 
 myJob.writeJobInput('dynamicElastic/dynamicElasticJob.yaml')
 

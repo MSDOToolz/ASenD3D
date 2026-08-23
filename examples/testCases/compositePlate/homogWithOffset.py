@@ -87,7 +87,7 @@ myMod.addConstraint(blkConst)
 
 ## Define Loads
 
-myMod.addNodalForce('xMax',F=[1.0,0.0,0.0],M=[0.0,0.0,0.0])
+myMod.addNodalForce('xMax',F1=1.0)
 
 ## Write Input file
 
@@ -96,6 +96,6 @@ myMod.writeModelInput('homogWithOffset/model.yaml')
 myJob = ASenDJob()
 myJob.readModelInput('homogWithOffset/model.yaml')
 myJob.solve()
-myJob.writeNodeResults('homogWithOffset/results/nodeResults.yaml',['displacement'])
+myJob.writeNodeResults('homogWithOffset/results/nodeResults.csv',['displacement'])
 
 myJob.writeJobInput('homogWithOffset/job.yaml')

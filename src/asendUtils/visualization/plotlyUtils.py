@@ -17,6 +17,55 @@ def plotNodes(meshData):
     
     fig.show()
     
+def removeUnusedNodes(ndCoord,verts,ndVals=None):
+    v1 = verts['v1']
+    v2 = verts['v2']
+    v3 = verts['v3']
+    
+    ndSet = set()
+    for i, v in enumerate(v1):
+        ndSet.add(v)
+        ndSet.add(v2[i])
+        ndSet.add(v3[i])
+        
+    return reduceToNodeSet(ndCoord, verts, ndSet, ndVals=ndVals)
+
+def reduceToNodeSet(ndCoord, verts, ndSet, ndVals=None, fcVals=None):
+    xLst = ndCoord['xLst']
+    yLst = ndCoord['yLst']
+    zLst = ndCoord['zLst']
+    v1 = verts['v1']
+    v2 = verts['v2']
+    v3 = verts['v3']
+    newX = list()
+    newY = list()
+    newZ = list()
+    newVals = list()
+    ndNewLab = -np.ones(len(xLst), dtype=int)
+    j = 0
+    for i, x in enumerate(xLst):
+        if i in ndSet:
+            newX.append(x)
+            newY.append(yLst[i])
+            newZ.append(zLst[i])
+            ndNewLab[i] = j
+            j += 1
+            if ndVals != None:
+                newVals.append(ndVals[i])
+            
+    newV1 = list()
+    newV2 = list()
+    newV3 = list()
+    for i in range(0, len(v1)):
+        if v1[i] in ndSet and v2[i] in ndSet and v3[i] in ndSet:
+            newV1.append(ndNewLab[v1[i]])
+            newV2.append(ndNewLab[v2[i]])
+            newV3.append(ndNewLab[v3[i]])
+            if fcVals != None:
+                newVals.append(fcVals[i])
+            
+    return {'xLst': newX, 'yLst': newY, 'zLst': newZ}, {'v1': newV1, 'v2': newV2, 'v3': newV3}, newVals
+            
 
 def plotShellMesh(meshData):
     xLst = meshData['nodes'][:,0]
@@ -234,8 +283,46 @@ def plotSolidMesh(meshData):
     fig.show()
     
 
-def plotMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',title=''):
-    ## valMode = 'vertex' or 'cell'
+def plotMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',xRange=None,yRange=None,zRange=None,title=''):
+    if xRange == None:
+        xMax = np.max(nodeCrd['xLst'])
+        xMin = np.min(nodeCrd['xLst'])
+    else:
+        xMax = xRange[1]
+        xMin = xRange[0]
+        
+    if yRange == None:
+        yMax = np.max(nodeCrd['yLst'])
+        yMin = np.min(nodeCrd['yLst'])
+    else:
+        yMax = yRange[1]
+        yMin = yRange[0]
+    
+    if zRange == None:
+        zMax = np.max(nodeCrd['zLst'])
+        zMin = np.min(nodeCrd['zLst'])
+    else:
+        zMax = zRange[1]
+        zMin = zRange[0]
+        
+    xLen = xMax - xMin
+    xMid = 0.5*(xMax+xMin)
+    yLen = yMax - yMin
+    yMid = 0.5*(yMax+yMin)
+    zLen = zMax - zMin
+    zMid = 0.5*(zMax+zMin)
+    
+    maxLen = np.max([xLen,yLen,zLen])
+    hL = 0.75*maxLen
+    
+    xAug = [xMid - hL, xMid + hL, xMid, xMid, xMid, xMid]
+    yAug = [yMid, yMid, yMid - hL, yMid + hL, yMid, yMid]
+    zAug = [zMid, zMid, zMid, zMid, zMid - hL, zMid + hL]
+    
+    nodeCrd['xLst'].extend(xAug)
+    nodeCrd['yLst'].extend(yAug)
+    nodeCrd['zLst'].extend(zAug)
+    
     fig = go.Figure(data=[
         go.Mesh3d(
             x=nodeCrd['xLst'],
@@ -253,33 +340,77 @@ def plotMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',title=''):
         )
     ])
     
-    xMax = np.max(nodeCrd['xLst'])
-    xMin = np.min(nodeCrd['xLst'])
-    xLen = xMax - xMin
-    xMid = 0.5*(xMax+xMin)
-    yMax = np.max(nodeCrd['yLst'])
-    yMin = np.min(nodeCrd['yLst'])
-    yLen = yMax - yMin
-    yMid = 0.5*(yMax+yMin)
-    zMax = np.max(nodeCrd['zLst'])
-    zMin = np.min(nodeCrd['zLst'])
-    zLen = zMax - zMin
-    zMid = 0.5*(zMax+zMin)
-    
-    maxLen = np.max([xLen,yLen,zLen])
-    hL = 0.75*maxLen
-    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)], 'showbackground': False},
-           'yaxis': {'range': [(yMid-hL), (yMid+hL)], 'showbackground': False},
-           'zaxis': {'range': [(zMid-hL), (zMid+hL)], 'showbackground': False}}
+    scn = {'xaxis': {'showbackground': False},
+           'yaxis': {'showbackground': False},
+           'zaxis': {'showbackground': False}}
     fig.update_layout(scene=scn)
 
     fig.show()
     return
 
-def animateMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',frameDuration=1000,title=''):
+def animateMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',xRange=None,yRange=None,zRange=None,title=''):
+    if xRange == None:
+        xMax = -1.0e-100
+        xMin = 1.0e+100
+        for nc in nodeCrd:
+            xMaxi = np.max(nc['xLst'])
+            if xMaxi > xMax:
+                xMax = xMaxi
+            xMini = np.min(nc['xLst'])
+            if xMini < xMin:
+                xMin = xMini
+    else:
+        xMax = xRange[1]
+        xMin = xRange[0]
+        
+    if yRange == None:
+        yMax = -1.0e-100
+        yMin = 1.0e+100
+        for nc in nodeCrd:
+            yMaxi = np.max(nc['yLst'])
+            if yMaxi > yMax:
+                yMax = yMaxi
+            yMini = np.min(nc['yLst'])
+            if yMini < yMin:
+                yMin = yMini
+    else:
+        yMax = yRange[1]
+        yMin = yRange[0]
+    
+    if zRange == None:
+        zMax = -1.0e-100
+        zMin = 1.0e+100
+        for nc in nodeCrd:
+            zMaxi = np.max(nc['zLst'])
+            if zMaxi > zMax:
+                zMax = zMaxi
+            zMini = np.min(nc['zLst'])
+            if zMini < zMin:
+                zMin = zMini
+    else:
+        zMax = zRange[1]
+        zMin = zRange[0]
+        
+    xLen = xMax - xMin
+    xMid = 0.5*(xMax+xMin)
+    yLen = yMax - yMin
+    yMid = 0.5*(yMax+yMin)
+    zLen = zMax - zMin
+    zMid = 0.5*(zMax+zMin)
+    
+    maxLen = np.max([xLen,yLen,zLen])
+    hL = 0.75*maxLen
+    
+    xAug = [xMid - hL, xMid + hL, xMid, xMid, xMid, xMid]
+    yAug = [yMid, yMid, yMid - hL, yMid + hL, yMid, yMid]
+    zAug = [zMid, zMid, zMid, zMid, zMid - hL, zMid + hL]
+        
     frameList = list()
     for ni, nC in enumerate(nodeCrd):
         if(ni > 0):
+            nC['xLst'].extend(xAug)
+            nC['yLst'].extend(yAug)
+            nC['zLst'].extend(zAug)
             frm = go.Frame(data=[go.Mesh3d(
                 x=nC['xLst'],
                 y=nC['yLst'],
@@ -318,32 +449,13 @@ def animateMeshSolution(nodeCrd,values,faceVerts,valMode='vertex',frameDuration=
                 buttons=[dict(label='Play',
                               method='animate',
                               args=[None])])]
-                # buttons=[dict(label='Play',
-                #               method='animate',
-                #               args=[None,{'frame': {'duration': frameDuration, 'redraw': False},
-                #                           'fromcurrent': True, 'transition': {'duration': 0}}])])]
             ),
         frames=frameList
         )
     
-    xMax = np.max(nodeCrd[0]['xLst'])
-    xMin = np.min(nodeCrd[0]['xLst'])
-    xLen = xMax - xMin
-    xMid = 0.5*(xMax+xMin)
-    yMax = np.max(nodeCrd[0]['yLst'])
-    yMin = np.min(nodeCrd[0]['yLst'])
-    yLen = yMax - yMin
-    yMid = 0.5*(yMax+yMin)
-    zMax = np.max(nodeCrd[0]['zLst'])
-    zMin = np.min(nodeCrd[0]['zLst'])
-    zLen = zMax - zMin
-    zMid = 0.5*(zMax+zMin)
-    
-    maxLen = np.max([xLen,yLen,zLen])
-    hL = 0.75*maxLen
-    scn = {'xaxis': {'range': [(xMid-hL), (xMid+hL)], 'showbackground': False},
-            'yaxis': {'range': [(yMid-hL), (yMid+hL)], 'showbackground': False},
-            'zaxis': {'range': [(zMid-hL), (zMid+hL)], 'showbackground': False}}
+    scn = {'xaxis': {'showbackground': False},
+            'yaxis': {'showbackground': False},
+            'zaxis': {'showbackground': False}}
     
     fig.update_layout(scene=scn)
     

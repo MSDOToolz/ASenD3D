@@ -1,0 +1,52 @@
+nodes:
+
+cells:
+
+sets:
+  node:
+  cell:
+
+subDomains:
+  - cellSet:
+    fluid:
+
+fluids:
+  name:
+    viscosity:
+    thermal:
+      conductivity:
+      expansion:
+      specHeat:
+    idealGasConst:
+    bulkModulus:
+    compressible:
+    refTemp:
+    refPres:
+    refDen:
+    refEnth:
+    tempVisCoef:
+    turbVisCoef:
+    gradTurbCoef:
+    dissTurbCoef:
+
+constraints:
+  - type: density, velocity, temperature, turbulence
+    terms:
+      - nodeSet:
+        dof:
+        coef:
+    rhs:
+    activeTime:
+
+loads:
+  - type: gravitational, centrifugal, volHeatGen
+    activeTime:
+    cellSet:
+    load: 
+    center:
+    axis:
+    angularVel:
+
+initialState:
+  flow:
+  flowDot:

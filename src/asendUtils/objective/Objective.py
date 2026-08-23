@@ -8,7 +8,7 @@ class Objective():
         self.fileName = ''
         self.objData = dict()
         self.objData['objectiveTerms'] = list()
-        self.categories = 'displacement velocity acceleration temperature tDot stress strain strainEnergy shellDef shellFrcMom beamDef beamFrcMom flux tempGradient mass volume massDisp'
+        self.categories = 'displacement velocity acceleration temperature tDot stress strain strainEnergy mises tsaiWu shellDef shellFrcMom beamDef beamFrcMom flux tempGradient mass volume massDisp'
         self.operators = 'powerNorm volumeIntegral volumeAverage'
         
     def addObjectiveTerm(self,category,operator='powerNorm',component=1,layer=-1,elementSet='',nodeSet='',stTime=0.0,endTime=1e+100,coefficient=1.0,exponent=2.0,targetValue=0.0):
@@ -41,7 +41,7 @@ class Objective():
     def writeInput(self,fileName):
         self.fileName = makeAbsolute(fileName)
         
-        fileStr = yaml.dump(self.objData,sort_keys=False)
+        fileStr = yaml.dump(self.objData, Dumper=yaml.CDumper, sort_keys=False)
         
         fileStr = fileStr.replace("'","")
         fileStr = fileStr.replace('"','')

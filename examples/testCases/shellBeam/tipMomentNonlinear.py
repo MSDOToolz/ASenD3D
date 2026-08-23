@@ -20,7 +20,7 @@ if(not os.path.exists('tipMomentLoading/results')):
 ## Define loads
 
 myMod = Model()
-myMod.addNodalForce('xMax', [0.0,0.0,0], [0.0,-3.272492345,0.0])
+myMod.addNodalForce('xMax',M2=-3.272492345)
 
 ## Write Load file
 myMod.writeModelInput('tipMomentLoading/loads.yaml')
@@ -32,7 +32,7 @@ myJob.readLoads('tipMomentLoading/loads.yaml')
 
 myJob.solve(nonlinearGeom=True,loadRampSteps=5)
 
-myJob.writeNodeResults('tipMomentLoading/results/nodeResults.yaml',['displacement'])
+myJob.writeNodeResults('tipMomentLoading/results/nodeResults.csv',['displacement'])
 
 myJob.writeJobInput('tipMomentLoading/job.yaml')
 

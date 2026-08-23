@@ -1,22 +1,40 @@
+mod constraint;
+mod design_var;
+mod element;
+mod face;
+mod interaction;
+mod job;
+mod load;
+//mod lower_tri_mat;
+mod node;
+mod objective;
+mod particle_source;
+mod scratch;
+mod section;
+//mod matrix_functions;
+
 use crate::constants::*;
 use crate::list_ent::*;
-use crate::lower_tri_mat::*;
-use crate::lu_mat::*;
-use crate::job::*;
-use crate::node::*;
-use crate::element::*;
-use crate::face::*;
 use crate::nd_el_set::*;
-use crate::section::*;
-use crate::load::*;
-use crate::constraint::*;
-use crate::design_var::*;
-use crate::objective::*;
 use crate::diff_doub::*;
-use crate::scratch::*;
 use crate::cpp_map::CppMap;
+use crate::cpp_str::CppStr;
+use crate::lower_tri_mat::*;
+use crate::model::job::*;
+use crate::model::node::*;
+use crate::model::element::*;
+use crate::model::face::*;
+use crate::model::section::*;
+use crate::model::load::*;
+use crate::model::constraint::*;
+use crate::model::interaction::*;
+use crate::model::particle_source::*;
+use crate::model::design_var::*;
+use crate::model::objective::*;
+use crate::model::scratch::*;
 
 use std::collections::LinkedList;
+
 
 #[derive(Clone)]
 pub struct Model {
@@ -29,21 +47,20 @@ pub struct Model {
     pub es_map : CppMap,
     pub sections : Vec<Section>,
     pub materials : Vec<Material>,
-    pub fluids : Vec<Fluid>,
     pub elastic_const : ConstraintList,
     pub thermal_const : ConstraintList,
-    pub fluid_const : ConstraintList,
     pub diff_const : ConstraintList,
     pub elastic_loads : Vec<Load>,
     pub thermal_loads : Vec<Load>,
     pub diff_loads : Vec<Load>,
-    pub fluid_loads : Vec<Load>,
+    pub interactions : InteractionList,
+    pub particle_sources : Vec<ParticleSource>,
+    pub init_stat_file : CppStr,
     pub design_vars : Vec<DesignVariable>,
     pub obj : Objective,
     pub job : Vec<JobCommand>,
     pub el_mat_dim : usize,
     pub tot_glob_dof : usize,
-    pub fl_mat_dim : usize,
     pub an_prep_run : bool,
     pub time_steps_saved : usize,
     pub solve_cmd : usize,
@@ -68,17 +85,6 @@ pub struct Model {
     pub diff_ld_vec : Vec<f64>,
     pub diff_sol_vec : Vec<f64>,
     pub diff_scaled : bool,
-    pub fluid_mat : SparseMat,
-    pub fluid_lt : LUMat,
-    pub fluid_ld_vec : Vec<f64>,
-    pub fluid_sol_vec : Vec<f64>,
-    pub fluid_scaled : bool,
-    pub fluid_lf : SparseMat,
-    pub fsi_disp_map : SparseMat,
-    pub fsi_temp_map : SparseMat,
-    pub fluid_mesh_def : SparseMat,
-    pub mesh_def_const : ConstraintList,
-    pub mesh_def_lt : LowerTriMat,
     pub eig_vecs : Vec<f64>,
     pub eig_vals : Vec<f64>,
     pub diag_mass : Vec<f64>,
@@ -120,21 +126,20 @@ impl Model {
             es_map : CppMap::new(),
             sections : Vec::new(),
             materials : Vec::new(),
-            fluids : Vec::new(),
             elastic_const : ConstraintList::new(),
             thermal_const : ConstraintList::new(),
             diff_const : ConstraintList::new(),
-            fluid_const : ConstraintList::new(),
             elastic_loads : Vec::new(),
             thermal_loads : Vec::new(),
             diff_loads : Vec::new(),
-            fluid_loads : Vec::new(),
+            interactions : InteractionList::new(),
+            particle_sources : Vec::new(),
+            init_stat_file : CppStr::new(),
             design_vars : Vec::new(),
             obj : Objective::new(),
             job : Vec::new(),
             el_mat_dim : 0usize,
             tot_glob_dof : 0usize,
-            fl_mat_dim : 0usize,
             an_prep_run : false,
             time_steps_saved : 0usize,
             solve_cmd : MAX_INT,
@@ -159,17 +164,6 @@ impl Model {
             diff_ld_vec : Vec::new(),
             diff_sol_vec : Vec::new(),
             diff_scaled : false,
-            fluid_mat : SparseMat::new(),
-            fluid_lt : LUMat::new(),
-            fluid_ld_vec : Vec::new(),
-            fluid_sol_vec : Vec::new(),
-            fluid_scaled : false,
-            fluid_lf : SparseMat::new(),
-            fsi_disp_map : SparseMat::new(),
-            fsi_temp_map : SparseMat::new(),
-            fluid_mesh_def : SparseMat::new(),
-            mesh_def_const : ConstraintList::new(),
-            mesh_def_lt : LowerTriMat::new(),
             eig_vecs : Vec::new(),
             eig_vals : Vec::new(),
             diag_mass : Vec::new(),
@@ -202,9 +196,18 @@ impl Model {
             new_mod.d0_scratch.push_back(DiffDoub0Scr::new());
             new_mod.d1_scratch.push_back(DiffDoub1Scr::new());
         }
-        for _i in 0..5 {
+        for _i in 0..7 {
             new_mod.scratch.push_back(FltScr::new());
         }
         new_mod
     }
 }
+
+
+mod model_analysis;
+mod model_input;
+mod model_meth;
+mod model_output;
+mod model_prep;
+mod model_res_utils;
+mod user;

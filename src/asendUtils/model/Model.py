@@ -5,6 +5,8 @@ from asendUtils.model.Section import Section
 from asendUtils.model.Material import Material
 from asendUtils.model.Fluid import Fluid
 from asendUtils.model.Constraint import Constraint
+from asendUtils.model.Interaction import Interaction
+from asendUtils.model.ParticleSource import ParticleSource
 from asendUtils.syst.pathTools import *
 
 class Model():
@@ -24,7 +26,7 @@ class Model():
         self.totNds = 0
         self.totEls = 0
         
-    def addMeshData(self,meshData,meshType='solid'):
+    def addMeshData(self,meshData,meshType='solid',listAsStr=True):
         nodes = meshData['nodes']
         allEls = meshData['elements']
         nNds = self.totNds
@@ -36,7 +38,10 @@ class Model():
             nd = list()
             nd.append(nNds+i)
             nd.extend(nodes[i])
-            newNds.append(str(nd))
+            if listAsStr:
+                newNds.append(str(nd))
+            else:
+                newNds.append(nd)
         self.modelData['nodes'].extend(newNds)
         if(meshType == 'solid'):
             if(len(allEls[0]) == 8):
@@ -48,17 +53,26 @@ class Model():
                         el = list()
                         el.append(nEls+i)
                         el.extend(eli[0:4]+nNds)
-                        tetList.append(str(el))
+                        if listAsStr:
+                            tetList.append(str(el))
+                        else:
+                            tetList.append(el)
                     elif(eli[6] == -1):
                         el = list()
                         el.append(nEls+i)
                         el.extend(eli[0:6]+nNds)
-                        wedList.append(str(el))
+                        if listAsStr:
+                            wedList.append(str(el))
+                        else:
+                            wedList.append(el)
                     else:
                         el = list()
                         el.append(nEls+i)
                         el.extend(eli[0:8]+nNds)
-                        hexList.append(str(el))
+                        if listAsStr:
+                            hexList.append(str(el))
+                        else:
+                            hexList.append(el)
                 if(len(tetList) > 0):
                     tetDic = dict()
                     tetDic['type'] = 'tet4'
@@ -79,7 +93,10 @@ class Model():
                 for i, eli in enumerate(allEls):
                     el = [nEls+i]
                     el.extend(eli[0:10]+nNds)
-                    tetList.append(str(el))
+                    if listAsStr:
+                        tetList.append(str(el))
+                    else:
+                        tetList.append(el)
                 if(len(tetList) > 0):
                     tetDic = dict()
                     tetDic['type'] = 'tet10'
@@ -94,12 +111,18 @@ class Model():
                     el = list()
                     el.append(nEls+i)
                     el.extend(eli[0:3]+nNds)
-                    triList.append(str(el))
+                    if listAsStr:
+                        triList.append(str(el))
+                    else:
+                        triList.append(el)
                 else:
                     el = list()
                     el.append(nEls+i)
                     el.extend(eli[0:4]+nNds)
-                    quadList.append(str(el))
+                    if listAsStr:
+                        quadList.append(str(el))
+                    else:
+                        quadList.append(el)
             if(len(triList) > 0):
                 triDic = dict()
                 triDic['type'] = 'shell3'
@@ -116,7 +139,10 @@ class Model():
                 el = list()
                 el.append(nEls+i)
                 el.extend(eli[0:2]+nNds)
-                beamList.append(str(el))
+                if listAsStr:
+                    beamList.append(str(el))
+                else:
+                    beamList.append(el)
             beamDic = dict()
             beamDic['type'] = 'beam2'
             beamDic['connectivity'] = beamList
@@ -125,10 +151,25 @@ class Model():
             elList = list()
             for i, eRow in enumerate(allEls,nEls):
                 el = [i]
-                el.extend(eRow)
-                elList.append(str(el))
+                el.extend(eRow+nNds)
+                if listAsStr:
+                    elList.append(str(el))
+                else:
+                    elList.append(el)
             elDic = dict()
             elDic['type'] = 'frcFld'
+            elDic['connectivity'] = elList
+            self.modelData['elements'].append(elDic)
+        elif(meshType == 'mass'):
+            elList = list()
+            for i, el in enumerate(allEls,nEls):
+                el = [i, el+nNds]
+                if listArStr:
+                    elList.append(str(el))
+                else:
+                    elList.append(el)
+            elDic = dict()
+            elDic['type'] = 'mass'
             elDic['connectivity'] = elList
             self.modelData['elements'].append(elDic)
         try:
@@ -303,108 +344,300 @@ class Model():
            loads.append(newLd)
            self.modelData['loads'] = loads       
             
-    def addNodalForce(self,nodeSet,F,M,stTime=0.0,endTime=1e+100):
+    def addNodalForce(self,nodeSet,F1=0.0,F2=0.0,F3=0.0,M1=0.0,M2=0.0,M3=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'nodalForce'
-        newLd['activeTime'] = str([stTime,endTime])
-        ld = list()
-        ld.extend(F)
-        ld.extend(M)
-        newLd['load'] = str(ld)
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+        else:
+            newLd['activeTime'] = [stTime, endTime]
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,F1,F2,F3,M1,M2,M3]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,F1,F2,F3,M1,M2,M3]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        else:
+            for i, tp in enumerate(timePts):
+                ld = [tp,F1[i],F2[i],F3[i],M1[i],M2[i],M3[i]]
+                if listAsStr:
+                    ldList.append(str(ld))
+                else:
+                    ldList.append(ld)
+        newLd['load'] = ldList
         newLd['nodeSet'] = nodeSet
-        self.addAnyLoad(newLd) 
+        self.addAnyLoad(newLd)
             
-    def addBodyForce(self,elementSet,F,M,stTime=0.0,endTime=1e+100):
+    def addBodyForce(self,elementSet,F1=0.0,F2=0.0,F3=0.0,M1=0.0,M2=0.0,M3=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'bodyForce'
-        newLd['activeTime'] = str([stTime,endTime])
-        ld = list()
-        ld.extend(F)
-        ld.extend(M)
-        newLd['load'] = str(ld)
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,F1,F2,F3,M1,M2,M3]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,F1,F2,F3,M1,M2,M3]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        else:
+            for i, tp in enumerate(timePts):
+                ld = [tp,F1[i],F2[i],F3[i],M1[i],M2[i],M3[i]]
+                if listAsStr:
+                    ldList.append(str(ld))
+                else:
+                    ldList.append(ld)
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)    
             
-    def addGravityForce(self,elementSet,G,stTime=0.0,endTime=1e+100):
+    def addGravityForce(self,elementSet,G1=0.0,G2=0.0,G3=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'gravitational'
-        newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = str(G)
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,G1,G2,G3]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,G1,G2,G3]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        else:
+            for i, tp in enumerate(timePts):
+                ld = [tp,G1[i],G2[i],G3[i]]
+                if listAsStr:
+                    ldList.append(str(ld))
+                else:
+                    ldList.append(ld)
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addCentrifugalForce(self,elementSet,center,axis,angularVelocity,stTime=0.0,endTime=1e+100):
+    def addCentrifugalForce(self,elementSet,center,axis,angularVelocity,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'centrifugal'
-        newLd['activeTime'] = str([stTime,endTime])
-        newLd['center'] = str(center)
-        newLd['axis'] = str(axis)
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+            newLd['center'] = str(center)
+            newLd['axis'] = str(axis)
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+            newLd['center'] = center
+            newLd['axis'] = axis
         newLd['angularVelocity'] = angularVelocity
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfaceTraction(self,elementSet,T,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
+    def addSurfaceTraction(self,elementSet,N1,N2,N3,normTol=5.0,T1=0.0,T2=0.0,T3=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'surfaceTraction'
-        newLd['activeTime'] = str([stTime,endTime])
-        newLd['normDir'] = str(normDir)
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+            newLd['normDir'] = str([N1,N2,N3])
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+            newLd['normDir'] = [N1,N2,N3]
         newLd['normTolerance'] = normTol
-        newLd['load'] = str(T)
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,T1,T2,T3]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,T1,T2,T3]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,T1[i],T2[i],T3[i]]
+                if listAsStr:
+                    ldList.append(str(ld))
+                else:
+                    ldList.append(ld)
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfacePressure(self,elementSet,P,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
+    def addSurfacePressure(self,elementSet,N1,N2,N3,normTol=5.0,P=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'surfacePressure'
-        newLd['activeTime'] = str([stTime,endTime])
-        newLd['normDir'] = str(normDir)
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+            newLd['normDir'] = str([N1,N2,N3])
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+            newLd['normDir'] = [N1,N2,N3]
         newLd['normTolerance'] = normTol
-        newLd['load'] = P
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,P]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,P]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,P[i]]
+                if listAsStr:
+                    ldList.append(str(ld))
+                else:
+                    ldList.append(ld)
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addNodalHeatGen(self,nodeSet,stTime=0.0,endTime=1e+100,Q=0.0):
+    def addNodalHeatGen(self,nodeSet,Q=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'nodalHeatGen'
-        newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = Q
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,Q]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,Q]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,Q[i]]
+                if listAsStr:
+                    ldList.append(str(ld))
+                else:
+                    ldList.append(ld)
+        newLd['load'] = ldList
         newLd['nodeSet'] = nodeSet
         self.addAnyLoad(newLd)
         
-    def addBodyHeatGen(self,elementSet,stTime=0.0,endTime=1e+100,specQ=0.0):
+    def addBodyHeatGen(self,elementSet,specQ=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'bodyHeatGen'
-        newLd['activeTime'] = str([stTime,endTime])
-        newLd['load'] = specQ
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,specQ]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,specQ]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addSurfaceFlux(self,elementSet,flux,normDir,normTol=5.0,stTime=0.0,endTime=1e+100):
+    def addSurfaceFlux(self,elementSet,N1,N2,N3,normTol=5.0,flux=0.0,timePts=None,stTime=0.0,endTime=1e+100,listAsStr=True):
         newLd = dict()
         newLd['type'] = 'surfaceFlux'
-        newLd['activeTime'] = str([stTime,endTime])
-        newLd['normDir'] = str(normDir)
+        if listAsStr:
+            newLd['activeTime'] = str([stTime,endTime])
+            newLd['normDir'] = str([N1,N2,N3])
+        else:
+            newLd['activeTime'] = [stTime,endTime]
+            newLd['normDir'] = [N1,N2,N3]
         newLd['normTolerance'] = normTol
-        newLd['load'] = flux
+        ldList = list()
+        if timePts == None:
+            if listAsStr:
+                ld = [0.0,flux]
+                ldList.append(str(ld))
+                ld[0] = 1.0e+100
+                ldList.append(str(ld))
+            else:
+                ld = [0.0,flux]
+                ldList.append(ld)
+                ld[0] = 1.0e+100
+                ldList.append(ld)
+        else:
+            for i, pt in enumerate(timePts):
+                ld = [pt,flux[i]]
+                if listAsStr:
+                    ldList.append(str(ld))
+                else:
+                    ldList.append(ld)
+        newLd['load'] = ldList
         newLd['elementSet'] = elementSet
         self.addAnyLoad(newLd)
         
-    def addInitialState(self,field,state):
+    def addInitialState(self,field,state,listAsStr=True):
         allFields = 'displacement velocity acceleration temperature tdot'
         if(field not in allFields):
             errstr = 'Error: ' + field + ' is not a currently supported solution variable for initial state. Valid fields: ' + allFields
             raise TypeError(errstr)
         strState = list()
         for s in state:
-            strState.append(str(s))
+            if listAsStr:
+                strState.append(str(s))
+            else:
+                strState.append(s)
         try:
             self.modelData['initialState'][field] = strState
         except:
             initialState = dict()
             initialState[field] = strState
             self.modelData['initialState'] = initialState
+            
+    def addInteraction(self, newInteraction):
+        if 'interactions' not in self.modelData:
+            self.modelData['interactions'] = dict()
+        if newInteraction.name != None:
+            self.modelData['interactions'][newInteraction.name] = newInteraction.data
+        else:
+            index = 0 
+            name = 'unnamed' + str(index)
+            while name in self.modelData['interactions']:
+                index += 1 
+                name = 'unnamed' + str(index)
+            self.modelData['interactions'][name] = newInteraction.data
+            
+    def addParticleSource(self, newSource):
+        if 'particleSources' not in self.modelData:
+            self.modelData['particleSources'] = list()
+        self.modelData['particleSources'].append(newSource.data)
     
-    def integrateMassElements(self):
+    def integrateMassElements(self,listAsStr=True):
         for me in self.massElements:
             # setLabs = list()
             # for ns in self.modelData['sets']['node']:
@@ -416,7 +649,10 @@ class Model():
             newEls = list()
             for nd in setLabs:
                 newEl = [ei,nd]
-                newEls.append(str(newEl))
+                if listAsStr:
+                    newEls.append(str(newEl))
+                else:
+                    newEls.append(newEl)
                 newESLabs.append(ei)
                 ei = ei + 1
             eList = dict()
@@ -431,7 +667,7 @@ class Model():
             self.totEls = ei
         self.massElements = list()
 
-    def integrateForceElements(self):
+    def integrateForceElements(self,listAsStr=True):
         for fe in self.forceElements:
             # set1Labs = list()
             # set2Labs = list()
@@ -449,7 +685,10 @@ class Model():
                 for s2 in set2Labs:
                     if(s2 != s1):
                         newEl = [ei,s1,s2]
-                        newEls.append(str(newEl))
+                        if listAsStr:
+                            newEls.append(str(newEl))
+                        else:
+                            newEls.append(newEl)
                         newES.append(ei)
                         ei = ei + 1
             eList = dict()
@@ -470,7 +709,7 @@ class Model():
         self.integrateForceElements()
         self.integrateMassElements()
         
-        fileStr = yaml.dump(self.modelData,width=200,sort_keys=False)
+        fileStr = yaml.dump(self.modelData, Dumper=yaml.CDumper, width=200, sort_keys=False)
         
         fileStr = fileStr.replace("'","")
         fileStr = fileStr.replace('"','')

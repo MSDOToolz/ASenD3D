@@ -20,7 +20,7 @@ if(not os.path.exists('buckling/results')):
 ## Define loads
 
 myMod = Model()
-myMod.addNodalForce('xMax', [-1.028088,0.0,0.0], [0.0,0.0,0.0])
+myMod.addNodalForce('xMax', F1=-1.028088)
 
 ## Write Load file
 myMod.writeModelInput('buckling/loads.yaml')

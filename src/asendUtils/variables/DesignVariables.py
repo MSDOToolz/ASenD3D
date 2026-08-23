@@ -8,7 +8,7 @@ class DesignVariables():
         self.fileName = ''
         self.desVarData = dict()
         self.desVarData['designVariables'] = list()
-        self.categories = 'density massMat modulus shearModulus poissonRatio stiffnessMat thermalCond thermalExp specHeat initialStrain orientation nodeCoord elasticLoad thermalLoad thickness angle zOffset area areaMoment polarMoment dampingMat potFldCoef dampFldCoef massPerEl'
+        self.categories = 'density massMat modulus shearModulus poissonRatio stiffnessMat thermalCond thermalExp specHeat initialStrain orientation nodeCoord elasticLoad thermalLoad thickness angle zOffset area areaMoment polarMoment dampingMat potFldCoef dampFldCoef massPerEl tensileStrength compressiveStrength shearStrength'
         
     def addDesignVariable(self,category,component=1,layer=-1,nodeSet='',elementSet='',activeTime=0.0,coefficients=1.0):
         newVar = dict()
@@ -32,7 +32,7 @@ class DesignVariables():
     def writeInput(self,fileName):
         self.fileName = makeAbsolute(fileName)
         
-        fileStr = yaml.dump(self.desVarData,sort_keys=False)
+        fileStr = yaml.dump(self.desVarData, Dumper=yaml.CDumper, sort_keys=False)
         
         fileStr = fileStr.replace("'","")
         fileStr = fileStr.replace('"','')

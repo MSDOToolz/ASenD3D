@@ -29,12 +29,13 @@ class Surface():
         
     def addMesh(self,meshData,name=None):
         self.meshes.append(meshData)
-        if(name == None):
-            numMsh = len(self.meshes)
-            meshName = 'Sub-Mesh_' + str(numMsh)
-            self.meshNames.append(meshName)
-        else:
-            self.meshNames.append(name)
+        self.meshNames.append(name)
+        # if(name == None):
+        #     numMsh = len(self.meshes)
+        #     meshName = 'Sub-Mesh_' + str(numMsh)
+        #     self.meshNames.append(meshName)
+        # else:
+        #     self.meshNames.append(name)
         
     def getSurfaceMesh(self):
         allNds = list()
@@ -42,8 +43,7 @@ class Surface():
         elSetList = dict()
         numNds = 0
         numEls = 0
-        regi = 0
-        for reg in self.shellRegions:
+        for regi, reg in enumerate(self.shellRegions):
             regMesh = reg.createShellMesh()
             setList = list()
             eli = 0
@@ -52,42 +52,52 @@ class Surface():
                     if(el[i] != -1):
                         el[i] = el[i] + numNds
                 allEls.append(el)
-                setList.append((eli + numEls))
+                setList.append(int(eli + numEls))
                 eli = eli + 1
-            # thisSet = dict()
-            # thisSet['name'] = self.regionNames[regi]
-            # thisSet['labels'] = setList
-            # elSetList.append(thisSet)
-            elSetList[self.regionNames[regi]] = setList
+            nm = self.regionNames[regi]
+            if nm != None:
+                if nm in elSetList:
+                    elSetList[nm].extend(setList)
+                else:
+                    elSetList[nm] = setList
             allNds.extend(regMesh['nodes'])
             numNds = len(allNds)
             numEls = len(allEls)
-            regi = regi + 1
-        mshi = 0
-        for msh in self.meshes:
+        for mshi, msh in enumerate(self.meshes):
             setList = list()
-            eli = 0
-            for el in msh['elements']:
+            for eli, el in enumerate(msh['elements']):
                 newEl = -1*np.ones(4,dtype=int)
                 for i in range(0,4):
                     if(el[i] != -1):
                         newEl[i] = el[i] + numNds
                 allEls.append(newEl)
-                setList.append((eli + numEls))
-                eli = eli + 1
-            # thisSet = dict()
-            # thisSet['name'] = self.meshNames[mshi]
-            # thisSet['labels'] = setList
-            # elSetList.append(thisSet)
-            elSetList[self.meshNames[mshi]] = setList
+                setList.append(int(eli + numEls))
+            nm = self.meshNames[mshi]
+            if nm != None:
+                if nm in elSetList:
+                    elSetList[nm].extend(setList)
+                else:
+                    elSetList[nm] = setList
+            try:
+                for es in msh['sets']['element']:
+                    if es in elSetList:
+                        for el in msh['sets']['element'][es]:
+                            elSetList[es].append(el + numEls)
+                    else:
+                        setList = list()
+                        for el in msh['sets']['element'][es]:
+                            setList.append(el + numEls)
+                        elSetList[es] = setList
+            except:
+                pass
             allNds.extend(msh['nodes'])
             numNds = len(allNds)
             numEls = len(allEls)
-            mshi = mshi + 1
         mData = dict()
         mData['nodes'] = np.array(allNds)
         mData['elements'] = np.array(allEls)
         mData = mt.mergeDuplicateNodes(mData)
         mData['sets'] = dict()
         mData['sets']['element'] = elSetList
+        mData = mt.getAllMatchingNodeSets(mData)
         return mData

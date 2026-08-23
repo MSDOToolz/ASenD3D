@@ -1,8 +1,6 @@
 ## AStrO Model Input File Template
 nodes:
     - [label, x, y, z]
-fluidNodes:
-    - [label, x, y, z]
 elements:
     - type: ## tet4, wedge6, brick8, brickIM, tet10, fl4, fl6, fl8, fl10
       connectivity:
@@ -68,7 +66,12 @@ sections:
           exp:
       dampField:
           coef:
-          exp:
+          distExp:
+          velExp:
+      magField:
+          coef:
+          distExp:
+          velExp:
       thermField:
           condCoef:
           radCoef: 0
@@ -102,19 +105,6 @@ materials:
       custom:
           prop1: value # tensileStrength, compressiveStrength, shearStrength
           prop2: [v1, v2, v3]
-fluids:
-    name:
-      viscosity:
-      thermal:
-          conductivity:
-          expansion:
-          specHeat:
-      idealGasConst:
-      bulkModulus:
-      compressible: yes/no
-      refTemp:
-      refPres:
-      refDen:
 constraints:
     - type: displacement, temperature, concentration
       terms:
@@ -139,6 +129,59 @@ loads:
       nodeSet: (label or set name)
       elementSet: (label or set name)
 
+interactions:
+    interaction_1:
+      nodeSet1:
+      nodeSet2:
+      potField:
+          coef:
+            - [t, val]
+          exp:
+      dampField:
+          coef:
+            - [t, val]
+          distExp:
+          velExp:
+      magField:
+          coef:
+            - [t, val]
+          distExp:
+          velExp:
+      thermField:
+          condCoef:
+          radCoef: 0
+          refTemp:
+      maxDistance:
+      maxNeighbors:
+      maxDistRatio:
+      idealGasConstant:
+      bulkModulus:
+      expansion:
+      refDen:
+      refPres:
+      activeTime:
+
+particleSources:
+    - elementSet:
+      swapSet:
+      swapDistance:
+      swapRefLevel:
+      swapSpacing:
+      coordinates:
+        - [t, x, y, z]
+      refNodes: [no, nx, nxy]
+      meanVel:
+        - [t, vx, vy, vz]
+      randomVel:
+      velInLocal: yes
+      temperature:
+        - [t, T]
+      frequency:
+        - [t, val]
+      boundXRange: [xMin, xMax]
+      boundYRange: [yMin, yMax]
+      boundZRange: [zMin, zMax]
+      activeTime:
 ##
 initialState:
     displacement:

@@ -15,8 +15,11 @@ class Constraint:
         self.constData = dict()
         self.constData['type'] = constType
         
-    def setActiveTime(self,stTime=0.0,endTime=1e+100):
-        self.constData['activeTime'] = str([stTime,endTime])
+    def setActiveTime(self,stTime=0.0,endTime=1e+100,listAsStr=True):
+        if listAsStr:
+            self.constData['activeTime'] = str([stTime,endTime])
+        else:
+            self.constData['activeTime'] = str([stTime,endTime])
         
     def addTerm(self,nodeSet,dof,coef):
         newTrm = dict()
@@ -31,5 +34,15 @@ class Constraint:
             self.constData['terms'] = terms
         return
     
-    def setRHS(self,rhs):
-        self.constData['rhs'] = rhs
+    def setRHS(self,rhs,timePoints=None,listAsStr=True):
+        if timePoints == None:
+            self.constData['rhs'] = rhs
+        else:
+            lst = list()
+            if listAsStr:
+                for i, r in enumerate(rhs):
+                    lst.append(str([timePoints[i],r]))
+            else:
+                for i, r in enumerate(rhs):
+                    lst.append([timePoints[i],r])
+            self.constData['rhs'] = lst

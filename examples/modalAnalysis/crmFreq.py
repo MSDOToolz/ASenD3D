@@ -35,7 +35,7 @@ job.readModelInput(modFile)
 job.readConstraints(constFile)
 job.solve()
 job.modalAnalysis('freq')
-resFile = 'crmFreq/results/modalResults.yaml'
+resFile = 'crmFreq/results/modalResults.csv'
 job.writeModalResults(resFile)
 job.writeJobInput('crmFreq/job.yaml')
 job.executeJob()

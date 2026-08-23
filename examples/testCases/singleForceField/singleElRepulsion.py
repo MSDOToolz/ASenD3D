@@ -64,6 +64,6 @@ myJob = ASenDJob()
 myJob.readModelInput('singleElRepulsion/model.yaml')
 myJob.solve(nonlinearGeom=True,dynamic=True,timeStep=0.121,simPeriod=12.1,saveSolnHist=True,
             solnHistDir='singleElRepulsion/results')
-myJob.writeNodeResults('singleElRepulsion/results/nodeResults.yaml',['displacement'],timeSteps=[0,25,50,75,100])
+myJob.writeNodeResults('singleElRepulsion/results/nodeResults.csv',['displacement'],timeSteps=[0,25,50,75,100])
 
 myJob.writeJobInput('singleElRepulsion/job.yaml')

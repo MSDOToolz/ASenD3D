@@ -25,7 +25,7 @@ class Segment2D():
             edges = np.transpose(np.array([eN1,eN2]))
             output = dict()
             output['nodes'] = nodes
-            output['edges'] = edges
+            output['elements'] = edges
             return output
         elif(self.segType == 'curve'):
             kPTp = np.transpose(np.array(self.keyPts))
@@ -46,7 +46,7 @@ class Segment2D():
             eN2 = np.array(range(1,nNds),dtype=int)
             output = dict()
             output['nodes'] = np.transpose(np.array([xNds,yNds]))
-            output['edges'] = np.transpose(np.array([eN1,eN2]))
+            output['elements'] = np.transpose(np.array([eN1,eN2]))
             return output
         elif(self.segType == 'arc'):
             kPar = np.array(self.keyPts)
@@ -103,5 +103,5 @@ class Segment2D():
             eN2 = np.array(range(1,nNds),dtype=int)
             output = dict()
             output['nodes'] = nodes
-            output['edges'] = np.transpose(np.array([eN1,eN2]))
+            output['elements'] = np.transpose(np.array([eN1,eN2]))
             return output

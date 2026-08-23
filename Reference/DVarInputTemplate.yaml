@@ -10,6 +10,7 @@ designVariables:
       elementSet: setName
       
       nodeSet: setName
+      interaction: intName
 	  
       coefficients: (single value for all)
       ## or

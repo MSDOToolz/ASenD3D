@@ -6,6 +6,10 @@ jobCommands:
     fileName:
   - command: readConstraints X
     fileName:
+  - command: readInteractions
+    fileName:
+  - command: readParticleSources
+    fileName: 
   - command: readInitialState  X
     fileName:
   - command: readDesignVarInput X
@@ -24,15 +28,22 @@ jobCommands:
     elastic: yes
     thermal: no
     diffusion: no
+    fluid: no
     nonlinearGeom: no
+    maxNonlinIterations: 10
+    nonlinConvTol: 1e-12
+    abortNonlinDiv: no
     staticLoadTime:
     loadRampSteps:
     dynamic: no
+    explicit: no
     timeStep: 0.01
     newmarkBeta:
     newmarkGamma:
     simPeriod:
+    constScaleFactor: 
     saveSolnHist: no
+    solnHistFreq: 1
     solnHistDir:
     lumpMass: no
     solverMethod:
@@ -99,6 +110,10 @@ jobCommands:
         - 3
         - 7
         - [10,100,10]
+
+  - command: writeParticleState
+    fileName:
+    timeSteps:
         
   - command: writeModalResults X
     fileName:

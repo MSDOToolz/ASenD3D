@@ -32,6 +32,7 @@ constMod.writeModelInput(constFile)
 
 loadMod = Model()
 loadMod.addSurfacePressure('pressureSideEls',2000.0,[-0.5,-1.0,0.0],normTol=20.0)
+loadMod.addSurfacePressure('pressureSideEls',N1=-0.5,N2=-1.0,N3=0.0,normTol=20.0,P=2000.0)
 loadFile = 'crmSurfacePressure/loads.yaml'
 loadMod.writeModelInput(loadFile)
 
@@ -40,7 +41,7 @@ job.readModelInput(modFile)
 job.readConstraints(constFile)
 job.readLoads(loadFile)
 job.solve()
-resFile = 'crmSurfacePressure/results/nodeResults.yaml'
+resFile = 'crmSurfacePressure/results/nodeResults.csv'
 job.writeNodeResults(resFile, ['displacement'])
 job.writeJobInput('crmSurfacePressure/job.yaml')
 job.executeJob()

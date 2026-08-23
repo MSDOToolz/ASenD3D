@@ -16,10 +16,13 @@ class Section:
     def setMaterial(self,matName):
         self.secData['material'] = matName
         
-    def setOrientation(self,xDir,xyVec):
+    def setOrientation(self,xDir,xyVec,listAsStr=True):
         oriLst = list(xDir)
         oriLst.extend(list(xyVec))
-        self.secData['orientation'] = str(oriLst)
+        if listAsStr:
+            self.secData['orientation'] = str(oriLst)
+        else:
+            self.secData['orientation'] = oriLst
         
     def setZOffset(self,offset):
         try:
@@ -51,12 +54,16 @@ class Section:
             newProps['area'] = area
             self.secData['beamProps'] = newProps
             
-    def setAreaMoment(self,I2=0.0,I3=0.0,I22=0.0,I33=0.0,I23=0.0):
+    def setAreaMoment(self,I2=0.0,I3=0.0,I22=0.0,I33=0.0,I23=0.0,listAsStr=True):
+        if listAsStr:
+            ILst = str([I2,I3,I22,I33,I23])
+        else:
+            ILst = [I2,I3,I22,I33,I23]
         try:
-            self.secData['beamProps']['I'] = str([I2,I3,I22,I33,I23])
+            self.secData['beamProps']['I'] = ILst
         except:
             newProps = dict()
-            newProps['I'] = str([I2,I3,I22,I33,I23])
+            newProps['I'] = ILst
             self.secData['beamProps'] = newProps
             
     def setPolarMoment(self,J):
@@ -81,6 +88,9 @@ class Section:
         
     def setMassPerElement(self,elMass):
         self.secData['massPerEl'] = elMass
+        
+    def setSpecHeat(self, specHeat):
+        self.secData['specHeat'] = specHeat
             
     def setElementSet(self,elsetName):
         self.secData['elementSet'] = elsetName

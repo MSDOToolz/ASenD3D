@@ -9,3 +9,5 @@ from asendUtils.model.Model import *
 from asendUtils.model.Section import *
 from asendUtils.model.Material import *
 from asendUtils.model.Constraint import *
+from asendUtils.model.Interaction import *
+from asendUtils.model.ParticleSource import *

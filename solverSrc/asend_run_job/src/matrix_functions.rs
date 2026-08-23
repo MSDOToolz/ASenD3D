@@ -1,9 +1,7 @@
 use crate::constants::*;
 use crate::diff_doub::*;
 use crate::list_ent::*;
-use crate::lu_mat::*;
 use crate::lower_tri_mat::*;
-use crate::constraint::*;
 use crate::fmath::*;
 
 pub fn sub_vec(sub_v : &mut Vec<f64>, v_in : &mut Vec<f64>, st : usize, end : usize) {
@@ -282,7 +280,7 @@ pub fn solveq_rx_eqb(x_vec : &mut Vec<f64>, mat : &mut Vec<f64>, b_vec : &mut Ve
     return;
 }
 
-pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut ConstraintList, pc_mat : &mut LowerTriMat, rhs : &mut Vec<f64>, conv_tol : f64, max_it : usize) {
+pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, pc_mat : &mut LowerTriMat, rhs : &mut Vec<f64>, conv_tol : f64, max_it : usize) {
     let mut i1 : usize;
     let mut i3 : usize;
     let dim : usize =  mat.dim;
@@ -322,7 +320,7 @@ pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut 
             z_vec[i2] = 0.0;
         }
         mat.vector_multiply(&mut z_vec, &mut  h_vec,  false);
-        cnst.get_total_vec_mult(&mut z_vec, &mut  h_vec, &mut  t_vec);
+        //cnst.get_total_vec_mult(&mut z_vec, &mut  h_vec, &mut  t_vec);
         dp = 0.0;
         for i2 in 0..dim {
             dp  +=  h_vec[i2] * z_vec[i2];
@@ -357,137 +355,6 @@ pub fn conj_grad_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut 
     
     println!("{}{}", "Total CG iterations: " , i1 );
     println!("{}{}", "Final residual norm: " , res );
-    
-    return;
-}
-
-pub fn g_mres_sparse(soln : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut ConstraintList, pc_mat : &mut LUMat, rhs : &mut Vec<f64>, conv_tol : f64, max_it : usize, restart : usize) {
-    let mut i1 : usize;
-    let mut i2 : usize;
-    let mut i3 : usize;
-    let mut i4 : usize;
-    let mut i5 : usize;
-    let mut it_ct : usize;
-    let mut res_nrm : f64;
-    let mut tmp : f64;
-    let dim : usize =  mat.dim;
-    
-    let mut res_vec = vec![0f64; dim];
-    let mut tmp_v = vec![0f64; dim];
-    let mut tmp_v2 = vec![0f64; dim];
-    let mut tmp_v3 = vec![0f64; dim];
-    i1 = dim * (restart + 1);
-    let mut h_mat = vec![0f64; i1];
-    i1 = restart * (restart + 1);
-    let mut phi_mat = vec![0f64; i1];
-    
-    for i1 in 0..dim {
-        soln[i1] = 0.0;
-        tmp_v[i1] = -rhs[i1];
-    }
-    
-    pc_mat.lu_solve(&mut res_vec, &mut  tmp_v,  false);
-    //pc_mat.ldl_solve(res_vec, tmp_v);
-    res_nrm = 0.0;
-    for i1 in 0..dim {
-        res_nrm  +=  res_vec[i1] * res_vec[i1];
-    }
-    res_nrm = sqrt(res_nrm);
-    println!("{}{}", "Initial residual norm: " , res_nrm );
-    
-    it_ct = 0;
-    while res_nrm > conv_tol && it_ct < max_it {
-        tmp = 1.0 / res_nrm;
-        for i1 in 0..dim {
-            h_mat[i1] = tmp * res_vec[i1];
-        }
-        i2 = restart * (restart + 1);
-        for i1 in 0..i2 {
-            phi_mat[i1] = 0.0;
-        }
-        //generate basis vectors
-        for i1 in 1..(restart + 1) {
-            //multiply by previous vector
-            for i2 in 0..dim {
-                tmp_v[i2] = 0.0;
-            }
-            i2 = dim * (i1 - 1);
-            sub_vec(&mut tmp_v3, &mut  h_mat,  i2,  i2 + dim);
-            mat.vector_multiply(&mut tmp_v, &mut  tmp_v3,  false);
-            cnst.get_total_vec_mult(&mut tmp_v, &mut  tmp_v3, &mut  tmp_v2);
-            //pc_mat.ldl_solve(tmp_v2, tmp_v);
-            pc_mat.lu_solve(&mut tmp_v2, &mut  tmp_v,  false);
-            //orthogonalize with all previous vectors
-            for i2 in 0..i1 {
-                i4 = dim * i2;
-                tmp = 0.0;
-                for i3 in 0..dim {
-                    tmp  +=  tmp_v2[i3] * h_mat[i4];
-                    i4 += 1usize;
-                }
-                i5 = i2 * restart + (i1 - 1);
-                phi_mat[i5] = tmp;
-                i4 = dim * i2;
-                for i3 in 0..dim {
-                    tmp_v2[i3]  -=  tmp * h_mat[i4];
-                    i4 += 1usize;
-                }
-            }
-            //calculate magnitude and Set new unit basis std::vector
-            tmp = 0.0;
-            for i3 in 0..dim {
-                tmp  +=  tmp_v2[i3] * tmp_v2[i3];
-            }
-            tmp = sqrt(tmp);
-            i5 = i1 * restart + (i1 - 1);
-            phi_mat[i5] = tmp;
-            tmp = 1.0 / tmp;
-            i4 = dim * i1;
-            for i2 in 0..dim {
-                h_mat[i4] = tmp * tmp_v2[i2];
-                i4 += 1usize;
-            }
-        }
-        //find the least squares solution
-        i3 = 0;
-        for i1 in 0..=restart {
-            tmp_v[i1] = 0.0;
-            for i2 in 0..dim {
-                tmp_v[i1]  -=  h_mat[i3] * res_vec[i2];
-                i3 += 1usize;
-            }
-        }
-        q_rfactor(&mut phi_mat,  restart,  0,  restart,  0,  restart-1,  1);
-        solveq_rx_eqb(&mut tmp_v2, &mut  phi_mat, &mut  tmp_v,  restart,  0,  restart,  0,  restart-1,  1);
-        //update the solution std::vector
-        i3 = 0;
-        for i1 in 0..restart {
-            for i2 in 0..dim {
-                soln[i2]  +=  h_mat[i3] * tmp_v2[i1];
-                i3 += 1usize;
-            }
-        }
-        //update residual std::vector
-        for i1 in 0..dim {
-            tmp_v[i1] = -rhs[i1];
-        }
-        mat.vector_multiply(&mut tmp_v, soln,  false);
-        cnst.get_total_vec_mult(&mut tmp_v, soln, &mut  tmp_v2);
-        //pc_mat.ldl_solve(res_vec, tmp_v);
-        pc_mat.lu_solve(&mut res_vec, &mut  tmp_v,  false);
-        res_nrm = 0.0;
-        for i1 in 0..dim {
-            res_nrm  +=  res_vec[i1] * res_vec[i1];
-        }
-        res_nrm = sqrt(res_nrm);
-        it_ct  +=  restart;
-        println!("{}{}{}{}", "Iteration: " , it_ct , ",  Residual Norm: " , res_nrm );
-    }
-    
-    if res_nrm > conv_tol {
-        println!("{}{}", "Warning: GMRES solver did not converge to the requested tolerance of " , conv_tol );
-        println!("{}{}{}{}", "Residual norm after " , it_ct , " iterations: " , res_nrm );
-    }
     
     return;
 }
@@ -1264,27 +1131,54 @@ pub fn eigen_sparse_direct(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, num_p
     return;
 }
 
-pub fn ray_quot(grad : &mut Vec<f64>, kv : &mut Vec<f64>, mv : &mut Vec<f64>, mat : &mut SparseMat, cnst : &mut ConstraintList, mass_mat : &mut Vec<f64>, in_vec : &mut Vec<f64>) -> f64 {
-    let r_c : f64;
-    let dim : usize =  mat.dim;
-    let mut v_kv : f64;
-    let mut v_mv : f64 =  0.0;
-    for i1 in 0..dim {
-        kv[i1] = 0.0;
-        mv[i1] = mass_mat[i1] * in_vec[i1];
-        v_mv  +=  in_vec[i1] * mv[i1];
+pub fn highest_eigen_sparse(e_vals : &mut Vec<f64>, e_vecs : &mut Vec<f64>, mat : &SparseMat, mass_mat : &mut Vec<f64>, mat_dim : usize) {
+    let mut t_vec1 = vec![0f64; mat_dim];
+    let mut t_vec2 = vec![0f64; mat_dim];
+    let mut mag = 0f64;
+    let mut dp = 0f64;
+
+    for i in 0..mat_dim {
+        t_vec1[i] = (i as f64).sin();
+        mag += t_vec1[i]*t_vec1[i];
+        mass_mat[i] = 1.0/mass_mat[i];
     }
-    mat.vector_multiply(kv, in_vec, false);
-    cnst.get_total_vec_mult(kv, in_vec, grad);
-    v_kv = 0.0;
-    for i1 in 0..dim {
-        v_kv  +=  in_vec[i1] * kv[i1];
+    mag = mag.sqrt();
+    for i in 0..mat_dim {
+        t_vec1[i] /= mag;
     }
-    r_c = v_kv / v_mv;
-    for i1 in 0..dim {
-        grad[i1] = 2.0 * ((kv[i1] / v_mv) - r_c * (mv[i1] / v_mv));
+    
+    let mut ct = 0;
+    while dp.abs() < 0.999999*mag && ct < mat_dim {
+        mat.vector_multiply(&mut t_vec2, &mut t_vec1, false);
+        for i in 0..mat_dim {
+            t_vec2[i] = mass_mat[i]*t_vec2[i];
+        }
+        
+        mag = 0.0;
+        dp = 0.0;
+        for i in 0..mat_dim {
+            mag += t_vec2[i]*t_vec2[i];
+            dp += t_vec1[i]*t_vec2[i];
+        }
+        mag = mag.sqrt();
+
+        for i in 0..mat_dim {
+            t_vec1[i] = t_vec2[i]/mag;
+            t_vec2[i] = 0.0;
+        }
+
+        ct += 1;
     }
-    return  r_c;
+
+    println!("Highest Eigenvalue Solve:");
+    println!("iteration count: {}, dot product: {}, new magnitude: {}", ct, dp, mag);
+
+    e_vals[0] = dp;
+    for i in 0..mat_dim {
+        e_vecs[i] = t_vec1[i];
+        mass_mat[i] = 1.0/mass_mat[i];
+    }
+
 }
 
 pub fn unitize_vec(vec : &mut Vec<f64>, dim : usize) -> f64 {
@@ -1300,78 +1194,6 @@ pub fn unitize_vec(vec : &mut Vec<f64>, dim : usize) -> f64 {
         vec[i1]  *=  minv;
     }
     return  mag;
-}
-
-pub fn get_nearest_evec_rq(mat : &mut SparseMat, cnst : &mut ConstraintList, mass_mat : &mut Vec<f64>, in_vecs : &mut Vec<f64>, e_vals : &mut Vec<f64>, num_vecs : usize, max_it : usize) {
-    let mut i2 : usize;
-    let mut i3 : usize;
-    let dim : usize;
-    let mut dp : f64;
-    let mut res : f64;
-    let mut r_q0 : f64;
-    let mut _r_q1 : f64;
-    
-    dim = mat.dim;
-    
-    let mut grad0 = vec![0f64; dim];
-    let mut grad1 = vec![0f64; dim];
-    let mut d2_rq = vec![0f64; dim];
-    let mut v_step = vec![0f64; dim];
-    let mut kv = vec![0f64; dim];
-    let mut mv = vec![0f64; dim];
-    let mut t_vec1 = vec![0f64; dim];
-    
-    for i1 in 0..num_vecs {
-        i2 = i1 * dim;
-        sub_vec(&mut t_vec1, in_vecs,  i2,  i2 + dim);
-        unitize_vec(&mut t_vec1,  dim);
-        r_q0 = ray_quot(&mut grad0, &mut  kv, &mut  mv, mat, cnst,  mass_mat, &mut  t_vec1);
-        return_sv(&mut t_vec1, in_vecs, i2, i2 + dim);
-        res = 1.0;
-        i3 = 0;
-        while i3 < max_it && res > 1.0e-6 {
-            for i4 in 0..dim {
-                v_step[i4] = -grad0[i4];
-                if v_step[i4] == 0.0 {
-                    v_step[i4] = 1.0e-12;
-                }
-            }
-            unitize_vec(&mut v_step,  dim);
-            for i4 in 0..dim {
-                in_vecs[i2 + i4]  +=  0.01*v_step[i4];
-            }
-            sub_vec(&mut t_vec1, in_vecs,  i2,  i2 + dim);
-            _r_q1 = ray_quot(&mut grad1, &mut  kv, &mut  mv, mat, cnst,  mass_mat, &mut  t_vec1);
-            for i4 in 0..dim {
-                in_vecs[i2 + i4]  -=  0.01 * v_step[i4];
-            }
-            for i4 in 0..dim {
-                d2_rq[i4] = (grad1[i4] - grad0[i4]) / (0.01 * v_step[i4]);
-                if d2_rq[i4] != 0.0 {
-                    v_step[i4] = -grad0[i4] / d2_rq[i4];
-                }
-                else {
-                    v_step[i4] = 0.0;
-                }
-                in_vecs[i2 + i4]  +=  v_step[i4];
-            }
-            sub_vec(&mut t_vec1, in_vecs,  i2,  i2 + dim);
-            unitize_vec(&mut t_vec1,  dim);
-            r_q0 = ray_quot(&mut grad0, &mut  kv, &mut  mv, mat,  cnst, mass_mat, &mut  t_vec1);
-            return_sv(&mut t_vec1, in_vecs, i2, i2 + dim);
-            unitize_vec(&mut kv,  dim);
-            unitize_vec(&mut mv,  dim);
-            dp = 0.0;
-            for i4 in 0..dim {
-                dp  +=  kv[i4] * mv[i4];
-            }
-            res = 1.0 - fabs(dp);
-            i3 += 1usize;
-        }
-        println!("{}{}{}", "Warning: eigenstd::vector " , i1 , " did not converge within the max iterations." );
-        e_vals[i1] = r_q0;
-    }
-    
 }
 
 //dup1
@@ -2090,16 +1912,6 @@ pub fn get_det_inv_ar_dfd1(det : &mut DiffDoub1, inv : &mut [DiffDoub1], mat : &
 //end dup
  
 //end skip 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
  
  
 //dup2
@@ -3123,16 +2935,6 @@ pub fn rotate_orient_dfd2(inst_ori : &mut [DiffDoub2], loc_ori : &mut [DiffDoub2
 //end skip 
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
 //dup1
 
 pub fn d_orid_thet_dfd0(inst_ori : &mut [DiffDoub0], loc_ori : &mut [DiffDoub0], rot : &mut [DiffDoub0], v1 : usize, v2 : usize) {
@@ -3335,15 +3137,5 @@ pub fn d_orid_thet_dfd1(inst_ori : &mut [DiffDoub1], loc_ori : &mut [DiffDoub1],
 //end dup
  
 //end skip 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
  
  

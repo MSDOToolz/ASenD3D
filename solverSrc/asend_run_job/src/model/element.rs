@@ -1,0 +1,307 @@
+use crate::diff_doub::*;
+use crate::list_ent::*;
+
+use std::collections::LinkedList;
+
+//dup1
+
+#[derive(Clone)]
+pub struct DiffDoub0StressPrereq {
+    pub glob_nds : Vec<DiffDoub0>,
+    pub loc_nds : Vec<DiffDoub0>,
+    pub loc_ori : Vec<DiffDoub0>,
+    pub inst_ori : Vec<DiffDoub0>,
+    pub glob_disp : Vec<DiffDoub0>,
+    pub glob_vel : Vec<DiffDoub0>,
+    pub glob_acc : Vec<DiffDoub0>,
+    pub glob_temp : Vec<DiffDoub0>,
+    pub glob_tdot : Vec<DiffDoub0>,
+    pub glob_fl_den : Vec<DiffDoub0>,
+    pub glob_fl_den_dot : Vec<DiffDoub0>,
+    pub cmat : Vec<DiffDoub0>,
+    pub mmat : Vec<DiffDoub0>,
+    pub dmat : Vec<DiffDoub0>,
+    pub therm_exp : Vec<DiffDoub0>,
+    pub einit : Vec<DiffDoub0>,
+    pub tcmat : Vec<DiffDoub0>,
+    pub spec_heat : DiffDoub0,
+    pub diff_exp : Vec<DiffDoub0>,
+    pub diff_mat : Vec<DiffDoub0>,
+    pub max_con : DiffDoub0,
+    pub bmat : Vec<DiffDoub0>,
+    pub cbmat : Vec<DiffDoub0>,
+    pub layer_z : Vec<DiffDoub0>,
+    pub layer_thk : Vec<DiffDoub0>,
+    pub layer_ang : Vec<DiffDoub0>,
+    pub layer_q : Vec<DiffDoub0>,
+    pub layer_d : Vec<DiffDoub0>,
+    pub layer_te : Vec<DiffDoub0>,
+    pub layer_e0 : Vec<DiffDoub0>,
+    pub layer_den : Vec<DiffDoub0>,
+    pub layer_tc : Vec<DiffDoub0>,
+    pub layer_sh : Vec<DiffDoub0>,
+    pub layer_de : Vec<DiffDoub0>,
+    pub layer_diff : Vec<DiffDoub0>,
+    pub layer_max_con : Vec<DiffDoub0>,
+    pub frc_fld_coef : Vec<DiffDoub0>,
+    pub frc_fld_exp : Vec<DiffDoub0>,
+    pub thrm_fld_coef : Vec<DiffDoub0>,
+    pub ref_temp : DiffDoub0,
+    pub ideal_gas : DiffDoub0,
+    pub bulk_mod : DiffDoub0,
+    pub ref_den : DiffDoub0,
+    pub ref_pres : DiffDoub0,
+    pub mass_per_el : DiffDoub0,
+    pub current_lay_len : usize,
+}
+
+impl DiffDoub0StressPrereq {
+    pub fn new() -> DiffDoub0StressPrereq {
+        DiffDoub0StressPrereq {
+            glob_nds : vec![DiffDoub0::new(); 30],
+            loc_nds : vec![DiffDoub0::new(); 30],
+            loc_ori : vec![DiffDoub0::new(); 9],
+            inst_ori : vec![DiffDoub0::new(); 720],
+            glob_disp : vec![DiffDoub0::new(); 60],
+            glob_vel : vec![DiffDoub0::new(); 30],
+            glob_acc : vec![DiffDoub0::new(); 30],
+            glob_temp : vec![DiffDoub0::new(); 10],
+            glob_tdot : vec![DiffDoub0::new(); 10],
+            glob_fl_den : vec![DiffDoub0::new(); 10],
+            glob_fl_den_dot : vec![DiffDoub0::new(); 10],
+            cmat : vec![DiffDoub0::new(); 81],
+            mmat : vec![DiffDoub0::new(); 36],
+            dmat : vec![DiffDoub0::new(); 81],
+            therm_exp : vec![DiffDoub0::new(); 6],
+            einit : vec![DiffDoub0::new(); 6],
+            tcmat : vec![DiffDoub0::new(); 9],
+            spec_heat : DiffDoub0::new(),
+            diff_exp : vec![DiffDoub0::new(); 6],
+            diff_mat : vec![DiffDoub0::new(); 9],
+            max_con : DiffDoub0::new(),
+            bmat : vec![DiffDoub0::new(); 288],
+            cbmat : vec![DiffDoub0::new(); 288],
+            layer_z : Vec::new(),
+            layer_thk : Vec::new(),
+            layer_ang : Vec::new(),
+            layer_q : Vec::new(),
+            layer_d : Vec::new(),
+            layer_te : Vec::new(),
+            layer_e0 : Vec::new(),
+            layer_den : Vec::new(),
+            layer_tc : Vec::new(),
+            layer_sh : Vec::new(),
+            layer_de : Vec::new(),
+            layer_diff : Vec::new(),
+            layer_max_con : Vec::new(),
+            frc_fld_coef : vec![DiffDoub0::new(); 3],
+            frc_fld_exp : vec![DiffDoub0::new(); 5],
+            thrm_fld_coef : vec![DiffDoub0::new(); 2],
+            ref_temp : DiffDoub0::new(),
+            ideal_gas : DiffDoub0::new(),
+            bulk_mod : DiffDoub0::new(),
+            ref_den : DiffDoub0::new(),
+            ref_pres : DiffDoub0::new(),
+            mass_per_el : DiffDoub0::new(),
+            current_lay_len : 0usize,
+        }
+    }
+}
+
+//end dup
+ 
+//skip 
+ 
+//DiffDoub1 versions: 
+//dup1
+
+#[derive(Clone)]
+pub struct DiffDoub1StressPrereq {
+    pub glob_nds : Vec<DiffDoub1>,
+    pub loc_nds : Vec<DiffDoub1>,
+    pub loc_ori : Vec<DiffDoub1>,
+    pub inst_ori : Vec<DiffDoub1>,
+    pub glob_disp : Vec<DiffDoub1>,
+    pub glob_vel : Vec<DiffDoub1>,
+    pub glob_acc : Vec<DiffDoub1>,
+    pub glob_temp : Vec<DiffDoub1>,
+    pub glob_tdot : Vec<DiffDoub1>,
+    pub glob_fl_den : Vec<DiffDoub1>,
+    pub glob_fl_den_dot : Vec<DiffDoub1>,
+    pub cmat : Vec<DiffDoub1>,
+    pub mmat : Vec<DiffDoub1>,
+    pub dmat : Vec<DiffDoub1>,
+    pub therm_exp : Vec<DiffDoub1>,
+    pub einit : Vec<DiffDoub1>,
+    pub tcmat : Vec<DiffDoub1>,
+    pub spec_heat : DiffDoub1,
+    pub diff_exp : Vec<DiffDoub1>,
+    pub diff_mat : Vec<DiffDoub1>,
+    pub max_con : DiffDoub1,
+    pub bmat : Vec<DiffDoub1>,
+    pub cbmat : Vec<DiffDoub1>,
+    pub layer_z : Vec<DiffDoub1>,
+    pub layer_thk : Vec<DiffDoub1>,
+    pub layer_ang : Vec<DiffDoub1>,
+    pub layer_q : Vec<DiffDoub1>,
+    pub layer_d : Vec<DiffDoub1>,
+    pub layer_te : Vec<DiffDoub1>,
+    pub layer_e0 : Vec<DiffDoub1>,
+    pub layer_den : Vec<DiffDoub1>,
+    pub layer_tc : Vec<DiffDoub1>,
+    pub layer_sh : Vec<DiffDoub1>,
+    pub layer_de : Vec<DiffDoub1>,
+    pub layer_diff : Vec<DiffDoub1>,
+    pub layer_max_con : Vec<DiffDoub1>,
+    pub frc_fld_coef : Vec<DiffDoub1>,
+    pub frc_fld_exp : Vec<DiffDoub1>,
+    pub thrm_fld_coef : Vec<DiffDoub1>,
+    pub ref_temp : DiffDoub1,
+    pub ideal_gas : DiffDoub1,
+    pub bulk_mod : DiffDoub1,
+    pub ref_den : DiffDoub1,
+    pub ref_pres : DiffDoub1,
+    pub mass_per_el : DiffDoub1,
+    pub current_lay_len : usize,
+}
+
+impl DiffDoub1StressPrereq {
+    pub fn new() -> DiffDoub1StressPrereq {
+        DiffDoub1StressPrereq {
+            glob_nds : vec![DiffDoub1::new(); 30],
+            loc_nds : vec![DiffDoub1::new(); 30],
+            loc_ori : vec![DiffDoub1::new(); 9],
+            inst_ori : vec![DiffDoub1::new(); 720],
+            glob_disp : vec![DiffDoub1::new(); 60],
+            glob_vel : vec![DiffDoub1::new(); 30],
+            glob_acc : vec![DiffDoub1::new(); 30],
+            glob_temp : vec![DiffDoub1::new(); 10],
+            glob_tdot : vec![DiffDoub1::new(); 10],
+            glob_fl_den : vec![DiffDoub1::new(); 10],
+            glob_fl_den_dot : vec![DiffDoub1::new(); 10],
+            cmat : vec![DiffDoub1::new(); 81],
+            mmat : vec![DiffDoub1::new(); 36],
+            dmat : vec![DiffDoub1::new(); 81],
+            therm_exp : vec![DiffDoub1::new(); 6],
+            einit : vec![DiffDoub1::new(); 6],
+            tcmat : vec![DiffDoub1::new(); 9],
+            spec_heat : DiffDoub1::new(),
+            diff_exp : vec![DiffDoub1::new(); 6],
+            diff_mat : vec![DiffDoub1::new(); 9],
+            max_con : DiffDoub1::new(),
+            bmat : vec![DiffDoub1::new(); 288],
+            cbmat : vec![DiffDoub1::new(); 288],
+            layer_z : Vec::new(),
+            layer_thk : Vec::new(),
+            layer_ang : Vec::new(),
+            layer_q : Vec::new(),
+            layer_d : Vec::new(),
+            layer_te : Vec::new(),
+            layer_e0 : Vec::new(),
+            layer_den : Vec::new(),
+            layer_tc : Vec::new(),
+            layer_sh : Vec::new(),
+            layer_de : Vec::new(),
+            layer_diff : Vec::new(),
+            layer_max_con : Vec::new(),
+            frc_fld_coef : vec![DiffDoub1::new(); 3],
+            frc_fld_exp : vec![DiffDoub1::new(); 5],
+            thrm_fld_coef : vec![DiffDoub1::new(); 2],
+            ref_temp : DiffDoub1::new(),
+            ideal_gas : DiffDoub1::new(),
+            bulk_mod : DiffDoub1::new(),
+            ref_den : DiffDoub1::new(),
+            ref_pres : DiffDoub1::new(),
+            mass_per_el : DiffDoub1::new(),
+            current_lay_len : 0usize,
+        }
+    }
+}
+
+//end dup
+ 
+//end skip 
+ 
+ 
+#[derive(Clone)]
+pub struct Element {
+    pub this_type : usize,
+    pub label : usize,
+    pub nodes : Vec<usize>,
+    pub int_dof_index : usize,
+    pub faces : LinkedList<usize>,
+    pub internal_disp : Vec<f64>,
+    pub int_prev_disp : Vec<f64>,
+    pub internald_ldu : Vec<f64>,
+    pub internal_adj : Vec<f64>,
+    pub internal_ru : Vec<DiffDoub1>,
+    pub internal_mat : Vec<f64>,
+    pub design_vars : LinkedList<IDCapsule>,
+    pub comp_dvars : LinkedList<usize>,
+    pub sect_ptr : usize,
+    pub is_active : bool,
+    pub user_status : String,
+}
+
+impl Element {
+    pub fn new() -> Element {
+        Element {
+            this_type : 0usize,
+            label : 0usize,
+            nodes : Vec::new(),
+            int_dof_index : 0usize,
+            faces : LinkedList::new(),
+            internal_disp : Vec::new(),
+            int_prev_disp : Vec::new(),
+            internald_ldu : Vec::new(),
+            internal_adj : Vec::new(),
+            internal_ru : Vec::new(),
+            internal_mat : Vec::new(),
+            design_vars : LinkedList::new(),
+            comp_dvars : LinkedList::new(),
+            sect_ptr : 0usize,
+            is_active : true,
+            user_status : String::from(""),
+        }
+    }
+}
+
+pub struct ElementResults {
+    pub tot_stress : [f64; 6],
+    pub princ_stress : [f64; 3],
+    pub p_stress_dir : [f64; 9],
+    pub mises_stress : f64,
+    pub tot_strain : [f64; 6],
+    pub stress_strain : [f64; 6],
+    pub princ_strain : [f64; 3],
+    pub p_strain_dir : [f64; 9],
+    pub initial_strain : [f64; 6],
+    pub thermal_strain : [f64; 6],
+    pub temp_grad : [f64; 3],
+    pub heat_flux : [f64; 3],
+}
+
+impl ElementResults {
+    pub fn new() -> ElementResults {
+        ElementResults {
+            tot_stress : [0f64; 6],
+            princ_stress : [0f64; 3],
+            p_stress_dir : [0f64; 9],
+            mises_stress : 0f64,
+            tot_strain : [0f64; 6],
+            stress_strain : [0f64; 6],
+            princ_strain : [0f64; 3],
+            p_strain_dir : [0f64; 9],
+            initial_strain : [0f64; 6],
+            thermal_strain : [0f64; 6],
+            temp_grad : [0f64; 3],
+            heat_flux : [0f64; 3],
+        }
+    }
+}
+
+
+pub mod element_equations;
+pub mod element_meth;
+pub mod element_properties;
+pub mod element_soln_fields;
