@@ -309,7 +309,7 @@ impl ParticleSource {
                         nd.get_def_crd_dfd0(&mut crd);
                         self.get_local_crd(&mut loc_crd, &mut crd, &a_mat, &n1_crd);
 
-                        if self.out_of_bounds(&loc_crd) {
+                        if self.out_of_bounds(&loc_crd)  || !el_ar[*el].is_active {
                             el_ar[*el].is_active = true;
                             for i in 0..3 {
                                 nd.prev_disp[i] = glob_crd[i].val - nd.coord_dfd0[i].val;
@@ -394,7 +394,7 @@ impl ParticleSource {
                     if ct < self.insert_els.len() {
                         nd_ar[el_ar[*el].nodes[0]].get_def_crd_dfd0(&mut near_crd);
                         self.get_local_crd(&mut loc_crd, &mut near_crd, &a_mat, &n1_crd);
-                        if self.out_of_bounds(&loc_crd) {
+                        if self.out_of_bounds(&loc_crd) || !el_ar[*el].is_active {
                             self.insert_els[ct] = *el;
                             ct += 1;
                         }

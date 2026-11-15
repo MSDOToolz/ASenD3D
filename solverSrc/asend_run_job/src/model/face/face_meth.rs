@@ -292,13 +292,10 @@ impl Face {
 //end skip 
  
  
+ 
 }
 
 impl FacePtList {
-    pub fn add_face(&mut self, new_i : usize) {
-        self.fc_list.push_back(new_i);
-        return;
-    }
 
     pub fn add_if_absent(&mut self, new_i : usize, glob_faces : &mut Vec<Face>) -> bool {
         let new_num_nds : usize;

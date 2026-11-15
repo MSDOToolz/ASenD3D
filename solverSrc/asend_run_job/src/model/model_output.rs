@@ -1,5 +1,4 @@
 use crate::model::*;
-use crate::matrix_functions::*;
 use crate::cpp_str::CppStr;
 use crate::cpp_map::CppMap;
 
@@ -221,7 +220,7 @@ impl Model {
 
     }
 
-    pub fn write_element_results(&mut self, file_name : &mut CppStr, el_set : &mut CppStr, fields : &mut LinkedList<CppStr>, position : &mut CppStr, time_step : usize) {
+    pub fn write_element_results(&mut self, file_name : &CppStr, el_set : &mut CppStr, fields : &mut LinkedList<CppStr>, position : &mut CppStr, time_step : usize) {
         let mut i1 : usize;
         let mut str_ind : usize;
         let set_pt : usize;

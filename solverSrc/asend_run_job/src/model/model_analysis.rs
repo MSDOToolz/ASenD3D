@@ -325,7 +325,6 @@ impl Model {
         let mut this_nd_max : &mut f64;
         let mut exceed : f64;
         let mut just_act : bool;
-        let ts = self.job[sci].time_step;
         
         //let mut cmd = &mut self.job[self.solve_cmd];
         
@@ -827,7 +826,6 @@ impl Model {
                 nd.advance_temp();
                 nd.temperature = nd.prev_temp + nd.prev_temp - nd.pp_temp + self.therm_sol_vec[nd.sorted_rank];
                 nd.update_tdot(self.job[sci].newmark_gamma, self.job[sci].time_step, true);
-                i1 += 1; 
             }
 
             for c in self.thermal_const.const_vec.iter() {

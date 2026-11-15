@@ -9,7 +9,6 @@ use crate::model::job::*;
 use crate::matrix_functions::*;
 use crate::model::scratch::*;
 use crate::cpp_str::CppStr;
-use crate::file_util::print_matrix;
 
 use std::collections::linked_list::IterMut;
 
@@ -507,18 +506,13 @@ impl Element {
         }
         
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
-            //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut tmp_s, i1);
             self.get_ip_data_dfd0(&mut n_vec, &mut d_ndx, &mut det_j, &mut pre.loc_nds, &mut tmp_s);
             det_jwt.set_val(self.ip_wt(i1));
             det_jwt.mult(& det_j);
             if self.dof_per_nd() == 6 {
                 // build matrix [d_u^i/d_u^g] * {n}
-                i7 = 0;
                 for i2 in 0..nd_dof {
-                    //nd1 = self.dof_table(i7);
-                    //dof1 = self.dof_table(i7 + 1);
                     self.get_inst_disp_dfd0(&mut inst_disp, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds,  n_lgeom,  i2,  MAX_INT);
                     i6 = 0;
                     i5 = i2;
@@ -533,7 +527,6 @@ impl Element {
                         i5  +=  nd_dof;
                         i6  +=  self.n_dim() - self.num_nds();
                     }
-                    i7  +=  2;
                 }
                 // tmp61 = bmat*{acc}
                 i5 = 0;
@@ -630,7 +623,6 @@ impl Element {
     pub fn get_rud_dfd0(&mut self, rvec : &mut Vec<DiffDoub0>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub0StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub0Scr>) {
         let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
@@ -772,8 +764,6 @@ impl Element {
                 self.get_inst_ori_dfd0(&mut pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_disp,  2);
             }
             for i1 in 0..self.num_ip() {
-                i2 = i1 * 3;
-                //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
                 self.ip_crd(&mut tmp_s, i1);
                 self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut  tmp_s);
                 wt_det_j.set_val(self.ip_wt(i1));
@@ -1112,7 +1102,6 @@ impl Element {
     }
 
     pub fn get_rtk_dfd0(&mut self, rvec : &mut Vec<DiffDoub0>, d_rd_t : &mut Vec<f64>, get_matrix : bool, pre : &mut DiffDoub0StressPrereq) {
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
         let mut d_ndx = [DiffDoub0::new(); 33];
@@ -1144,7 +1133,6 @@ impl Element {
         }
         
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
             //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut tmp_s, i1);
             self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut  tmp_s);
@@ -1174,7 +1162,6 @@ impl Element {
     }
 
     pub fn get_rtm_dfd0(& self, rvec : &mut Vec<DiffDoub0>, d_rd_tdot : &mut Vec<f64>, get_matrix : bool, actual_props : bool, pre : &mut DiffDoub0StressPrereq) {
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
         let mut d_ndx = [DiffDoub0::new(); 33];
@@ -1217,7 +1204,6 @@ impl Element {
         }
         
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
             //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut tmp_s, i1);
             self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut  tmp_s);
@@ -1717,7 +1703,6 @@ impl Element {
     pub fn get_rt_frc_fld_dfd0(&mut self, rvec : &mut [DiffDoub0], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub0StressPrereq) {
         let mut d_vec = [DiffDoub0::new(); 3];
         let mut v_vec = [DiffDoub0::new(); 3];
-        let mut tmp = DiffDoub0::new();
 
         let mut k = 1usize;
         for i in 0..3 {
@@ -2517,18 +2502,13 @@ impl Element {
         }
         
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
-            //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut tmp_s, i1);
             self.get_ip_data_dfd1(&mut n_vec, &mut d_ndx, &mut det_j, &mut pre.loc_nds, &mut tmp_s);
             det_jwt.set_val(self.ip_wt(i1));
             det_jwt.mult(& det_j);
             if self.dof_per_nd() == 6 {
                 // build matrix [d_u^i/d_u^g] * {n}
-                i7 = 0;
                 for i2 in 0..nd_dof {
-                    //nd1 = self.dof_table(i7);
-                    //dof1 = self.dof_table(i7 + 1);
                     self.get_inst_disp_dfd1(&mut inst_disp, &mut  pre.glob_disp, &mut  pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_nds,  n_lgeom,  i2,  MAX_INT);
                     i6 = 0;
                     i5 = i2;
@@ -2543,7 +2523,6 @@ impl Element {
                         i5  +=  nd_dof;
                         i6  +=  self.n_dim() - self.num_nds();
                     }
-                    i7  +=  2;
                 }
                 // tmp61 = bmat*{acc}
                 i5 = 0;
@@ -2640,7 +2619,6 @@ impl Element {
     pub fn get_rud_dfd1(&mut self, rvec : &mut Vec<DiffDoub1>, d_rd_v : &mut Vec<f64>, get_matrix : bool, cmd : & JobCommand, pre : &mut DiffDoub1StressPrereq, 
         scr : &mut IterMut<'_,FltScr>, scr_dfd : &mut IterMut<'_,DiffDoub1Scr>) {
         let mut i1 : usize;
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut i4 : usize;
         let mut i5 : usize;
@@ -2782,8 +2760,6 @@ impl Element {
                 self.get_inst_ori_dfd1(&mut pre.inst_ori, &mut  pre.loc_ori, &mut  pre.glob_disp,  2);
             }
             for i1 in 0..self.num_ip() {
-                i2 = i1 * 3;
-                //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
                 self.ip_crd(&mut tmp_s, i1);
                 self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut  tmp_s);
                 wt_det_j.set_val(self.ip_wt(i1));
@@ -3122,7 +3098,6 @@ impl Element {
     }
 
     pub fn get_rtk_dfd1(&mut self, rvec : &mut Vec<DiffDoub1>, d_rd_t : &mut Vec<f64>, get_matrix : bool, pre : &mut DiffDoub1StressPrereq) {
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
@@ -3154,7 +3129,6 @@ impl Element {
         }
         
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
             //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut tmp_s, i1);
             self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut  tmp_s);
@@ -3184,7 +3158,6 @@ impl Element {
     }
 
     pub fn get_rtm_dfd1(& self, rvec : &mut Vec<DiffDoub1>, d_rd_tdot : &mut Vec<f64>, get_matrix : bool, actual_props : bool, pre : &mut DiffDoub1StressPrereq) {
-        let mut i2 : usize;
         let mut i3 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
@@ -3227,7 +3200,6 @@ impl Element {
         }
         
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
             //vec_to_ar(&mut tmp_s, & self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut tmp_s, i1);
             self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut  tmp_s);
@@ -3727,7 +3699,6 @@ impl Element {
     pub fn get_rt_frc_fld_dfd1(&mut self, rvec : &mut [DiffDoub1], dr_dt : &mut [f64], dr_du : &mut [f64], dr_dv : &mut [f64], get_matrix : bool, cmd : &JobCommand, pre : &mut DiffDoub1StressPrereq) {
         let mut d_vec = [DiffDoub1::new(); 3];
         let mut v_vec = [DiffDoub1::new(); 3];
-        let mut tmp = DiffDoub1::new();
 
         let mut k = 1usize;
         for i in 0..3 {
@@ -4218,6 +4189,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
 }

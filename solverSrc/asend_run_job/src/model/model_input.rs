@@ -4,10 +4,9 @@ use crate::list_ent::{DualFloat, QuadFloat};
 
 use crate::file_util::*;
 use std::fs::File;
-use std::io::{self, Read, BufRead};
+use std::io::{self, Read};
 use std::path::Path;
 use std::collections::LinkedList;
-use std::usize::MAX;
 
 fn increment_ct(ct : usize) -> usize {
     match ct {
@@ -142,8 +141,6 @@ impl Model {
         let mut hd_updated : bool;
         let mut i1 : usize;
         let mut i2 : usize;
-        let mut i3 : usize;
-        let mut i4 : usize;
         let mut doub_inp : [f64; 10] = [0.0; 10];
         let mut int_inp : [usize; 10] = [0,0,0,0,0,0,0,0,0,0];
         let mut el_type : usize = 0usize;
@@ -642,7 +639,6 @@ impl Model {
     }
 
     pub fn load_loop1(&mut self, headings : &mut Vec<CppStr>, data : &mut Vec<CppStr>, data_len : usize, ct_ar : &mut [usize], lst_ar : &mut [CppStr]) {
-        let mut i1 : usize;
         if headings[0].s == "loads" {
             if headings[1].s == "type" && data_len == 1 {
                 if lst_ar[0].s.contains(data[0].s.as_str()) {
@@ -660,7 +656,6 @@ impl Model {
 
     pub fn load_loop2(&mut self, headings : &mut Vec<CppStr>, data : &mut Vec<CppStr>, data_len : usize, ct_ar : &mut [usize], lst_ar : &mut [CppStr], ct_ind : &mut usize, curr_type : &mut CppStr) {
         let mut doub_inp = [0f64; 3];
-        let mut i1 : usize;
         
         if headings[0].s == "loads" {
             if data_len == 1 {
@@ -971,10 +966,9 @@ impl Model {
         }
     }
 
-    pub fn init_state_loop(&mut self, headings : &mut Vec<CppStr>, data : &mut Vec<CppStr>, data_len : usize, disp_hdings : &mut CppStr, fl_hdings : &mut CppStr) {
+    pub fn init_state_loop(&mut self, headings : &mut Vec<CppStr>, data : &mut Vec<CppStr>, data_len : usize, disp_hdings : &mut CppStr) {
         let mut doub_inp : [f64; 10] = [ 0.0; 10];
         let mut i2 : usize;
-        let mut i3 : usize;
         let mut seti : usize;
         let mut this_nd : &mut Node;
 
@@ -1033,13 +1027,12 @@ impl Model {
         let mut data_len : usize = 0usize;
         
         let mut disp_hdings = CppStr::from(" displacement velocity acceleration");
-        let mut fl_hdings = CppStr::from("flow flowdot");
         
         if let Ok(lines) = read_lines(file_name.s.clone()) {
             for line in lines.map_while(Result::ok) {
                 file_line.s = line;
                 read_input_line(&mut file_line, &mut headings, &mut hd_ld_space, &mut data, &mut data_len);
-                self.init_state_loop(&mut headings, &mut data, data_len, &mut disp_hdings, &mut fl_hdings);
+                self.init_state_loop(&mut headings, &mut data, data_len, &mut disp_hdings);
             }
         } else {
             panic!("Error: could not open initial state input file: {}", file_name.s);

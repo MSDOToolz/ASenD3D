@@ -223,6 +223,7 @@ impl DiffDoub1StressPrereq {
 //end skip 
  
  
+ 
 #[derive(Clone)]
 pub struct Element {
     pub this_type : usize,

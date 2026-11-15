@@ -1124,7 +1124,6 @@ impl Element {
  
 
     pub fn get_volume_dfd0(& self, vol : &mut DiffDoub0, pre : &mut DiffDoub0StressPrereq, layer : usize, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i2 : usize;
         let mut n_vec = [DiffDoub0::new(); 11];
         let mut d_ndx = [DiffDoub0::new(); 33];
         let mut det_j = DiffDoub0::new();
@@ -1153,8 +1152,6 @@ impl Element {
         
         vol.set_val(0.0);
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
-            //vec_to_ar(&mut s_tmp, &self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut s_tmp, i1);
             self.get_ip_data_dfd0(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut s_tmp);
             tmp.set_val(self.ip_wt(i1));
@@ -3296,7 +3293,6 @@ impl Element {
  
 
     pub fn get_volume_dfd1(& self, vol : &mut DiffDoub1, pre : &mut DiffDoub1StressPrereq, layer : usize, sec_ar : &mut Vec<Section>, dv_ar : & Vec<DesignVariable>) {
-        let mut i2 : usize;
         let mut n_vec = [DiffDoub1::new(); 11];
         let mut d_ndx = [DiffDoub1::new(); 33];
         let mut det_j = DiffDoub1::new();
@@ -3325,8 +3321,6 @@ impl Element {
         
         vol.set_val(0.0);
         for i1 in 0..self.num_ip() {
-            i2 = 3 * i1;
-            //vec_to_ar(&mut s_tmp, &self.int_pts,  i2,  i2 + 3);
             self.ip_crd(&mut s_tmp, i1);
             self.get_ip_data_dfd1(&mut n_vec, &mut  d_ndx, &mut  det_j, &mut  pre.loc_nds, &mut s_tmp);
             tmp.set_val(self.ip_wt(i1));
@@ -4350,6 +4344,7 @@ impl Element {
     //end dup
  
 //end skip 
+ 
  
  
     pub fn get_el_vec(&mut self, el_vec : &mut Vec<f64>, glob_vec : &mut Vec<f64>, for_therm : bool, intnl : bool, nd_ar : &mut Vec<Node>) {

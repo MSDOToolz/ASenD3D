@@ -20,6 +20,12 @@ jobCommands:
     fileName:
   - command: readNodeResults X
     fileName:
+
+  - command: deactivateElements
+    elementSet:
+
+  - command: activateElements
+    elementSet:
     
   - command: solvePrep
     (all options for solve)

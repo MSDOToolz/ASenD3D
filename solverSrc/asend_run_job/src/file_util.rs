@@ -2,7 +2,7 @@ use crate::cpp_str::CppStr;
 use crate::constants::*;
 
 use std::fs::File;
-use std::io::{self, Read, Write, BufRead};
+use std::io::{self, Write, BufRead};
 use std::path::Path;
 
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>> where P: AsRef<Path>, {

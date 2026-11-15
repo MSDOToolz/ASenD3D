@@ -511,7 +511,10 @@ impl Model {
                     i1 = sc.refine_lev;
                     sc.insert_els = vec![MAX_INT; i1*i1*i1];
                  }
-                 sc.deact_ob_els(&mut self.elements, &mut self.nodes, &self.element_sets);
+                 //sc.deact_ob_els(&mut self.elements, &mut self.nodes, &self.element_sets);
+                 for ei in self.element_sets[sc.elset_pt].labels.iter() {
+                    self.elements[*ei].is_active = false;
+                 }
              }
          }
         
@@ -630,6 +633,20 @@ impl Model {
         }
         
         return;
+    }
+
+    pub fn activate_element_set(&mut self, cmd_i : usize) {
+        let set_i = self.es_map.at(&self.job[cmd_i].element_set.s);
+        for eli in self.element_sets[set_i].labels.iter() {
+            self.elements[*eli].is_active = true;
+        }
+    }
+
+    pub fn deactivate_element_set(&mut self, cmd_i : usize) {
+        let set_i = self.es_map.at(&self.job[cmd_i].element_set.s);
+        for eli in self.element_sets[set_i].labels.iter() {
+            self.elements[*eli].is_active = false;
+        }
     }
 
     pub fn analysis_prep(&mut self) {

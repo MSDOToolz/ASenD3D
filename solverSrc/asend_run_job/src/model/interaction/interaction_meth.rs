@@ -561,6 +561,7 @@ impl Interaction {
 //end skip 
  
  
+ 
 }
 
 impl InteractionList {
@@ -633,6 +634,7 @@ impl InteractionList {
 //end dup
  
 //end skip 
+ 
  
  
     pub fn update_nd_active(&mut self, elements : &Vec<Element>) {

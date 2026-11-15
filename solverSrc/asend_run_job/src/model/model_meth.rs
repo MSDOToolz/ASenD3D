@@ -3,6 +3,53 @@ use crate::cpp_str::CppStr;
 
 
 impl Model {
+
+    pub fn write_node_or_el_res(&mut self, cmd_str : &CppStr, ci : usize) {
+        if cmd_str.s == "writeNodeResults" {
+            println!("writing Node results");
+        }
+        else {
+            println!("writing Element results");
+        }
+        let num_tsteps = self.job[ci].time_steps.len();
+        let mut ns_cln = self.job[ci].node_set.clone();
+        let mut es_cln = self.job[ci].element_set.clone();
+        let mut fld_cln = self.job[ci].fields.clone();
+        let mut pos_cln = self.job[ci].position.clone();
+        let ts_cln = self.job[ci].time_steps.clone();
+        if num_tsteps > 0 {
+            let i2 = self.job[ci].file_name.find(".");
+            let exten : CppStr;
+            let file_name : CppStr;
+            let mut full_fname = CppStr::new();
+            if i2 < MAX_INT {
+                exten = self.job[ci].file_name.substr(i2, MAX_INT);
+                file_name = self.job[ci].file_name.substr(0, i2);
+            }
+            else {
+                exten = CppStr::from("");
+                file_name = self.job[ci].file_name.clone();
+            }
+            for ts in ts_cln.iter() {
+                full_fname.s = format!("{}_timestep{}{}", file_name.s, ts, exten.s);
+                if cmd_str.s == "writeNodeResults" {
+                    self.write_node_results(&full_fname, &mut ns_cln, &mut fld_cln, *ts);
+                }
+                else {
+                    self.write_element_results(&full_fname, &mut es_cln, &mut fld_cln, &mut pos_cln, *ts);
+                }
+            }
+        }
+        else {
+            let file_name = self.job[ci].file_name.clone();
+            if cmd_str.s == "writeNodeResults" {
+                self.write_node_results(&file_name, &mut ns_cln, &mut fld_cln,  MAX_INT);
+            }
+            else {
+                self.write_element_results(&file_name, &mut es_cln, &mut fld_cln, &mut pos_cln,  MAX_INT);
+            }
+        }
+    }
     
     pub fn execute_job(&mut self) {
         let mut i2 : usize;
@@ -16,156 +63,80 @@ impl Model {
         for ci in 0..self.job.len() {
             cmd_str = self.job[ci].cmd_string.clone();
             file_name = self.job[ci].file_name.clone();
-            if cmd_str.s == "readModelInput" {
-                println!("{}{}", "reading Model input: ", file_name.s);
-                self.read_model_input(&mut file_name);
-                // self.read_constraint_input(&mut file_name);
-                // self.read_load_input(&mut file_name);
-                // self.read_interaction_input(&mut file_name);
-                // self.read_initial_state(&mut file_name);
-            } else if cmd_str.s == "readConstraints" {
-                println!("{}{}", "reading constraints: ", file_name.s);
-                self.read_constraint_input(&mut file_name);
-            } else if cmd_str.s == "readLoads" {
-                println!("{}{}", "reading loads: " , file_name.s);
-                self.read_load_input(&mut file_name);
-            } 
-            else if cmd_str.s == "readInteractions" {
-                println!("reading interactions : {}", file_name.s);
-                self.read_interaction_input(&mut file_name);
-            }
-            else if cmd_str.s == "readParticleSources" {
-                println!("reading particle sources : {}", file_name.s);
-                self.read_part_src_input(&mut file_name);
-            }
-            else if cmd_str.s == "readInitialState" {
-                println!("{}{}", "reading initial state: " , file_name.s);
-                // self.read_initial_state(&mut file_name);
-                self.init_stat_file = file_name.clone();
-            } else if cmd_str.s == "readDesignVarInput" {
-                println!("{}{}", "reading design variable input: " , file_name.s);
-                self.read_des_var_input(&mut file_name);
-            } else if cmd_str.s == "readObjectiveInput" {
-                println!("{}{}", "reading Objective input: " , file_name.s);
-                self.read_objective_input(&mut file_name);
-            }
-            else if cmd_str.s == "readDesignVarValues" {
-                self.read_des_var_values(&mut file_name);
-            }
-            else if cmd_str.s == "readNodeResults" {
-                self.read_node_results(&mut file_name);
-            }
-            else if cmd_str.s == "solvePrep" {
-                self.solve_cmd = ci;
-                self.analysis_prep();
-            }
-            else if cmd_str.s == "solve" {
-                println!("{}", "running main analysis " );
-                self.solve_cmd = ci;
-                if self.job[ci].explicit {
-                    self.solve_explicit();
-                }
-                else {
-                    self.solve();
-                }
-                
-            }
-            else if cmd_str.s == "zeroSolution" {
-                let mut fld_cln = self.job[ci].fields.clone();
-                self.zero_solution(&mut fld_cln);
-            }
-            else if cmd_str.s == "modalAnalysis" {
-                println!("{}{}", "running modal analysis " , file_name.s);
-                self.modal_cmd = ci;
-                self.eigen_solve();
-            }
-            else if cmd_str.s == "setSolnToMode" {
-                let mut sol_fld_cln = self.job[ci].soln_field.clone();
-                let md = self.job[ci].mode;
-                let mx_amp = self.job[ci].max_amplitude;
-                self.set_soln_to_mode(&mut sol_fld_cln, md,  mx_amp);
-            }
-            else if cmd_str.s == "calcObjective" {
-                println!("{}{}", "calculating Objective function " , file_name.s);
-                self.get_objective();
-            }
-            else if cmd_str.s == "calcObjGradient" {
-                println!("{}{}", "calculating Objective gradient " , file_name.s);
-                self.get_obj_gradient();
-            } else if cmd_str.s == "writeNodeResults" || cmd_str.s == "writeElementResults" {
-                if cmd_str.s == "writeNodeResults" {
-                    println!("writing Node results");
-                }
-                else {
-                    println!("writing Element results");
-                }
-                num_tsteps = self.job[ci].time_steps.len();
-                let mut ns_cln = self.job[ci].node_set.clone();
-                let mut es_cln = self.job[ci].element_set.clone();
-                let mut fld_cln = self.job[ci].fields.clone();
-                let mut pos_cln = self.job[ci].position.clone();
-                let ts_cln = self.job[ci].time_steps.clone();
-                if num_tsteps > 0 {
-                    i2 = self.job[ci].file_name.find(".");
-                    if i2 < MAX_INT {
-                        exten = self.job[ci].file_name.substr(i2, MAX_INT);
-                        file_name = self.job[ci].file_name.substr(0, i2);
-                    }
-                    else {
-                        exten = CppStr::from("");
-                        file_name = self.job[ci].file_name.clone();
-                    }
-                    for ts in ts_cln.iter() {
-                        full_fname.s = format!("{}_timestep{}{}", file_name.s, ts, exten.s);
-                        if cmd_str.s == "writeNodeResults" {
-                            self.write_node_results(&mut full_fname, &mut ns_cln, &mut fld_cln, *ts);
-                        }
-                        else {
-                            self.write_element_results(&mut full_fname, &mut es_cln, &mut fld_cln, &mut pos_cln, *ts);
-                        }
-                    }
-                }
-                else {
-                    file_name = self.job[ci].file_name.clone();
-                    if cmd_str.s == "writeNodeResults" {
-                        self.write_node_results(&mut file_name, &mut ns_cln, &mut fld_cln,  MAX_INT);
-                    }
-                    else {
-                        self.write_element_results(&mut file_name, &mut es_cln, &mut fld_cln, &mut pos_cln,  MAX_INT);
-                    }
-                }
-            }
-            else if cmd_str.s == "writeParticleState" {
-                println!("writing particle state");
-                num_tsteps = self.job[ci].time_steps.len();
-                let ts_cln = self.job[ci].time_steps.clone();
-                if num_tsteps > 0 {
-                    i2 = self.job[ci].file_name.find(".");
-                    if i2 < MAX_INT {
-                        exten = self.job[ci].file_name.substr(i2, MAX_INT);
-                        file_name = self.job[ci].file_name.substr(0, i2);
-                    }
-                    else {
-                        exten = CppStr::from("");
-                        file_name = self.job[ci].file_name.clone();
-                    }
-                    for ts in ts_cln.iter() {
-                        full_fname.s = format!("{}_timestep{}{}", file_name.s, ts, exten.s);
-                        self.write_particle_state(&mut full_fname, *ts);
-                    }
-                }
-            }
-            else if cmd_str.s == "writeModalResults" {
-                println!("writing modal results");
-                file_name = self.job[ci].file_name.clone();
-                self.write_modal_results(&mut file_name);
-            }
-            else if cmd_str.s == "writeObjective" {
-                println!("writing Objective results");
-                file_name = self.job[ci].file_name.clone();
-                let mut ob_in = self.job[ci].obj_include.clone();
-                let wg = self.job[ci].write_gradient;
-                self.write_objective(&mut file_name, &mut ob_in, wg);
+
+            match cmd_str.s.as_str() {
+                "readModelInput"      => {println!("{}{}", "reading Model input: ", file_name.s);
+                                          self.read_model_input(&mut file_name);},
+                "readConstraints"     => {println!("{}{}", "reading constraints: ", file_name.s);
+                                          self.read_constraint_input(&mut file_name);},
+                "readLoads"           => {println!("{}{}", "reading loads: " , file_name.s);
+                                          self.read_load_input(&mut file_name);},
+                "readInteractions"    => {println!("reading interactions : {}", file_name.s);
+                                          self.read_interaction_input(&mut file_name);},
+                "readParticleSources" => {println!("reading particle sources : {}", file_name.s);
+                                          self.read_part_src_input(&mut file_name);},
+                "readInitialState"    => {println!("{}{}", "reading initial state: " , file_name.s);
+                                          self.init_stat_file = file_name.clone();},
+                "readDesignVarInput"  => {println!("{}{}", "reading design variable input: " , file_name.s);
+                                          self.read_des_var_input(&mut file_name);},
+                "readObjectiveInput"  => {println!("{}{}", "reading Objective input: " , file_name.s);
+                                          self.read_objective_input(&mut file_name);},
+                "readDesignVarValues" => {self.read_des_var_values(&mut file_name);},
+                "readNodeResults"     => {self.read_node_results(&mut file_name);},
+                "activateElements"    => {self.activate_element_set(ci);},
+                "deactivateElements"  => {self.deactivate_element_set(ci);},
+                "solvePrep"           => {self.solve_cmd = ci;
+                                          self.analysis_prep();},
+                "solve"               => {println!("{}", "running main analysis " );
+                                          self.solve_cmd = ci;
+                                          if self.job[ci].explicit {
+                                              self.solve_explicit();
+                                          }
+                                          else {
+                                              self.solve();
+                                          }},
+                "zeroSolution"        => {let mut fld_cln = self.job[ci].fields.clone();
+                                          self.zero_solution(&mut fld_cln);},
+                "modalAnalysis"       => {println!("{}{}", "running modal analysis " , file_name.s);
+                                          self.modal_cmd = ci;
+                                          self.eigen_solve();},
+                "setSolnToMode"       => {let mut sol_fld_cln = self.job[ci].soln_field.clone();
+                                          let md = self.job[ci].mode;
+                                          let mx_amp = self.job[ci].max_amplitude;
+                                          self.set_soln_to_mode(&mut sol_fld_cln, md,  mx_amp);},
+                "calcObjective"       => {println!("{}{}", "calculating Objective function " , file_name.s);
+                                          self.get_objective();},
+                "calcObjGradient"     => {println!("{}{}", "calculating Objective gradient " , file_name.s);
+                                          self.get_obj_gradient();},
+                "writeNodeResults"    => {self.write_node_or_el_res(&cmd_str, ci);},
+                "writeElementResults" => {self.write_node_or_el_res(&cmd_str, ci);},
+                "writeParticleState"  => {println!("writing particle state");
+                                          num_tsteps = self.job[ci].time_steps.len();
+                                          let ts_cln = self.job[ci].time_steps.clone();
+                                          if num_tsteps > 0 {
+                                              i2 = self.job[ci].file_name.find(".");
+                                              if i2 < MAX_INT {
+                                                  exten = self.job[ci].file_name.substr(i2, MAX_INT);
+                                                  file_name = self.job[ci].file_name.substr(0, i2);
+                                              }
+                                          else {
+                                              exten = CppStr::from("");
+                                              file_name = self.job[ci].file_name.clone();
+                                          }
+                                          for ts in ts_cln.iter() {
+                                              full_fname.s = format!("{}_timestep{}{}", file_name.s, ts, exten.s);
+                                              self.write_particle_state(&mut full_fname, *ts);
+                                          }
+                                          }},
+                "writeModalResults"   => {println!("writing modal results");
+                                          file_name = self.job[ci].file_name.clone();
+                                          self.write_modal_results(&mut file_name);},
+                "writeObjective"      => {println!("writing Objective results");
+                                          file_name = self.job[ci].file_name.clone();
+                                          let mut ob_in = self.job[ci].obj_include.clone();
+                                          let wg = self.job[ci].write_gradient;
+                                          self.write_objective(&mut file_name, &mut ob_in, wg);},
+                &_                    => (),
             }
             
         }
